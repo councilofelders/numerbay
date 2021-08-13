@@ -1,0 +1,4 @@
+.vscode
+.mypy_cache
+.idea
+docker-stack.yml

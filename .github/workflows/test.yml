@@ -1,0 +1,163 @@
+name: Run tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'info'
+      tags:
+        description: 'Description'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          backend:
+            - 'backend/**'
+          frontend:
+            - 'frontend/**'
+
+  # backend jobs
+  backend-test:
+    name: Test Backend
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Pull the latest image to build, and avoid caching pull-only images.
+      # (docker pull is faster than caching in most cases.)
+      - name: Pull Docker Images
+        run: |
+          docker-compose pull --quiet proxy db pgadmin queue flower
+          docker pull --quiet python:3.7
+          docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
+          docker pull --quiet node:12
+
+      # In this step, this action saves a list of existing images,
+      # the cache is created without them in the post run.
+      # It also restores the cache if it exists.
+      - name: Setup Docker Cache
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+        with:
+          key: numerbay-docker-cache-test-1-{hash}
+          restore-keys: |
+            numerbay-docker-cache-test-1-
+
+      - name: Test backend
+        run: sh ./scripts/test.sh
+
+  # frontend jobs
+  frontend-prepare-dependencies:
+    name: Prepare frontend dependencies
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
+      - name: Get cached dependencies
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+  # frontend-lint:
+  #   name: Lint
+  #   needs: prepare-frontend-dependencies
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: Setup node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: '12'
+
+  #     - name: Get cached dependencies
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: '**/node_modules'
+  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+  #     - name: Run linter
+  #       run: yarn lint
+
+  frontend-test:
+    name: Test frontend
+    needs: frontend-prepare-dependencies
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
+      - name: Get cached dependencies
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Build api-client
+        run: yarn build:api-client
+
+      - name: Test api-client
+        run: yarn test:api-client
+
+      - name: Build composables
+        run: yarn build:composables
+
+      - name: Test composables
+        run: yarn test:composables
+
+      - name: Build theme
+        run: yarn build:theme
+
+      - name: Test theme
+        run: yarn test:theme
+
+#      - name: Test e2e integration
+#        run: cd packages/theme && yarn test:e2e:hl

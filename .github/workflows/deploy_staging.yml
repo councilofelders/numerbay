@@ -1,0 +1,133 @@
+name: Deploy Staging
+
+#on:
+#  push:
+#    branches:
+#      - master
+#  pull_request:
+#    branches:
+#      - master
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'info'
+      tags:
+        description: 'Description'
+
+jobs:
+  # build staging
+  build-stag:
+    name: Build Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set Up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Set Up GCR
+        run: |
+          gcloud info
+          gcloud auth configure-docker
+          export LD_LIBRARY_PATH=/usr/local/lib
+
+      # Pull the latest image to build, and avoid caching pull-only images.
+      # (docker pull is faster than caching in most cases.)
+      - name: Pull Docker Images
+        run: |
+          docker-compose pull --quiet proxy db pgadmin queue flower
+          docker pull --quiet python:3.7
+          docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
+          docker pull --quiet node:12
+
+      # In this step, this action saves a list of existing images,
+      # the cache is created without them in the post run.
+      # It also restores the cache if it exists.
+      - name: Setup Docker Cache
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+        with:
+          key: numerbay-docker-cache-stag-1-{hash}
+          restore-keys: |
+            numerbay-docker-cache-stag-1
+
+      - name: Build and Push Staging Images
+        run: |
+          export LD_LIBRARY_PATH=/usr/local/lib
+          bash ./scripts/build-push.sh
+        env:
+          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
+          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
+          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
+          TAG: stag
+          FRONTEND_ENV: staging
+          DOMAIN: stag.numerbay.ai
+
+  # deploy staging
+  deploy-stag:
+    name: Deploy Staging
+    needs: build-stag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set Up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Set Up GCR
+        run: |
+          gcloud info
+          gcloud auth configure-docker
+          export LD_LIBRARY_PATH=/usr/local/lib
+
+      - name: Deploy Staging Images
+        run: |
+          gcloud compute ssh --project=${{ secrets.GCP_PROJECT_ID }} --zone=${{ secrets.GCP_ZONE }} ${{ secrets.GCP_INSTANCE_NAME }}
+          eval $(ssh-agent)
+          ssh-add ~/.ssh/google_compute_engine
+          printf '\nHost *\n\tStrictHostKeyChecking no\n\tCheckHostIP no\n\tUserKnownHostsFile /dev/null' "$SSH_HOST" "$INPUT_SSH_PUBLIC_KEY" > ~/.ssh/config
+          export LD_LIBRARY_PATH=/usr/local/lib
+          echo "Setup Remote Docker Swarm"
+          ssh $USER@${{ secrets.REMOTE_DOCKER_HOST }} "(docker swarm init || true) && docker-credential-gcr configure-docker"
+          echo "Set Docker Context"
+          docker context create remote --default-stack-orchestrator=swarm --docker "host=ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
+          docker context use remote
+          export DOCKER_HOST="ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
+          pip install paramiko docker-auto-labels
+          echo "Set Up Traefik Stack"
+          docker network create --driver=overlay traefik-public || true
+          export NODE_ID=$(docker info -f '{{.Swarm.NodeID}}')
+          docker node update --label-add traefik-public.traefik-public-certificates=true $NODE_ID
+          DOMAIN=traefik.stag.numerbay.ai EMAIL=${{ secrets.TRAEFIK_EMAIL }} USERNAME=admin HASHED_PASSWORD=$(openssl passwd -apr1 ${{ secrets.TRAEFIK_PASSWORD }}) docker stack deploy -c docker-compose.traefik.yml stag-traefik
+          echo "Run Deploy Script"
+          export DOMAIN=stag.numerbay.ai
+          bash ./scripts/deploy.sh
+        env:
+          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
+          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
+          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
+          TAG: stag
+          FRONTEND_ENV: staging
+          DOMAIN: stag.numerbay.ai
+          TRAEFIK_TAG: stag.numerbay.ai
+          STACK_NAME: stag-numerbay-ai
+          SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+          FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
+          FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
+          POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
+          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
