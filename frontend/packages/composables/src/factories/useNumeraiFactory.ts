@@ -14,7 +14,7 @@ export interface UseNumeraiFactoryParams extends FactoryParams{
 }
 
 export function useNumeraiFactory(
-  factoryParams: UseNumeraiFactoryParams,
+  factoryParams: UseNumeraiFactoryParams
 ) {
   return function useNumerai(cacheId: string): UseNumerai {
     const ssrKey = cacheId || 'useNumeraiFactory';

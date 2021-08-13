@@ -129,7 +129,7 @@ export default {
     // const { products: relatedProducts, search: searchRelatedProducts, loading: relatedLoading } = useProduct('relatedProducts');
     // const { addItem, loading } = useCart();
     // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
-    const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai();
+    const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
     const options = computed(() => productGetters.getAttributes(products.value.data, ['color', 'size']));
