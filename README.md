@@ -1,7 +1,7 @@
 # NumerBay
 
-![](https://github.com/restrading/numerbay/workflows/Run%20tests/badge.svg)
-![](https://github.com/restrading/numerbay/workflows/Deploy%20Production/badge.svg)
+![](https://github.com/councilofelders/numerbay/workflows/Run%20tests/badge.svg)
+![](https://github.com/councilofelders/numerbay/workflows/Deploy%20Production/badge.svg)
 
 **NumerBay (https://numerbay.ai)** is the Numerai Community Marketplace for anything [Numerai](https://numer.ai/). 
 
