@@ -54,7 +54,7 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
                     name="price"
-                    label="Price"
+                    label="Price (in $USD)"
                     type="number"
                     step=any
                     min=0
@@ -68,7 +68,7 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
                     name="avatar"
-                    label="Avatar Image URL"
+                    label="Avatar Image URL (e.g. Numerai avatar img link)"
                     type="url"
                     class="form__element"
                   />
@@ -80,7 +80,7 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
                     name="thirdPartyUrl"
-                    label="Third Party Listing URL"
+                    label="Third Party Listing URL (e.g. Gumroad product link)"
                     type="url"
                     class="form__element"
                   />
