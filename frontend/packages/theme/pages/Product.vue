@@ -37,6 +37,18 @@
             <div class="sale-value">$-</div>
             <p class="last-sale-change" style="color: green;">$0 (0%)</p>
           </div>
+          <SfButton class="bid-button" @click="handleCryptoBuyButtonClick(product)">
+            <div class="stats">
+              <div class="stat-value">
+                {{ $n(productGetters.getPrice(product).regular, 'currency') }}
+              </div>
+              <h3>Ref Price</h3>
+            </div>
+            <div class="button-divider"></div>
+            <div>
+              <h2>BUY</h2>
+            </div>
+          </SfButton>
           <SfButton class="bid-button" @click="handleBuyButtonClick(product)" :disabled="!product.third_party_url">
             <div class="stats">
               <div class="stat-value">
@@ -113,11 +125,12 @@ import {
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import RelatedProducts from '~/components/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
-import { useProduct, productGetters, reviewGetters, useNumerai } from '@vue-storefront/numerbay';
+import {useProduct, productGetters, reviewGetters, useNumerai, useUser} from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
+import Web3 from 'web3';
 
 export default {
   name: 'Product',
@@ -130,6 +143,7 @@ export default {
     // const { addItem, loading } = useCart();
     // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
+    const { web3User, initWeb3Modal, ethereumListener } = useUser();
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
     const options = computed(() => productGetters.getAttributes(products.value.data, ['color', 'size']));
@@ -205,12 +219,31 @@ export default {
       }
     };
 
+    // eslint-disable-next-line no-unused-vars
+    const handleCryptoBuyButtonClick = async (product) => {
+      await initWeb3Modal();
+      await ethereumListener();
+      const sender = web3User.value.activeAccount;
+      const receiver = web3User.value.activeAccount;
+      const web3 = new Web3(web3User.value.providerEthers.provider);
+      web3.eth.sendTransaction({
+        from: sender,
+        // gasPrice: '50',
+        // gas: '50',
+        to: receiver,
+        value: '1000000000000000'
+        // data: ''
+      });
+      // web3.sendTransaction({to: receiver, from: sender, value: web3.toWei("0.5", "ether")})
+    };
+
     return {
       updateFilter,
       getModelInfo,
       getNumeraiChartData,
       resolveProductPlatform,
       handleBuyButtonClick,
+      handleCryptoBuyButtonClick,
       configuration,
       product,
       // reviews,
