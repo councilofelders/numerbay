@@ -3,7 +3,7 @@
     <SfTab title="My listings">
       <div>
         <div class="top-buttons">
-          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!user.numerai_api_key_public_id">
+          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!user.numerai_api_key_public_id || numeraiLoading">
             {{ $t('New Listing') }}
           </SfButton>
           <SfButton class="sf-button" :class="!user.numerai_api_key_public_id?'color-primary':'color-secondary'" @click="toggleNumeraiApiForm()">
@@ -35,7 +35,7 @@
             <SfTableData>{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</SfTableData>
             <SfTableData>{{ $n(productGetters.getPrice(product).regular, 'currency') }}</SfTableData>
             <SfTableData class="orders__view orders__element--right">
-              <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)">
+              <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)" :disabled="numeraiLoading">
                 {{ $t('Manage') }}
               </SfButton>
             </SfTableData>
@@ -82,7 +82,7 @@ export default {
   setup() {
     const { user, updateUser } = useUser();
     const { categories, search: categorySearch } = useCategory();
-    const { getModels: getNumeraiModels } = useNumerai();
+    const { getModels: getNumeraiModels, loading: numeraiLoading } = useNumerai();
 
     onSSR(async () => {
       await categorySearch(); // {slug: 'all'}
@@ -143,6 +143,7 @@ export default {
 
     return {
       tableHeaders,
+      numeraiLoading,
       user: computed(() => user?.value ? user.value : null),
       categories: computed(() => categories?.value ? categories.value : []),
       products: computed(() => products?.value?.data ? products.value.data : []),

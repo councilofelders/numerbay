@@ -326,8 +326,8 @@ export default {
       resetErrorValues();
       await fn({ id: currentListing.value ? currentListing.value.id : null, product: form.value });
 
-      const hasUserErrors = productError.value.listingModal;
-      if (hasUserErrors) {
+      const hasProductErrors = productError.value.listingModal;
+      if (hasProductErrors) {
         error.listingModal = productError.value.listingModal?.message;
         return;
       }
@@ -343,7 +343,6 @@ export default {
         if (models) {
           const model = models[0];
           if (model.profileUrl) {
-            console.log('setavatar: ', model.profileUrl);
             form.value.avatar = model.profileUrl;
           }
         }
