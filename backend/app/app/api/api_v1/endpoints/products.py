@@ -55,6 +55,12 @@ def create_product(
     """
     category = crud.category.get(db=db, id=product_in.category_id)
     product_in.sku = f"{category.slug}-{product_in.name.lower()}"
+    product = crud.product.get_by_sku(db, sku=product_in.sku)
+    if product:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{product.sku} is already listed.",
+        )
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=current_user.id)
     return product
 

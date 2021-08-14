@@ -37,6 +37,11 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         db.refresh(db_obj)
         return db_obj
 
+    def get_by_sku(
+            self, db: Session, *, sku: int
+    ) -> List[Product]:
+        return db.query(self.model).filter(Product.sku == sku).first()
+
     def get_multi_by_owner(
             self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100
     ) -> List[Product]:

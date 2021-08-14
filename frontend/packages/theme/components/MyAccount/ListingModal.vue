@@ -9,7 +9,7 @@
       <SfBar
         class="sf-modal__bar smartphone-only"
         :close="true"
-        :title="isLogin ? 'Log in' : 'Sign in'"
+        :title="currentListing?`Editing ${currentListing.name.toUpperCase()}`:'New Listing'"
         @click:close="toggleListingModal"
       />
     </template>
@@ -20,7 +20,7 @@
             <ValidationObserver v-slot="{ handleSubmit }" key="log-in">
               <form class="form" @submit.prevent="handleSubmit(handleProductForm)">
                 <ValidationProvider rules="required" v-slot="{ errors }">
-                  <SfSelect label="Name" v-model="form.name"
+                  <SfSelect label="Model Name" v-model="form.name" v-e2e="'listing-modal-name'"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]" required :disabled="!!currentListing" @input="populateModelInfo">
                     <SfSelectOption value=""></SfSelectOption>
@@ -29,7 +29,7 @@
                 </ValidationProvider>
                 <!--<ValidationProvider rules="required" v-slot="{ errors }">
                   <SfInput
-                    v-e2e="'login-modal-username'"
+                    v-e2e="'listing-modal-name'"
                     v-model="form.name"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
@@ -40,16 +40,16 @@
                   />
                 </ValidationProvider>-->
                 <ValidationProvider rules="required" v-slot="{ errors }">
-                  <SfSelect label="Category" v-model="form.category"
+                  <SfSelect label="Category" v-model="form.category" v-e2e="'listing-modal-category'"
                     :valid="!errors[0]"
-                    :errorMessage="errors[0]" :disabled="!!currentListing" required>
+                    :errorMessage="errors[0]" :disabled="!!currentListing || !form.name" required>
                     <SfSelectOption value=""></SfSelectOption>
-                    <SfSelectOption v-for="category in leafCategories" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
+                    <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
                 <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
                   <SfInput
-                    v-e2e="'login-modal-username'"
+                    v-e2e="'listing-modal-price'"
                     v-model="form.price"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
@@ -61,9 +61,9 @@
                     class="form__element"
                   />
                 </ValidationProvider>
-                <ValidationProvider rules="url" v-slot="{ errors }">
+                <ValidationProvider rules="secureUrl" v-slot="{ errors }">
                   <SfInput
-                    v-e2e="'login-modal-username'"
+                    v-e2e="'listing-modal-avatar'"
                     v-model="form.avatar"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
@@ -73,9 +73,33 @@
                     class="form__element"
                   />
                 </ValidationProvider>
+                <div class="form__radio-group">
+                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="ListingPlatform"
+                      value="onPlatform"
+                      label="On-Platform"
+                      details="Sell natively on NumerBay for cryptocurrency"
+                      description="[Coming Soon]"
+                      disabled=""
+                      selected=""
+                      class="form__radio"
+                    />
+                    <SfRadio
+                      name="ListingPlatform"
+                      value="offPlatform"
+                      label="Off-Platform"
+                      details="Link to 3rd-party platforms"
+                      description=""
+                      disabled=""
+                      selected="offPlatform"
+                      class="form__radio"
+                    />
+                  </ValidationProvider>
+                </div>
                 <ValidationProvider rules="url" v-slot="{ errors }">
                   <SfInput
-                    v-e2e="'login-modal-username'"
+                    v-e2e="'listing-modal-thirdPartyUrl'"
                     v-model="form.thirdPartyUrl"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
@@ -97,7 +121,7 @@
                 </client-only>
                 <!--<ValidationProvider v-slot="{ errors }">
                   <SfTextarea
-                    v-e2e="'login-modal-username'"
+                    v-e2e="'listing-modal-description'"
                     v-model="form.description"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
@@ -108,10 +132,10 @@
                     :rows="10"
                   />
                 </ValidationProvider>-->
-                <div v-if="error.login">
-                  {{ error.login }}
+                <div v-if="error.listingModal">
+                  {{ error.listingModal }}
                 </div>
-                <SfButton v-e2e="'login-modal-submit'"
+                <SfButton v-e2e="'listing-modal-submit'"
                   type="submit"
                   class="sf-button--full-width"
                   :disabled="loading"
@@ -122,7 +146,7 @@
                   </SfLoader>
                 </SfButton>
                 <div class="form__horizontal" v-if="!!currentListing">
-                  <SfButton v-e2e="'login-modal-submit'"
+                  <SfButton v-e2e="'listing-modal-submit'"
                     type="submit"
                     class="sf-button form__button"
                     :disabled="loading"
@@ -131,7 +155,7 @@
                       <div>{{ $t('Save') }}</div>
                     </SfLoader>
                   </SfButton>
-                  <SfButton v-e2e="'login-modal-submit'"
+                  <SfButton v-e2e="'listing-modal-submit'"
                     type="button"
                     class="sf-button color-danger"
                     :disabled="loading"
@@ -154,15 +178,13 @@
 </template>
 <script>
 import {ref, watch, reactive, computed} from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, email, min_value } from 'vee-validate/dist/rules';
-import {userGetters, useUser, productGetters, useCategory, useProduct, useNumerai} from '@vue-storefront/numerbay';
-import {onSSR, useVSFContext} from '@vue-storefront/core';
+import { userGetters, useUser, productGetters, useCategory, useProduct, useNumerai } from '@vue-storefront/numerbay';
+import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
-import MetamaskButton from '../Molecules/MetamaskButton';
-import Web3 from 'web3';
 
 extend('email', {
   ...email,
@@ -214,6 +236,18 @@ extend('url', {
   message: 'This must be a valid URL'
 });
 
+extend('secureUrl', {
+  validate: (value) => {
+    if (value) {
+      // eslint-disable-next-line
+      return /^(https:\/\/www\.|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(value);
+    }
+
+    return false;
+  },
+  message: 'This must be a valid HTTPS URL'
+});
+
 export default {
   name: 'ListingModal',
   components: {
@@ -226,10 +260,10 @@ export default {
     SfCheckbox,
     SfLoader,
     SfAlert,
-    ValidationProvider,
-    ValidationObserver,
     SfBar,
-    MetamaskButton
+    SfRadio,
+    ValidationProvider,
+    ValidationObserver
   },
   data () {
     return {
@@ -256,7 +290,7 @@ export default {
   setup() {
     const { isListingModalOpen, currentListing, toggleListingModal } = useUiState();
     const { categories, search: categorySearch } = useCategory();
-    const { search: productSearch } = useProduct('products');
+    const { search: productSearch, createProduct, updateProduct, deleteProduct, loading, error: productError } = useProduct('products');
     const { numerai } = useNumerai();
     const { user } = useUser();
     onSSR(async () => {
@@ -270,25 +304,15 @@ export default {
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
       thirdPartyUrl: product ? product.third_party_url : null
-      // email: productGetters.getEmailAddress(currentListing),
-      // publicAddress: productGetters.getPublicAddress(currentListing),
-      // nonce: productGetters.getNonce(currentListing)
     });
     const form = ref(resetForm(currentListing));
 
-    const isLogin = ref(true);
-    // const createAccount = ref(false);
-    // const rememberMe = ref(false);
-    const { load, loading, setUser, error: userError } = useUser();
-
     const error = reactive({
-      login: null,
-      register: null
+      listingModal: null
     });
 
     const resetErrorValues = () => {
-      error.login = null;
-      error.register = null;
+      error.listingModal = null;
     };
 
     watch(currentListing, (product) => {
@@ -298,23 +322,18 @@ export default {
       }
     });
 
-    const setIsLoginValue = (value) => {
-      resetErrorValues();
-      isLogin.value = value;
-    };
-
     const handleForm = (fn) => async () => {
       resetErrorValues();
-      await fn({ product: form.value });
+      await fn({ id: currentListing.value ? currentListing.value.id : null, product: form.value });
 
-      // const hasUserErrors = userError.value.register || userError.value.login;
-      // if (hasUserErrors) {
-      //   error.login = userError.value.login?.message;
-      //   error.register = userError.value.register?.message;
-      //   return;
-      // }
+      const hasUserErrors = productError.value.listingModal;
+      if (hasUserErrors) {
+        error.listingModal = productError.value.listingModal?.message;
+        return;
+      }
+
       toggleListingModal();
-      // await setUser(load());
+
       await productSearch({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}});
     };
 
@@ -331,26 +350,6 @@ export default {
       }
     };
 
-    const vsfContext = useVSFContext();
-
-    const createProduct = async ({product}) => {
-      console.log('createProduct:', product);
-      const response = await vsfContext.$numerbay.api.createProduct(product);
-      console.log('createProduct response:', JSON.stringify(response));
-    };
-
-    const updateProduct = async ({product}) => {
-      product.id = currentListing.value.id;
-      console.log('updateProduct:', product);
-      const response = await vsfContext.$numerbay.api.updateProduct(product);
-      console.log('updateProduct response:', JSON.stringify(response));
-    };
-
-    const deleteProduct = async () => {
-      const response = await vsfContext.$numerbay.api.deleteProduct({id: currentListing.value.id});
-      console.log('deleteProduct response:', JSON.stringify(response));
-    };
-
     const handleProductForm = async () => {
       if (!currentListing.value) {
         return handleForm(createProduct)();
@@ -361,55 +360,24 @@ export default {
 
     const handleDeleteProduct = async () => handleForm(deleteProduct)();
 
-    const onPublicAddressChange = async (publicAddress, providerEthers, callback) => {
-      // console.log('onPublicAddressChange: ', publicAddress, providerEthers);
-      if (publicAddress) {
-        try {
-          // get nonce from backend
-          console.log('get nonce...');
-          const { nonce } = await vsfContext.$numerbay.api.logInGetNonce({
-            publicAddress: publicAddress
-          });
-          console.log('nonce: ', nonce);
-
-          // web3 lib instance
-          const web3 = new Web3(providerEthers.provider);
-          const signaturePromise = web3.eth.personal.sign(
-            `I am signing my one-time nonce: ${nonce}`,
-            publicAddress,
-            // MetaMask will ignore the password argument here
-            '',
-            callback
-          );
-
-          // login with the signature
-          signaturePromise.then(async (signature)=>{
-            const response = await vsfContext.$numerbay.api.logInGetTokenWeb3({
-              publicAddress: publicAddress,
-              signature: signature
-            });
-            toggleListingModal();
-            await setUser(load());
-            console.log('login web3 response:', JSON.stringify(response));
-            return response;
-          });
-
-        } catch (err) {
-          console.log(err);
-          throw new Error(
-            'You need to sign the message to be able to log in.'
-          );
-
+    const getFilteredCategories = (categories, numeraiModels, selectedModelName) => {
+      if (selectedModelName) {
+        const selectedModel = numeraiModels.filter(m=>m.name === selectedModelName)[0];
+        const tournament = selectedModel.tournament;
+        if (tournament === 8) {
+          return categories.filter(c=>c.slug.startsWith('numerai-'));
+        } else {
+          return categories.filter(c=>c.slug.startsWith('signals-'));
         }
       }
+      return categories;
     };
 
     return {
       form,
       error,
-      userError,
+      productError,
       loading,
-      isLogin,
       isListingModalOpen,
       currentListing,
       toggleListingModal,
@@ -422,8 +390,7 @@ export default {
       handleProductForm,
       deleteProduct,
       handleDeleteProduct,
-      setIsLoginValue,
-      onPublicAddressChange
+      getFilteredCategories
     };
   }
 };
@@ -463,6 +430,16 @@ export default {
       &:last-child {
         margin-right: 0;
       }
+    }
+  }
+  &__radio {
+    width: 50%;
+  }
+  &__radio-group {
+    flex: 0 0 100%;
+    margin: 0 0 var(--spacer-xl) 0;
+    @include for-desktop {
+      margin: 0 0 var(--spacer-xl) 0;
     }
   }
 }

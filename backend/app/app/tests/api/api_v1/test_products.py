@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.tests.utils.product import create_random_product
+from app.tests.utils.utils import random_lower_string
 
 
 def test_create_product(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
-    data = {"name": "Foo", "price": 10, "category_id": 1, "description": "Description"}
+    data = {"name": random_lower_string(), "price": 10, "category_id": 1, "description": "Description"}
     response = client.post(
         f"{settings.API_V1_STR}/products/", headers=normal_user_token_headers, json=data,
     )

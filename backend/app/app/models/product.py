@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Product(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    sku = Column(String, index=True)
+    sku = Column(String, index=True, unique=True)
     price = Column(Numeric, index=True)
     avatar = Column(String)
     third_party_url = Column(String)

@@ -96,7 +96,7 @@
 <script>
 import { SfHeader, SfImage, SfIcon, SfButton, SfBadge, SfSearchBar, SfOverlay, SfMenuItem, SfLink } from '@storefront-ui/vue';
 import { useUiState } from '~/composables';
-import { useCart, useWishlist, useFacet, useCategory, useUser, cartGetters, categoryGetters } from '@vue-storefront/numerbay';
+import { useCart, useWishlist, useFacet, useUser, cartGetters, categoryGetters } from '@vue-storefront/numerbay';
 import { computed, ref, onBeforeUnmount, watch } from '@vue/composition-api';
 import { onSSR } from '@vue-storefront/core';
 import { useUiHelpers } from '~/composables';
@@ -108,7 +108,6 @@ import {
   unMapMobileObserver
 } from '@storefront-ui/vue/src/utilities/mobile-observer.js';
 import debounce from 'lodash.debounce';
-import mockedSearchProducts from '../mockedSearchProducts.json';
 
 export default {
   components: {

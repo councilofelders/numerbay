@@ -20,7 +20,12 @@ export default async function createProduct(context, params, customQuery?: Custo
   };
 
   // Use axios to send a POST request
-  const { data } = await context.client.post(url.href, payload, authHeaders(token));
+  const { data } = await context.client.post(url.href, payload, authHeaders(token)).catch((error) => {
+    if (error.response) {
+      error.response.data.error = error.response.status;
+      return error.response;
+    }
+  });
   // Return data from the API
   return data;
 }

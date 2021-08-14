@@ -27,7 +27,11 @@
               >{{ tableHeader }}</SfTableHeader>
           </SfTableHeading>
           <SfTableRow v-for="product in products" :key="productGetters.getId(product)">
-            <SfTableData>{{ productGetters.getName(product).toUpperCase() }}</SfTableData>
+            <SfTableData>
+              <SfLink :link="'/p/'+productGetters.getId(product)+'/'+productGetters.getSlug(product)">
+                {{ productGetters.getName(product).toUpperCase() }}
+              </SfLink>
+            </SfTableData>
             <SfTableData>{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</SfTableData>
             <SfTableData>{{ $n(productGetters.getPrice(product).regular, 'currency') }}</SfTableData>
             <SfTableData class="orders__view orders__element--right">
@@ -47,7 +51,8 @@ import {
   SfTabs,
   SfTable,
   SfButton,
-  SfProperty
+  SfProperty,
+  SfLink
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import { useUiState } from '~/composables';
@@ -71,6 +76,7 @@ export default {
     SfTable,
     SfButton,
     SfProperty,
+    SfLink,
     NumeraiApiForm
   },
   setup() {
