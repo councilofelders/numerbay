@@ -24,7 +24,10 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]" required :disabled="!!currentListing" @input="populateModelInfo">
                     <SfSelectOption value=""></SfSelectOption>
-                    <SfSelectOption v-for="model in numerai.models" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+                    <SfSelectOption value="">========== Numerai Models ==========</SfSelectOption>
+                    <SfSelectOption v-for="model in numerai.models.filter((m)=>m.tournament===8)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+                    <SfSelectOption value="">========== Signals Models ==========</SfSelectOption>
+                    <SfSelectOption v-for="model in numerai.models.filter((m)=>m.tournament===11)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
                 <!--<ValidationProvider rules="required" v-slot="{ errors }">
