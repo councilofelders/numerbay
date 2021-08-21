@@ -50,14 +50,14 @@ jobs:
       # In this step, this action saves a list of existing images,
       # the cache is created without them in the post run.
       # It also restores the cache if it exists.
-      - name: Setup Docker Cache
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
-        with:
-          key: numerbay-docker-cache-prod-1-{hash}
-          restore-keys: |
-            numerbay-docker-cache-prod-1-
+#      - name: Setup Docker Cache
+#        uses: satackey/action-docker-layer-caching@v0.0.11
+#        # Ignore the failure of a step and avoid terminating the job.
+#        continue-on-error: true
+#        with:
+#          key: numerbay-docker-cache-prod-1-{hash}
+#          restore-keys: |
+#            numerbay-docker-cache-prod-1-
 
       - name: Build and Push Production Images
         run: |
