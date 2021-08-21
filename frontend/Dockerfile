@@ -3,6 +3,7 @@ FROM node:12
 
 WORKDIR /var/www
 
+COPY yarn.lock .
 COPY package*.json .
 COPY packages/api-client/package*.json ./packages/api-client/
 COPY packages/composables/package*.json ./packages/composables/
