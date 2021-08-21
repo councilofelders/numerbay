@@ -918,21 +918,4 @@ export default {
 .delta-negative {
   color: #d24141;
 }
-.emoji {
-    position: relative;
-    display: inline-block;
-    overflow: hidden;
-    width: 22px;
-    height: 22px;
-    margin: 0 .15em;
-    vertical-align: middle;
-    white-space: nowrap;
-    text-indent: 100%;
-    background-repeat: no-repeat;
-    background-position: 50%;
-    background-size: contain;
-    font-size: inherit;
-    line-height: normal;
-    image-rendering: auto;
-}
 </style>

@@ -126,6 +126,10 @@ export default {
     const { products, search } = useProduct(String(id));
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     const { web3User, initWeb3Modal, ethereumListener } = useUser();
+    const { cart, load, setCart } = useCart();
+    const { order, make, loading } = useMakeOrder();
+    const { products, search, loading: productLoading } = useProduct(String(id));
+    // const { web3User, initWeb3Modal, ethereumListener } = useUser();
 
     const isPaymentReady = ref(false);
     const terms = ref(false);
