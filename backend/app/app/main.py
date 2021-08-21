@@ -11,8 +11,8 @@ from datetime import datetime
 
 from app.core.config import settings
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+# from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 
 

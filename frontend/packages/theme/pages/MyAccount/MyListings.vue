@@ -33,7 +33,7 @@
               </SfLink>
             </SfTableData>
             <SfTableData>{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</SfTableData>
-            <SfTableData>{{ $n(productGetters.getPrice(product).regular, 'currency') }}</SfTableData>
+            <SfTableData>{{ productGetters.getFormattedPrice(product) }}</SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                 {{ $t('Manage') }}

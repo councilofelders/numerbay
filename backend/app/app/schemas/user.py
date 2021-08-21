@@ -58,3 +58,11 @@ class ProductOwner(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class OrderBuyer(BaseModel):
+    id: Optional[int] = None
+    username: Optional[str] = None
+
+    class Config:
+        orm_mode = True

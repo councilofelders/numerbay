@@ -79,39 +79,105 @@
                 <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
-                      name="ListingPlatform"
-                      value="onPlatform"
+                      name="isOnPlatform"
+                      value="true"
                       label="On-Platform"
                       details="Sell natively on NumerBay for cryptocurrency"
-                      description="[Coming Soon]"
-                      disabled=""
-                      selected=""
+                      description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution."
+                      v-model="form.isOnPlatform"
                       class="form__radio"
                     />
                     <SfRadio
-                      name="ListingPlatform"
-                      value="offPlatform"
+                      name="isOnPlatform"
+                      value="false"
                       label="Off-Platform"
                       details="Link to 3rd-party platforms"
-                      description=""
-                      disabled=""
-                      selected="offPlatform"
+                      description="Off-Platform reference only. Self-managed."
+                      v-model="form.isOnPlatform"
                       class="form__radio"
                     />
                   </ValidationProvider>
                 </div>
-                <ValidationProvider rules="url" v-slot="{ errors }">
-                  <SfInput
-                    v-e2e="'listing-modal-thirdPartyUrl'"
-                    v-model="form.thirdPartyUrl"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]"
-                    name="thirdPartyUrl"
-                    label="Third Party Listing URL (e.g. Gumroad product link)"
-                    type="url"
-                    class="form__element"
-                  />
-                </ValidationProvider>
+                <div v-if="form.isOnPlatform === 'true'">
+                  <div class="form__radio-group">
+                    <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                      <SfRadio
+                        name="currency"
+                        value="NMR"
+                        label="NMR"
+                        v-model="form.currency"
+                        class="form__radio"
+                      >
+                        <template #label>
+                          NMR  <SfBadge class="color-primary sf-badge flag">Gas-Free</SfBadge>
+                        </template>
+                      </SfRadio>
+                      <SfRadio
+                        name="isOnPlatform"
+                        value="DAI"
+                        label="DAI"
+                        v-model="form.currency"
+                        class="form__radio"
+                      />
+                      <!--<SfRadio
+                        name="isOnPlatform"
+                        value="USDC"
+                        label="USDC"
+                        v-model="form.currency"
+                        class="form__radio"
+                      />
+                      <SfRadio
+                        name="isOnPlatform"
+                        value="ETH"
+                        label="ETH"
+                        v-model="form.currency"
+                        class="form__radio"
+                      />-->
+                    </ValidationProvider>
+                  </div>
+                  <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
+                    <SfInput
+                      v-e2e="'listing-modal-price'"
+                      v-model="form.price"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="price"
+                      :label="`Price (in ${form.currency})`"
+                      type="number"
+                      step=any
+                      min=0
+                      class="form__element"
+                    />
+                  </ValidationProvider>
+                </div>
+                <div v-else>
+                  <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
+                    <SfInput
+                      v-e2e="'listing-modal-price'"
+                      v-model="form.price"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="price"
+                      label="Price (in $USD)"
+                      type="number"
+                      step=any
+                      min=0
+                      class="form__element"
+                    />
+                  </ValidationProvider>
+                  <ValidationProvider rules="url" v-slot="{ errors }">
+                    <SfInput
+                      v-e2e="'listing-modal-thirdPartyUrl'"
+                      v-model="form.thirdPartyUrl"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="thirdPartyUrl"
+                      label="Third Party Listing URL (e.g. Gumroad product link)"
+                      type="url"
+                      class="form__element"
+                    />
+                  </ValidationProvider>
+                </div>
                 <client-only>
                   <div class="editor">
                     <quill-editor
@@ -181,7 +247,7 @@
 </template>
 <script>
 import {ref, watch, reactive, computed} from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, email, min_value } from 'vee-validate/dist/rules';
@@ -265,6 +331,7 @@ export default {
     SfAlert,
     SfBar,
     SfRadio,
+    SfBadge,
     ValidationProvider,
     ValidationObserver
   },
@@ -306,6 +373,8 @@ export default {
       category: product ? productGetters.getCategoryIds(product)[0] : null,
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
+      isOnPlatform: product ? String(product.is_on_platform) : 'true',
+      currency: product ? product.currency : 'NMR',
       thirdPartyUrl: product ? product.third_party_url : null
     });
     const form = ref(resetForm(currentListing));
@@ -484,5 +553,9 @@ export default {
   .quill-editor {
     height: 250px;
   }
+}
+.flag {
+  margin-left: 0.4em;
+  padding: 0.15em;
 }
 </style>

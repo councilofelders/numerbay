@@ -2,24 +2,21 @@ import { CustomQuery } from '@vue-storefront/core';
 import { authHeaders } from '../utils';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/explicit-module-boundary-types
-export default async function createProduct(context, params, customQuery?: CustomQuery) {
+export default async function createOrder(context, params, customQuery?: CustomQuery) {
   // Create URL object containing full endpoint URL
-  const url = new URL('products/', context.config.api.url);
+  const url = new URL('orders/', context.config.api.url);
   const token = context.config.auth.onTokenRead();
+
+  // price: Decimal
+  //   currency: str
+  //   chain: str
+  //   from_address: str
+  //   to_address: str
+  //   product_id: int
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
-    name: params.name,
-    // eslint-disable-next-line camelcase
-    is_on_platform: params.isOnPlatform,
-    price: Number(params.price),
-    currency: params.currency,
-    // eslint-disable-next-line camelcase
-    category_id: Number(params.category),
-    avatar: params.avatar,
-    // eslint-disable-next-line camelcase
-    third_party_url: params.thirdPartyUrl,
-    description: params.description
+    id: Number(params.id)
   };
 
   // Use axios to send a POST request
