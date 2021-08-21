@@ -1,5 +1,5 @@
-import {ProductVariant} from "@vue-storefront/numerbay-api";
-import {FacetSearchResult} from "@vue-storefront/core";
+import {ProductVariant} from '@vue-storefront/numerbay-api';
+import {FacetSearchResult} from '@vue-storefront/core';
 
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 
