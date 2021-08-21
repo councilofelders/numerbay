@@ -50,23 +50,6 @@
                     <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
-<<<<<<<<< Temporary merge branch 1
-=========
-                <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
-                  <SfInput
-                    v-e2e="'listing-modal-price'"
-                    v-model="form.price"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]"
-                    name="price"
-                    label="Price (per round equivalent, in $USD)"
-                    type="number"
-                    step=any
-                    min=0
-                    class="form__element"
-                  />
-                </ValidationProvider>
->>>>>>>>> Temporary merge branch 2
                 <ValidationProvider rules="secureUrl" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'listing-modal-avatar'"
