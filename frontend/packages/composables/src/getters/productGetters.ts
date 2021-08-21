@@ -1,10 +1,10 @@
 import {
   AgnosticMediaGalleryItem,
   AgnosticAttribute,
-  AgnosticPrice,
-  ProductGetters
+  AgnosticPrice
 } from '@vue-storefront/core';
 import { ProductVariant } from '@vue-storefront/numerbay-api/src/types';
+import {ProductGetters} from "../types";
 
 type ProductVariantFilters = any
 
@@ -58,7 +58,12 @@ export const getProductCategoryIds = (product: ProductVariant): string[] => (pro
 
 export const getProductId = (product: ProductVariant): string => (product as any)?.id || '';
 
-export const getFormattedPrice = (price: number) => String(price);
+export const getFormattedPrice = (product: ProductVariant): string => {
+  const price = (product?.price || 0).toFixed(2);
+  const currency = product?.currency || 'USD';
+  if (currency === 'USD') return `$${price}`;
+  return `${price} ${currency}`;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductTotalReviews = (product: ProductVariant): number => 0;

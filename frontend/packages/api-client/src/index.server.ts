@@ -13,6 +13,8 @@ import getMe from './api/getMe';
 import userUpdateMe from './api/userUpdateMe';
 import getNumeraiModels from './api/getNumeraiModels';
 import getNumeraiModelInfo from './api/getNumeraiModelInfo';
+import getOrder from './api/getOrder';
+import createOrder from './api/createOrder';
 import axios from 'axios';
 
 // const defaultSettings = {};
@@ -102,7 +104,9 @@ const { createApiClient } = apiClientFactory<any, any>({
     getMe,
     userUpdateMe,
     getNumeraiModels,
-    getNumeraiModelInfo
+    getNumeraiModelInfo,
+    getOrder,
+    createOrder
   },
   extensions: [tokenExtension]
 });

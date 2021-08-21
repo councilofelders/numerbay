@@ -37,30 +37,12 @@
             <div class="sale-value">$-</div>
             <p class="last-sale-change" style="color: green;">$0 (0%)</p>
           </div>
-          <SfButton class="bid-button" @click="handleCryptoBuyButtonClick(product)">
-            <div class="stats">
-              <div class="stat-value">
-                {{ $n(productGetters.getPrice(product).regular, 'currency') }}
-              </div>
-              <h3>Ref Price</h3>
-            </div>
-            <div class="button-divider"></div>
-            <div>
-              <h2>BUY</h2>
-            </div>
-          </SfButton>
-          <SfButton class="bid-button" @click="handleBuyButtonClick(product)" :disabled="!product.third_party_url">
-            <div class="stats">
-              <div class="stat-value">
-                {{ $n(productGetters.getPrice(product).regular, 'currency') }}
-              </div>
-              <h3>Ref Price</h3>
-            </div>
-            <div class="button-divider"></div>
-            <div>
-              <h2>{{ !product.third_party_url? 'NA':'BUY' }}</h2>
-            </div>
-          </SfButton>
+          <BuyButton
+            :disabled="!product.third_party_url && !product.is_on_platform"
+            :price="productGetters.getFormattedPrice(product)"
+            :label="product.is_on_platform ? 'Price' : 'Ref Price'"
+            @click="handleBuyButtonClick(product)"
+          />
         </div>
         <SfLoader :class="{ loader: !numerai.modelInfo }" :loading="!numerai.modelInfo">
           <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
@@ -131,6 +113,7 @@ import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
 import Web3 from 'web3';
+import BuyButton from '../components/Molecules/BuyButton';
 
 export default {
   name: 'Product',
@@ -204,19 +187,23 @@ export default {
     };
 
     const resolveProductPlatform = (product) => {
-      if (product?.third_party_url) {
+      if (typeof product?.is_on_platform === 'boolean' && product?.is_on_platform === false && product?.third_party_url) {
         const domain = (new URL(product?.third_party_url));
         const urlParts = domain.hostname.split('.').slice(0);
         const baseUrl = urlParts.slice(-(urlParts.length === 4 ? 3 : 2)).join('.');
         return baseUrl;
       }
+      if (product?.is_on_platform) {
+        return 'NumerBay';
+      }
       return '-';
     };
 
     const handleBuyButtonClick = (product) => {
-      if (product?.third_party_url) { // if third party listing
+      if (product?.is_on_platform && product?.third_party_url) { // if third party listing
         window.open(product?.third_party_url, '_blank');
       }
+      context.root.$router.push(`/checkout/payment?product=${product.id}`);
     };
 
     // eslint-disable-next-line no-unused-vars
@@ -284,12 +271,13 @@ export default {
     SfReview,
     SfBreadcrumbs,
     SfButton,
+    SfLoader,
     InstagramFeed,
     RelatedProducts,
     MobileStoreBanner,
     LazyHydrate,
     NumeraiChart,
-    SfLoader
+    BuyButton
   },
   // test
   data() {
@@ -553,45 +541,6 @@ export default {
   100% {
     transform: translate3d(0, 0, 0);
   }
-}
-.bid-button {
-  text-decoration: none;
-  background-color: #08a05c;
-  padding: 0.6em;
-  flex-wrap: nowrap;
-  flex-direction: row;
-}
-.button-divider {
-  align-self: stretch;
-  border-left: 1px solid green;
-  margin: 0 18px;
-}
-.bid-button h2 {
-  font-size: var(--h3-font-size);;
-}
-.bid-button h3 {
-  color: #c6e6c2;
-  font-size: var(--font-size--sm);
-}
-.bid-button:disabled,
-.bid-button[disabled]{
-  background-color: var(--c-gray-lighten);
-  h3 {
-    color: var(--c-text-disabled);
-    font-size: var(--font-size--sm);
-  }
-  .button-divider {
-    align-self: stretch;
-    border-left: 1px solid var(--c-text-disabled);
-    margin: 0 18px;
-  }
-}
-.stats {
-  text-align: left;
-}
-.stat-value {
-  font-size: var(--h3-font-size);;
-  font-weight: 500;
 }
 .last-sale {
   display: flex;

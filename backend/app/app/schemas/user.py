@@ -45,7 +45,16 @@ class UserInDB(UserInDBBase):
     numerai_api_key_public_id: Optional[str] = None
     numerai_api_key_secret: Optional[str] = None
 
+
 class ProductOwner(BaseModel):
+    id: Optional[int] = None
+    username: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class OrderBuyer(BaseModel):
     id: Optional[int] = None
     username: Optional[str] = None
 

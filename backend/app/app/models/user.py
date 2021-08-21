@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, Integer, String, Numeric
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -23,3 +23,4 @@ class User(Base):
     numerai_api_key_secret = Column(String, nullable=True)
     items = relationship("Item", back_populates="owner")
     products = relationship("Product", back_populates="owner")
+    orders = relationship("Order", back_populates="buyer")
