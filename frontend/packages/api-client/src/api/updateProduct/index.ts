@@ -9,7 +9,10 @@ export default async function updateProduct(context, params, customQuery?: Custo
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
+    // eslint-disable-next-line camelcase
+    is_on_platform: params.isOnPlatform,
     price: Number(params.price),
+    currency: params.currency,
     // eslint-disable-next-line camelcase
     category_id: Number(params.category),
     avatar: params.avatar,

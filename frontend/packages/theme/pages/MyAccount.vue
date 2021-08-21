@@ -27,15 +27,15 @@
         </SfContentPage>
       </SfContentCategory>
 
-      <!--<SfContentCategory title="Order details">
+      <SfContentCategory title="Order details">
         <SfContentPage title="Order history">
           <OrderHistory />
         </SfContentPage>
 
-        &lt;!&ndash;<SfContentPage title="My reviews">
+        <!--<SfContentPage title="My reviews">
           <MyReviews />
-        </SfContentPage>&ndash;&gt;
-      </SfContentCategory>-->
+        </SfContentPage>-->
+      </SfContentCategory>
 
       <SfContentPage title="Log out" />
     </SfContentPages>
@@ -47,6 +47,7 @@ import { computed } from '@vue/composition-api';
 import { useUser } from '@vue-storefront/numerbay';
 import MyProfile from './MyAccount/MyProfile';
 import MyListings from './MyAccount/MyListings';
+import OrderHistory from './MyAccount/OrderHistory';
 import {Logger} from '@vue-storefront/core';
 
 export default {
@@ -55,7 +56,8 @@ export default {
     SfBreadcrumbs,
     SfContentPages,
     MyProfile,
-    MyListings
+    MyListings,
+    OrderHistory
   },
   middleware: [
     'is-authenticated'
