@@ -1,3 +1,4 @@
+import secrets
 from typing import Any, List
 
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
+from app.core.security import verify_signature
 from app.utils import send_new_account_email
 
 router = APIRouter()
@@ -42,6 +44,7 @@ def create_user(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
+    user_in.nonce = secrets.token_hex(32)
     user = crud.user.create(db, obj_in=user_in)
     if settings.EMAILS_ENABLED and user_in.email:
         send_new_account_email(
@@ -57,10 +60,10 @@ def update_user_me(
     username: str = Body(None),
     password: str = Body(None),
     email: EmailStr = Body(None),
-    # publicAddress: str = Body(None),
+    public_address: str = Body(None),
     numerai_api_key_public_id: str = Body(None),
     numerai_api_key_secret: str = Body(None),
-    # signature: str = Body(None),
+    signature: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -69,6 +72,7 @@ def update_user_me(
     current_user_data = jsonable_encoder(current_user)
     user_in = schemas.UserUpdate(**current_user_data)
     # Either username or publicAddress needs to be available
+    print(f"publicAddress: {public_address}")
     if password is not None:
         user_in.password = password
     if username is not None:
@@ -79,6 +83,19 @@ def update_user_me(
         user_in.numerai_api_key_public_id = numerai_api_key_public_id
     if numerai_api_key_secret is not None:
         user_in.numerai_api_key_secret = numerai_api_key_secret
+    if public_address is not None and public_address == '':  # disconnect web3
+        user_in.public_address = None
+        user_in.signature = None
+    if public_address is not None and signature is not None:
+        if not verify_signature(public_address, current_user.nonce, signature):
+            raise HTTPException(
+                status_code=400, detail="Invalid signature"
+            )
+        new_nonce = secrets.token_hex(32)
+        user_in.nonce = new_nonce
+        user_in.public_address = public_address
+        user_in.signature = signature
+
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 
