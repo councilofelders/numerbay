@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
@@ -20,3 +21,14 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+# APScheduler
+def apscheduler():
+    scheduler = AsyncIOScheduler()
+    try:
+        scheduler.start()
+    except Exception as e:
+        scheduler.shutdown()
+
+apscheduler()

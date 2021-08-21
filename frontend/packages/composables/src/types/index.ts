@@ -158,3 +158,40 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getFormattedPrice: (item: ORDER_ITEM) => string;
     [getterName: string]: (element: any, options?: any) => unknown;
 }
+
+export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
+  getName: (product: PRODUCT) => string;
+  getSlug: (product: PRODUCT) => string;
+  getPrice: (product: PRODUCT) => AgnosticPrice;
+  getGallery: (product: PRODUCT) => AgnosticMediaGalleryItem[];
+  getCoverImage: (product: PRODUCT) => string;
+  getFiltered: (products: PRODUCT[], filters?: PRODUCT_FILTER) => PRODUCT[];
+  getAttributes: (products: PRODUCT[] | PRODUCT, filters?: Array<string>) => Record<string, AgnosticAttribute | string>;
+  getDescription: (product: PRODUCT) => string;
+  getCategoryIds: (product: PRODUCT) => string[];
+  getId: (product: PRODUCT) => string;
+  getFormattedPrice: (product: PRODUCT) => string;
+  getTotalReviews: (product: PRODUCT) => number;
+  getAverageRating: (product: PRODUCT) => number;
+  getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
+  [getterName: string]: any;
+}
+
+export interface UserOrderGetters<ORDER, ORDER_ITEM> {
+    getDate: (order: ORDER) => string;
+    getId: (order: ORDER) => string;
+    getStatus: (order: ORDER) => string;
+    getPrice: (order: ORDER) => number;
+    getCurrency: (order: ORDER) => string;
+    getFromAddress: (order: ORDER) => string;
+    getToAddress: (order: ORDER) => string;
+    getTransactionHash: (order: ORDER) => string;
+    getProduct: (order: ORDER) => any;
+    getItems: (order: ORDER) => ORDER_ITEM[];
+    getItemSku: (item: ORDER_ITEM) => string;
+    getItemName: (item: ORDER_ITEM) => string;
+    getItemQty: (item: ORDER_ITEM) => number;
+    getItemPrice: (item: ORDER_ITEM) => number;
+    getFormattedPrice: (item: ORDER_ITEM) => string;
+    [getterName: string]: (element: any, options?: any) => unknown;
+}
