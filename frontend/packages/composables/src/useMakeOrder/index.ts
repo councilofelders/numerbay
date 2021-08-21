@@ -3,11 +3,10 @@ import {UseMakeOrder, useMakeOrderFactory, Context, Logger} from '@vue-storefron
 
 const factoryParams = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  make: async (context: Context, { customQuery }): Promise<Order> => {
-    Logger.debug('Mocked: makeOrder');
-    return {
-      id: '123-456-7890'
-    };
+  make: async (context: Context, params): Promise<Order> => {
+    Logger.debug('makeOrder');
+    const { id } = params;
+    return await context.$numerbay.api.createOrder({ id });
   }
 };
 

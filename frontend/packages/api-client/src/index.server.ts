@@ -14,6 +14,8 @@ import getMe from './api/getMe';
 import userUpdateMe from './api/userUpdateMe';
 import getNumeraiModels from './api/getNumeraiModels';
 import getNumeraiModelInfo from './api/getNumeraiModelInfo';
+import getOrder from './api/getOrder';
+import createOrder from './api/createOrder';
 import getGlobals from './api/getGlobals';
 import axios from 'axios';
 
@@ -106,6 +108,8 @@ const { createApiClient } = apiClientFactory<any, any>({
     userUpdateMe,
     getNumeraiModels,
     getNumeraiModelInfo,
+    getOrder,
+    createOrder,
     getGlobals
   },
   extensions: [tokenExtension]

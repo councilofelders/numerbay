@@ -157,8 +157,7 @@
               :style="{ '--index': i }"
               :title="productGetters.getName(product).toUpperCase()"
               :image="productGetters.getCoverImage(product)"
-              :regular-price="$n(productGetters.getPrice(product).regular, 'currency')"
-              :special-price="productGetters.getPrice(product).special && $n(productGetters.getPrice(product).special, 'currency')"
+              :regular-price="productGetters.getFormattedPrice(product)"
               :max-rating="5"
               :score-rating="false"
               :show-add-to-cart-button="false"
@@ -168,7 +167,12 @@
               class="products__product-card"
               @click:wishlist="addItemToWishlist({ product })"
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
-            />
+            >
+              <template #price>{{ productGetters.getFormattedPrice(product) }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
+                                     data-emoji="glitch_black" title=":glitch_black:"
+                                     v-if="product.currency === 'NMR'">:glitch_black: </span>
+              </template>
+            </SfProductCard>
           </transition-group>
           <transition-group
             v-else
@@ -183,8 +187,7 @@
               :style="{ '--index': i }"
               :title="productGetters.getName(product).toUpperCase()"
               :image="productGetters.getCoverImage(product)"
-              :regular-price="$n(productGetters.getPrice(product).regular, 'currency')"
-              :special-price="productGetters.getPrice(product).special && $n(productGetters.getPrice(product).special, 'currency')"
+              :regular-price="productGetters.getFormattedPrice(product)"
               :max-rating="5"
               :score-rating="3"
               :show-add-to-cart-button="false"
@@ -886,5 +889,22 @@ export default {
 }
 .delta-negative {
   color: #d24141;
+}
+.emoji {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    width: 22px;
+    height: 22px;
+    margin: 0 .15em;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-indent: 100%;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-size: contain;
+    font-size: inherit;
+    line-height: normal;
+    image-rendering: auto;
 }
 </style>

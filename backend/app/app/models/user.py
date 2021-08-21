@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .item import Item  # noqa: F401
     from .product import Product  # noqa: F401
     from .model import Model  # noqa: F401
+    from .order import Order  # noqa: F401
 
 
 class User(Base):
@@ -30,3 +31,4 @@ class User(Base):
     items = relationship("Item", back_populates="owner")
     products = relationship("Product", back_populates="owner")
     models = relationship("Model", back_populates="owner")
+    orders = relationship("Order", back_populates="buyer")

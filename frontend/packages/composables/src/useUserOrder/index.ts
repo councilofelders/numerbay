@@ -10,12 +10,12 @@ import { OrdersResponse, OrderSearchParams } from '../types';
 const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   searchOrders: async (context: Context, params: OrderSearchParams): Promise<OrdersResponse> => {
-    Logger.debug('Mocked: searchOrders');
-
-    return {
-      data: [],
-      total: 0
-    };
+    Logger.debug('searchOrders');
+    return await context.$numerbay.api.getOrder(params);
+    // return {
+    //   data: [],
+    //   total: 0
+    // };
   }
 };
 

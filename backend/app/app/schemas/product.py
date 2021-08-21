@@ -12,7 +12,10 @@ from app.schemas.user import ProductOwner
 class ProductBase(BaseModel):
     name: Optional[str] = None
     sku: Optional[str] = None
+    is_on_platform: Optional[bool] = True
     price: Optional[Decimal] = None
+    currency: Optional[str] = None
+    chain: Optional[str] = None
     avatar: Optional[str] = None
     third_party_url: Optional[str] = None
     description: Optional[str] = None
@@ -23,7 +26,10 @@ class ProductBase(BaseModel):
 # Properties to receive on product creation
 class ProductCreate(ProductBase):
     name: str
+    is_on_platform: bool
     price: Decimal
+    currency: str
+    chain: Optional[str]
     category_id: int
 
 
@@ -37,7 +43,10 @@ class ProductInDBBase(ProductBase):
     id: int
     name: str
     sku: str
+    is_on_platform: bool
     price: Decimal
+    currency: str
+    chain: Optional[str]
     category: Category
 
     class Config:
