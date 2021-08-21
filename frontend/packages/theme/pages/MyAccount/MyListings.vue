@@ -79,6 +79,11 @@ export default {
     SfLink,
     NumeraiApiForm
   },
+  mounted() {
+    if (this.user.numerai_api_key_public_id) {
+      this.getNumeraiModels();
+    }
+  },
   setup() {
     const { user, updateUser } = useUser();
     const { categories, search: categorySearch } = useCategory();
@@ -86,7 +91,6 @@ export default {
 
     onSSR(async () => {
       await categorySearch(); // {slug: 'all'}
-      await getNumeraiModels();
     });
     const { products, search } = useProduct('products');
     const { toggleListingModal } = useUiState();
@@ -144,6 +148,7 @@ export default {
     return {
       tableHeaders,
       numeraiLoading,
+      getNumeraiModels,
       user: computed(() => user?.value ? user.value : null),
       categories: computed(() => categories?.value ? categories.value : []),
       products: computed(() => products?.value?.data ? products.value.data : []),

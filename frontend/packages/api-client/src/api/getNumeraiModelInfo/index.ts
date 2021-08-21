@@ -6,7 +6,12 @@ export default async function getNumeraiModelInfo(context, params, customQuery?:
   const url = new URL(`numerai/${params.tournament}/${params.modelName}`, context.config.api.url);
 
   // Use axios to send a GET request
-  const { data } = await context.client.get(url.href);
+  const { data } = await context.client.get(url.href).catch((error) => {
+    if (error.response) {
+      error.response.data.error = error.response.status;
+      return error.response;
+    }
+  });
 
   // Return data from the API
   return data;

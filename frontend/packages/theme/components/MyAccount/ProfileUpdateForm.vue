@@ -32,7 +32,7 @@
         />
       </ValidationProvider>
       <div class="form__horizontal">
-        <MetamaskButton @publicAddressChange="onPublicAddressChange"></MetamaskButton>
+        <MetamaskButton @click:connect="handleWeb3Connect" @click:disconnect="handleWeb3Disconnect" :is-connected="!!form.publicAddress" :disabled="loading"/>
         <ValidationProvider rules="" v-slot="{ errors }" class="form__element">
           <SfInput
             v-model="form.publicAddress"
@@ -44,19 +44,22 @@
           />
         </ValidationProvider>
       </div>
+      <div v-if="error.web3">
+        {{ error.web3 }}
+      </div>
       <SfButton class="form__button">{{ $t('Update profile data') }}</SfButton>
     </form>
   </ValidationObserver>
 </template>
 
 <script>
-import { ref } from '@vue/composition-api';
+import {reactive, ref} from '@vue/composition-api';
 import { ValidationProvider, ValidationObserver } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
 import { SfInput, SfButton } from '@storefront-ui/vue';
 import MetamaskButton from '../Molecules/MetamaskButton';
 import Web3 from 'web3';
-import {Logger, useVSFContext} from '@vue-storefront/core';
+import {Logger} from '@vue-storefront/core';
 
 export default {
   name: 'ProfileUpdateForm',
@@ -68,46 +71,84 @@ export default {
     ValidationObserver,
     MetamaskButton
   },
-
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  setup(_, { emit }) {
-    const { user } = useUser();
-    const vsfContext = useVSFContext();
-    const onPublicAddressChange = async (publicAddress, providerEthers, callback) => {
+  computed: {
+    activeAccount() {
+      return this.web3User.activeAccount;
+    }
+  },
+  methods: {
+    async handleWeb3Connect() {
+      await this.initWeb3Modal();
+      await this.ethereumListener();
+      await this.connectWeb3Modal();
+      await this.publicAddressHandler(this.web3User.activeAccount);
+      console.log('web3User.activeAccount, ', this.web3User.activeAccount);
+    },
+    async handleWeb3Disconnect() {
+      await this.disconnectWeb3Modal();
+      await this.publicAddressHandler('');
+      console.log('web3User.activeAccount, ', this.web3User.activeAccount);
+    },
+    async publicAddressHandler(publicAddress) {
+      Logger.debug('profile on publicAddressChange: ', publicAddress);
       if (publicAddress) {
-        // get nonce from backend
-        const { nonce } = await vsfContext.$numerbay.api.logInGetNonce({
-          publicAddress: publicAddress
-        });
         try {
+          // get nonce from backend
+          await this.getNonceAuthenticated();
+          console.log('this.web3User', this.web3User);
+          const { nonce } = this.web3User.nonce;
+
           // web3 lib instance
-          const web3 = new Web3(providerEthers.provider);
+          const web3 = new Web3(this.web3User.providerEthers.provider);
           const signaturePromise = web3.eth.personal.sign(
             `I am signing my one-time nonce: ${nonce}`,
             publicAddress,
             // MetaMask will ignore the password argument here
             '',
-            callback
+            (err, signature)=>{
+              if (err) {
+                this.error.web3 = 'You need to sign the message.';
+                this.disconnectWeb3Modal();
+              } else {
+                // this.resetErrorValues();
+                Logger.debug('Web3 signature: ', signature);
+              }
+            }
           );
 
-          // Update publicAddress to backend
+          // login with the signature
           signaturePromise.then(async (signature)=>{
-            const response = await vsfContext.$numerbay.api.logInGetTokenWeb3({
-              publicAddress: publicAddress,
-              signature: signature
+            await this.updateUser({
+              user: {
+                publicAddress: publicAddress,
+                signature: signature
+              }
             });
-
-            Logger.debug(`login web3 response: ${JSON.stringify(response)}`);
-            return response;
+            this.form = this.resetForm();
           });
+
         } catch (err) {
           Logger.error(err);
           throw new Error(
             'You need to sign the message to be able to log in.'
           );
-
         }
+      } else {
+        await this.updateUser({ user: { publicAddress: ''}});
+        this.form = this.resetForm();
       }
+    }
+  },
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  setup(_, { emit }) {
+    const { user, load, loading, setUser, updateUser, web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, disconnectWeb3Modal, getNonceAuthenticated } = useUser();
+
+    const error = reactive({
+      web3: null
+    });
+
+    const resetErrorValues = () => {
+      error.web3 = null;
     };
 
     const resetForm = () => ({
@@ -120,6 +161,7 @@ export default {
     const form = ref(resetForm());
 
     const submitForm = (resetValidationFn) => {
+      resetErrorValues();
       return () => {
         const onComplete = () => {
           form.value = resetForm();
@@ -136,8 +178,20 @@ export default {
 
     return {
       form,
-      submitForm,
-      onPublicAddressChange
+      error,
+      user,
+      load,
+      loading,
+      setUser,
+      web3User,
+      initWeb3Modal,
+      ethereumListener,
+      connectWeb3Modal,
+      disconnectWeb3Modal,
+      getNonceAuthenticated,
+      updateUser,
+      resetForm,
+      submitForm
     };
   }
 };

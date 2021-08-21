@@ -8,6 +8,7 @@ import signUpUser from './api/signUpUser';
 import logInGetToken from './api/logInGetToken';
 import logInGetTokenWeb3 from './api/logInGetTokenWeb3';
 import logInGetNonce from './api/logInGetNonce';
+import logInGetNonceAuthenticated from './api/logInGetNonceAuthenticated';
 import logOutUser from './api/logOutUser';
 import getMe from './api/getMe';
 import userUpdateMe from './api/userUpdateMe';
@@ -98,6 +99,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     logInGetToken,
     logInGetTokenWeb3,
     logInGetNonce,
+    logInGetNonceAuthenticated,
     logOutUser,
     getMe,
     userUpdateMe,

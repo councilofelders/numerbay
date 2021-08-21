@@ -57,7 +57,7 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
                     name="price"
-                    label="Price (in $USD)"
+                    label="Price (per round equivalent, in $USD)"
                     type="number"
                     step=any
                     min=0

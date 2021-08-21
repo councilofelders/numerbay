@@ -23,8 +23,10 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     password: Optional[str] = None
     signature: Optional[str] = None
+    nonce: Optional[str] = None
     numerai_api_key_public_id: Optional[str] = None
     numerai_api_key_secret: Optional[str] = None
+
 
 class UserInDBBase(UserBase):
     id: Optional[int] = None

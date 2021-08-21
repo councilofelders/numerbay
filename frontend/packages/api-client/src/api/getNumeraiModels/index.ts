@@ -8,7 +8,12 @@ export default async function getNumeraiModels(context, params, customQuery?: Cu
   const token = context.config.auth.onTokenRead();
 
   // Use axios to send a GET request
-  const { data } = await context.client.get(url.href, authHeaders(token));
+  const { data } = await context.client.get(url.href, authHeaders(token)).catch((error) => {
+    if (error.response) {
+      error.response.data.error = error.response.status;
+      return error.response;
+    }
+  });
 
   // Return data from the API
   return data;

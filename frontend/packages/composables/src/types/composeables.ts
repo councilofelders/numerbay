@@ -1,7 +1,6 @@
 import {
   ComputedProperty,
   CustomQuery,
-  UseUserErrors,
   UseUserLoginParams,
   UseUserRegisterParams,
   ComposableFunctionArgs
@@ -9,6 +8,7 @@ import {
 import {Ref} from '@vue/composition-api';
 
 export interface UseWeb3User {
+  nonce: string,
   activeAccount: any,
   activeBalance: number,
   chainId: any,
@@ -21,6 +21,16 @@ export interface UseWeb3User {
   web3Modal: any
 }
 
+export interface UseUserErrors {
+    updateUser: Error;
+    register: Error;
+    login: Error;
+    web3: Error;
+    logout: Error;
+    changePassword: Error;
+    load: Error;
+}
+
 export interface UseUser<USER, UPDATE_USER_PARAMS> {
   user: ComputedProperty<USER>;
   web3User: ComputedProperty<UseWeb3User>;
@@ -28,7 +38,10 @@ export interface UseUser<USER, UPDATE_USER_PARAMS> {
   updateUser: (params: { user: UPDATE_USER_PARAMS; customQuery?: CustomQuery }) => Promise<void>;
   register: (params: { user: UseUserRegisterParams; customQuery?: CustomQuery }) => Promise<void>;
   login: (params: { user: UseUserLoginParams; customQuery?: CustomQuery }) => Promise<void>;
+  loginWeb3: (params: { user: { publicAddress: string, signature: string }; customQuery?: CustomQuery }) => Promise<void>;
   logout: (params?: {customQuery: CustomQuery}) => Promise<void>;
+  getNonce: (params?: {publicAddress: string, customQuery: CustomQuery}) => Promise<void>;
+  getNonceAuthenticated: (params?: {customQuery: CustomQuery}) => Promise<void>;
   initWeb3Modal: (params?: {customQuery: CustomQuery}) => Promise<void>;
   ethereumListener: (params?: {customQuery: CustomQuery}) => Promise<void>;
   connectWeb3Modal: (params?: {customQuery: CustomQuery}) => Promise<void>;
