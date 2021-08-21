@@ -24,7 +24,10 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]" required :disabled="!!currentListing" @input="populateModelInfo">
                     <SfSelectOption value=""></SfSelectOption>
-                    <SfSelectOption v-for="model in numerai.models" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+                    <SfSelectOption value="">========== Numerai Models ==========</SfSelectOption>
+                    <SfSelectOption v-for="model in numerai.models.filter((m)=>m.tournament===8)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+                    <SfSelectOption value="">========== Signals Models ==========</SfSelectOption>
+                    <SfSelectOption v-for="model in numerai.models.filter((m)=>m.tournament===11)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
                 <!--<ValidationProvider rules="required" v-slot="{ errors }">
@@ -46,6 +49,20 @@
                     <SfSelectOption value=""></SfSelectOption>
                     <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
+                </ValidationProvider>
+                <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
+                  <SfInput
+                    v-e2e="'listing-modal-price'"
+                    v-model="form.price"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="price"
+                    label="Price (per round equivalent, in $USD)"
+                    type="number"
+                    step=any
+                    min=0
+                    class="form__element"
+                  />
                 </ValidationProvider>
                 <ValidationProvider rules="secureUrl" v-slot="{ errors }">
                   <SfInput

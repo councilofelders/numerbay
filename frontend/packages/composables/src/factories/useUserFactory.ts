@@ -1,14 +1,17 @@
 import { Ref, computed } from '@vue/composition-api';
-import { Context, FactoryParams, UseUserErrors, CustomQuery } from '@vue-storefront/core';
-import { UseUser, UseWeb3User } from '../types/composeables';
+import { Context, FactoryParams, CustomQuery } from '@vue-storefront/core';
+import { UseUser, UseWeb3User, UseUserErrors } from '../types/composeables';
 import { sharedRef, Logger, mask, configureFactoryParams } from '@vue-storefront/core';
 
 export interface UseUserFactoryParams<USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS> extends FactoryParams {
   load: (context: Context, params?: { customQuery: CustomQuery }) => Promise<USER>;
   logOut: (context: Context, params: {currentUser: USER}) => Promise<void>;
+  getNonce: (context: Context, params: {publicAddress: string}) => Promise<void>;
+  getNonceAuthenticated: (context: Context, params: {currentUser: USER}) => Promise<void>;
   updateUser: (context: Context, params: {currentUser: USER; updatedUserData: UPDATE_USER_PARAMS; customQuery?: CustomQuery}) => Promise<USER>;
   register: (context: Context, params: REGISTER_USER_PARAMS & {customQuery?: CustomQuery}) => Promise<USER>;
   logIn: (context: Context, params: { username: string; password: string; customQuery?: CustomQuery }) => Promise<USER>;
+  logInWeb3: (context: Context, params: { publicAddress: string; signature: string; customQuery?: CustomQuery }) => Promise<USER>;
   initWeb3Modal: (context: Context, params: { currentWeb3User: UseWeb3User }) => Promise<void>;
   ethereumListener: (context: Context, params: { currentWeb3User: UseWeb3User }) => Promise<void>;
   connectWeb3Modal: (context: Context, params: { currentWeb3User: UseWeb3User }) => Promise<void>;
@@ -24,12 +27,14 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
       updateUser: null,
       register: null,
       login: null,
+      web3: null,
       logout: null,
       changePassword: null,
       load: null
     });
 
     const web3UserFactory = (): UseWeb3User => ({
+      nonce: null,
       activeAccount: null,
       activeBalance: 0,
       chainId: null,
@@ -106,6 +111,22 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
       }
     };
 
+    const loginWeb3 = async ({ user: providedUser, customQuery } = { user: null, customQuery: null }) => {
+      Logger.debug('useUserFactory.loginWeb3', providedUser);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        user.value = await _factoryParams.logInWeb3({...providedUser, customQuery});
+        error.value.web3 = null;
+      } catch (err) {
+        error.value.web3 = err;
+        Logger.error('useUser/loginWeb3', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
     const logout = async () => {
       Logger.debug('useUserFactory.logout');
       resetErrorValue();
@@ -116,9 +137,38 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
         await _factoryParams.disconnectWeb3Modal({ currentWeb3User: web3User.value });
         error.value.logout = null;
         user.value = null;
+        web3User.value = web3UserFactory();
       } catch (err) {
         error.value.logout = err;
         Logger.error('useUser/logout', err);
+      }
+    };
+
+    const getNonce = async ({publicAddress}) => {
+      Logger.debug('useUserFactory.getNonce');
+      resetErrorValue();
+
+      try {
+        web3User.value.nonce = await _factoryParams.getNonce({publicAddress});
+
+        error.value.login = null;
+      } catch (err) {
+        error.value.login = err;
+        Logger.error('useUser/getNonce', err);
+      }
+    };
+
+    const getNonceAuthenticated = async () => {
+      Logger.debug('useUserFactory.getNonceAuthenticated');
+      resetErrorValue();
+
+      try {
+        web3User.value.nonce = await _factoryParams.getNonceAuthenticated({ currentUser: user.value });
+
+        error.value.login = null;
+      } catch (err) {
+        error.value.login = err;
+        Logger.error('useUser/getNonceAuthenticated', err);
       }
     };
 
@@ -191,10 +241,9 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
 
       try {
         await _factoryParams.connectWeb3Modal({ currentWeb3User: web3User.value });
-        error.value.logout = null;
-        user.value = null;
+        error.value.login = null;
       } catch (err) {
-        error.value.logout = err;
+        error.value.login = err;
         Logger.error('useUser/connectWeb3Modal', err);
       }
     };
@@ -205,10 +254,10 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
 
       try {
         await _factoryParams.disconnectWeb3Modal({ currentWeb3User: web3User.value });
-        error.value.logout = null;
-        user.value = null;
+        error.value.login = null;
+        web3User.value = web3UserFactory();
       } catch (err) {
-        error.value.logout = err;
+        error.value.login = err;
         Logger.error('useUser/disconnectWeb3Modal', err);
       }
     };
@@ -220,7 +269,10 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
       updateUser,
       register,
       login,
+      loginWeb3,
       logout,
+      getNonce,
+      getNonceAuthenticated,
       initWeb3Modal,
       ethereumListener,
       connectWeb3Modal,

@@ -52,7 +52,8 @@
           <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
           <span><h4>RANK</h4><p>{{ numerai.modelInfo.model_performance.latestRanks.corr }}</p></span>
           <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.model_performance.latestReps.corr).toFixed(4) }}</p></span>
-          <span><h4>WOKE DATE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
+          <span><h4>3 Mth. Return</h4><p :class="`delta-${Number(numerai.modelInfo.model_performance.latestReturns.threeMonths)>0?'positive':'negative'}`">{{ Number(numerai.modelInfo.model_performance.latestReturns.threeMonths).toFixed(2) }}%</p></span>
+          <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
         </div>
         </SfLoader>
         <LazyHydrate when-idle>
@@ -560,5 +561,11 @@ export default {
 }
 .numerai-chart {
   margin-top: var(--spacer-xl);
+}
+.delta-positive {
+  color: #00a800;
+}
+.delta-negative {
+  color: #d24141;
 }
 </style>

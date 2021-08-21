@@ -31,6 +31,8 @@ export function useNumeraiFactory(
 
       try {
         numerai.value.models = await _factoryParams.getModels(identifer);
+      } catch (err) {
+        Logger.error(`useNumerai/${ssrKey}/getModels`, err);
       } finally {
         loading.value = false;
       }
@@ -42,6 +44,8 @@ export function useNumeraiFactory(
 
       try {
         numerai.value.modelInfo = await _factoryParams.getModelInfo(params);
+      } catch (err) {
+        Logger.error(`useNumerai/${ssrKey}/getModels`, err);
       } finally {
         loading.value = false;
       }

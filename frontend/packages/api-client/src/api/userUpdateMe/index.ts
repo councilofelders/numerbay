@@ -14,7 +14,10 @@ export default async function userUpdateMe(context, params, customQuery?: Custom
     // eslint-disable-next-line camelcase
     numerai_api_key_public_id: params.numeraiApiKeyPublicId ? params.numeraiApiKeyPublicId : null,
     // eslint-disable-next-line camelcase
-    numerai_api_key_secret: params.numeraiApiKeySecret ? params.numeraiApiKeySecret : null
+    numerai_api_key_secret: params.numeraiApiKeySecret ? params.numeraiApiKeySecret : null,
+    // eslint-disable-next-line camelcase
+    public_address: params.publicAddress,
+    signature: params.signature
   };
 
   // Use axios to send a PUT request

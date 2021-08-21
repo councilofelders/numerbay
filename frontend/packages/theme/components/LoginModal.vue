@@ -16,7 +16,10 @@
     <transition name="sf-fade" mode="out-in">
       <SfTabs :open-tab="1" v-e2e="'login-options-tab'">
         <SfTab title="One-Click Login">
-          <MetamaskButton @publicAddressChange="onPublicAddressChange" class="action"></MetamaskButton>
+          <MetamaskButton @click:connect="handleWeb3Connect" class="action" :disabled="loading"/>
+          <div v-if="error.web3">
+            {{ error.web3 }}
+          </div>
         </SfTab>
         <SfTab title="Username Login">
           <div v-if="isLogin">
@@ -137,7 +140,7 @@ import { SfModal, SfTabs, SfInput, SfButton, SfCheckbox, SfLoader, SfAlert, SfBa
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 import { required, email } from 'vee-validate/dist/rules';
 import { useUser} from '@vue-storefront/numerbay';
-import { Logger, useVSFContext } from '@vue-storefront/core';
+import { Logger } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
 import MetamaskButton from './Molecules/MetamaskButton';
 import Web3 from 'web3';
@@ -167,21 +170,83 @@ export default {
     SfBar,
     MetamaskButton
   },
+  computed: {
+    activeAccount() {
+      return this.web3User.activeAccount;
+    }
+  },
+  methods: {
+    async handleWeb3Connect() {
+      await this.initWeb3Modal();
+      await this.ethereumListener();
+      await this.connectWeb3Modal();
+      await this.publicAddressHandler(this.web3User.activeAccount);
+      console.log('web3User.activeAccount, ', this.web3User.activeAccount);
+    },
+    async publicAddressHandler(publicAddress) {
+      Logger.debug('login on publicAddressChange: ', publicAddress);
+      if (publicAddress) {
+        try {
+          // get nonce from backend
+          await this.getNonce({ publicAddress: this.web3User.activeAccount });
+          console.log('this.web3User', this.web3User);
+          const { nonce } = this.web3User.nonce;
+
+          // web3 lib instance
+          const web3 = new Web3(this.web3User.providerEthers.provider);
+          const signaturePromise = web3.eth.personal.sign(
+            `I am signing my one-time nonce: ${nonce}`,
+            publicAddress,
+            // MetaMask will ignore the password argument here
+            '',
+            (err, signature)=>{
+              if (err) {
+                this.error.web3 = 'You need to sign the message.';
+                // this.disconnectWeb3Modal();
+              } else {
+                // this.resetErrorValues();
+                Logger.debug('Web3 signature: ', signature);
+              }
+            }
+          );
+
+          // login with the signature
+          signaturePromise.then(async (signature)=>{
+            await this.loginWeb3({
+              user: {
+                publicAddress: publicAddress,
+                signature: signature
+              }
+            }).then(() => this.toggleLoginModal());
+          });
+
+        } catch (err) {
+          Logger.error(err);
+          throw new Error(
+            'You need to sign the message to be able to log in.'
+          );
+        }
+      }
+    }
+  },
   setup() {
     const { isLoginModalOpen, toggleLoginModal } = useUiState();
     const form = ref({});
     const isLogin = ref(true);
     // const createAccount = ref(false);
     // const rememberMe = ref(false);
-    const { register, login, load, loading, setUser, error: userError } = useUser();
+    const { register, login, loading, setUser, error: userError,
+      web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, getNonce, loginWeb3 } = useUser();
 
     const error = reactive({
       login: null,
+      web3: null,
       register: null
     });
 
     const resetErrorValues = () => {
       error.login = null;
+      error.web3 = null;
       error.register = null;
     };
 
@@ -201,74 +266,39 @@ export default {
       resetErrorValues();
       await fn({ user: form.value });
 
-      const hasUserErrors = userError.value.register || userError.value.login;
+      const hasUserErrors = userError.value.register || userError.value.login || userError.value.web3;
       if (hasUserErrors) {
         error.login = userError.value.login?.message;
+        error.web3 = userError.value.web3?.message;
         error.register = userError.value.register?.message;
         return;
       }
       toggleLoginModal();
-      await setUser(load());
     };
 
     const handleRegister = async () => handleForm(register)();
 
     const handleLogin = async () => handleForm(login)();
 
-    const vsfContext = useVSFContext();
-
-    const onPublicAddressChange = async (publicAddress, providerEthers, callback) => {
-      if (publicAddress) {
-        try {
-          // get nonce from backend
-          const { nonce } = await vsfContext.$numerbay.api.logInGetNonce({
-            publicAddress: publicAddress
-          });
-
-          // web3 lib instance
-          const web3 = new Web3(providerEthers.provider);
-          const signaturePromise = web3.eth.personal.sign(
-            `I am signing my one-time nonce: ${nonce}`,
-            publicAddress,
-            // MetaMask will ignore the password argument here
-            '',
-            callback
-          );
-
-          // login with the signature
-          signaturePromise.then(async (signature)=>{
-            const response = await vsfContext.$numerbay.api.logInGetTokenWeb3({
-              publicAddress: publicAddress,
-              signature: signature
-            });
-            toggleLoginModal();
-            await setUser(load());
-            Logger.debug('login web3 response:', JSON.stringify(response));
-            return response;
-          });
-
-        } catch (err) {
-          Logger.error(err);
-          throw new Error(
-            'You need to sign the message to be able to log in.'
-          );
-
-        }
-      }
-    };
-
     return {
       form,
       error,
       userError,
+      setUser,
       loading,
       isLogin,
       isLoginModalOpen,
       toggleLoginModal,
+      web3User,
+      initWeb3Modal,
+      ethereumListener,
+      connectWeb3Modal,
+      getNonce,
+      loginWeb3,
       handleLogin,
       handleRegister,
       setIsLoginValue,
-      onPublicAddressChange
+      resetErrorValues
     };
   }
 };

@@ -4,7 +4,7 @@ import {Context, Logger} from '@vue-storefront/core';
 import { useUserFactory, UseUserFactoryParams } from '../factories/useUserFactory';
 import { User } from '../types';
 import Web3Modal from 'web3modal';
-import { setChainData, setEthersProvider, setIsConnected, disconnectWallet } from './utils';
+import { setChainData, setEthersProvider, disconnectWallet } from './utils';
 
 // @todo useUser
 
@@ -23,6 +23,20 @@ const params: UseUserFactoryParams<User, any, any> = {
   logOut: async (context: Context) => {
     Logger.debug('LogOut');
     await context.$numerbay.api.logOutUser();
+  },
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getNonce: async (context: Context, { publicAddress }) => {
+    Logger.debug('getNonce');
+    const data = await context.$numerbay.api.logInGetNonce({publicAddress});
+    return data;
+  },
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getNonceAuthenticated: async (context: Context, { currentUser }) => {
+    Logger.debug('getNonceAuthenticated');
+    const data = await context.$numerbay.api.logInGetNonceAuthenticated();
+    return data;
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,7 +64,16 @@ const params: UseUserFactoryParams<User, any, any> = {
     if (response?.error) {
       throw new Error(response.detail);
     }
-    return response;
+    return response.user;
+  },
+
+  logInWeb3: async (context: Context, { publicAddress, signature }) => {
+    Logger.debug('LogInWeb3');
+    const response = await context.$numerbay.api.logInGetTokenWeb3({publicAddress, signature});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response.user;
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -85,11 +108,11 @@ const params: UseUserFactoryParams<User, any, any> = {
     if (localStorage.getItem('isConnected') === 'true') {
       try {
         const providerW3m = await w3mObject.connect();
-        setIsConnected(currentWeb3User, true);
         currentWeb3User.activeAccount = window.ethereum.selectedAddress;
         setChainData(currentWeb3User, window.ethereum.chainId);
         setEthersProvider(currentWeb3User, providerW3m);
         currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
+        // setIsConnected(currentWeb3User, true);
         // indicate that this is auto login, used for detecting public address change
         localStorage.setItem('cachedPublicAddress', window.ethereum.selectedAddress);
       } catch (e) {
@@ -102,11 +125,11 @@ const params: UseUserFactoryParams<User, any, any> = {
   ethereumListener: async (context: Context, { currentWeb3User }) => {
     Logger.debug('ethereumListener');
     window.ethereum.on('accountsChanged', async (accounts) => {
-      if (currentWeb3User.isConnected) {
-        currentWeb3User.activeAccount = accounts[0];
-        setEthersProvider(currentWeb3User, currentWeb3User.providerW3m);
-        currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
-      }
+      // if (currentWeb3User.isConnected) {
+      currentWeb3User.activeAccount = accounts[0];
+      setEthersProvider(currentWeb3User, currentWeb3User.providerW3m);
+      currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
+      // }
     });
 
     window.ethereum.on('chainChanged', async () => {
@@ -124,12 +147,11 @@ const params: UseUserFactoryParams<User, any, any> = {
     try {
       const providerW3m = await currentWeb3User.web3Modal.connect();
       currentWeb3User.web3Modal = w3mObject;
-      setIsConnected(currentWeb3User, true);
-
       currentWeb3User.activeAccount = window.ethereum.selectedAddress;
       setChainData(currentWeb3User, window.ethereum.chainId);
       setEthersProvider(currentWeb3User, providerW3m);
       currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
+      // setIsConnected(currentWeb3User, true);
     } catch (e) {
       console.log('Connect Error: ', e);
     }
@@ -139,7 +161,7 @@ const params: UseUserFactoryParams<User, any, any> = {
   disconnectWeb3Modal: async (context: Context, { currentWeb3User }) => {
     Logger.debug('disconnectWeb3Modal');
     disconnectWallet(currentWeb3User);
-    setIsConnected(currentWeb3User, false);
+    // setIsConnected(currentWeb3User, false);
   }
 };
 
