@@ -8,6 +8,7 @@ from app.db.base_class import Base
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
     from .category import Category
+    from .model import Model
 
 
 class Product(Base):
@@ -22,3 +23,5 @@ class Product(Base):
     owner = relationship("User", back_populates="products")
     category_id = Column(Integer, ForeignKey("category.id"))
     category = relationship("Category", lazy="subquery")
+    model_id = Column(String, ForeignKey("model.id"))
+    model = relationship("Model", back_populates="products")

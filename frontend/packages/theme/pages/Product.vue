@@ -56,9 +56,9 @@
         <SfLoader :class="{ loader: !numerai.modelInfo }" :loading="!numerai.modelInfo">
         <div class="product__details" v-if="!!numerai.modelInfo">
           <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
-          <span><h4>RANK</h4><p>{{ numerai.modelInfo.model_performance.latestRanks.corr }}</p></span>
-          <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.model_performance.latestReps.corr).toFixed(4) }}</p></span>
-          <span><h4>3 Mth. Return</h4><p :class="`delta-${Number(numerai.modelInfo.model_performance.latestReturns.threeMonths)>0?'positive':'negative'}`">{{ Number(numerai.modelInfo.model_performance.latestReturns.threeMonths).toFixed(2) }}%</p></span>
+          <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
+          <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
+          <span><h4>3 Mth. Return</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">{{ Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2) }}%</p></span>
           <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
         </div>
         </SfLoader>
@@ -165,8 +165,8 @@ export default {
     };
 
     const getNumeraiChartData = (numeraiData) => {
-      const transposed = Object.assign(...Object.keys(numeraiData.modelInfo.model_performance.roundModelPerformances[0]).map(key =>
-        ({ [key]: numeraiData.modelInfo.model_performance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
+      const transposed = Object.assign(...Object.keys(numeraiData.modelInfo.modelPerformance.roundModelPerformances[0]).map(key =>
+        ({ [key]: numeraiData.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
       ));
 
       return {
