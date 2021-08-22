@@ -12,7 +12,6 @@ router = APIRouter()
 
 @router.get("/", response_model=List)
 def get_numerai_models(
-    db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -53,28 +52,33 @@ def get_numerai_models(
 
 def normalize_data(data, tournament: int = 8):
     normalized_data = {'rounds': data['rounds']}
-    normalized_data['model_performance'] = {}
+    normalized_data['modelPerformance'] = {}
     if tournament == 8:
-        normalized_data['model_performance'] = data['v3UserProfile']
+        normalized_data['modelPerformance'] = data['v3UserProfile']
         normalized_data['nmrStaked'] = data['v3UserProfile']['nmrStaked']
         normalized_data['startDate'] = data['v3UserProfile']['startDate']
     else:
         normalized_data['nmrStaked'] = data['signalsUserProfile']['totalStake']
         normalized_data['startDate'] = data['signalsUserProfile']['startDate']
-        normalized_data['model_performance'] = {}
-        normalized_data['model_performance']['latestRanks'] = {
-            'corr': data['signalsUserProfile']['latestRanks']['rank'],
-            'mmc': data['signalsUserProfile']['latestRanks']['mmcRank']
-        }
-        normalized_data['model_performance']['latestReps'] = {
-            'corr': data['signalsUserProfile']['latestRoundPerformances'][0]['corrRep'],
-            'mmc': data['signalsUserProfile']['latestRoundPerformances'][0]['mmcRep']
-        }
-        normalized_data['model_performance']['latestReturns'] = data['signalsUserProfile']['latestReturns']
-        normalized_data['model_performance']['roundModelPerformances'] = []
+        normalized_data['modelPerformance'] = {}
+        if data['signalsUserProfile']['latestRanks']:
+            normalized_data['modelPerformance']['latestRanks'] = {
+                'corr': data['signalsUserProfile']['latestRanks']['rank'],
+                'mmc': data['signalsUserProfile']['latestRanks']['mmcRank']
+            }
+            normalized_data['modelPerformance']['latestReps'] = {
+                'corr': data['signalsUserProfile']['latestRoundPerformances'][0]['corrRep'],
+                'mmc': data['signalsUserProfile']['latestRoundPerformances'][0]['mmcRep']
+            }
+            normalized_data['modelPerformance']['latestReturns'] = data['signalsUserProfile']['latestReturns']
+        else:
+            normalized_data['modelPerformance']['latestRanks'] = {}
+            normalized_data['modelPerformance']['latestReps'] = {}
+            normalized_data['modelPerformance']['latestReturns'] = {}
+        normalized_data['modelPerformance']['roundModelPerformances'] = []
         for round_performance in data['signalsUserProfile']['latestRoundPerformances']:
             if round_performance['correlation'] is not None:
-                normalized_data['model_performance']['roundModelPerformances'].append(
+                normalized_data['modelPerformance']['roundModelPerformances'].append(
                     {"corr": round_performance['correlation'], "mmc": round_performance['mmc'], "roundNumber": round_performance['roundNumber']}
                 )
     return normalized_data

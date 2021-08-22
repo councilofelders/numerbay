@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from app.schemas.category import Category
 from app.schemas.user import ProductOwner
+from app.schemas.model import Model, ModelSummary
 
 
 # Shared properties
@@ -44,6 +45,7 @@ class ProductInDBBase(ProductBase):
 # Properties to return to client
 class Product(ProductInDBBase):
     owner: ProductOwner
+    model: Optional[ModelSummary] = None
 
 
 # Properties properties stored in DB

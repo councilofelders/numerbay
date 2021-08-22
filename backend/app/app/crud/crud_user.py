@@ -1,7 +1,8 @@
+import functools
 from typing import Any, Dict, Optional, Union
 
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
-
 from app.core.security import get_password_hash, verify_password, verify_signature
 from app.crud.base import CRUDBase
 from app.models.user import User
@@ -14,6 +15,36 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def get_by_public_address(self, db: Session, *, public_address: str) -> Optional[User]:
         return db.query(User).filter(User.public_address == public_address).first()
+
+    def search(
+            self, db: Session, *, id: int = None, skip: int = 0, limit: int = 100,
+            filters: Dict = None, term: str = None, sort: str = None
+    ) -> Any:
+        query_filters = []
+        if id is not None:
+            query_filters.append(User.id == id)
+        if term is not None:
+            query_filters.append(User.username.like("%{}%".format(term)))
+
+        if isinstance(filters, dict):
+            for filter_key, filter_item in filters.items():
+                if filter_key == 'numerai_api_key_public_id':
+                    query_filters.append(User.numerai_api_key_public_id.is_not(None))
+
+        query = db.query(self.model)
+        if len(query_filters) > 0:
+            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query = query.filter(query_filter)
+        count = query.count()
+        # query = query.order_by(parse_sort_option(sort))
+        data = (
+            query
+                .offset(skip)
+                .limit(limit)
+                .all()
+         )
+
+        return {'total': count, 'data': data}
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         db_obj = User(
