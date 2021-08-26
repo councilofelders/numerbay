@@ -15,6 +15,12 @@ from app.core.config import settings
 router = APIRouter()
 
 
+async def tick():
+    print('Tick! The time is: %s' % datetime.now())
+    sys.stdout.flush()
+    await asyncio.sleep(1)
+
+
 @router.get('/get_schedules')
 def get_schedules(
     *,
@@ -24,6 +30,24 @@ def get_schedules(
     for job in scheduler.get_jobs():
         schedules.append({'id': str(job.id), 'frequency': str(job.trigger), 'next_run': str(job.next_run_time)})
     return schedules
+
+
+@router.post('/trigger-job/test-scheduler')
+def trigger_job_test(
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    scheduler.add_job(tick, 'interval', seconds=5, id='test')
+    return {"msg": "success!"}
+
+
+@router.delete('/trigger-job/test-scheduler')
+def delete_job_test(
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    scheduler.remove_job('test')
+    return {"msg": "success!"}
 
 
 @router.post('/trigger-job/numerai-models')
