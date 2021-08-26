@@ -20,12 +20,13 @@ from app.models import Model, Product
 
 router = APIRouter()
 
+
 # PUBLIC
 @router.post("/fix-product-models")
 def fix_product_models(
     *,
     db: Session = Depends(deps.get_db),
-    # current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Fix product model foreign keys (for db migration only).
@@ -48,11 +49,6 @@ async def fetch_single_user_models(user: User):
     return {'id': user.id, 'models': models}
 
 
-# @router.post("/test")
-# async def fetch_single(db: Session = Depends(deps.get_db)) -> Any:
-#     results = await fetch_single_user_models(crud.user.get_by_username(db, username='restrading'))
-#     return results
-
 @scheduler.scheduled_job('cron', id='batch_update_models', day_of_week='wed-sun')
 async def batch_update_models():
     db = SessionLocal()
@@ -67,17 +63,21 @@ async def batch_update_models():
         # ingest numerai models to db
         db_models = {}
         for user_models in all_user_models:
-            for model in user_models['models']:
-                db_models[model['id']] = Model(
-                    id=model['id'], name=model['name'], tournament=int(model['tournament']),
-                    owner_id=int(user_models['id']),
-                    nmr_staked=Decimal(model['model_performance']['nmrStaked']) if model['model_performance']['nmrStaked'] else 0,
-                    start_date=model['model_performance']['startDate'],
-                    latest_ranks=model['model_performance']['modelPerformance']['latestRanks'],
-                    latest_reps=model['model_performance']['modelPerformance']['latestReps'],
-                    latest_returns=model['model_performance']['modelPerformance']['latestReturns'],
-                    round_model_performances=model['model_performance']['modelPerformance']['roundModelPerformances']
-                )
+            try:
+                for model in user_models['models']:
+                    db_models[model['id']] = Model(
+                        id=model['id'], name=model['name'], tournament=int(model['tournament']),
+                        owner_id=int(user_models['id']),
+                        nmr_staked=Decimal(model['model_performance']['nmrStaked']) if model['model_performance']['nmrStaked'] else 0,
+                        start_date=model['model_performance']['startDate'],
+                        latest_ranks=model['model_performance']['modelPerformance']['latestRanks'],
+                        latest_reps=model['model_performance']['modelPerformance']['latestReps'],
+                        latest_returns=model['model_performance']['modelPerformance']['latestReturns'],
+                        round_model_performances=model['model_performance']['modelPerformance']['roundModelPerformances']
+                    )
+            except Exception as e:
+                print(e)
+            continue
 
         for db_model in db.query(Model).filter(Model.id.in_(db_models.keys())).all():
             # Updates

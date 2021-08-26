@@ -63,8 +63,8 @@ def normalize_data(data, tournament: int = 8):
         normalized_data['modelPerformance'] = {}
         if data['signalsUserProfile']['latestRanks']:
             normalized_data['modelPerformance']['latestRanks'] = {
-                'corr': data['signalsUserProfile']['latestRanks']['rank'],
-                'mmc': data['signalsUserProfile']['latestRanks']['mmcRank']
+                'corr': data['signalsUserProfile']['latestRanks']['corr'],
+                'mmc': data['signalsUserProfile']['latestRanks']['mmc']
             }
             normalized_data['modelPerformance']['latestReps'] = {
                 'corr': data['signalsUserProfile']['latestRoundPerformances'][0]['corrRep'],
@@ -131,8 +131,8 @@ def get_numerai_model_performance(
                 startDate
                 totalStake
                 latestRanks {
-                  rank
-                  mmcRank
+                  corr
+                  mmc
                 }
                 latestReturns {
                   oneDay
