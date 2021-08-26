@@ -1,3 +1,5 @@
+import sys
+
 from app.core.config import settings
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -19,3 +21,4 @@ scheduler.configure(jobstores=jobstores)  # , executors=executors
 
 scheduler.start()
 print("Scheduler started")
+sys.stdout.flush()
