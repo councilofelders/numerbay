@@ -20,7 +20,10 @@ class ScheduleCli(object):
         job_stores = {
             'default': SQLAlchemyJobStore(url=settings.SQLALCHEMY_DATABASE_URI)
         }
-        self._schedule = BackgroundScheduler(jobstores=job_stores)
+        job_defaults = {
+            'misfire_grace_time': 120
+        }
+        self._schedule = BackgroundScheduler(jobstores=job_stores, job_defaults=job_defaults)
         self._schedule.start()
         print("Scheduler started")
         sys.stdout.flush()
