@@ -38,7 +38,7 @@ def add_job_test(
     *,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
-    scheduler.add_job(tick, 'interval', seconds=5, id='test')
+    scheduler.add_job(tick, 'interval', seconds=5, id='test', replace_existing=True)
     return {"msg": f"success! {scheduler.running}"}
 
 
@@ -52,11 +52,11 @@ def delete_job_test(
 
 
 @router.post('/add-job/numerai-models')
-def add_job_test(
+def add_job_numerai_models(
     *,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
-    scheduler.add_job(batch_update_models, 'interval', seconds=5, id='batch_update_models')
+    scheduler.add_job(batch_update_models, 'cron', day_of_week='wed-sun', id='batch_update_models', replace_existing=True)
     return {"msg": f"success! {scheduler.running}"}
 
 
@@ -70,7 +70,7 @@ def trigger_job_numerai_models(
 
 
 @router.delete('/trigger-job/numerai-models')
-def delete_job_test(
+def delete_job_numerai_models(
     *,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
