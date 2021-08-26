@@ -49,16 +49,18 @@ async def fetch_single_user_models(user: User):
     return {'id': user.id, 'models': models}
 
 
-@scheduler.scheduled_job('cron', id='batch_update_models', day_of_week='wed-sun')
-async def batch_update_models():
+# @scheduler.scheduled_job('cron', id='batch_update_models', day_of_week='wed-sun')
+def batch_update_models():
     db = SessionLocal()
     try:
         print(f'{datetime.utcnow()} Running batch_update_models...')
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         users = crud.user.search(db, filters={'numerai_api_key_public_id': ['any']})['data']
         tasks = []
         for user in users:
             tasks.append(fetch_single_user_models(user=user))
-        all_user_models = await asyncio.gather(*tasks, return_exceptions=True)
+        all_user_models = loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
         # ingest numerai models to db
         db_models = {}

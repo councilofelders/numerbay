@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 from typing import Any, List
 
+from .models import batch_update_models
 from app.core.apscheduler import scheduler
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -13,12 +14,6 @@ from app.api import deps
 from app.core.config import settings
 
 router = APIRouter()
-
-
-@scheduler.scheduled_job('interval', id='test', seconds=5)
-def tick():
-    print('Tick! The time is: %s' % datetime.now())
-    sys.stdout.flush()
 
 
 @router.get('/get_schedules')
@@ -32,8 +27,14 @@ def get_schedules(
     return schedules
 
 
-@router.post('/trigger-job/test-scheduler')
-def trigger_job_test(
+# @scheduler.scheduled_job('interval', id='test', seconds=5)
+def tick():
+    print('Tick! The time is: %s' % datetime.now())
+    sys.stdout.flush()
+
+
+@router.post('/add-job/test')
+def add_job_test(
     *,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
@@ -50,10 +51,28 @@ def delete_job_test(
     return {"msg": "success!"}
 
 
+@router.post('/add-job/numerai-models')
+def add_job_test(
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    scheduler.add_job(batch_update_models, 'interval', seconds=5, id='batch_update_models')
+    return {"msg": f"success! {scheduler.running}"}
+
+
 @router.post('/trigger-job/numerai-models')
 def trigger_job_numerai_models(
     *,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     scheduler.get_job(job_id ="batch_update_models").modify(next_run_time=datetime.now())
+    return {"msg": "success!"}
+
+
+@router.delete('/trigger-job/numerai-models')
+def delete_job_test(
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    scheduler.remove_job('batch_update_models')
     return {"msg": "success!"}
