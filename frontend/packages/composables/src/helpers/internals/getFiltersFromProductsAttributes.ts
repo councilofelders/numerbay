@@ -2,7 +2,10 @@ import { ProductVariant } from '@vue-storefront/numerbay-api';
 import {Attribute, Filter, FilterOption} from '../../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const extractAttributes = (product: ProductVariant): Attribute[] => [{name: 'price', value: product.price, typename: 'MoneyAttribute'}];
+const extractAttributes = (product: ProductVariant): Attribute[] => [
+  {name: 'price', value: product?.price, typename: 'MoneyAttribute'},
+  {name: 'rank', value: product?.model?.latest_ranks?.corr, typename: 'NumberAttribute'}
+];
 
 const flattenAttributes = (prev: Attribute[], curr: Attribute[]): Attribute[] => prev.concat(curr || []);
 

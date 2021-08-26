@@ -17,7 +17,7 @@
     "@burner-wallet/burner-connect-provider": "^0.1.1",
     "@nuxtjs/sentry": "^5.1.1",
     "@nuxtjs/style-resources": "^1.0.0",
-    "@storefront-ui/vue": "^0.10.3",
+    "@storefront-ui/vue": "^0.10.8",
     "@vue-storefront/middleware": "^2.3.0",
     "@vue-storefront/numerbay": "^2.3.0",
     "@vue-storefront/nuxt": "^2.3.0",

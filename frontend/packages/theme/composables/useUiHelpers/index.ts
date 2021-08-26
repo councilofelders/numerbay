@@ -1,12 +1,7 @@
-import { getCurrentInstance } from '@vue/composition-api';
-import {Logger} from '@vue-storefront/core';
+import { Logger } from '@vue-storefront/core';
+import { getInstance } from '../../helpers/hooks/getInstance';
 
 const nonFilters = ['page', 'sort', 'phrase', 'itemsPerPage'];
-
-const getInstance = () => {
-  const vm = getCurrentInstance();
-  return vm.$root as any;
-};
 
 const reduceFilters = (query) => (prev, curr) => {
   const makeArray = Array.isArray(query[curr]) || nonFilters.includes(curr);
@@ -35,7 +30,7 @@ const useUiHelpers = () => {
       rootCatSlug: params.slug_1,
       categorySlug,
       page: parseInt(query.page, 10) || 1,
-      sort: query.sort || 'latest',
+      sort: query.sort || 'rank-best',
       filters: getFiltersDataFromUrl(instance, true),
       itemsPerPage: parseInt(query.itemsPerPage, 10) || 20,
       phrase: query.phrase
@@ -49,13 +44,19 @@ const useUiHelpers = () => {
 
   // eslint-disable-next-line
   const changeSorting = (sort) => {
+    // eslint-disable-next-line
     const { query } = instance.$router.history.current;
     instance.$router.push({ query: { ...query, sort } });
   };
 
   // eslint-disable-next-line
   const changeFilters = (filters) => {
-    Logger.warn('[VSF] please implement useUiHelpers.changeFilters.');
+    instance.$router.push({
+      query: {
+        ...getFiltersDataFromUrl(instance, false),
+        ...filters
+      }
+    });
   };
 
   // eslint-disable-next-line
@@ -69,16 +70,7 @@ const useUiHelpers = () => {
   };
 
   // eslint-disable-next-line
-  const isFacetColor = (facet): boolean => {
-    Logger.warn('[VSF] please implement useUiHelpers.isFacetColor.');
-
-    return false;
-  };
-
-  // eslint-disable-next-line
   const isFacetCheckbox = (facet): boolean => {
-    Logger.warn('[VSF] please implement useUiHelpers.isFacetCheckbox.');
-
     return false;
   };
 
@@ -93,7 +85,6 @@ const useUiHelpers = () => {
     changeFilters,
     changeItemsPerPage,
     setTermForUrl,
-    isFacetColor,
     isFacetCheckbox,
     getSearchTermFromUrl
   };

@@ -52,14 +52,15 @@ const factoryParams = {
       sort: params.input.sort
     });
     const products = productResponse?.data as ProductVariant[] || [];
+    const availableFilters = productResponse?.aggregations;
     // const facets = getFiltersFromProductsAttributes(products);
-    const facets = null;
+    // const facets = null;
     // todo facets
 
     return {
       products,
       categories,
-      facets,
+      availableFilters,
       total: productResponse?.total,
       perPageOptions: ITEMS_PER_PAGE,
       itemsPerPage

@@ -13,6 +13,7 @@ export type ProductVariant = {
   images: string[];
   price: number;
   owner: any;
+  model: any;
 };
 export type Category = {
   id: number;

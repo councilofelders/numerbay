@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from datetime import datetime
 from decimal import Decimal
 from typing import Any, List
 
@@ -52,11 +53,11 @@ async def fetch_single_user_models(user: User):
 #     results = await fetch_single_user_models(crud.user.get_by_username(db, username='restrading'))
 #     return results
 
-@scheduler.scheduled_job('cron', id='batch_update_models', day='last sun')
+@scheduler.scheduled_job('cron', id='batch_update_models', day_of_week='wed-sun')
 async def batch_update_models():
     db = SessionLocal()
     try:
-        print('Running batch_update_models...')
+        print(f'{datetime.utcnow()} Running batch_update_models...')
         users = crud.user.search(db, filters={'numerai_api_key_public_id': ['any']})['data']
         tasks = []
         for user in users:
@@ -86,7 +87,7 @@ async def batch_update_models():
         db.add_all(db_models.values())
         db.commit()
 
-        print('Finished batch_update_models')
+        print(f'{datetime.utcnow()} Finished batch_update_models')
     finally:
         sys.stdout.flush()
         db.close()

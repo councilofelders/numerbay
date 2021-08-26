@@ -87,6 +87,7 @@ export interface FacetResultsData {
   products: ProductVariant[];
   categories: Category[];
   facets: Record<string, Filter>;
+  availableFilters: Record<string, any>;
   total: number;
   perPageOptions: number[];
   itemsPerPage: number;

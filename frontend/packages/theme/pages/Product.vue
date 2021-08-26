@@ -37,18 +37,12 @@
             <div class="sale-value">$-</div>
             <p class="last-sale-change" style="color: green;">$0 (0%)</p>
           </div>
-          <SfButton class="bid-button" @click="handleBuyButtonClick(product)" :disabled="!product.third_party_url">
-            <div class="stats">
-              <div class="stat-value">
-                {{ $n(productGetters.getPrice(product).regular, 'currency') }}
-              </div>
-              <h3>Ref Price</h3>
-            </div>
-            <div class="button-divider"></div>
-            <div>
-              <h2>{{ !product.third_party_url? 'NA':'BUY' }}</h2>
-            </div>
-          </SfButton>
+          <BuyButton
+            :disabled="!product.third_party_url && !product.is_on_platform"
+            :price="$n(productGetters.getPrice(product).regular, 'currency')"
+            :label="product.is_on_platform ? 'Price' : 'Ref Price'"
+            @click="handleBuyButtonClick(product)"
+          />
         </div>
         <SfLoader :class="{ loader: !numerai.modelInfo }" :loading="!numerai.modelInfo">
           <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
@@ -58,7 +52,7 @@
           <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
           <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
           <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
-          <span><h4>3 Mth. Return</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">{{ Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2) }}%</p></span>
+          <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">{{ Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2) }}%</p></span>
           <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
         </div>
         </SfLoader>
@@ -119,6 +113,7 @@ import { onSSR } from '@vue-storefront/core';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
+import BuyButton from '../components/Molecules/BuyButton';
 
 export default {
   name: 'Product',
@@ -257,6 +252,7 @@ export default {
     MobileStoreBanner,
     LazyHydrate,
     NumeraiChart,
+    BuyButton,
     SfLoader
   },
   // test

@@ -10,7 +10,7 @@ const state = reactive({
   isLoginModalOpen: false,
   isListingModalOpen: false,
   currentListing: null,
-  isCategoryGridView: true,
+  isCategoryGridView: false,
   isFilterSidebarOpen: false
 });
 

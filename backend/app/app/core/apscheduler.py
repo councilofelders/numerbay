@@ -14,7 +14,7 @@ jobstores = {
 #     'default': {'type': 'threadpool', 'max_workers': 20},
 #     'processpool': ProcessPoolExecutor(max_workers=5)
 # }
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(timezone="UTC")
 scheduler.configure(jobstores=jobstores)  # , executors=executors
 
 scheduler.start()

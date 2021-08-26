@@ -181,37 +181,50 @@
               v-for="(product, i) in products"
               :key="productGetters.getSlug(product)"
               :style="{ '--index': i }"
-              :title="productGetters.getName(product)"
-              :description="productGetters.getDescription(product)"
+              :title="productGetters.getName(product).toUpperCase()"
               :image="productGetters.getCoverImage(product)"
               :regular-price="$n(productGetters.getPrice(product).regular, 'currency')"
               :special-price="productGetters.getPrice(product).special && $n(productGetters.getPrice(product).special, 'currency')"
               :max-rating="5"
               :score-rating="3"
+              :show-add-to-cart-button="false"
               :is-on-wishlist="false"
               class="products__product-card-horizontal"
               @click:wishlist="addItemToWishlist({ product })"
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
               :link="localePath(`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`)"
             >
-              <template #configuration>
-                <SfProperty
-                  class="desktop-only"
-                  name="Size"
-                  value="XS"
-                  style="margin: 0 0 1rem 0;"
-                />
-                <SfProperty class="desktop-only" name="Color" value="white" />
+              <template #price>
+                # {{product.model ? product.model.latest_ranks.corr : 'NA'}}
               </template>
-              <template #actions>
+              <template #description></template>
+              <template #configuration>
+                <SfProperty class="desktop-only" name="Stake" :value="`${product.model.nmr_staked.toFixed(2)} NMR`" style="margin: 0 0 1rem 0;"/>
+                <SfProperty class="desktop-only" name="Corr Rep" :value="product.model.latest_reps.corr.toFixed(4)" style="margin: 0 0 1rem 0;"/>
+                <SfProperty class="desktop-only" name="3M Return">
+                  <template #value>
+                    <span :class="`delta-${product.model.latest_returns.threeMonths>0?'positive':'negative'}`">{{ product.model.latest_returns.threeMonths.toFixed(2) }}%</span>
+                  </template>
+                </SfProperty>
+              </template>
+              <template #reviews><span></span></template>
+              <template #add-to-cart>
+                <BuyButton
+                  :disabled="!product.third_party_url && !product.is_on_platform"
+                  :price="$n(productGetters.getPrice(product).regular, 'currency')"
+                  :label="product.is_on_platform ? 'Price' : 'Ref Price'"
+                  @click="handleBuyButtonClick(product)"
+                />
+              </template>
+              <!--<template #actions>
                 <SfButton
-                  class="sf-button--text desktop-only"
+                  class="sf-button&#45;&#45;text desktop-only"
                   style="margin: 0 0 1rem auto; display: block;"
                   @click="() => {}"
                 >
                   {{ $t('Save for later') }}
                 </SfButton>
-              </template>
+              </template>-->
             </SfProductCardHorizontal>
           </transition-group>
 
@@ -268,20 +281,10 @@
               :key="`filter-title-${facet.id}`"
             />
               <div
-                v-if="isFacetColor(facet)"
+                v-if="isFacetCheckbox(facet)"
                 class="filters__colors"
                 :key="`${facet.id}-colors`"
               >
-                <SfColor
-                  v-for="option in facet.options"
-                  :key="`${facet.id}-${option.value}`"
-                  :color="option.value"
-                  :selected="isFilterSelected(facet, option)"
-                  class="filters__color"
-                  @click="() => selectFilter(facet, option)"
-                />
-              </div>
-              <div v-else>
                 <SfFilter
                   v-for="option in facet.options"
                   :key="`${facet.id}-${option.value}`"
@@ -291,9 +294,30 @@
                   @change="() => selectFilter(facet, option)"
                 />
               </div>
+              <div v-else>
+                <SfRange
+                  :id="facet.id"
+                  :disabled="false"
+                  :value="getSelectedRangeFilterValue(facet)"
+                  :config='{
+                    "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
+                    "range":{
+                      "min":getRangeFilterOption(facet.options, "from"),
+                      "max":getRangeFilterOption(facet.options, "to")
+                    },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
+                    "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
+                    format: {
+                      to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
+                      from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
+                    }
+                  }'
+                  class="filters__item"
+                  @change="(values) => updateRangeFilter(facet, values)"
+                />
+              </div>
           </div>
         </div>
-        <SfAccordion class="filters smartphone-only">
+<!--        <SfAccordion class="filters smartphone-only">
           <div v-for="(facet, i) in facets" :key="i">
             <SfAccordionItem
               :key="`filter-title-${facet.id}`"
@@ -310,7 +334,7 @@
             />
           </SfAccordionItem>
         </div>
-        </SfAccordion>
+        </SfAccordion>-->
         <template #content-bottom>
           <div class="filters__buttons">
             <SfButton
@@ -346,31 +370,37 @@ import {
   SfSelect,
   SfBreadcrumbs,
   SfLoader,
-  SfColor,
+  SfRange,
   SfProperty
 } from '@storefront-ui/vue';
 import { ref, computed, onMounted } from '@vue/composition-api';
 import { useCart, useWishlist, productGetters, useFacet, facetGetters } from '@vue-storefront/numerbay';
-import { useUiState } from '~/composables';
+import { useUiState } from '../composables';
 import { useUiHelpers } from '../composables';
+import { useVueRouter } from '../helpers/hooks/useVueRouter';
 import { onSSR } from '@vue-storefront/core';
 import LazyHydrate from 'vue-lazy-hydration';
+import BuyButton from '../components/Molecules/BuyButton';
 import Vue from 'vue';
 
 export default {
   transition: 'fade',
   setup(props, context) {
+    const {
+      route
+    } = useVueRouter();
+    const { path } = route;
     const th = useUiHelpers();
     const uiState = useUiState();
     const { addItem: addItemToCart, isInCart } = useCart();
     const { addItem: addItemToWishlist } = useWishlist();
-    const { result, search, loading } = useFacet();
+    const { result, search, loading } = useFacet(`facetId:${path}`);
 
     const products = computed(() => facetGetters.getProducts(result.value));
     const categoryTree = computed(() => facetGetters.getCategoryTree(result.value));
     const breadcrumbs = computed(() => facetGetters.getBreadcrumbs(result.value));
     const sortBy = computed(() => facetGetters.getSortOptions(result.value));
-    const facets = computed(() => facetGetters.getGrouped(result.value, ['color', 'size']));
+    const facets = computed(() => facetGetters.getGrouped(result.value, ['rank', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
     const activeCategory = computed(() => {
       const items = categoryTree.value.items;
@@ -384,23 +414,32 @@ export default {
       return category?.label || items[0].label;
     });
 
-    onSSR(async () => {
-      await search(th.getFacetsFromURL());
-    });
-
-    const { changeFilters, isFacetColor } = useUiHelpers();
+    const { changeFilters, isFacetCheckbox } = useUiHelpers();
     const { toggleFilterSidebar } = useUiState();
     const selectedFilters = ref({});
 
+    onSSR(async () => {
+      await search(th.getFacetsFromURL());
+
+      if (facets.value.length > 0) {
+        selectedFilters.value = facets.value.reduce((prev, curr) => ({
+          ...prev,
+          [curr.id]: curr.options
+            .filter(o => o.selected)
+            .map(o => o.id)
+        }), {});
+      }
+    });
+
     onMounted(() => {
       context.root.$scrollTo(context.root.$el, 2000);
-      if (!facets.value.length) return;
-      selectedFilters.value = facets.value.reduce((prev, curr) => ({
-        ...prev,
-        [curr.id]: curr.options
-          .filter(o => o.selected)
-          .map(o => o.id)
-      }), {});
+      // if (!facets.value.length) return;
+      // selectedFilters.value = facets.value.reduce((prev, curr) => ({
+      //   ...prev,
+      //   [curr.id]: curr.options
+      //     .filter(o => o.selected)
+      //     .map(o => o.id)
+      // }), {});
     });
 
     const isFilterSelected = (facet, option) => (selectedFilters.value[facet.id] || []).includes(option.id);
@@ -429,6 +468,32 @@ export default {
       changeFilters(selectedFilters.value);
     };
 
+    const getRangeFilterOption = (options, tag) => {
+      return options.filter(o=>o.id === tag) ? options.filter(o=>o.id === tag)[0].value : 0;
+    };
+
+    const getSelectedRangeFilterValue = (facet) => {
+      const selectedValue = selectedFilters.value[facet.id] ? selectedFilters.value[facet.id][0] : [];
+      if (selectedValue) {
+        return selectedValue.map(Number);
+      }
+      return selectedValue;
+    };
+
+    const updateRangeFilter = (facet, values) => {
+      if (!selectedFilters.value[facet.id]) {
+        Vue.set(selectedFilters.value, facet.id, []);
+      }
+
+      selectedFilters.value[facet.id] = [values];
+    };
+
+    const handleBuyButtonClick = (product) => {
+      if (product?.third_party_url) { // if third party listing
+        window.open(product?.third_party_url, '_blank');
+      }
+    };
+
     return {
       ...uiState,
       th,
@@ -444,12 +509,16 @@ export default {
       addItemToWishlist,
       addItemToCart,
       isInCart,
-      isFacetColor,
+      isFacetCheckbox,
       selectFilter,
       isFilterSelected,
       selectedFilters,
       clearFilters,
-      applyFilters
+      applyFilters,
+      getRangeFilterOption,
+      getSelectedRangeFilterValue,
+      updateRangeFilter,
+      handleBuyButtonClick
     };
   },
   components: {
@@ -466,9 +535,10 @@ export default {
     SfSelect,
     SfBreadcrumbs,
     SfLoader,
-    SfColor,
+    SfRange,
     SfHeading,
     SfProperty,
+    BuyButton,
     LazyHydrate
   }
 };
@@ -689,6 +759,12 @@ export default {
   }
   &__product-card-horizontal {
     flex: 0 0 100%;
+    @include for-desktop {
+      ::v-deep .sf-image {
+        --image-width: 200px;
+        --image-height: 200px;
+      }
+    }
     @include for-mobile {
       ::v-deep .sf-image {
       --image-width: 5.3125rem;
@@ -803,5 +879,11 @@ export default {
     --button-color: var(--c-dark-variant);
     margin: var(--spacer-xs) 0 0 0;
   }
+}
+.delta-positive {
+  color: #00a800;
+}
+.delta-negative {
+  color: #d24141;
 }
 </style>

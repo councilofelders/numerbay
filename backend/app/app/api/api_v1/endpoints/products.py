@@ -9,7 +9,7 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.post("/search", response_model=Dict[str, Union[int, List[schemas.Product]]])
+@router.post("/search", response_model=Dict[str, Union[int, List[schemas.Product], List, Dict]])
 def search_products(
     db: Session = Depends(deps.get_db),
     id: int = Body(None),
