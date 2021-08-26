@@ -15,10 +15,10 @@ from app.core.config import settings
 router = APIRouter()
 
 
-async def tick():
+@scheduler.scheduled_job('interval', id='test', seconds=5)
+def tick():
     print('Tick! The time is: %s' % datetime.now())
     sys.stdout.flush()
-    await asyncio.sleep(1)
 
 
 @router.get('/get_schedules')
@@ -38,7 +38,7 @@ def trigger_job_test(
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     scheduler.add_job(tick, 'interval', seconds=5, id='test')
-    return {"msg": "success!"}
+    return {"msg": f"success! {scheduler.running}"}
 
 
 @router.delete('/trigger-job/test-scheduler')
