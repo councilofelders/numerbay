@@ -12,12 +12,9 @@ print("Starting scheduler")
 jobstores = {
     'default': SQLAlchemyJobStore(url=settings.SQLALCHEMY_DATABASE_URI)
 }
-# executors = {
-#     'default': {'type': 'threadpool', 'max_workers': 20},
-#     'processpool': ProcessPoolExecutor(max_workers=5)
-# }
+
 scheduler = AsyncIOScheduler(timezone="UTC")
-scheduler.configure(jobstores=jobstores)  # , executors=executors
+scheduler.configure(jobstores=jobstores)
 
 scheduler.start()
 print("Scheduler started")
