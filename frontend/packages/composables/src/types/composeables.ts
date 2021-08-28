@@ -69,9 +69,15 @@ export interface UseProduct<PRODUCTS, PRODUCT_SEARCH_PARAMS> {
   [x: string]: any;
 }
 
+export interface UseNumeraiErrors {
+    getModels: Error;
+    getModelInfo: Error;
+}
+
 export interface UseNumerai {
   getModels: (identifier: string) => Promise<void>;
   getModelInfo: (params: any) => Promise<void>;
   loading: ComputedProperty<boolean>;
   numerai: ComputedProperty<any>;
+  error: ComputedProperty<UseNumeraiErrors>;
 }

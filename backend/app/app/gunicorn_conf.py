@@ -46,7 +46,7 @@ accesslog = use_accesslog
 graceful_timeout = int(graceful_timeout_str)
 timeout = int(timeout_str)
 keepalive = int(keepalive_str)
-preload_app = True
+# preload_app = True
 
 
 # For debugging and testing

@@ -49,6 +49,17 @@ class ModelInDB(ModelInDBBase):
     pass
 
 
+# Minimal model information
+class ModelMinimal(BaseModel):
+    id: str
+    name: Optional[str] = None
+    tournament: Optional[int] = None
+    start_date: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
 # Summary model performance for products
 class ModelSummary(BaseModel):
     name: Optional[str] = None

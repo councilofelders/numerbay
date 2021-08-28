@@ -14,13 +14,25 @@ export const getNumeraiApiKeyPublicId = (user: User): string => user?.numerai_ap
 
 export const getNonce = (user: User): string => user?.nonce || '';
 
+export const getModels = (user: User, tournament: number = null, sortDate = true): any[] => {
+  let models = user?.models;
+  if (tournament) {
+    models = models?.filter((m)=>m.tournament === tournament);
+  }
+  if (sortDate) {
+    models = models?.sort((a, b) => a?.start_date?.localeCompare(b?.start_date));
+  }
+  return models || [];
+};
+
 const userGetters: UserGetters<User> = {
   getId: getId,
   getUsername: getUsername,
   getEmailAddress: getUserEmailAddress,
   getPublicAddress: getPublicAddress,
   getNumeraiApiKeyPublicId: getNumeraiApiKeyPublicId,
-  getNonce: getNonce
+  getNonce: getNonce,
+  getModels: getModels
 };
 
 export default userGetters;

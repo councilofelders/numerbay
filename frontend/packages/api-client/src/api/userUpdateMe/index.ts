@@ -21,7 +21,13 @@ export default async function userUpdateMe(context, params, customQuery?: Custom
   };
 
   // Use axios to send a PUT request
-  const { data } = await context.client.put(url.href, payload, authHeaders(token));
+  const { data } = await context.client.put(url.href, payload, authHeaders(token)).catch((error) => {
+    if (error.response) {
+      error.response.data.error = error.response.status;
+      return error.response;
+    }
+  });
+
   // Return data from the API
   return data;
 }

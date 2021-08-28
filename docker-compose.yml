@@ -170,6 +170,23 @@ services:
       dockerfile: celeryworker.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+    command: bash -c "python /app/app/celeryworker_pre_start.py && celery worker -A app.worker -l info -Q main-queue,beat-queue -P eventlet -c 100"
+
+  celerybeat:
+    image: '${DOCKER_IMAGE_CELERYWORKER?Variable not set}:${TAG-latest}'
+    env_file:
+      - .env
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=https://${DOMAIN?Variable not set}
+      # Allow explicit env var override for tests
+      - SMTP_HOST=${SMTP_HOST?Variable not set}
+    build:
+      context: ./backend
+      dockerfile: celeryworker.dockerfile
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
+    command: bash -c "python /app/app/celeryworker_pre_start.py && celery beat -A app.worker -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
   
   frontend:
     image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'

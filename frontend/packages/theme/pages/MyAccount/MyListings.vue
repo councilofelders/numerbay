@@ -3,19 +3,19 @@
     <SfTab title="My listings">
       <div>
         <div class="top-buttons">
-          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!user.numerai_api_key_public_id || numeraiLoading">
+          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
             {{ $t('New Listing') }}
           </SfButton>
-          <SfButton class="sf-button" :class="!user.numerai_api_key_public_id?'color-primary':'color-secondary'" @click="toggleNumeraiApiForm()">
+          <SfButton class="sf-button" :class="!user.numerai_api_key_public_id?'color-primary':'color-secondary'" @click="toggleNumeraiApiForm()" :disabled="numeraiLoading || userLoading">
             {{ !user.numerai_api_key_public_id?$t('Set Numerai API Key'):$t('Change Numerai API Key') }}
           </SfButton>
         </div>
         <div v-if="isNumeraiApiFormOpen">
           <NumeraiApiForm @submit="updateNumeraiApiKeyData" />
         </div>
-        <!--<p class="message">
-          {{ $t('Listed Products') }}
-        </p>-->
+        <p class="message" v-if="numeraiError.getModels">
+          {{ numeraiError.getModels }}
+        </p>
         <div v-if="products.length === 0" class="no-orders">
           <p class="no-orders__title">{{ $t('You currently have no listings') }}</p>
         </div>
@@ -35,7 +35,7 @@
             <SfTableData>{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</SfTableData>
             <SfTableData>{{ $n(productGetters.getPrice(product).regular, 'currency') }}</SfTableData>
             <SfTableData class="orders__view orders__element--right">
-              <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)" :disabled="numeraiLoading">
+              <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                 {{ $t('Manage') }}
               </SfButton>
             </SfTableData>
@@ -52,7 +52,8 @@ import {
   SfTable,
   SfButton,
   SfProperty,
-  SfLink
+  SfLink,
+  SfNotification
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import { useUiState } from '~/composables';
@@ -77,6 +78,7 @@ export default {
     SfButton,
     SfProperty,
     SfLink,
+    SfNotification,
     NumeraiApiForm
   },
   mounted() {
@@ -85,9 +87,9 @@ export default {
     }
   },
   setup() {
-    const { user, updateUser } = useUser();
+    const { user, updateUser, error: userError, loading: userLoading } = useUser();
     const { categories, search: categorySearch } = useCategory();
-    const { getModels: getNumeraiModels, loading: numeraiLoading } = useNumerai();
+    const { getModels: getNumeraiModels, loading: numeraiLoading, error: numeraiError } = useNumerai('my-listings');
 
     onSSR(async () => {
       await categorySearch(); // {slug: 'all'}
@@ -141,6 +143,10 @@ export default {
       formHandler(() => updateUser({ user: form.value }), async () => {
         onComplete();
         await getNumeraiModels();
+        const hasUserErrors = userError.value.updateUser;
+        if (hasUserErrors) {
+          return;
+        }
         await toggleNumeraiApiForm();
       }, onError);
     };
@@ -148,6 +154,7 @@ export default {
     return {
       tableHeaders,
       numeraiLoading,
+      userLoading,
       getNumeraiModels,
       user: computed(() => user?.value ? user.value : null),
       categories: computed(() => categories?.value ? categories.value : []),
@@ -159,7 +166,8 @@ export default {
       productGetters,
       orderGetters,
       updateNumeraiApiKeyData,
-      currentOrder
+      currentOrder,
+      numeraiError
     };
   }
 };

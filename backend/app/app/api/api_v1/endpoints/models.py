@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 
-from app.core.apscheduler import scheduler
+# from app.core.apscheduler import scheduler
 
 from app.models import Model, Product
 
@@ -26,7 +26,7 @@ router = APIRouter()
 def fix_product_models(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    # current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Fix product model foreign keys (for db migration only).
@@ -41,58 +41,11 @@ def fix_product_models(
 
 
 # NOT PUBLIC
-async def fetch_single_user_models(user: User):
-    models = get_numerai_models(current_user=user)
-    for model in models:
-        model_performance = get_numerai_model_performance(tournament=int(model['tournament']), model_name=model['name'])
-        model['model_performance'] = model_performance
-    return {'id': user.id, 'models': models}
+
 
 
 # @scheduler.scheduled_job('cron', id='batch_update_models', day_of_week='wed-sun')
-def batch_update_models():
-    db = SessionLocal()
-    try:
-        print(f'{datetime.utcnow()} Running batch_update_models...')
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        users = crud.user.search(db, filters={'numerai_api_key_public_id': ['any']})['data']
-        tasks = []
-        for user in users:
-            tasks.append(fetch_single_user_models(user=user))
-        all_user_models = loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
-        # ingest numerai models to db
-        db_models = {}
-        for user_models in all_user_models:
-            try:
-                for model in user_models['models']:
-                    db_models[model['id']] = Model(
-                        id=model['id'], name=model['name'], tournament=int(model['tournament']),
-                        owner_id=int(user_models['id']),
-                        nmr_staked=Decimal(model['model_performance']['nmrStaked']) if model['model_performance']['nmrStaked'] else 0,
-                        start_date=model['model_performance']['startDate'],
-                        latest_ranks=model['model_performance']['modelPerformance']['latestRanks'],
-                        latest_reps=model['model_performance']['modelPerformance']['latestReps'],
-                        latest_returns=model['model_performance']['modelPerformance']['latestReturns'],
-                        round_model_performances=model['model_performance']['modelPerformance']['roundModelPerformances']
-                    )
-            except Exception as e:
-                print(e)
-            continue
-
-        for db_model in db.query(Model).filter(Model.id.in_(db_models.keys())).all():
-            # Updates
-            db.merge(db_models.pop(db_model.id))
-
-        # Inserts
-        db.add_all(db_models.values())
-        db.commit()
-
-        print(f'{datetime.utcnow()} Finished batch_update_models')
-    finally:
-        sys.stdout.flush()
-        db.close()
 
 
 def read_models(

@@ -32,4 +32,4 @@ COPY ./app/worker-start.sh /worker-start.sh
 
 RUN chmod +x /worker-start.sh
 
-CMD ["bash", "/worker-start.sh"]
+#CMD ["bash", "/worker-start.sh"]

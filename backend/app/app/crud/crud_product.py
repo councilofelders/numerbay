@@ -45,7 +45,12 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             self, db: Session, *, obj_in: ProductCreate, owner_id: int
     ) -> Product:
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data, owner_id=owner_id)
+
+        model_id = None
+        model = crud.model.get_by_name(db, name=obj_in.name)
+        if model:
+            model_id = model.id
+        db_obj = self.model(**obj_in_data, owner_id=owner_id, model_id=model_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -151,7 +156,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     except Exception as e:
                         print(e)
 
-        query = db.query(self.model).join(self.model.model)
+        query = db.query(self.model).join(self.model.model, isouter=True)
         if len(query_filters) > 0:
             query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
             query = query.filter(query_filter)
@@ -173,7 +178,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                 func.min(Model.latest_returns.cast(JSON)['threeMonths'].as_string().cast(Float)).label("min_return3m"),
                 func.max(Model.latest_returns.cast(JSON)['threeMonths'].as_string().cast(Float)).label("max_return3m")
             )
-            .select_from(self.model).join(self.model.model)
+            .select_from(self.model).join(self.model.model, isouter=True)
         )
 
         agg_filters = []

@@ -42,8 +42,11 @@ const params: UseUserFactoryParams<User, any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateUser: async (context: Context, { currentUser, updatedUserData }) => {
     Logger.debug('UpdateUser');
-    const data = await context.$numerbay.api.userUpdateMe(updatedUserData);
-    return data;
+    const response = await context.$numerbay.api.userUpdateMe(updatedUserData);
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

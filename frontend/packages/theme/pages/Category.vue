@@ -57,18 +57,8 @@
           <span class="navbar__label smartphone-only">{{ pagination.totalItems }} {{ $t('Items') }}</span>
         </div>
 
-        <!--<div class="navbar__view">
+        <div class="navbar__view">
           <span class="navbar__view-label desktop-only">{{ $t('View') }}</span>
-          <SfIcon
-            class="navbar__view-icon"
-            :color="isCategoryGridView ? 'black' : 'dark-secondary'"
-            icon="tiles"
-            size="12px"
-            role="button"
-            aria-label="Change to grid view"
-            :aria-pressed="isCategoryGridView"
-            @click="changeToCategoryGridView"
-          />
           <SfIcon
             class="navbar__view-icon"
             :color="!isCategoryGridView ? 'black' : 'dark-secondary'"
@@ -79,7 +69,17 @@
             :aria-pressed="!isCategoryGridView"
             @click="changeToCategoryListView"
           />
-        </div>-->
+          <SfIcon
+            class="navbar__view-icon"
+            :color="isCategoryGridView ? 'black' : 'dark-secondary'"
+            icon="tiles"
+            size="12px"
+            role="button"
+            aria-label="Change to grid view"
+            :aria-pressed="isCategoryGridView"
+            @click="changeToCategoryGridView"
+          />
+        </div>
       </div>
     </div>
 
@@ -195,15 +195,15 @@
               :link="localePath(`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`)"
             >
               <template #price>
-                # {{product.model ? product.model.latest_ranks.corr : 'NA'}}
+                # {{product.model ? product.model.latest_ranks.corr : '-'}}
               </template>
               <template #description></template>
               <template #configuration>
-                <SfProperty class="desktop-only" name="Stake" :value="`${product.model.nmr_staked.toFixed(2)} NMR`" style="margin: 0 0 1rem 0;"/>
-                <SfProperty class="desktop-only" name="Corr Rep" :value="product.model.latest_reps.corr.toFixed(4)" style="margin: 0 0 1rem 0;"/>
+                <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`" style="margin: 0 0 1rem 0;"/>
+                <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)" style="margin: 0 0 1rem 0;"/>
                 <SfProperty class="desktop-only" name="3M Return">
                   <template #value>
-                    <span :class="`delta-${product.model.latest_returns.threeMonths>0?'positive':'negative'}`">{{ product.model.latest_returns.threeMonths.toFixed(2) }}%</span>
+                    <span :class="`delta-${Number(productGetters.getModelReturn(product, 'threeMonths', 2))>0?'positive':'negative'}`">{{ productGetters.getModelReturn(product, 'threeMonths', 2) }}%</span>
                   </template>
                 </SfProperty>
               </template>
@@ -469,7 +469,7 @@ export default {
     };
 
     const getRangeFilterOption = (options, tag) => {
-      return options.filter(o=>o.id === tag) ? options.filter(o=>o.id === tag)[0].value : 0;
+      return options.filter(o=>o.id === tag) ? Number(options.filter(o=>o.id === tag)[0].value) : 0;
     };
 
     const getSelectedRangeFilterValue = (facet) => {

@@ -9,7 +9,7 @@
         <div v-if="products && products.length > 0" class="search__wrapper-results" key="results">
           <SfMegaMenuColumn :title="$t('Categories')" class="sf-mega-menu-column--pined-content-on-mobile search__categories">
             <template #title="{title}">
-              <SfMenuItem :label="title" @click="megaMenu.changeActive(title)">
+              <SfMenuItem :label="title"><!--@click="megaMenu.changeActive(title)"-->
                 <template #mobile-nav-icon>
                   &#8203;
                 </template>
@@ -17,7 +17,7 @@
             </template>
             <SfList>
               <SfListItem v-for="(category, key) in categories.items" :key="key">
-                <SfMenuItem :label="category.label" :link="`/c/women/${category.slug}`">
+                <SfMenuItem :label="category.label" :link="`/c/${category.slug}`">
                   <template #mobile-nav-icon>
                     &#8203;
                   </template>

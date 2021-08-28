@@ -1,5 +1,11 @@
 import {ProductVariant} from '@vue-storefront/numerbay-api';
 import {FacetSearchResult} from '@vue-storefront/core';
+import {
+  AgnosticAttribute,
+  AgnosticBreadcrumb,
+  AgnosticMediaGalleryItem,
+  AgnosticPrice
+} from '@vue-storefront/core/lib/src/types';
 
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 
@@ -16,6 +22,7 @@ export type User = {
     // eslint-disable-next-line camelcase
   numerai_api_key_public_id?: string;
   nonce?: string;
+  models?: any[]
 };
 
 export type UserAddress = Record<string, unknown>;
@@ -104,5 +111,24 @@ export interface UserGetters<USER> {
     getPublicAddress: (customer: USER) => string;
     getNumeraiApiKeyPublicId: (customer: USER) => string;
     getNonce: (customer: USER) => string;
+    getModels: (customer: USER, tournament: number, sortDate: boolean) => any[];
     [getterName: string]: (element: any, options?: any) => unknown;
+}
+
+export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
+    getName: (product: PRODUCT) => string;
+    getSlug: (product: PRODUCT) => string;
+    getPrice: (product: PRODUCT) => AgnosticPrice;
+    getGallery: (product: PRODUCT) => AgnosticMediaGalleryItem[];
+    getCoverImage: (product: PRODUCT) => string;
+    getFiltered: (products: PRODUCT[], filters?: PRODUCT_FILTER) => PRODUCT[];
+    getAttributes: (products: PRODUCT[] | PRODUCT, filters?: Array<string>) => Record<string, AgnosticAttribute | string>;
+    getDescription: (product: PRODUCT) => string;
+    getCategoryIds: (product: PRODUCT) => string[];
+    getId: (product: PRODUCT) => string;
+    getFormattedPrice: (price: number) => string;
+    getTotalReviews: (product: PRODUCT) => number;
+    getAverageRating: (product: PRODUCT) => number;
+    getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
+    [getterName: string]: any;
 }

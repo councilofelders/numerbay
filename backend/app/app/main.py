@@ -3,7 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
 # from app.core.apscheduler import scheduler, register_init
-from app.core.apscheduler import scheduler
+# from app.core.apscheduler import scheduler
 from app.core.config import settings
 
 import sys
@@ -36,7 +36,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 # register_init(app)
 
 
-scheduler.init_scheduler()
+# scheduler.init_scheduler()
 
 # def tick():
 #     print('Tick! The time is: %s' % datetime.now())

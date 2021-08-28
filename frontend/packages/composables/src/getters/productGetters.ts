@@ -1,10 +1,10 @@
 import {
   AgnosticMediaGalleryItem,
   AgnosticAttribute,
-  AgnosticPrice,
-  ProductGetters
+  AgnosticPrice
 } from '@vue-storefront/core';
 import { ProductVariant } from '@vue-storefront/numerbay-api/src/types';
+import { ProductGetters } from '../types';
 
 type ProductVariantFilters = any
 
@@ -66,6 +66,12 @@ export const getProductTotalReviews = (product: ProductVariant): number => 0;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductAverageRating = (product: ProductVariant): number => 0;
 
+export const getProductModelNmrStaked = (product: ProductVariant, decimals = 2): any => (product as any)?.model?.nmr_staked?.toFixed(decimals) || '-';
+
+export const getProductModelRep = (product: ProductVariant, key: string, decimals = 4): any => ((product as any)?.model?.latest_reps || {})[key]?.toFixed(decimals) || '-';
+
+export const getProductModelReturn = (product: ProductVariant, key: string, decimals = 2): any => ((product as any)?.model?.latest_returns || {})[key]?.toFixed(decimals) || '-';
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -79,7 +85,10 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getId: getProductId,
   getFormattedPrice: getFormattedPrice,
   getTotalReviews: getProductTotalReviews,
-  getAverageRating: getProductAverageRating
+  getAverageRating: getProductAverageRating,
+  getModelNmrStaked: getProductModelNmrStaked,
+  getModelRep: getProductModelRep,
+  getModelReturn: getProductModelReturn
 };
 
 export default productGetters;

@@ -1,8 +1,8 @@
 """Add Numerai Models
 
-Revision ID: 76140d7db1d2
+Revision ID: 7ddf2372a420
 Revises: 85b3d8acbe08
-Create Date: 2021-08-22 12:51:55.480289
+Create Date: 2021-08-28 06:42:16.438596
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '76140d7db1d2'
+revision = '7ddf2372a420'
 down_revision = '85b3d8acbe08'
 branch_labels = None
 depends_on = None

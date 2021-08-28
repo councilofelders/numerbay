@@ -12,6 +12,7 @@
           name="numeraiApiKeyPublicId"
           label="Numerai API Key Public Id"
           required
+          :disabled="loading"
           :valid="!errors[0]"
           :errorMessage="errors[0]"
         />
@@ -23,11 +24,19 @@
           label="Numerai API Key Secret"
           type="password"
           required
+          :disabled="loading"
           :valid="!errors[0]"
           :errorMessage="errors[0]"
         />
       </ValidationProvider>
-      <SfButton class="form__button">{{ $t('Save') }}</SfButton>
+      <div v-if="error.updateUser">
+        {{ error.updateUser }}
+      </div>
+      <div v-if="loading">
+        <SfLoader :class="{ loader: loading }" :loading="loading"></SfLoader>
+        Checking API key, please wait...
+      </div>
+      <SfButton class="form__button" :disabled="loading">{{ $t('Save') }}</SfButton>
     </form>
   </ValidationObserver>
 </template>
@@ -36,7 +45,7 @@
 import { ref } from '@vue/composition-api';
 import { ValidationProvider, ValidationObserver } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
-import { SfInput, SfButton, SfLink } from '@storefront-ui/vue';
+import { SfInput, SfButton, SfLink, SfLoader } from '@storefront-ui/vue';
 
 export default {
   name: 'NumeraiApiForm',
@@ -45,13 +54,22 @@ export default {
     SfInput,
     SfButton,
     SfLink,
+    SfLoader,
     ValidationProvider,
     ValidationObserver
   },
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   setup(_, { emit }) {
-    const { user } = useUser();
+    const { user, error, loading } = useUser();
+
+    // const error = reactive({
+    //   updateUser: null
+    // });
+    //
+    // const resetErrorValues = () => {
+    //   error.updateUser = null;
+    // };
 
     const resetForm = () => ({
       numeraiApiKeyPublicId: userGetters.getNumeraiApiKeyPublicId(user.value)
@@ -64,6 +82,7 @@ export default {
         const onComplete = () => {
           form.value = resetForm();
           resetValidationFn();
+          // resetErrorValues();
         };
 
         const onError = () => {
@@ -76,6 +95,8 @@ export default {
 
     return {
       form,
+      error,
+      loading,
       submitForm
     };
   }

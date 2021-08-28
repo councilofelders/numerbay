@@ -1,6 +1,7 @@
 import secrets
 from typing import Any, List
 
+from app.db.session import SessionLocal
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
@@ -72,7 +73,6 @@ def update_user_me(
     current_user_data = jsonable_encoder(current_user)
     user_in = schemas.UserUpdate(**current_user_data)
     # Either username or publicAddress needs to be available
-    print(f"publicAddress: {public_address}")
     if password is not None:
         user_in.password = password
     if username is not None:
@@ -83,6 +83,12 @@ def update_user_me(
         user_in.numerai_api_key_public_id = numerai_api_key_public_id
     if numerai_api_key_secret is not None:
         user_in.numerai_api_key_secret = numerai_api_key_secret
+        user_json = jsonable_encoder(user_in)
+        user_json['id'] = current_user.id
+        tmp_db = SessionLocal()
+        result = crud.model.update_model(tmp_db, user_json=user_json)
+        if not result:
+            raise HTTPException(status_code=400, detail="Numerai API Error: Insufficient Permission.")
     if public_address is not None and public_address == '':  # disconnect web3
         user_in.public_address = None
         user_in.signature = None
@@ -95,7 +101,6 @@ def update_user_me(
         user_in.nonce = new_nonce
         user_in.public_address = public_address
         user_in.signature = signature
-
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 

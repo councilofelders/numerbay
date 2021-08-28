@@ -62,7 +62,24 @@ services:
     volumes:
       - ./backend/app:/app
     environment:
-      - RUN=celery worker -A app.worker -l info -Q main-queue -c 1
+      - RUN=celery worker -A app.worker -l info -Q main-queue,beat-queue -P eventlet -c 100
+      - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
+      - SERVER_HOST=http://${DOMAIN?Variable not set}
+    depends_on:
+      - celerybeat
+    build:
+      context: ./backend
+      dockerfile: celeryworker.dockerfile
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+        INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
+    command: bash -c "python /app/app/celeryworker_pre_start.py && celery worker -A app.worker -l info -Q main-queue,beat-queue -P eventlet -c 100"
+
+  celerybeat:
+    volumes:
+      - ./backend/app:/app
+    environment:
+      - RUN=celery beat -A app.worker -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
     build:
@@ -71,6 +88,7 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-true}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
+    command: bash -c "python /app/app/celeryworker_pre_start.py && celery beat -A app.worker -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
 
   frontend:
     build:

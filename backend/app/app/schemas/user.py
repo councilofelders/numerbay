@@ -1,9 +1,12 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr
 
 
 # Shared properties
+from .model import ModelMinimal
+
+
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
@@ -38,6 +41,7 @@ class UserInDBBase(UserBase):
 # Additional properties to return via API
 class User(UserInDBBase):
     numerai_api_key_public_id: Optional[str] = None
+    models: Optional[List[ModelMinimal]] = []
 
 
 # Additional properties stored in DB

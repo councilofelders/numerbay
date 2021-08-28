@@ -25,9 +25,9 @@
                     :errorMessage="errors[0]" required :disabled="!!currentListing" @input="populateModelInfo">
                     <SfSelectOption value=""></SfSelectOption>
                     <SfSelectOption value="">========== Numerai Models ==========</SfSelectOption>
-                    <SfSelectOption v-for="model in numerai.models.filter((m)=>m.tournament===8)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=8, sortDate=false)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
                     <SfSelectOption value="">========== Signals Models ==========</SfSelectOption>
-                    <SfSelectOption v-for="model in numerai.models.filter((m)=>m.tournament===11)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=11, sortDate=false)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
                 <!--<ValidationProvider rules="required" v-slot="{ errors }">
@@ -141,7 +141,7 @@
                 <SfButton v-e2e="'listing-modal-submit'"
                   type="submit"
                   class="sf-button--full-width"
-                  :disabled="loading"
+                  :disabled="loading || !!numeraiError.getModels"
                   v-if="!currentListing"
                 >
                   <SfLoader :class="{ loader: loading }" :loading="loading">
@@ -152,7 +152,7 @@
                   <SfButton v-e2e="'listing-modal-submit'"
                     type="submit"
                     class="sf-button form__button"
-                    :disabled="loading"
+                    :disabled="loading || !!numeraiError.getModels"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">
                       <div>{{ $t('Save') }}</div>
@@ -161,7 +161,7 @@
                   <SfButton v-e2e="'listing-modal-submit'"
                     type="button"
                     class="sf-button color-danger"
-                    :disabled="loading"
+                    :disabled="loading || !!numeraiError.getModels"
                     @click="handleDeleteProduct"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">
@@ -294,7 +294,7 @@ export default {
     const { isListingModalOpen, currentListing, toggleListingModal } = useUiState();
     const { categories, search: categorySearch } = useCategory();
     const { search: productSearch, createProduct, updateProduct, deleteProduct, loading, error: productError } = useProduct('products');
-    const { numerai } = useNumerai();
+    const { numerai, error: numeraiError } = useNumerai('my-listings');
     const { user } = useUser();
     onSSR(async () => {
       await categorySearch();
@@ -378,12 +378,15 @@ export default {
     return {
       form,
       error,
+      user,
       productError,
       loading,
       isListingModalOpen,
       currentListing,
       toggleListingModal,
+      userGetters,
       numerai: computed(() => numerai ? numerai.value : null),
+      numeraiError,
       leafCategories: computed(() => categories ? categories.value.filter((category) => {
         return category.items.length === 0;
       }) : []),
