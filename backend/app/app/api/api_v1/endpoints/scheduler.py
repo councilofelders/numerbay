@@ -20,8 +20,8 @@ router = APIRouter()
 
 @router.get('/get_schedules')
 def get_schedules(
-    # *,
-    # current_user: models.User = Depends(deps.get_current_active_superuser),
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     i = celery_app.control.inspect()
     return {'scheduled': i.scheduled(), 'active': i.active(), 'reserved': i.reserved(), 'registered': i.registered()}
@@ -35,8 +35,8 @@ def get_schedules(
 
 @router.post('/test')
 def add_job_test(
-    # *,
-    # current_user: models.User = Depends(deps.get_current_active_superuser),
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     celery_app.send_task("app.worker.tick", args=["add"])
 
@@ -54,8 +54,8 @@ def add_job_test(
 
 @router.post('/numerai-models')
 def add_job_numerai_models(
-    # *,
-    # current_user: models.User = Depends(deps.get_current_active_superuser),
+    *,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     celery_app.send_task("app.worker.batch_update_models_task")
 
