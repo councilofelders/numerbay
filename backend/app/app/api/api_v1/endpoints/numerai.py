@@ -1,10 +1,8 @@
 from typing import Any, List, Dict
-from numerapi import NumerAPI
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException
 
-from app import crud, models, schemas
+from app import crud, models
 from app.api import deps
 
 router = APIRouter()

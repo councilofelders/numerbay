@@ -3,7 +3,7 @@ import functools
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, func
+from sqlalchemy import and_, desc, func, nullslast
 from sqlalchemy.types import Integer, Float, JSON
 
 from app import crud
@@ -161,7 +161,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
             query = query.filter(query_filter)
         count = query.count()
-        query = query.order_by(parse_sort_option(sort))
+        query = query.order_by(nullslast(parse_sort_option(sort)))
         data = (
             query
                 .offset(skip)

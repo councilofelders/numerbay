@@ -1,22 +1,13 @@
-import asyncio
-import sys
-from datetime import datetime
-from decimal import Decimal
-from typing import Any, List
+from typing import Any
 
-from app.api.api_v1.endpoints.numerai import get_numerai_models, get_numerai_model_performance
-from app.db.session import SessionLocal
-from app.schemas import User
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, models
 from app.api import deps
+from app.models import Model, Product
 
 # from app.core.apscheduler import scheduler
-
-from app.models import Model, Product
 
 router = APIRouter()
 
@@ -31,11 +22,8 @@ def fix_product_models(
     """
     Fix product model foreign keys (for db migration only).
     """
-    models = crud.model.get_multi(db)
-    for model in models:
-        products = db.query(Product).filter(Product.name == model.name).all()
-        for product in products:
-            product.model_id = model.id
+    # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
+    db.query(Product).filter(Product.name == Model.name).update({Product.model_id: Model.id}, synchronize_session=False)
     db.commit()
     return {"msg": "success!"}
 

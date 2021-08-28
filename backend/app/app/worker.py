@@ -1,19 +1,14 @@
 import sys
-from decimal import Decimal
 
-from app.schemas import User
-from raven import Client
 from celery import group
 from celery.schedules import crontab
-from celery.canvas import subtask, chord
-from celery.result import AsyncResult, allow_join_result
+from fastapi.encoders import jsonable_encoder
+from raven import Client
 
-from app import crud, models
+from app import crud
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
-from fastapi.encoders import jsonable_encoder
-
 
 client_sentry = Client(settings.SENTRY_DSN)
 

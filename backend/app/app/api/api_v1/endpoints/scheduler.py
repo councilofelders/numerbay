@@ -1,19 +1,11 @@
-import asyncio
-import secrets
-import sys
-from datetime import datetime
-from typing import Any, List
+from typing import Any
 
-# from .models import batch_update_models
-# from app.core.apscheduler import scheduler
-from fastapi import APIRouter, Body, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
 
-from app import crud, models, schemas
+from app import models
 from app.api import deps
-from app.core.config import settings
 from app.core.celery_app import celery_app
-# from app.worker import tick
+
 
 router = APIRouter()
 
