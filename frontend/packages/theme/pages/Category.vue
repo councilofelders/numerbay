@@ -199,8 +199,9 @@
               </template>
               <template #description></template>
               <template #configuration>
-                <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`" style="margin: 0 0 1rem 0;"/>
-                <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)" style="margin: 0 0 1rem 0;"/>
+                <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`"/>
+                <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)"/>
+                <SfProperty class="desktop-only" name="MMC Rep" :value="productGetters.getModelRep(product, 'mmc', 4)"/>
                 <SfProperty class="desktop-only" name="3M Return">
                   <template #value>
                     <span :class="`delta-${Number(productGetters.getModelReturn(product, 'threeMonths', 2))>0?'positive':'negative'}`">{{ productGetters.getModelReturn(product, 'threeMonths', 2) }}%</span>

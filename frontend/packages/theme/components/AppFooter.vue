@@ -45,7 +45,17 @@ export default {
           name: 'Official Numerai',
           children: [
             { name: 'Numerai', clickHandler: () => window.open('https://numer.ai/', '_blank') },
-            { name: 'Signals', clickHandler: () => window.open('https://signals.numer.ai/', '_blank') }
+            { name: 'Signals', clickHandler: () => window.open('https://signals.numer.ai/', '_blank') },
+            { name: 'Forum', clickHandler: () => window.open('hhttps://forum.numer.ai/', '_blank') },
+            { name: 'RocketChat', clickHandler: () => window.open('https://community.numer.ai/', '_blank') }
+          ]
+        },
+        community: {
+          name: 'Community',
+          children: [
+            { name: 'CoE Gnosis Safe Wallet', clickHandler: () => window.open('https://gnosis-safe.io/app/#/safes/0xF58B7c28DAF13926329ef0c74FA3f7258f5A9131/', '_blank') },
+            { name: 'Dashboard by @QE', clickHandler: () => window.open('https://app.powerbi.com/view?r=eyJrIjoiMzI3MTRkM2YtMTA1My00YmU1LWI0M2ItZGZjZTBiMjhlMzlhIiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9', '_blank') },
+            { name: 'Newsletter by @Aventurine', clickHandler: () => window.open('https://coenumerainewsletter.substack.com/', '_blank') }
           ]
         }
       };

@@ -66,6 +66,10 @@
     </LazyHydrate>-->
 
     <LazyHydrate when-visible>
+      <iframe width="100%" height="747" src="https://app.powerbi.com/view?r=eyJrIjoiMzI3MTRkM2YtMTA1My00YmU1LWI0M2ItZGZjZTBiMjhlMzlhIiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9" frameborder="0" allowFullScreen="true"></iframe>
+    </LazyHydrate>
+
+    <LazyHydrate when-visible>
       <SfCallToAction
         title="Subscribe to COE Numerai Newsletters"
         button-text="Subscribe"

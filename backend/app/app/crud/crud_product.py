@@ -32,6 +32,18 @@ def parse_sort_option(sort):
         return Model.latest_returns.cast(JSON)['threeMonths'].as_string().cast(Float)
     elif sort == 'return3m-down':
         return desc(Model.latest_returns.cast(JSON)['threeMonths'].as_string().cast(Float))
+    elif sort == 'mmc-up':
+        return Model.latest_reps.cast(JSON)['mmc'].as_string().cast(Float)
+    elif sort == 'mmc-down':
+        return desc(Model.latest_reps.cast(JSON)['mmc'].as_string().cast(Float))
+    elif sort == 'corrmmc-up':
+        return Model.latest_reps.cast(JSON)['corr'].as_string().cast(Float)+Model.latest_reps.cast(JSON)['mmc'].as_string().cast(Float)
+    elif sort == 'corrmmc-down':
+        return desc(Model.latest_reps.cast(JSON)['corr'].as_string().cast(Float)+Model.latest_reps.cast(JSON)['mmc'].as_string().cast(Float))
+    elif sort == 'corr2mmc-up':
+        return Model.latest_reps.cast(JSON)['corr'].as_string().cast(Float)+2.0*Model.latest_reps.cast(JSON)['mmc'].as_string().cast(Float)
+    elif sort == 'corr2mmc-down':
+        return desc(Model.latest_reps.cast(JSON)['corr'].as_string().cast(Float)+2.0*Model.latest_reps.cast(JSON)['mmc'].as_string().cast(Float))
     elif sort == 'stake-up':
         return Model.nmr_staked
     elif sort == 'stake-down':

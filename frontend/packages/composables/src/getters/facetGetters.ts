@@ -20,12 +20,15 @@ const getGrouped = (searchData, criteria?: string[]): AgnosticGroupedFacet[] => 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getSortOptions = (searchData): AgnosticSort => {
   const options = [
-    { type: 'sort', id: 'rank-best', value: 'Rank from best to worst', count: null },
-    { type: 'sort', id: 'rank-worst', value: 'Rank from worst to best', count: null },
+    { type: 'sort', id: 'rank-best', value: 'Rank from top to bottom', count: null },
+    // { type: 'sort', id: 'rank-worst', value: 'Rank from worst to best', count: null },
     { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
-    { type: 'sort', id: 'stake-up', value: 'Stake from low to high', count: null },
+    // { type: 'sort', id: 'stake-up', value: 'Stake from low to high', count: null },
     { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
-    { type: 'sort', id: 'return3m-up', value: '3M Return from low to high', count: null },
+    // { type: 'sort', id: 'return3m-up', value: '3M Return from low to high', count: null },
+    { type: 'sort', id: 'mmc-down', value: 'MMC Rep from high to low', count: null },
+    { type: 'sort', id: 'corrmmc-down', value: 'CORR+MMC Rep from high to low', count: null },
+    { type: 'sort', id: 'corr2mmc-down', value: 'CORR+2xMMC Rep from high to low', count: null },
     { type: 'sort', id: 'name-up', value: 'Name: A to Z', count: null},
     // { type: 'sort', id: 'price-up', value: 'Price from low to high', count: null },
     // { type: 'sort', id: 'price-down', value: 'Price from high to low', count: null },
