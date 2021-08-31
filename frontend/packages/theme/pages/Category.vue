@@ -168,7 +168,7 @@
               @click:wishlist="addItemToWishlist({ product })"
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
             >
-              <template #price>{{ productGetters.getFormattedPrice(product) }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
+              <template #price="{price}">{{ price }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
                                      data-emoji="glitch_black" title=":glitch_black:"
                                      v-if="product.currency === 'NMR'">:glitch_black: </span>
               </template>
@@ -197,8 +197,17 @@
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
               :link="localePath(`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`)"
             >
+              <template #title="{ title, link}">
+                <SfLink :link="link" class="sf-product-card-horizontal__link">
+                  <h3 class="sf-product-card-horizontal__title">
+                    {{ title }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
+                                     data-emoji="glitch_black" title=":glitch_black:"
+                                     v-if="product.currency === 'NMR'">:glitch_black: </span>
+                  </h3>
+                </SfLink>
+              </template>
               <template #price>
-                # {{product.model ? product.model.latest_ranks.corr : '-'}}
+                <span title="Corr Rank"># {{product.model ? product.model.latest_ranks.corr : '-'}}</span>
               </template>
               <template #description></template>
               <template #configuration>
@@ -375,7 +384,8 @@ import {
   SfBreadcrumbs,
   SfLoader,
   SfRange,
-  SfProperty
+  SfProperty,
+  SfLink
 } from '@storefront-ui/vue';
 import { ref, computed, onMounted } from '@vue/composition-api';
 import { useCart, useWishlist, productGetters, useFacet, facetGetters } from '@vue-storefront/numerbay';
@@ -542,6 +552,7 @@ export default {
     SfRange,
     SfHeading,
     SfProperty,
+    SfLink,
     BuyButton,
     LazyHydrate
   }

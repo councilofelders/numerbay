@@ -13,14 +13,14 @@
         :value="1"
         class="sf-property--full-width sf-property--large property"
       />
-      <SfProperty
+      <!--<SfProperty
         name="Subtotal"
         :value="productGetters.getFormattedPrice(products[0])"
         :class="[
-          'sf-property--full-width',
-          'sf-property--large',
+          'sf-property&#45;&#45;full-width',
+          'sf-property&#45;&#45;large',
         ]"
-      />
+      />-->
       <SfProperty
         name="Total"
         :value="productGetters.getFormattedPrice(products[0])"
@@ -80,7 +80,7 @@ export default {
   setup (props, context) {
     const id = context.root.$route.query.product;
     const { cart, removeItem, updateItemQty, applyCoupon } = useCart();
-    const { products, search, loading: productLoading } = useProduct(String(id));
+    const { products } = useProduct(String(id));
     const listIsHidden = ref(false);
     const promoCode = ref('');
     const showPromoCode = ref(false);

@@ -48,7 +48,11 @@
           </SfTableHeading>
           <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)">
             <SfTableData>{{ orderGetters.getId(order) }}</SfTableData>
-            <SfTableData>{{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}</SfTableData>
+            <SfTableData>
+              <SfLink :link="'/p/'+orderGetters.getProduct(order).id+'/'+orderGetters.getItemSku(orderGetters.getProduct(order))">
+                {{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}
+              </SfLink>
+            </SfTableData>
             <SfTableData>{{ orderGetters.getDate(order) }}</SfTableData>
             <SfTableData>{{ orderGetters.getFormattedPrice(order) }}</SfTableData>
             <SfTableData>
@@ -74,7 +78,8 @@ import {
   SfTabs,
   SfTable,
   SfButton,
-  SfProperty
+  SfProperty,
+  SfLink
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import { useUserOrder, orderGetters } from '@vue-storefront/numerbay';
@@ -89,6 +94,7 @@ export default {
     SfTable,
     SfButton,
     SfProperty,
+    SfLink,
     OrderInfoPanel
   },
   mounted() {

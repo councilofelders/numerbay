@@ -111,6 +111,8 @@ export interface UserGetters<USER> {
     getPublicAddress: (customer: USER) => string;
     getNumeraiApiKeyPublicId: (customer: USER) => string;
     getNonce: (customer: USER) => string;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     getModels: (customer: USER, tournament: number, sortDate: boolean) => any[];
     [getterName: string]: (element: any, options?: any) => unknown;
 }

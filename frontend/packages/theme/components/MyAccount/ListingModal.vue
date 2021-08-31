@@ -105,6 +105,7 @@
                       details="Sell natively on NumerBay for cryptocurrency"
                       description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution."
                       v-model="form.isOnPlatform"
+                      @change="onPlatformChange(form.isOnPlatform)"
                       class="form__radio"
                     />
                     <SfRadio
@@ -114,6 +115,7 @@
                       details="Link to 3rd-party platforms"
                       description="Off-Platform reference only. Self-managed."
                       v-model="form.isOnPlatform"
+                      @change="onPlatformChange(form.isOnPlatform)"
                       class="form__radio"
                     />
                   </ValidationProvider>
@@ -213,7 +215,7 @@
                       :valid="!errors[0]"
                       :errorMessage="errors[0]"
                       name="price"
-                      label="Price (in $USD)"
+                      label="Price (per round equivalent, in $USD)"
                       type="number"
                       step=any
                       min=0
@@ -305,7 +307,7 @@ import {ref, watch, reactive, computed} from '@vue/composition-api';
 import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
-import { required, email, min_value } from 'vee-validate/dist/rules';
+import { required, min_value } from 'vee-validate/dist/rules';
 import {
   userGetters,
   useUser,
@@ -317,11 +319,6 @@ import {
 } from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
-
-extend('email', {
-  ...email,
-  message: 'Invalid email'
-});
 
 extend('required', {
   ...required,
@@ -421,6 +418,13 @@ export default {
     };
   },
   methods: {
+    onPlatformChange(isOnPlatform) {
+      if (isOnPlatform === 'true') {
+        this.form.currency = 'NMR';
+      } else {
+        this.form.currency = 'USD';
+      }
+    },
     onIsPerpetualChange(isPerpetual) {
       if (isPerpetual === 'true') {
         this.form.expirationRound = null;

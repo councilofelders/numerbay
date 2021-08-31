@@ -7,6 +7,7 @@ from app import models
 from app.api import deps
 from app.models import Model, Product
 
+
 router = APIRouter()
 
 

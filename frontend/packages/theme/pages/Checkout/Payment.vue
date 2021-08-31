@@ -43,15 +43,15 @@
     </SfTable>
     <div class="summary">
       <div class="summary__group">
-        <div class="summary__total">
+        <!--<div class="summary__total">
           <SfProperty
             name="Subtotal"
             :value="productGetters.getFormattedPrice(products[0])"
-            class="sf-property--full-width property"
+            class="sf-property&#45;&#45;full-width property"
           />
         </div>
 
-        <SfDivider />
+        <SfDivider />-->
 
         <SfProperty
           name="Total price"
@@ -101,7 +101,7 @@ import {
 import { onSSR } from '@vue-storefront/core';
 import { ref, computed } from '@vue/composition-api';
 import {useProduct, useMakeOrder, useCart, useUser, productGetters} from '@vue-storefront/numerbay';
-import Web3 from 'web3';
+// import Web3 from 'web3';
 
 export default {
   name: 'ReviewOrder',
@@ -121,10 +121,11 @@ export default {
   },
   setup(props, context) {
     const id = context.root.$route.query.product;
-    const { cart, load, setCart } = useCart();
+    const { load, setCart } = useCart();
     const { order, make, loading } = useMakeOrder();
-    const { products, search, loading: productLoading } = useProduct(String(id));
-    // const { web3User, initWeb3Modal, ethereumListener } = useUser();
+    const { products, search } = useProduct(String(id));
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    const { web3User, initWeb3Modal, ethereumListener } = useUser();
 
     const isPaymentReady = ref(false);
     const terms = ref(false);
@@ -151,7 +152,7 @@ export default {
       // });
       try {
         const paymentPromise = (async () => 'fake data')();
-        await paymentPromise.then((obj) => {
+        await paymentPromise.then(() => {
           console.log('Payment success');
           successCallback();
         });
