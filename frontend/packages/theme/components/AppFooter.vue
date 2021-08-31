@@ -53,7 +53,7 @@ export default {
         community: {
           name: 'Community',
           children: [
-            { name: 'CoE Gnosis Safe Wallet', clickHandler: () => window.open('https://gnosis-safe.io/app/#/safes/0xF58B7c28DAF13926329ef0c74FA3f7258f5A9131/', '_blank') },
+            { name: 'CoE Wallet', clickHandler: () => window.open('https://gnosis-safe.io/app/#/safes/0xF58B7c28DAF13926329ef0c74FA3f7258f5A9131/', '_blank') },
             { name: 'Dashboard by @QE', clickHandler: () => window.open('https://app.powerbi.com/view?r=eyJrIjoiMzI3MTRkM2YtMTA1My00YmU1LWI0M2ItZGZjZTBiMjhlMzlhIiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9', '_blank') },
             { name: 'Newsletter by @Aventurine', clickHandler: () => window.open('https://coenumerainewsletter.substack.com/', '_blank') }
           ]

@@ -37,14 +37,6 @@ def update_model_subtask(user_json):
         db.close()
 
 
-# @celery_app.task(name='FINISH_GROUP') #(acks_late=True)
-# def commit_models_subtask(models):
-#     print('Callback')
-#     print(f'models: {models}')
-#     sys.stdout.flush()
-#     return True
-
-
 @celery_app.task #(acks_late=True)
 def batch_update_models_task():
     db = SessionLocal()
