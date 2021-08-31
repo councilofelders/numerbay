@@ -39,7 +39,7 @@
                   v-for="(product, index) in products"
                   :key="index"
                   class="result-card"
-                  :regular-price="$n(productGetters.getPrice(product).regular, 'currency')"
+                  :regular-price="productGetters.getFormattedPrice(product)"
                   :score-rating="false"
                   :reviews-count="7"
                   :image="productGetters.getCoverImage(product)"

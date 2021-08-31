@@ -201,13 +201,14 @@ export default {
     };
 
     const handleBuyButtonClick = (product) => {
-      if (product?.is_on_platform && product?.third_party_url) { // if third party listing
+      if (!product?.is_on_platform && product?.third_party_url) { // if third party listing
         window.open(product?.third_party_url, '_blank');
+      } else {
+        context.root.$router.push(`/checkout/payment?product=${product.id}`);
       }
-      context.root.$router.push(`/checkout/payment?product=${product.id}`);
     };
 
-    // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     const handleCryptoBuyButtonClick = async (product) => {
       await initWeb3Modal();
       await ethereumListener();
@@ -278,8 +279,7 @@ export default {
     MobileStoreBanner,
     LazyHydrate,
     NumeraiChart,
-    BuyButton,
-    SfLoader
+    BuyButton
   },
   // test
   data() {

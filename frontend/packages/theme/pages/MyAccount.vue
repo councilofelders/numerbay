@@ -17,7 +17,7 @@
       class="my-account"
       @click:change="changeActivePage"
     >
-      <SfContentCategory title="Personal Details">
+      <SfContentCategory title="Profile Details">
         <SfContentPage title="My profile">
           <MyProfile />
         </SfContentPage>

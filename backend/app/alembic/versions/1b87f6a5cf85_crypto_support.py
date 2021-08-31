@@ -1,17 +1,17 @@
 """Crypto Support
 
-Revision ID: c11a000eedfa
-Revises: 85b3d8acbe08
-Create Date: 2021-08-18 11:51:47.313288
+Revision ID: 1b87f6a5cf85
+Revises: 7ddf2372a420
+Create Date: 2021-08-31 06:50:26.628091
 
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'c11a000eedfa'
-down_revision = '85b3d8acbe08'
+revision = '1b87f6a5cf85'
+down_revision = '7ddf2372a420'
 branch_labels = None
 depends_on = None
 

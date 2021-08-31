@@ -130,7 +130,7 @@ export default {
       await search({ role: 'buyer', id });
     });
 
-    const order = computed(() => orders.value.data[0]);
+    const order = computed(() => (orders?.value?.data || [])[0]);
     const isPaymentConfirmed = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]) === 'Paid');
 
     // watch(isPaymentConfirmed, () => {

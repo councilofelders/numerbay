@@ -116,7 +116,6 @@ def login_nonce_authenticated(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    print({"nonce": current_user.nonce})
     return {"nonce": current_user.nonce}
 
 # @router.post("/password-recovery/{email}", response_model=schemas.Msg)

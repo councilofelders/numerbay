@@ -7,7 +7,6 @@ from app import crud, models
 from app.api import deps
 from app.models import Model, Product
 
-# from app.core.apscheduler import scheduler
 
 router = APIRouter()
 
