@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
@@ -23,12 +22,27 @@ if settings.BACKEND_CORS_ORIGINS:
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-# APScheduler
-def apscheduler():
-    scheduler = AsyncIOScheduler()
-    try:
-        scheduler.start()
-    except Exception as e:
-        scheduler.shutdown()
+# register_init(app)
 
-apscheduler()
+
+# scheduler.init_scheduler()
+
+# def tick():
+#     print('Tick! The time is: %s' % datetime.now())
+#     sys.stdout.flush()
+
+
+# if __name__ == '__main__':
+#     print("Add job")
+#     sys.stdout.flush()
+#     scheduler.add_job(tick, 'interval', id='test', seconds=5, replace_existing=True)
+#     print("Job added")
+#     sys.stdout.flush()
+
+# @app.get('/test-sh')
+# def test():
+#     print("Add job")
+#     sys.stdout.flush()
+#     scheduler.add_job(tick, 'interval', id='test', seconds=5, replace_existing=True)
+#     print("Job added")
+#     sys.stdout.flush()
