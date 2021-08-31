@@ -1,7 +1,8 @@
-from decimal import Decimal
-from typing import Optional, Dict, List
 from datetime import datetime
-from pydantic import BaseModel, Json
+from decimal import Decimal
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel
 
 
 # Shared properties

@@ -91,4 +91,4 @@ def test_update_user(db: Session) -> None:
     user_2 = crud.user.get(db, id=user.id)
     assert user_2
     assert user.username == user_2.username
-    assert verify_password(new_password, user_2.hashed_password)
+    assert verify_password(new_password, user_2.hashed_password)  # type: ignore

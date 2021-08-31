@@ -11,9 +11,16 @@ from app.tests.utils.utils import random_lower_string
 def test_create_product(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
-    data = {"name": random_lower_string(), "price": 10, "category_id": 1, "description": "Description"}
+    data = {
+        "name": random_lower_string(),
+        "price": 10,
+        "category_id": 1,
+        "description": "Description",
+    }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=normal_user_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
     )
     assert response.status_code == 200
     content = response.json()
@@ -23,13 +30,9 @@ def test_create_product(
     assert "owner" in content
 
 
-def test_read_product(
-    client: TestClient, db: Session
-) -> None:
+def test_read_product(client: TestClient, db: Session) -> None:
     product = create_random_product(db)
-    response = client.get(
-        f"{settings.API_V1_STR}/products/{product.id}",
-    )
+    response = client.get(f"{settings.API_V1_STR}/products/{product.id}",)
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == product.name

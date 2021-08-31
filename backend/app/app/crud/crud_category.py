@@ -9,34 +9,30 @@ from app.schemas.category import CategoryCreate, CategoryUpdate
 
 
 class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
-    def get_all_subcategories(self, db: Session, *, category_id: int):
+    def get_all_subcategories(self, db: Session, *, category_id: int) -> List:
         nodealias = aliased(self.model)
 
         descendants = (
             db.query(self.model)
-                .filter(Category.id == category_id)
-                .cte(name="items", recursive=True)
+            .filter(Category.id == category_id)
+            .cte(name="items", recursive=True)
         )
 
-        descendants = (
-            descendants.union(
-                db.query(nodealias)
-                    .join(descendants, nodealias.parent)
-            )
+        descendants = descendants.union(
+            db.query(nodealias).join(descendants, nodealias.parent)
         )
 
         return db.query(descendants).all()
 
-
     def get_multi_by_slug(
-            self, db: Session, *, slug: str, skip: int = 0, limit: int = 100
+        self, db: Session, *, slug: str, skip: int = 0, limit: int = 100
     ) -> List[Category]:
         return (
             db.query(self.model)
-                .filter(Category.slug == slug)
-                .offset(skip)
-                .limit(limit)
-                .all()
+            .filter(Category.slug == slug)
+            .offset(skip)
+            .limit(limit)
+            .all()
         )
 
     def create_with_parent(

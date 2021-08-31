@@ -1,7 +1,6 @@
 import secrets
-from typing import Any, List
+from typing import Any
 
-from app.db.session import SessionLocal
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
@@ -9,9 +8,11 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.core.config import settings
 from app.core.security import verify_signature
-from app.utils import send_new_account_email
+from app.db.session import SessionLocal
+
+# from app.core.config import settings
+# from app.utils import send_new_account_email
 
 router = APIRouter()
 
@@ -32,14 +33,12 @@ router = APIRouter()
 
 @router.post("/", response_model=schemas.User)
 def create_user(
-    *,
-    db: Session = Depends(deps.get_db),
-    user_in: schemas.UserCreate,
+    *, db: Session = Depends(deps.get_db), user_in: schemas.UserCreate,
 ) -> Any:
     """
     Create new user.
     """
-    user = crud.user.get_by_username(db, username=user_in.username)
+    user = crud.user.get_by_username(db, username=user_in.username)  # type: ignore
     if user:
         raise HTTPException(
             status_code=400,
@@ -47,10 +46,10 @@ def create_user(
         )
     user_in.nonce = secrets.token_hex(32)
     user = crud.user.create(db, obj_in=user_in)
-    if settings.EMAILS_ENABLED and user_in.email:
-        send_new_account_email(
-            email_to=user_in.email, username=user_in.email, password=user_in.password
-        )
+    # if settings.EMAILS_ENABLED and user_in.email:
+    #     send_new_account_email(
+    #         email_to=user_in.email, username=user_in.email, password=user_in.password   # type: ignore
+    #     )
     return user
 
 
@@ -84,19 +83,19 @@ def update_user_me(
     if numerai_api_key_secret is not None:
         user_in.numerai_api_key_secret = numerai_api_key_secret
         user_json = jsonable_encoder(user_in)
-        user_json['id'] = current_user.id
+        user_json["id"] = current_user.id
         tmp_db = SessionLocal()
         result = crud.model.update_model(tmp_db, user_json=user_json)
         if not result:
-            raise HTTPException(status_code=400, detail="Numerai API Error: Insufficient Permission.")
-    if public_address is not None and public_address == '':  # disconnect web3
+            raise HTTPException(
+                status_code=400, detail="Numerai API Error: Insufficient Permission."
+            )
+    if public_address is not None and public_address == "":  # disconnect web3
         user_in.public_address = None
         user_in.signature = None
     if public_address is not None and signature is not None:
-        if not verify_signature(public_address, current_user.nonce, signature):
-            raise HTTPException(
-                status_code=400, detail="Invalid signature"
-            )
+        if not verify_signature(public_address, current_user.nonce, signature):  # type: ignore
+            raise HTTPException(status_code=400, detail="Invalid signature")
         new_nonce = secrets.token_hex(32)
         user_in.nonce = new_nonce
         user_in.public_address = public_address

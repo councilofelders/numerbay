@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
-from sqlalchemy import Column, ForeignKey, Integer, String, Numeric, JSON, TIMESTAMP
+
+from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -7,11 +8,14 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
+    from .product import Product  # noqa: F401
 
 
 class Model(Base):
     id = Column(String, primary_key=True, index=True)
-    last_updated = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+    last_updated = Column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp()
+    )
     name = Column(String, index=True)
     tournament = Column(Integer)
     nmr_staked = Column(Numeric)

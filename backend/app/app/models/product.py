@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Numeric
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
-    from .category import Category
-    from .model import Model
+    from .category import Category  # noqa: F401
+    from .model import Model  # noqa: F401
 
 
 class Product(Base):
@@ -24,4 +24,4 @@ class Product(Base):
     category_id = Column(Integer, ForeignKey("category.id"))
     category = relationship("Category", lazy="subquery")
     model_id = Column(String, ForeignKey("model.id"))
-    model = relationship("Model", lazy='subquery', back_populates="products")
+    model = relationship("Model", lazy="subquery", back_populates="products")

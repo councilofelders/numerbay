@@ -52,7 +52,8 @@
           <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
           <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
           <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
-          <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">{{ Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2) }}%</p></span>
+          <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
+            {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%</p></span>
           <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
         </div>
         </SfLoader>

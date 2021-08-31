@@ -3,11 +3,9 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import models
 from app.api import deps
 from app.models import Model, Product
-
-# from app.core.apscheduler import scheduler
 
 router = APIRouter()
 
@@ -23,17 +21,11 @@ def fix_product_models(
     Fix product model foreign keys (for db migration only).
     """
     # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
-    db.query(Product).filter(Product.name == Model.name).update({Product.model_id: Model.id}, synchronize_session=False)
+    db.query(Product).filter(Product.name == Model.name).update(
+        {Product.model_id: Model.id}, synchronize_session=False
+    )
     db.commit()
     return {"msg": "success!"}
-
-
-# NOT PUBLIC
-
-
-
-# @scheduler.scheduled_job('cron', id='batch_update_models', day_of_week='wed-sun')
-
 
 
 # def read_models(

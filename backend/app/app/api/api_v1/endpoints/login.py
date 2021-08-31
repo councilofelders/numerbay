@@ -1,5 +1,5 @@
-from datetime import timedelta
 import secrets
+from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -10,12 +10,13 @@ from app import crud, models, schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from app.core.security import get_password_hash
-from app.utils import (
-    generate_password_reset_token,
-    send_reset_password_email,
-    verify_password_reset_token,
-)
+
+# from app.core.security import get_password_hash
+# from app.utils import (
+#     generate_password_reset_token,
+#     send_reset_password_email,
+#     verify_password_reset_token,
+# )
 
 router = APIRouter()
 
@@ -61,7 +62,7 @@ def login_access_token_web3(
         new_nonce = secrets.token_hex(32)
         user_update = {"nonce": new_nonce}
         if not user.is_active:
-            user_update["is_active"] = True
+            user_update["is_active"] = True  # type: ignore
         user = crud.user.update(db, db_obj=user, obj_in=user_update)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect signature")
@@ -87,21 +88,22 @@ def test_token(current_user: models.User = Depends(deps.get_current_user)) -> An
 
 @router.post("/login/nonce", response_model=schemas.Nonce)
 def login_nonce(
-    *,
-    db: Session = Depends(deps.get_db),
-    public_address: str = Body(..., embed=True),
+    *, db: Session = Depends(deps.get_db), public_address: str = Body(..., embed=True),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = crud.user.get_by_public_address(
-        db, public_address=public_address
-    )
+    user = crud.user.get_by_public_address(db, public_address=public_address)
     if not user:
         # create new user with nonce
         nonce = secrets.token_hex(32)
-        new_user = schemas.UserCreate(username=public_address, password=nonce, public_address=public_address,
-                                      nonce=nonce, is_active=False)
+        new_user = schemas.UserCreate(
+            username=public_address,
+            password=nonce,
+            public_address=public_address,
+            nonce=nonce,
+            is_active=False,
+        )
         crud.user.create(db, obj_in=new_user)
         return {"nonce": nonce}
     return {"nonce": user.nonce}
@@ -111,12 +113,13 @@ def login_nonce(
 def login_nonce_authenticated(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user)
+    current_user: models.User = Depends(deps.get_current_user),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
     return {"nonce": current_user.nonce}
+
 
 # @router.post("/password-recovery/{email}", response_model=schemas.Msg)
 # def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:

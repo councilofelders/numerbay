@@ -1,5 +1,4 @@
-from decimal import Decimal
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -27,7 +26,7 @@ class CategoryInDBBase(CategoryBase):
     name: str
     slug: str
     # parent: Optional['CategoryInDBBase']
-    items: Optional[List['CategoryInDBBase']]
+    items: Optional[List["CategoryInDBBase"]]
 
     class Config:
         orm_mode = True

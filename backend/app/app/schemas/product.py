@@ -4,8 +4,8 @@ from typing import Optional
 from pydantic import BaseModel
 
 from app.schemas.category import Category
+from app.schemas.model import ModelSummary
 from app.schemas.user import ProductOwner
-from app.schemas.model import Model, ModelSummary
 
 
 # Shared properties

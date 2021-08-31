@@ -30,32 +30,46 @@ def init_db(db: Session) -> None:
     categories = crud.category.get_multi(db)
     if not categories or len(categories) < 1:
         sub_categories_in = [
-            schemas.CategoryCreate(name='Numerai', slug='numerai'),
-            schemas.CategoryCreate(name='Signals', slug='signals'),
+            schemas.CategoryCreate(name="Numerai", slug="numerai"),
+            schemas.CategoryCreate(name="Signals", slug="signals"),
         ]
         sub_sub_categories_numerai_in = [
-            schemas.CategoryCreate(name='Predictions', slug='numerai-predictions'),
-            schemas.CategoryCreate(name='Models', slug='numerai-models'),
+            schemas.CategoryCreate(name="Predictions", slug="numerai-predictions"),
+            schemas.CategoryCreate(name="Models", slug="numerai-models"),
         ]
         sub_sub_categories_signals_in = [
-            schemas.CategoryCreate(name='Predictions', slug='signals-predictions'),
-            schemas.CategoryCreate(name='Data', slug='signals-data'),
+            schemas.CategoryCreate(name="Predictions", slug="signals-predictions"),
+            schemas.CategoryCreate(name="Data", slug="signals-data"),
         ]
-        category_in = schemas.CategoryCreate(name='All', slug='all')
+        category_in = schemas.CategoryCreate(name="All", slug="all")
         category = crud.category.create(db, obj_in=category_in)
-        sub_category_1 = crud.category.create_with_parent(db, obj_in=sub_categories_in[0], parent_id=category.id)
-        sub_sub_category_numerai_1 = crud.category.create_with_parent(db, obj_in=sub_sub_categories_numerai_in[0], parent_id=sub_category_1.id)
-        sub_sub_category_numerai_2 = crud.category.create_with_parent(db, obj_in=sub_sub_categories_numerai_in[1], parent_id=sub_category_1.id)
-        sub_category_2 = crud.category.create_with_parent(db, obj_in=sub_categories_in[1], parent_id=category.id)
-        sub_sub_category_signals_1 = crud.category.create_with_parent(db, obj_in=sub_sub_categories_signals_in[0], parent_id=sub_category_2.id)
-        sub_sub_category_signals_2 = crud.category.create_with_parent(db, obj_in=sub_sub_categories_signals_in[1], parent_id=sub_category_2.id)
+        sub_category_1 = crud.category.create_with_parent(
+            db, obj_in=sub_categories_in[0], parent_id=category.id
+        )
+        sub_sub_category_numerai_1 = crud.category.create_with_parent(
+            db, obj_in=sub_sub_categories_numerai_in[0], parent_id=sub_category_1.id
+        )
+        sub_sub_category_numerai_2 = crud.category.create_with_parent(  # noqa: F841
+            db, obj_in=sub_sub_categories_numerai_in[1], parent_id=sub_category_1.id
+        )
+        sub_category_2 = crud.category.create_with_parent(
+            db, obj_in=sub_categories_in[1], parent_id=category.id
+        )
+        sub_sub_category_signals_1 = crud.category.create_with_parent(  # noqa: F841
+            db, obj_in=sub_sub_categories_signals_in[0], parent_id=sub_category_2.id
+        )
+        sub_sub_category_signals_2 = crud.category.create_with_parent(  # noqa: F841
+            db, obj_in=sub_sub_categories_signals_in[1], parent_id=sub_category_2.id
+        )
 
         products = crud.product.get_multi(db)
-        if not products or len(products)<1:
+        if not products or len(products) < 1:
             product_in = schemas.ProductCreate(
-                name='integration_test',
-                sku='numerai-predictions-integration_test',
+                name="integration_test",
+                sku="numerai-predictions-integration_test",
                 price=Decimal("10.34"),
-                category_id=sub_sub_category_numerai_1.id
+                category_id=sub_sub_category_numerai_1.id,
             )
-            product = crud.product.create_with_owner(db, obj_in=product_in, owner_id=user.id)
+            product = crud.product.create_with_owner(  # noqa: F841
+                db, obj_in=product_in, owner_id=user.id
+            )

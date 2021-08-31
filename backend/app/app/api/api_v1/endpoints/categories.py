@@ -20,7 +20,9 @@ def read_categories(
     Retrieve categories.
     """
     if slug:
-        categories = crud.category.get_multi_by_slug(db, slug=slug, skip=skip, limit=limit)
+        categories = crud.category.get_multi_by_slug(
+            db, slug=slug, skip=skip, limit=limit
+        )
     else:
         categories = crud.category.get_multi(db, skip=skip, limit=limit)
     return categories
@@ -67,11 +69,7 @@ def update_category(
 
 
 @router.get("/{id}", response_model=schemas.Category)
-def read_category(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-) -> Any:
+def read_category(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
     """
     Get category by ID.
     """

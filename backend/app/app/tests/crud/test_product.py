@@ -1,11 +1,9 @@
-from decimal import Decimal
-
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.tests.utils.user import create_random_user
-from app.tests.utils.utils import random_lower_string, random_decimal
+from app.tests.utils.utils import random_decimal, random_lower_string
 
 
 def test_create_product(db: Session) -> None:
@@ -13,7 +11,9 @@ def test_create_product(db: Session) -> None:
     price = random_decimal()
     sku = f"test-{name}"
     description = random_lower_string()
-    product_in = ProductCreate(name=name, price=price, sku=sku, category_id=1, description=description)
+    product_in = ProductCreate(
+        name=name, price=price, sku=sku, category_id=1, description=description
+    )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
     assert product.name == name
@@ -26,7 +26,9 @@ def test_get_product(db: Session) -> None:
     price = random_decimal()
     sku = f"test-{name}"
     description = random_lower_string()
-    product_in = ProductCreate(name=name, price=price, sku=sku, category_id=1, description=description)
+    product_in = ProductCreate(
+        name=name, price=price, sku=sku, category_id=1, description=description
+    )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
     stored_product = crud.product.get(db=db, id=product.id)
@@ -43,7 +45,9 @@ def test_update_product(db: Session) -> None:
     price = random_decimal()
     sku = f"test-{name}"
     description = random_lower_string()
-    product_in = ProductCreate(name=name, price=price, sku=sku, category_id=1, description=description)
+    product_in = ProductCreate(
+        name=name, price=price, sku=sku, category_id=1, description=description
+    )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
     description2 = random_lower_string()
@@ -61,7 +65,9 @@ def test_delete_product(db: Session) -> None:
     price = random_decimal()
     sku = f"test-{name}"
     description = random_lower_string()
-    product_in = ProductCreate(name=name, price=price, sku=sku, category_id=1, description=description)
+    product_in = ProductCreate(
+        name=name, price=price, sku=sku, category_id=1, description=description
+    )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
     product2 = crud.product.remove(db=db, id=product.id)

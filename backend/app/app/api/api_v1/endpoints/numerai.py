@@ -1,4 +1,4 @@
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -15,31 +15,38 @@ def get_numerai_models(
     """
     Retrieve products.
     """
-    if current_user.numerai_api_key_secret is None or len(current_user.numerai_api_key_secret)==0:
+    if (
+        current_user.numerai_api_key_secret is None
+        or len(current_user.numerai_api_key_secret) == 0
+    ):
         raise HTTPException(
             status_code=403,
             detail="Numerai API Key is required to perform this action",
         )
     try:
-        all_models = crud.model.get_numerai_models(public_id=current_user.numerai_api_key_public_id,
-                                                   secret_key=current_user.numerai_api_key_secret)
+        all_models = crud.model.get_numerai_models(
+            public_id=current_user.numerai_api_key_public_id,  # type: ignore
+            secret_key=current_user.numerai_api_key_secret,
+        )
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Numerai API Error: "+str(e)+" Please try changing the API key.")
+        raise HTTPException(
+            status_code=400,
+            detail="Numerai API Error: " + str(e) + " Please try changing the API key.",
+        )
     return all_models
 
 
 @router.get("/{tournament}/{model_name}", response_model=Dict)
-def get_numerai_model_performance(
-    tournament: int,
-    model_name: str
-) -> Any:
+def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
     """
     Retrieve products.
     """
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
-        data = crud.model.get_numerai_model_performance(tournament=tournament, model_name=model_name)
+        data = crud.model.get_numerai_model_performance(
+            tournament=tournament, model_name=model_name
+        )
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Numerai API Error: "+str(e))
+        raise HTTPException(status_code=400, detail="Numerai API Error: " + str(e))
     return data

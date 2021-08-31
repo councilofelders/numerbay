@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Union
+from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -9,7 +9,9 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.post("/search", response_model=Dict[str, Union[int, List[schemas.Product], List, Dict]])
+@router.post(
+    "/search", response_model=Dict[str, Union[int, List[schemas.Product], List, Dict]]
+)
 def search_products(
     db: Session = Depends(deps.get_db),
     id: int = Body(None),
@@ -23,7 +25,16 @@ def search_products(
     """
     Retrieve products.
     """
-    products = crud.product.search(db, id=id, category_id=category_id, skip=skip, limit=limit, filters=filters, term=term, sort=sort)
+    products = crud.product.search(
+        db,
+        id=id,
+        category_id=category_id,
+        skip=skip,
+        limit=limit,
+        filters=filters,
+        term=term,
+        sort=sort,
+    )
     return products
 
 
@@ -54,14 +65,15 @@ def create_product(
     Create new product.
     """
     category = crud.category.get(db=db, id=product_in.category_id)
-    product_in.sku = f"{category.slug}-{product_in.name.lower()}"
+    product_in.sku = f"{category.slug}-{product_in.name.lower()}"  # type: ignore
     product = crud.product.get_by_sku(db, sku=product_in.sku)
     if product:
         raise HTTPException(
-            status_code=400,
-            detail=f"{product.sku} is already listed.",
+            status_code=400, detail=f"{product.sku} is already listed.",
         )
-    product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=current_user.id)
+    product = crud.product.create_with_owner(
+        db=db, obj_in=product_in, owner_id=current_user.id
+    )
     return product
 
 
@@ -86,11 +98,7 @@ def update_product(
 
 
 @router.get("/{id}", response_model=schemas.Product)
-def read_product(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-) -> Any:
+def read_product(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
     """
     Get product by ID.
     """

@@ -41,10 +41,14 @@ def authentication_token_from_username(
     password = random_lower_string()
     user = crud.user.get_by_username(db, username=username)
     if not user:
-        user_in_create = UserCreate(username=username, email=username, password=password)
+        user_in_create = UserCreate(
+            username=username, email=username, password=password
+        )
         user = crud.user.create(db, obj_in=user_in_create)
     else:
         user_in_update = UserUpdate(password=password)
         user = crud.user.update(db, db_obj=user, obj_in=user_in_update)
 
-    return user_authentication_headers(client=client, username=username, password=password)
+    return user_authentication_headers(
+        client=client, username=username, password=password
+    )
