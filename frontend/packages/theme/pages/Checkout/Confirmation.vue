@@ -101,6 +101,14 @@ export default {
     SfLoader,
     OrderInfoPanel
   },
+  watch: {
+    isPaymentConfirmed(value) {
+      console.log('isPaymentConfirmed: ', value);
+      if (value) {
+        this.$router.push('/my-account/order-history');
+      }
+    }
+  },
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
       if (this.isPaymentConfirmed.value) {

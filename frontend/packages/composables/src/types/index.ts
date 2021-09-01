@@ -170,10 +170,13 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
   getDescription: (product: PRODUCT) => string;
   getCategoryIds: (product: PRODUCT) => string[];
   getId: (product: PRODUCT) => string;
-  getFormattedPrice: (product: PRODUCT) => string;
+  getFormattedPrice: (product: PRODUCT, withCurrency: boolean, decimals: number) => string;
   getTotalReviews: (product: PRODUCT) => number;
   getAverageRating: (product: PRODUCT) => number;
   getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
+  getModelNmrStaked: (product: PRODUCT, decimals: number) => any;
+  getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
+  getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
   [getterName: string]: any;
 }
 

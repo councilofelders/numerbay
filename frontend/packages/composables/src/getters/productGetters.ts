@@ -58,11 +58,14 @@ export const getProductCategoryIds = (product: ProductVariant): string[] => (pro
 
 export const getProductId = (product: ProductVariant): string => (product as any)?.id || '';
 
-export const getFormattedPrice = (product: ProductVariant): string => {
-  const price = (product?.price || 0).toFixed(2);
-  const currency = product?.currency || 'USD';
-  if (currency === 'USD') return `$${price}`;
-  return `${price} ${currency}`;
+export const getFormattedPrice = (product: ProductVariant, withCurrency = true, decimals = 2): string => {
+  const price = (product?.price || 0).toFixed(decimals);
+  if (withCurrency) {
+    const currency = product?.currency || 'USD';
+    if (currency === 'USD') return `$${price}`;
+    return `${price} ${currency}`;
+  }
+  return `${price}`;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
