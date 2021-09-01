@@ -6,3 +6,4 @@ from .product import Product, ProductCreate, ProductInDB, ProductUpdate
 from .category import Category, CategoryCreate, CategoryInDB, CategoryUpdate
 from .model import Model, ModelCreate, ModelInDB, ModelUpdate
 from .order import Order, OrderCreate, OrderInDB, OrderUpdate
+from .globals import Globals, GlobalsCreate, GlobalsInDB, GlobalsUpdate

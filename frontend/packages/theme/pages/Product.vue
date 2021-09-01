@@ -39,8 +39,8 @@
           </div>
           <BuyButton
             :disabled="!product.third_party_url && !product.is_on_platform"
-            :price="productGetters.getFormattedPrice(product)"
-            :label="product.is_on_platform ? 'Price' : 'Ref Price'"
+            :price="productGetters.getFormattedPrice(product, withCurrency=false, decimals=product.is_on_platform?4:2)"
+            :label="product.is_on_platform ? 'NMR' : 'Ref Price'"
             @click="handleBuyButtonClick(product)"
           />
         </div>
@@ -110,6 +110,7 @@ import InstagramFeed from '~/components/InstagramFeed.vue';
 import RelatedProducts from '~/components/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
 import {useProduct, productGetters, reviewGetters, useNumerai, useUser} from '@vue-storefront/numerbay';
+import { useUiState } from '~/composables';
 import { onSSR } from '@vue-storefront/core';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
@@ -128,7 +129,8 @@ export default {
     // const { addItem, loading } = useCart();
     // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
-    const { web3User, initWeb3Modal, ethereumListener } = useUser();
+    const { web3User, initWeb3Modal, ethereumListener, isAuthenticated } = useUser();
+    const { toggleLoginModal } = useUiState();
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
     const options = computed(() => productGetters.getAttributes(products.value.data, ['color', 'size']));
@@ -202,6 +204,10 @@ export default {
     };
 
     const handleBuyButtonClick = (product) => {
+      if (!isAuthenticated.value) {
+        toggleLoginModal();
+        return;
+      }
       if (!product?.is_on_platform && product?.third_party_url) { // if third party listing
         window.open(product?.third_party_url, '_blank');
       } else {

@@ -224,8 +224,8 @@
               <template #add-to-cart>
                 <BuyButton
                   :disabled="!product.third_party_url && !product.is_on_platform"
-                  :price="$n(productGetters.getPrice(product).regular, 'currency')"
-                  :label="product.is_on_platform ? 'Price' : 'Ref Price'"
+                  :price="productGetters.getFormattedPrice(product, withCurrency=false, decimals=product.is_on_platform?4:2)"
+                  :label="product.is_on_platform ? 'NMR' : 'Ref Price'"
                   @click="handleBuyButtonClick(product)"
                 />
               </template>

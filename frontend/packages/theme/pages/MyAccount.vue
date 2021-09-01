@@ -17,17 +17,22 @@
       class="my-account"
       @click:change="changeActivePage"
     >
-      <SfContentCategory title="Profile Details">
+      <SfContentCategory title="Account">
         <SfContentPage title="My profile">
           <MyProfile />
         </SfContentPage>
-
+        <SfContentPage title="Log out" />
+      </SfContentCategory>
+      <SfContentCategory title="Seller">
         <SfContentPage title="My listings">
+          <MyListings />
+        </SfContentPage>
+        <SfContentPage title="Sales history">
           <MyListings />
         </SfContentPage>
       </SfContentCategory>
 
-      <SfContentCategory title="Order details">
+      <SfContentCategory title="Buyer">
         <SfContentPage title="Order history">
           <OrderHistory />
         </SfContentPage>
@@ -36,8 +41,6 @@
           <MyReviews />
         </SfContentPage>-->
       </SfContentCategory>
-
-      <SfContentPage title="Log out" />
     </SfContentPages>
   </div>
 </template>

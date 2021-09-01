@@ -58,19 +58,11 @@ def create_order(
     Create new order.
     """
     product = crud.product.get(db=db, id=id)
-    print(f"type: {type(datetime.now())}")
     order = schemas.OrderCreate(price=product.price, currency=product.currency, chain=product.chain,
-                                from_address=current_user.public_address, to_address=product.owner.public_address,
+                                from_address=current_user.numerai_wallet_address,
+                                to_address=product.owner.numerai_wallet_address,
                                 product_id=id, date_order=datetime.utcnow(), round_order=277, state="Unpaid")
 
-    # category = crud.category.get(db=db, id=order_in.category_id)
-    # order_in.sku = f"{category.slug}-{order_in.name.lower()}"
-    # order = crud.order.get_by_sku(db, sku=order_in.sku)
-    # if order:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail=f"{order.sku} is already listed.",
-    #     )
     order = crud.order.create_with_buyer(db=db, obj_in=order, buyer_id=current_user.id)
     return order
 
@@ -136,6 +128,4 @@ def schedule(current_user: models.User = Depends(deps.get_current_active_superus
     Test Celery worker.
     """
     result = celery_app.send_task("app.worker.test_celery", args=["123"])
-    # result = AsyncResult(request.id)
-    print(f"res.get(): {result.ready()}")
     return {"msg": result.ready()}

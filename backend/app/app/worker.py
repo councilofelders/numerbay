@@ -35,6 +35,9 @@ def tick(msg: str) -> str:
 def update_model_subtask(user_json: Dict) -> Optional[Any]:
     db = SessionLocal()
     try:
+        # Update user info
+        crud.user.update_numerai_api(db, user_json)
+        # Update user models
         return crud.model.update_model(db, user_json)
     finally:
         db.close()
@@ -57,6 +60,15 @@ def batch_update_models_task() -> None:
         db.close()
 
 
+@celery_app.task  # (acks_late=True)
+def update_globals_task() -> None:
+    db = SessionLocal()
+    try:
+        crud.globals.update_singleton(db)
+    finally:
+        db.close()
+
+
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
     print("Setup Cron Tasks")
@@ -71,4 +83,8 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "task": "app.worker.batch_update_models_task",
             "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
         },
+        "update_globals_task": {
+            "task": "app.worker.update_globals_task",
+            "schedule": crontab(day_of_week="sat", hour=18, minute=0),
+        }
     }
