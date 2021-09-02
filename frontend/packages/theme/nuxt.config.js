@@ -1,5 +1,5 @@
 import webpack from 'webpack';
-import { Integrations } from '@sentry/tracing';
+// import { Integrations } from '@sentry/tracing';
 // import { getRoutes } from './routes';
 
 export default {
@@ -41,7 +41,8 @@ export default {
   },
   loading: { color: '#fff' },
   plugins: [
-    { src: 'plugins/nuxt-quill-plugin', ssr: false }
+    { src: 'plugins/nuxt-quill-plugin', ssr: false },
+    { src: 'plugins/nuxt-clipboard2', ssr: false }
   ],
   css: [
     'quill/dist/quill.core.css',

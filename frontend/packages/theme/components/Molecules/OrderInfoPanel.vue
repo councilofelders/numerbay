@@ -16,47 +16,78 @@
       class="sf-property--full-width property"
     />
     <SfProperty
-      name="Status"
-      :value="orderGetters.getStatus(order)"
-      class="sf-property--full-width property"
-    />
-    <SfProperty
-      name="Total"
-      :value="orderGetters.getFormattedPrice(order)"
-      class="sf-property--full-width property"
-    />
-    <SfProperty
       name="From Address"
       :value="orderGetters.getFromAddress(order)"
       class="sf-property--full-width property"
     />
     <SfProperty
       name="To Address"
-      :value="orderGetters.getToAddress(order)"
+      class="sf-property--full-width property"
+    >
+      <template #value>
+        <span class="sf-property__value">
+          {{orderGetters.getToAddress(order)}}
+        <SfButton
+            class="sf-button--text"
+            @click="copyToClipboard(orderGetters.getToAddress(order))"
+        >
+          Copy
+        </SfButton>
+        </span>
+      </template>
+    </SfProperty>
+    <SfProperty
+      name="Total"
+      class="sf-property--full-width property"
+    >
+      <template #value>
+        <span class="sf-property__value">
+          {{orderGetters.getFormattedPrice(order)}}
+        <SfButton
+            class="sf-button--text"
+            @click="copyToClipboard(orderGetters.getPrice(order))"
+        >
+          Copy
+        </SfButton>
+        </span>
+      </template>
+    </SfProperty>
+    <SfProperty
+      name="Transaction Hash"
+      :value="orderGetters.getTransactionHash(order) || 'waiting'"
       class="sf-property--full-width property"
     />
     <SfProperty
-      name="Transaction Hash"
-      :value="orderGetters.getTransactionHash(order) || 'Waiting...'"
+      name="Status"
+      :value="orderGetters.getStatus(order)"
       class="sf-property--full-width property"
     />
   </div>
 </template>
 
 <script>
-import { SfProperty } from '@storefront-ui/vue';
+import { SfProperty, SfIcon, SfButton } from '@storefront-ui/vue';
 import { orderGetters } from '@vue-storefront/numerbay';
 
 export default {
   name: 'OrderInfoPanel',
-
   components: {
-    SfProperty
+    SfProperty,
+    SfIcon,
+    SfButton
   },
-
   props: {
     order: {
       default: null
+    }
+  },
+  methods: {
+    async copyToClipboard(text) {
+      try {
+        await this.$copyText(text);
+      } catch (e) {
+        console.error('Copy failed: ', e);
+      }
     }
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
