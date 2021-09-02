@@ -131,6 +131,7 @@ export default {
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { web3User, initWeb3Modal, ethereumListener, isAuthenticated } = useUser();
+    const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { toggleLoginModal } = useUiState();
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
