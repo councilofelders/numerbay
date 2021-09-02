@@ -8,6 +8,7 @@ from sqlalchemy import and_, or_, desc
 from app import crud
 from app.crud.base import CRUDBase
 from app.models.order import Order
+from app.models.product import Product
 from app.schemas.order import OrderCreate, OrderUpdate
 
 
@@ -84,9 +85,9 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         if role == 'buyer':
             query_filters.append(Order.buyer_id == current_user_id)
         elif role == 'seller':
-            query_filters.append(Order.product.owner_id == current_user_id)
+            query_filters.append(Product.owner_id == current_user_id)
         else:
-            query_filters.append(or_(Order.buyer_id == current_user_id, Order.product.owner_id == current_user_id))
+            query_filters.append(or_(Order.buyer_id == current_user_id, Product.owner_id == current_user_id))
         # if isinstance(filters, dict):
         #     for filter_key, filter_item in filters.items():
         #         if filter_key == 'user':
@@ -94,6 +95,8 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         #             query_filters.append(Order.owner_id.in_(user_id_list))
 
         query = db.query(self.model)
+        if role != 'buyer':  # to handle filter on Product owner
+            query = query.join(self.model.product, isouter=True)
         if len(query_filters) > 0:
             query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
             query = query.filter(query_filter)

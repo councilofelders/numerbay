@@ -82,6 +82,17 @@ export interface UseNumerai {
   error: ComputedProperty<UseNumeraiErrors>;
 }
 
+export interface UseUserOrderErrors {
+  search: Error;
+}
+
+export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
+  orders: ComputedProperty<ORDERS>;
+  search(params: ComposableFunctionArgs<ORDER_SEARCH_PARAMS>): Promise<void>;
+  loading: ComputedProperty<boolean>;
+  error: ComputedProperty<UseUserOrderErrors>;
+}
+
 export interface UseGlobals {
   getGlobals: (identifier: string) => Promise<void>;
   loading: ComputedProperty<boolean>;

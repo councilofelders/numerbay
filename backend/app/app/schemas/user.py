@@ -40,6 +40,11 @@ class UserInDBBase(UserBase):
 # Additional properties to return via API
 class User(UserInDBBase):
     numerai_api_key_public_id: Optional[str] = None
+    numerai_api_key_can_upload_submission: Optional[bool] = None
+    numerai_api_key_can_stake: Optional[bool] = None
+    numerai_api_key_can_read_submission_info: Optional[bool] = None
+    numerai_api_key_can_read_user_info: Optional[bool] = None
+    numerai_wallet_address: Optional[str] = None
     models: Optional[List[ModelMinimal]] = []
 
 

@@ -14,7 +14,7 @@
       class="sf-heading--center sf-heading--no-underline content"
     />
     <div v-if="!isPaymentConfirmed" class="order-info-panel">
-      <OrderInfoPanel :order="order"></OrderInfoPanel>
+      <OrderInfoPanel :order="order" withCopyButtons="true"/>
       <!--<div class="highlighted highlighted&#45;&#45;total">
           <SfProperty
             name="Order ID"

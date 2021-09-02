@@ -21,6 +21,9 @@
         <SfContentPage title="My profile">
           <MyProfile />
         </SfContentPage>
+        <SfContentPage title="Numerai API">
+          <NumeraiApi />
+        </SfContentPage>
         <SfContentPage title="Log out" />
       </SfContentCategory>
       <SfContentCategory title="Seller">
@@ -28,7 +31,7 @@
           <MyListings />
         </SfContentPage>
         <SfContentPage title="Sales history">
-          <MyListings />
+          <SalesHistory />
         </SfContentPage>
       </SfContentCategory>
 
@@ -49,7 +52,9 @@ import { SfBreadcrumbs, SfContentPages } from '@storefront-ui/vue';
 import { computed } from '@vue/composition-api';
 import { useUser } from '@vue-storefront/numerbay';
 import MyProfile from './MyAccount/MyProfile';
+import NumeraiApi from './MyAccount/NumeraiApi';
 import MyListings from './MyAccount/MyListings';
+import SalesHistory from './MyAccount/SalesHistory';
 import OrderHistory from './MyAccount/OrderHistory';
 import {Logger} from '@vue-storefront/core';
 
@@ -59,7 +64,9 @@ export default {
     SfBreadcrumbs,
     SfContentPages,
     MyProfile,
+    NumeraiApi,
     MyListings,
+    SalesHistory,
     OrderHistory
   },
   middleware: [
@@ -72,6 +79,7 @@ export default {
       const { pageName } = $route.params;
 
       if (pageName) {
+        if (pageName === 'numerai-api') return 'Numerai API';
         return (pageName.charAt(0).toUpperCase() + pageName.slice(1)).replace('-', ' ');
       }
 

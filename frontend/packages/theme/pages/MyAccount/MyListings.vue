@@ -6,13 +6,13 @@
           <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
             {{ $t('New Listing') }}
           </SfButton>
-          <SfButton class="sf-button" :class="!user.numerai_api_key_public_id?'color-primary':'color-secondary'" @click="toggleNumeraiApiForm()" :disabled="numeraiLoading || userLoading">
+          <SfButton class="sf-button" v-if="!user.numerai_api_key_public_id" :class="!user.numerai_api_key_public_id?'color-primary':'color-secondary'" @click="$router.push('/my-account/numerai-api')" :disabled="numeraiLoading || userLoading">
             {{ !user.numerai_api_key_public_id?$t('Set Numerai API Key'):$t('Change Numerai API Key') }}
           </SfButton>
         </div>
-        <div v-if="isNumeraiApiFormOpen">
+        <!--<div v-if="isNumeraiApiFormOpen">
           <NumeraiApiForm @submit="updateNumeraiApiKeyData" />
-        </div>
+        </div>-->
         <p class="message" v-if="numeraiError.getModels">
           {{ numeraiError.getModels }}
         </p>
@@ -88,7 +88,7 @@ export default {
     }
   },
   setup() {
-    const { user, updateUser, error: userError, loading: userLoading } = useUser();
+    const { user, loading: userLoading } = useUser();
     const { categories, search: categorySearch } = useCategory();
     const { getModels: getNumeraiModels, loading: numeraiLoading, error: numeraiError } = useNumerai('my-listings');
     const { getGlobals } = useGlobals();
@@ -133,27 +133,6 @@ export default {
       }
     };
 
-    const formHandler = async (fn, onComplete, onError) => {
-      try {
-        const data = await fn();
-        await onComplete(data);
-      } catch (error) {
-        onError(error);
-      }
-    };
-
-    const updateNumeraiApiKeyData = ({ form, onComplete, onError }) => {
-      formHandler(() => updateUser({ user: form.value }), async () => {
-        onComplete();
-        await getNumeraiModels();
-        const hasUserErrors = userError.value.updateUser;
-        if (hasUserErrors) {
-          return;
-        }
-        await toggleNumeraiApiForm();
-      }, onError);
-    };
-
     return {
       tableHeaders,
       numeraiLoading,
@@ -168,7 +147,6 @@ export default {
       handleListingClick,
       productGetters,
       orderGetters,
-      updateNumeraiApiKeyData,
       currentOrder,
       numeraiError
     };

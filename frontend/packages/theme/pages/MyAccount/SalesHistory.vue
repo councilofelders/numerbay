@@ -1,9 +1,9 @@
 <template>
   <SfTabs :open-tab="1">
-    <SfTab title="My orders">
+    <SfTab title="My sales">
       <div v-if="currentOrder">
         <SfButton class="sf-button--text all-orders" @click="currentOrder = null">All Orders</SfButton>
-        <OrderInfoPanel :order="currentOrder" :withCopyButtons="orderGetters.getStatus(currentOrder)==='pending'"/>
+        <OrderInfoPanel :order="currentOrder"/>
         <!--<SfTable class="products">
           <SfTableHeading>
             <SfTableHeader class="products__name">{{ $t('Product') }}</SfTableHeader>
@@ -23,11 +23,11 @@
       </div>
       <div v-else>
         <p class="message">
-          {{ $t('Details and status of orders') }}
+          {{ $t('Details and status of sales') }}
         </p>
         <div v-if="orders.length === 0" class="no-orders">
-          <p class="no-orders__title">{{ $t('You currently have no orders') }}</p>
-          <SfButton class="no-orders__button" @click="$router.push('/c/numerai')">{{ $t('Start shopping') }}</SfButton>
+          <p class="no-orders__title">{{ $t('You currently have no sales') }}</p>
+          <SfButton class="no-orders__button" @click="$router.push('/my-account/my-listings')">{{ $t('List products') }}</SfButton>
         </div>
         <SfTable v-else class="orders">
           <SfTableHeading>
@@ -87,7 +87,7 @@ import { onSSR } from '@vue-storefront/core';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
 
 export default {
-  name: 'OrderHistory',
+  name: 'SalesHistory',
   components: {
     SfTabs,
     SfTable,
@@ -99,7 +99,7 @@ export default {
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
       console.log('poll');
-      await this.search({ role: 'buyer' });
+      await this.search({ role: 'seller' });
     }, 10000);
   },
   beforeDestroy() {
@@ -111,11 +111,11 @@ export default {
     next();
   },
   setup() {
-    const { orders, search } = useUserOrder('order-history');
+    const { orders, search } = useUserOrder('sales-history');
     const currentOrder = ref(null);
 
     onSSR(async () => {
-      await search({ role: 'buyer' });
+      await search({ role: 'seller' });
     });
 
     const tableHeaders = [

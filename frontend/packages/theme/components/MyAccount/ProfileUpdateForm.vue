@@ -56,6 +56,7 @@
 import {reactive, ref} from '@vue/composition-api';
 import { ValidationProvider, ValidationObserver } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
+import { useUiNotification } from '~/composables';
 import { SfInput, SfButton } from '@storefront-ui/vue';
 import MetamaskButton from '../Molecules/MetamaskButton';
 import Web3 from 'web3';
@@ -141,7 +142,9 @@ export default {
   },
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   setup(_, { emit }) {
-    const { user, load, loading, setUser, updateUser, web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, disconnectWeb3Modal, getNonceAuthenticated } = useUser();
+    const { user, load, loading, setUser, updateUser, web3User, initWeb3Modal, ethereumListener, connectWeb3Modal,
+      disconnectWeb3Modal, getNonceAuthenticated, error: userError } = useUser();
+    const { send } = useUiNotification();
 
     const error = reactive({
       web3: null
@@ -166,6 +169,18 @@ export default {
         const onComplete = () => {
           form.value = resetForm();
           resetValidationFn();
+          if (userError.value.updateUser) {
+            send({
+              message: userError.value.updateUser.message,
+              type: 'danger'
+            });
+          } else {
+            send({
+              message: 'Successfully updated profile',
+              type: 'success',
+              icon: 'check'
+            });
+          }
         };
 
         const onError = () => {

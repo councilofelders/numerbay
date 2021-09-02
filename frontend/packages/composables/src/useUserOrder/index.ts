@@ -1,10 +1,7 @@
 /* istanbul ignore file */
 
-import {
-  Context, Logger,
-  useUserOrderFactory,
-  UseUserOrderFactoryParams
-} from '@vue-storefront/core';
+import { Context, Logger } from '@vue-storefront/core';
+import { useUserOrderFactory, UseUserOrderFactoryParams } from '../factories/useUserOrderFactory';
 import { OrdersResponse, OrderSearchParams } from '../types';
 
 const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
