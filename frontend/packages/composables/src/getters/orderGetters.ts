@@ -9,7 +9,7 @@ export const getDate = (order: any): string => order?.date_order ? order?.date_o
 export const getId = (order: any): string => order?.id || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getStatus = (order: any): string => order?.state || 'Unknown';
+export const getStatus = (order: any): string => order?.state || 'unknown';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getPrice = (order: any): number | null => order?.price || 0;

@@ -58,10 +58,11 @@ def create_order(
     Create new order.
     """
     product = crud.product.get(db=db, id=id)
+    selling_round = crud.globals.get_singleton(db=db).selling_round
     order = schemas.OrderCreate(price=product.price, currency=product.currency, chain=product.chain,
                                 from_address=current_user.numerai_wallet_address,
                                 to_address=product.owner.numerai_wallet_address,
-                                product_id=id, date_order=datetime.utcnow(), round_order=277, state="Unpaid")
+                                product_id=id, date_order=datetime.utcnow(), round_order=selling_round, state="pending")
 
     order = crud.order.create_with_buyer(db=db, obj_in=order, buyer_id=current_user.id)
     return order

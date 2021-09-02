@@ -139,7 +139,7 @@ export default {
     });
 
     const order = computed(() => (orders?.value?.data || [])[0]);
-    const isPaymentConfirmed = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]) === 'Paid');
+    const isPaymentConfirmed = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]) === 'confirmed');
 
     // watch(isPaymentConfirmed, () => {
     //   if (isPaymentConfirmed) {
