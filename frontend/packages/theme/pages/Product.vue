@@ -22,7 +22,7 @@
         </div>
         <div class="product__subheader">
           <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
-            Round: <span class="product__subheader__highlight" v-if="!!numerai.modelInfo">{{ numerai.modelInfo.rounds[0].number }}</span>
+            Round: <span class="product__subheader__highlight" v-if="!globalsLoading">{{ globals.selling_round }}</span>
             <span class='divider-pipe'>|</span>
             Seller: <span class="product__subheader__highlight">{{ product.owner.username.toUpperCase() }}</span>
             <span class='divider-pipe'>|</span>
@@ -109,7 +109,7 @@ import {
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import RelatedProducts from '~/components/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
-import {useProduct, productGetters, reviewGetters, useNumerai, useUser} from '@vue-storefront/numerbay';
+import {useProduct, productGetters, reviewGetters, useNumerai, useUser, useGlobals} from '@vue-storefront/numerbay';
 import { useUiState } from '~/composables';
 import { onSSR } from '@vue-storefront/core';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
@@ -130,6 +130,7 @@ export default {
     // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
     const { web3User, initWeb3Modal, ethereumListener, isAuthenticated } = useUser();
+    const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { toggleLoginModal } = useUiState();
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
@@ -152,6 +153,7 @@ export default {
       // await searchRelatedProducts({ catId: [categories.value[0]], limit: 8 });
       // await searchReviews({ productId: id });
       await getModelInfo({tournament: product?.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value.name});
+      await getGlobals();
     });
 
     const updateFilter = (filter) => {
@@ -250,6 +252,8 @@ export default {
       numerai: computed(() => numerai.value ? numerai.value : null),
       numeraiChartData: computed(() => numerai.value.modelInfo ? getNumeraiChartData(numerai.value) : {}),
       modelInfo: computed(() => numerai.value?.modelInfo ? numerai.value?.modelInfo : null),
+      globals,
+      globalsLoading,
       numeraiLoading,
       productLoading,
       // relatedLoading,

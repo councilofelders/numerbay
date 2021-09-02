@@ -16,6 +16,7 @@ import getNumeraiModels from './api/getNumeraiModels';
 import getNumeraiModelInfo from './api/getNumeraiModelInfo';
 import getOrder from './api/getOrder';
 import createOrder from './api/createOrder';
+import getGlobals from './api/getGlobals';
 import axios from 'axios';
 
 // const defaultSettings = {};
@@ -108,7 +109,8 @@ const { createApiClient } = apiClientFactory<any, any>({
     getNumeraiModels,
     getNumeraiModelInfo,
     getOrder,
-    createOrder
+    createOrder,
+    getGlobals
   },
   extensions: [tokenExtension]
 });
