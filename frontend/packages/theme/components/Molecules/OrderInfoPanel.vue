@@ -16,6 +16,11 @@
       class="sf-property--full-width property"
     />
     <SfProperty
+      name="Buyer"
+      :value="orderGetters.getBuyer(order)"
+      class="sf-property--full-width property"
+    />
+    <SfProperty
       name="From Address"
       :value="orderGetters.getFromAddress(order)"
       class="sf-property--full-width property"
@@ -28,6 +33,7 @@
         <span class="sf-property__value">
           {{orderGetters.getToAddress(order)}}
         <SfButton
+            v-if="withCopyButtons"
             class="sf-button--text"
             @click="copyToClipboard(orderGetters.getToAddress(order))"
         >
@@ -44,6 +50,7 @@
         <span class="sf-property__value">
           {{orderGetters.getFormattedPrice(order)}}
         <SfButton
+            v-if="withCopyButtons"
             class="sf-button--text"
             @click="copyToClipboard(orderGetters.getPrice(order))"
         >
@@ -79,6 +86,9 @@ export default {
   props: {
     order: {
       default: null
+    },
+    withCopyButtons: {
+      default: false
     }
   },
   methods: {

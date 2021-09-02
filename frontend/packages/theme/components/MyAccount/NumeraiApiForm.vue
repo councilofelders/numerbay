@@ -4,7 +4,42 @@
       You can create API Key in the
       <SfLink class="message__link" href="https://numer.ai/account" target="_blank">Numerai Account</SfLink>
       page. Make sure it has at least <b>View user info</b> permission. NumerBay only uses essential information to verify model ownership.
+      <!--<SfButton class="sf-button&#45;&#45;text" title="Which permissions do I need?"><SfIcon icon="question_mark" class="color-blue-primary"></SfIcon></SfButton>-->
     </p>
+    <div class="numerai-api-permissions">
+      <SfProperty name="View user info" class="sf-property--without-suffix">
+        <template #value>
+          <span class="sf-property__value">
+            <SfIcon icon="check" class="color-green-primary" v-if="user.numerai_api_key_can_read_user_info"></SfIcon>
+            <SfIcon icon="cross" class="size-xxs color-red-primary" v-else></SfIcon>
+          </span>
+        </template>
+      </SfProperty>
+      <SfProperty name="View submission info" class="sf-property--without-suffix">
+        <template #value>
+          <span class="sf-property__value">
+            <SfIcon icon="check" class="color-green-primary" v-if="user.numerai_api_key_can_read_submission_info"></SfIcon>
+            <SfIcon icon="cross" class="size-xxs color-red-primary" v-else></SfIcon>
+          </span>
+        </template>
+      </SfProperty>
+      <SfProperty name="Upload submissions" class="sf-property--without-suffix">
+        <template #value>
+          <span class="sf-property__value">
+            <SfIcon icon="check" class="color-green-primary" v-if="user.numerai_api_key_can_upload_submission"></SfIcon>
+            <SfIcon icon="cross" class="size-xxs color-red-primary" v-else></SfIcon>
+          </span>
+        </template>
+      </SfProperty>
+      <SfProperty name="Stake" class="sf-property--without-suffix">
+        <template #value>
+          <span class="sf-property__value">
+            <SfIcon icon="check" class="color-green-primary" v-if="user.numerai_api_key_can_stake"></SfIcon>
+            <SfIcon icon="cross" class="size-xxs color-red-primary" v-else></SfIcon>
+          </span>
+        </template>
+      </SfProperty>
+    </div>
     <form class="form" @submit.prevent="handleSubmit(submitForm(reset))">
       <ValidationProvider rules="required|min:2" v-slot="{ errors }" class="form__element">
         <SfInput
@@ -45,7 +80,8 @@
 import { ref } from '@vue/composition-api';
 import { ValidationProvider, ValidationObserver } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
-import { SfInput, SfButton, SfLink, SfLoader } from '@storefront-ui/vue';
+import { useUiNotification } from '~/composables';
+import { SfInput, SfButton, SfLink, SfLoader, SfIcon, SfProperty, SfDivider } from '@storefront-ui/vue';
 
 export default {
   name: 'NumeraiApiForm',
@@ -55,6 +91,9 @@ export default {
     SfButton,
     SfLink,
     SfLoader,
+    SfIcon,
+    SfProperty,
+    SfDivider,
     ValidationProvider,
     ValidationObserver
   },
@@ -62,6 +101,7 @@ export default {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   setup(_, { emit }) {
     const { user, error, loading } = useUser();
+    const { send } = useUiNotification();
 
     // const error = reactive({
     //   updateUser: null
@@ -82,6 +122,18 @@ export default {
         const onComplete = () => {
           form.value = resetForm();
           resetValidationFn();
+          if (error.value.updateUser) {
+            send({
+              message: error.value.updateUser.message,
+              type: 'danger'
+            });
+          } else {
+            send({
+              message: 'Successfully updated Numerai API Key',
+              type: 'success',
+              icon: 'check'
+            });
+          }
           // resetErrorValues();
         };
 
@@ -95,6 +147,7 @@ export default {
 
     return {
       form,
+      user,
       error,
       loading,
       submitForm
@@ -146,6 +199,14 @@ export default {
         margin-right: 0;
       }
     }
+  }
+}
+.numerai-api-permissions {
+  @include for-desktop {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 0 0 var(--spacer-xl) 0;
   }
 }
 </style>

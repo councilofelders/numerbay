@@ -93,6 +93,7 @@
                         name="currency"
                         value="NMR"
                         label="NMR"
+                        :details="`Payments are sent to your Numerai wallet: ${user.numerai_wallet_address}`"
                         v-model="form.currency"
                         class="form__radio"
                       >
@@ -101,10 +102,12 @@
                         </template>
                       </SfRadio>
                       <SfRadio
-                        name="isOnPlatform"
+                        name="currency"
                         value="DAI"
                         label="DAI"
-                        v-model="form.currency"
+                        details="On Polygon"
+                        description="[Coming Soon]"
+                        disabled
                         class="form__radio"
                       />
                       <!--<SfRadio
@@ -130,7 +133,7 @@
                       :valid="!errors[0]"
                       :errorMessage="errors[0]"
                       name="price"
-                      :label="`Price (in ${form.currency})`"
+                      :label="`Price (per round equivalent, in ${form.currency})`"
                       type="number"
                       step=any
                       min=0

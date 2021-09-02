@@ -110,7 +110,7 @@ import InstagramFeed from '~/components/InstagramFeed.vue';
 import RelatedProducts from '~/components/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
 import {useProduct, productGetters, reviewGetters, useNumerai, useUser, useGlobals} from '@vue-storefront/numerbay';
-import { useUiState } from '~/composables';
+import { useUiState, useUiNotification } from '~/composables';
 import { onSSR } from '@vue-storefront/core';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
@@ -129,9 +129,10 @@ export default {
     // const { addItem, loading } = useCart();
     // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
-    const { web3User, initWeb3Modal, ethereumListener, isAuthenticated } = useUser();
+    const { user, web3User, initWeb3Modal, ethereumListener, isAuthenticated } = useUser();
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { toggleLoginModal } = useUiState();
+    const { send } = useUiNotification();
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
     const options = computed(() => productGetters.getAttributes(products.value.data, ['color', 'size']));
@@ -208,6 +209,15 @@ export default {
     const handleBuyButtonClick = (product) => {
       if (!isAuthenticated.value) {
         toggleLoginModal();
+        return;
+      }
+      if (product?.is_on_platform && product?.currency === 'NMR' && !user.value.numerai_api_key_public_id) { // if not setup numerai api key and product is in NMR
+        send({
+          message: 'This product requires your Numerai wallet address',
+          type: 'info',
+          action: {text: 'Set Numerai API Key', onClick: ()=>context.root.$router.push('/my-account/numerai-api')},
+          persist: true
+        });
         return;
       }
       if (!product?.is_on_platform && product?.third_party_url) { // if third party listing
