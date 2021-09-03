@@ -74,7 +74,10 @@ def update_user_me(
     # Either username or publicAddress needs to be available
     if password is not None:
         user_in.password = password
-    if username is not None:
+    if username is not None and username != user_in.username:
+        existing_user = crud.user.get_by_username(db, username=username)
+        if existing_user:
+            raise HTTPException(status_code=400, detail="This username already exists.")
         user_in.username = username
     if email is not None:
         user_in.email = email
@@ -85,6 +88,7 @@ def update_user_me(
         user_json = jsonable_encoder(user_in)
         user_json["id"] = current_user.id
         tmp_db = SessionLocal()
+        crud.user.update_numerai_api(tmp_db, user_json)
         result = crud.model.update_model(tmp_db, user_json=user_json)
         if not result:
             raise HTTPException(

@@ -1,4 +1,5 @@
 from .category import Category, CategoryCreate, CategoryInDB, CategoryUpdate
+from .globals import Globals, GlobalsCreate, GlobalsInDB, GlobalsUpdate
 from .item import Item, ItemCreate, ItemInDB, ItemUpdate
 from .model import Model, ModelCreate, ModelInDB, ModelUpdate
 from .msg import Msg

@@ -81,3 +81,9 @@ export interface UseNumerai {
   numerai: ComputedProperty<any>;
   error: ComputedProperty<UseNumeraiErrors>;
 }
+
+export interface UseGlobals {
+  getGlobals: (identifier: string) => Promise<void>;
+  loading: ComputedProperty<boolean>;
+  globals: ComputedProperty<any>;
+}

@@ -111,7 +111,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                       }
                       apiTokens {
                         name
-                        public_id
+                        publicId
                         scopes
                       }
                     }

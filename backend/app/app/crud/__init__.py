@@ -1,4 +1,5 @@
 from .crud_category import category
+from .crud_globals import globals
 from .crud_item import item
 from .crud_model import model
 from .crud_product import product
