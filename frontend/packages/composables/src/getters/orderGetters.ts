@@ -12,6 +12,9 @@ export const getId = (order: any): string => order?.id || 0;
 export const getStatus = (order: any): string => order?.state || 'unknown';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getRound = (order: any): string => String(order?.round_order) || '-';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getPrice = (order: any): number | null => order?.price || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -59,6 +62,7 @@ const orderGetters: UserOrderGetters<Order, OrderItem> = {
   getDate,
   getId,
   getStatus,
+  getRound,
   getPrice,
   getCurrency,
   getFromAddress,

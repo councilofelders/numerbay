@@ -137,6 +137,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
     getIsActive: (product: PRODUCT) => boolean;
     getExpirationRound: (product: PRODUCT) => number;
+    getOwner: (product: PRODUCT) => string;
     [getterName: string]: any;
 }
 
@@ -144,6 +145,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getDate: (order: ORDER) => string;
     getId: (order: ORDER) => string;
     getStatus: (order: ORDER) => string;
+    getRound: (order: ORDER) => string;
     getPrice: (order: ORDER) => number;
     getCurrency: (order: ORDER) => string;
     getFromAddress: (order: ORDER) => string;

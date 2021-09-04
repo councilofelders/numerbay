@@ -80,7 +80,7 @@ export default {
   setup (props, context) {
     const id = context.root.$route.query.product;
     const { cart, removeItem, updateItemQty, applyCoupon } = useCart();
-    const { products } = useProduct(String(id));
+    const { products, loading } = useProduct(String(id));
     const listIsHidden = ref(false);
     const promoCode = ref('');
     const showPromoCode = ref(false);
@@ -92,7 +92,8 @@ export default {
       discounts,
       totalItems,
       listIsHidden,
-      products: computed(() => [products?.value?.data[0]] || []),
+      products: computed(() => products?.value?.data ? products?.value?.data[0] : []),
+      loading,
       productGetters,
       promoCode,
       showPromoCode,

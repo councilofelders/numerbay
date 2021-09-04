@@ -52,7 +52,7 @@
                 {{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}
               </SfLink>
             </SfTableData>
-            <SfTableData>{{ orderGetters.getDate(order) }}</SfTableData>
+            <SfTableData>{{ orderGetters.getRound(order) }}</SfTableData>
             <SfTableData>{{ orderGetters.getFormattedPrice(order) }}</SfTableData>
             <SfTableData>
               <span :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
@@ -121,7 +121,7 @@ export default {
     const tableHeaders = [
       'Order ID',
       'Product',
-      'Payment date',
+      'Round',
       'Amount',
       'Status'
     ];

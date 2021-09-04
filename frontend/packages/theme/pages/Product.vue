@@ -116,7 +116,7 @@ import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
 import BuyButton from '../components/Molecules/BuyButton';
-import Web3 from 'web3';
+// import Web3 from 'web3';
 
 export default {
   name: 'Product',
@@ -129,7 +129,7 @@ export default {
     // const { addItem, loading } = useCart();
     // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
-    const { user, web3User, initWeb3Modal, ethereumListener, isAuthenticated } = useUser();
+    const { user, isAuthenticated } = useUser();
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { toggleLoginModal } = useUiState();
     const { send } = useUiNotification();
@@ -232,22 +232,22 @@ export default {
     };
 
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    const handleCryptoBuyButtonClick = async (product) => {
-      await initWeb3Modal();
-      await ethereumListener();
-      const sender = web3User.value.activeAccount;
-      const receiver = web3User.value.activeAccount;
-      const web3 = new Web3(web3User.value.providerEthers.provider);
-      web3.eth.sendTransaction({
-        from: sender,
-        // gasPrice: '50',
-        // gas: '50',
-        to: receiver,
-        value: '1000000000000000'
-        // data: ''
-      });
-      // web3.sendTransaction({to: receiver, from: sender, value: web3.toWei("0.5", "ether")})
-    };
+    // const handleCryptoBuyButtonClick = async (product) => {
+    //   await initWeb3Modal();
+    //   await ethereumListener();
+    //   const sender = web3User.value.activeAccount;
+    //   const receiver = web3User.value.activeAccount;
+    //   const web3 = new Web3(web3User.value.providerEthers.provider);
+    //   web3.eth.sendTransaction({
+    //     from: sender,
+    //     // gasPrice: '50',
+    //     // gas: '50',
+    //     to: receiver,
+    //     value: '1000000000000000'
+    //     // data: ''
+    //   });
+    //   // web3.sendTransaction({to: receiver, from: sender, value: web3.toWei("0.5", "ether")})
+    // };
 
     return {
       updateFilter,
@@ -255,7 +255,7 @@ export default {
       getNumeraiChartData,
       resolveProductPlatform,
       handleBuyButtonClick,
-      handleCryptoBuyButtonClick,
+      // handleCryptoBuyButtonClick,
       configuration,
       product,
       // reviews,

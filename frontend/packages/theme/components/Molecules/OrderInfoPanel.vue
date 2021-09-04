@@ -11,6 +11,11 @@
       class="sf-property--full-width property"
     />
     <SfProperty
+      name="Round"
+      :value="orderGetters.getRound(order)"
+      class="sf-property--full-width property"
+    />
+    <SfProperty
       name="Date"
       :value="orderGetters.getDate(order)"
       class="sf-property--full-width property"

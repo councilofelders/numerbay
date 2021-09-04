@@ -12,10 +12,10 @@ type ProductVariantFilters = any
 // Product
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getProductName = (product: ProductVariant): string => product?.name || 'Product\'s name';
+export const getProductName = (product: ProductVariant): string => product?.name || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getProductSlug = (product: ProductVariant): string => product.sku;
+export const getProductSlug = (product: ProductVariant): string => product?.sku || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductPrice = (product: ProductVariant): AgnosticPrice => {
@@ -84,6 +84,8 @@ export const getProductIsActive = (product: ProductVariant): boolean => (product
 
 export const getProductExpirationRound = (product: ProductVariant): number => (product as any)?.expiration_round || null;
 
+export const getProductOwner = (product: ProductVariant): string => (product as any)?.owner?.username || '-';
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -102,7 +104,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getModelRep: getProductModelRep,
   getModelReturn: getProductModelReturn,
   getIsActive: getProductIsActive,
-  getExpirationRound: getProductExpirationRound
+  getExpirationRound: getProductExpirationRound,
+  getOwner: getProductOwner
 };
 
 export default productGetters;

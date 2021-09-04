@@ -30,7 +30,7 @@
           <div class="product-sku">{{ productGetters.getSlug(product).toUpperCase() }}</div>
         </SfTableData>
         <SfTableData class="table__data">
-          {{ product.owner.username.toUpperCase() }}
+          {{ productGetters.getOwner(product).toUpperCase() }}
         </SfTableData>
         <SfTableData class="table__data">{{ 1 }}</SfTableData>
         <SfTableData class="table__data price">
@@ -96,7 +96,8 @@ import {
   SfPrice,
   SfProperty,
   SfAccordion,
-  SfLink
+  SfLink,
+  SfLoader
 } from '@storefront-ui/vue';
 import { onSSR } from '@vue-storefront/core';
 import { ref, computed } from '@vue/composition-api';
@@ -118,10 +119,15 @@ export default {
     SfProperty,
     SfAccordion,
     SfLink,
+    SfLoader,
     VsfPaymentProvider: () => import('~/components/Checkout/VsfPaymentProvider')
   },
-  mounted() {
+  async mounted() {
     console.log('this.orders?.data', this.orders?.data);
+    const id = this.$route.query.product;
+    await this.getGlobals();
+    // eslint-disable-next-line camelcase
+    await this.orderSearch({ role: 'buyer', filters: {product: {in: [id]}, round_order: {in: [this.globals.selling_round]}} });
     if (this.orders?.data?.length > 0) {
       this.$router.push(`/checkout/confirmation?order=${this.orders.data[0].id}`);
     }
@@ -131,7 +137,7 @@ export default {
     const { load, setCart } = useCart();
     const { order, make, loading, error: makeOrderError } = useMakeOrder();
     const { orders, search: orderSearch } = useUserOrder('order-history');
-    const { products, search } = useProduct(String(id));
+    const { products, search, loading: productLoading } = useProduct(String(id));
     const { globals, getGlobals } = useGlobals();
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     // const { web3User, initWeb3Modal, ethereumListener } = useUser();
@@ -143,9 +149,6 @@ export default {
     onSSR(async () => {
       await load();
       await search({ id });
-      await getGlobals();
-      // eslint-disable-next-line camelcase
-      await orderSearch({ role: 'buyer', filters: {product: {in: [id]}, round_order: {in: [globals.value.selling_round]}} });
     });
 
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
@@ -192,10 +195,14 @@ export default {
       terms,
       loading,
       orders,
-      products: computed(() => [products?.value?.data[0]] || []), // cartGetters.getItems(cart.value)
+      globals: computed(() => globals?.value ? globals?.value : {}),
+      getGlobals,
+      products: computed(() => products?.value?.data ? products?.value?.data : []),
+      productLoading,
       tableHeaders: ['Description', 'Seller', 'Quantity', 'Amount'],
       productGetters,
-      processOrder
+      processOrder,
+      orderSearch
     };
   }
 };

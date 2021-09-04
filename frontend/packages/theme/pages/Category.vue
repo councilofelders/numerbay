@@ -388,9 +388,8 @@ import {
   SfLink
 } from '@storefront-ui/vue';
 import { ref, computed, onMounted } from '@vue/composition-api';
-import { useCart, useWishlist, productGetters, useFacet, facetGetters } from '@vue-storefront/numerbay';
-import { useUiState } from '../composables';
-import { useUiHelpers } from '../composables';
+import { useCart, useWishlist, productGetters, useFacet, useUser, facetGetters } from '@vue-storefront/numerbay';
+import { useUiState, useUiNotification, useUiHelpers } from '~/composables';
 import { useVueRouter } from '../helpers/hooks/useVueRouter';
 import { onSSR } from '@vue-storefront/core';
 import LazyHydrate from 'vue-lazy-hydration';
@@ -409,6 +408,9 @@ export default {
     const { addItem: addItemToCart, isInCart } = useCart();
     const { addItem: addItemToWishlist } = useWishlist();
     const { result, search, loading } = useFacet(`facetId:${path}`);
+    const { user, isAuthenticated } = useUser();
+    const { toggleLoginModal } = useUiState();
+    const { send } = useUiNotification();
 
     const products = computed(() => facetGetters.getProducts(result.value));
     const categoryTree = computed(() => facetGetters.getCategoryTree(result.value));
@@ -503,8 +505,27 @@ export default {
     };
 
     const handleBuyButtonClick = (product) => {
-      if (product?.third_party_url) { // if third party listing
+      if (product?.is_on_platform && !isAuthenticated.value) {
+        send({
+          message: 'You need to log in to buy this product',
+          type: 'info'
+        });
+        toggleLoginModal();
+        return;
+      }
+      if (product?.is_on_platform && product?.currency === 'NMR' && !user.value.numerai_api_key_public_id) { // if not setup numerai api key and product is in NMR
+        send({
+          message: 'This product requires your Numerai wallet address',
+          type: 'info',
+          action: {text: 'Set Numerai API Key', onClick: ()=>context.root.$router.push('/my-account/numerai-api')},
+          persist: true
+        });
+        return;
+      }
+      if (!product?.is_on_platform && product?.third_party_url) { // if third party listing
         window.open(product?.third_party_url, '_blank');
+      } else {
+        context.root.$router.push(`/checkout/payment?product=${product.id}`);
       }
     };
 
