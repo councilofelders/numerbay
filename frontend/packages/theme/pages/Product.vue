@@ -207,7 +207,11 @@ export default {
     };
 
     const handleBuyButtonClick = (product) => {
-      if (!isAuthenticated.value) {
+      if (product?.is_on_platform && !isAuthenticated.value) {
+        send({
+          message: 'You need to log in to buy this product',
+          type: 'info'
+        });
         toggleLoginModal();
         return;
       }

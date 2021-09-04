@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Optional
+from typing import Any, Optional, Dict
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import and_, desc, or_
@@ -39,6 +39,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         # category_id: int = None,
         skip: int = 0,
         limit: int = 100,
+        filters: Dict = None,
         # term: str = None,
         sort: str = None
     ) -> Any:
@@ -66,11 +67,14 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     Product.owner_id == current_user_id,
                 )
             )
-        # if isinstance(filters, dict):
-        #     for filter_key, filter_item in filters.items():
-        #         if filter_key == 'user':
-        #             user_id_list = [int(i) for i in filter_item['in']]
-        #             query_filters.append(Order.owner_id.in_(user_id_list))
+        if isinstance(filters, dict):
+            for filter_key, filter_item in filters.items():
+                if filter_key == 'product':
+                    product_id_list = [int(i) for i in filter_item['in']]
+                    query_filters.append(Order.product_id.in_(product_id_list))
+                if filter_key == 'round_order':
+                    round_order_list = [int(i) for i in filter_item['in']]
+                    query_filters.append(Order.round_order.in_(round_order_list))
 
         query = db.query(self.model)
         if role != "buyer":  # to handle filter on Product owner

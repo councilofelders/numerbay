@@ -100,7 +100,8 @@ import {
 } from '@storefront-ui/vue';
 import { onSSR } from '@vue-storefront/core';
 import { ref, computed } from '@vue/composition-api';
-import {useProduct, useMakeOrder, useCart, useUser, productGetters} from '@vue-storefront/numerbay';
+import {useProduct, useMakeOrder, useCart, useUserOrder, productGetters, useGlobals} from '@vue-storefront/numerbay';
+import { useUiNotification } from '~/composables';
 // import Web3 from 'web3';
 
 export default {
@@ -119,13 +120,22 @@ export default {
     SfLink,
     VsfPaymentProvider: () => import('~/components/Checkout/VsfPaymentProvider')
   },
+  mounted() {
+    console.log('this.orders?.data', this.orders?.data);
+    if (this.orders?.data?.length > 0) {
+      this.$router.push(`/checkout/confirmation?order=${this.orders.data[0].id}`);
+    }
+  },
   setup(props, context) {
     const id = context.root.$route.query.product;
     const { load, setCart } = useCart();
-    const { order, make, loading } = useMakeOrder();
+    const { order, make, loading, error: makeOrderError } = useMakeOrder();
+    const { orders, search: orderSearch } = useUserOrder('order-history');
     const { products, search } = useProduct(String(id));
+    const { globals, getGlobals } = useGlobals();
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    const { web3User, initWeb3Modal, ethereumListener } = useUser();
+    // const { web3User, initWeb3Modal, ethereumListener } = useUser();
+    const { send } = useUiNotification();
 
     const isPaymentReady = ref(false);
     const terms = ref(false);
@@ -133,6 +143,9 @@ export default {
     onSSR(async () => {
       await load();
       await search({ id });
+      await getGlobals();
+      // eslint-disable-next-line camelcase
+      await orderSearch({ role: 'buyer', filters: {product: {in: [id]}, round_order: {in: [globals.value.selling_round]}} });
     });
 
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
@@ -153,20 +166,23 @@ export default {
       try {
         const paymentPromise = (async () => 'fake data')();
         await paymentPromise.then(() => {
-          console.log('Payment success');
           successCallback();
         });
       } catch (error) {
-        console.log('Payment error: ', error);
         failureCallback();
       }
       // web3.sendTransaction({to: receiver, from: sender, value: web3.toWei("0.5", "ether")})
     };
 
     const processOrder = async () => {
-      await make({ id });
-      console.log('order:', order);
-      console.log('order value:', order.value);
+      await make({id});
+      if (makeOrderError.value.make) {
+        send({
+          message: makeOrderError.value.make.message,
+          type: 'danger'
+        });
+        return;
+      }
       await pay(() => context.root.$router.push(`/checkout/confirmation?order=${order?.value?.id}`), () => console.log('Payment failed: '));
       setCart(null);
     };
@@ -175,6 +191,7 @@ export default {
       isPaymentReady,
       terms,
       loading,
+      orders,
       products: computed(() => [products?.value?.data[0]] || []), // cartGetters.getItems(cart.value)
       tableHeaders: ['Description', 'Seller', 'Quantity', 'Amount'],
       productGetters,

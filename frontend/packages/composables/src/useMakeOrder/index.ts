@@ -6,7 +6,11 @@ const factoryParams = {
   make: async (context: Context, params): Promise<Order> => {
     Logger.debug('makeOrder');
     const { id } = params;
-    return await context.$numerbay.api.createOrder({ id });
+    const response = await context.$numerbay.api.createOrder({ id });
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
   }
 };
 

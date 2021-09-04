@@ -10,12 +10,9 @@ export default async function getOrder(context, params, customQuery?: CustomQuer
   const payload = {
     role: params.role,
     id: params.id,
-    // eslint-disable-next-line camelcase
-    category_id: params.catId,
     limit: params.limit,
     skip: params.offset,
     filters: params.filters,
-    term: params.term,
     sort: params.sort
   };
 

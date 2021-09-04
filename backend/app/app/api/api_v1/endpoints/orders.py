@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Union
 
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -19,6 +19,7 @@ def search_orders(
     # category_id: int = Body(None),
     skip: int = Body(None),
     limit: int = Body(None),
+    filters: Dict = None,
     # term: str = Body(None),
     sort: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -34,6 +35,7 @@ def search_orders(
         # category_id=category_id,
         skip=skip,
         limit=limit,
+        filters=filters,
         # term=term,
         sort=sort,
     )
@@ -51,7 +53,17 @@ def create_order(
     Create new order.
     """
     product = crud.product.get(db=db, id=id)
+    if not product.is_active:
+        raise HTTPException(
+            status_code=400, detail="This product is not available for sale"
+        )
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    existing_order = crud.order.search(db, role='buyer', current_user_id=current_user.id,
+                                       filters={'product': {'in': [product.id]}, 'round_order': {'in': [selling_round]}})
+    if len(existing_order.get('data', [])) > 0:
+        raise HTTPException(
+            status_code=400, detail="Order for this product this round already exists"
+        )
     if product:
         order_in = schemas.OrderCreate(
             price=product.price,
