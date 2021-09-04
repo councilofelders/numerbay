@@ -47,3 +47,12 @@ def add_job_globals(
     celery_app.send_task("app.worker.update_globals_task")
 
     return {"msg": "success!"}
+
+
+@router.post("/payments")
+def add_job_payments(
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.batch_update_payments_task")
+
+    return {"msg": "success!"}

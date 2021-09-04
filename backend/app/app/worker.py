@@ -47,7 +47,7 @@ def update_model_subtask(user_json: Dict) -> Optional[Any]:
 def batch_update_models_task() -> None:
     db = SessionLocal()
     try:
-        users = crud.user.search(db, filters={"numerai_api_key_public_id": ["any"]})[
+        users = crud.user.search(db, filters={"numerai_api_key_public_id": ["any"]}, limit=None)[
             "data"
         ]
         print(f"total: {len(users)}")
@@ -70,10 +70,32 @@ def update_globals_task() -> None:
         db.close()
 
 
+@celery_app.task  # (acks_late=True)
+def update_payment_subtask(order_json: Dict) -> Optional[Any]:
+    db = SessionLocal()
+    try:
+        # Update order payment
+        crud.order.update_payment(db, order_json)
+    finally:
+        db.close()
+
+
+@celery_app.task  # (acks_late=True)
+def batch_update_payments_task() -> None:
+    db = SessionLocal()
+    try:
+        orders = crud.order.get_multi_by_state(db, state="pending")
+        print(f"total pending orders: {len(orders)}")
+        group(
+            [update_payment_subtask.s(jsonable_encoder(order)) for order in orders]
+        ).delay()
+    finally:
+        db.close()
+
+
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
     print("Setup Cron Tasks")
-    # sender.add_periodic_task(5.0, batch_update_models_task.s('schedule'), name='add every 5')
     sender.conf.beat_schedule = {
         "test_tick": {
             "task": "app.worker.tick",
@@ -89,3 +111,4 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "schedule": crontab(day_of_week="sat", hour=18, minute=0),
         },
     }
+    sender.add_periodic_task(20.0, batch_update_payments_task.s(), name='batch update payments every 20 seconds')

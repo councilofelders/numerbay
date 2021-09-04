@@ -66,9 +66,17 @@
     </SfProperty>
     <SfProperty
       name="Transaction Hash"
-      :value="orderGetters.getTransactionHash(order) || 'waiting'"
       class="sf-property--full-width property"
-    />
+    >
+      <template #value>
+        <span class="sf-property__value" v-if="orderGetters.getTransactionHash(order)" >
+          <SfInput :value="orderGetters.getTransactionHash(order)" class="sf-input--outline"></SfInput>
+        </span>
+        <span class="sf-property__value" v-else>
+          waiting
+        </span>
+      </template>
+    </SfProperty>
     <SfProperty
       name="Status"
       :value="orderGetters.getStatus(order)"
@@ -78,7 +86,7 @@
 </template>
 
 <script>
-import { SfProperty, SfIcon, SfButton } from '@storefront-ui/vue';
+import { SfProperty, SfIcon, SfButton, SfInput } from '@storefront-ui/vue';
 import { orderGetters } from '@vue-storefront/numerbay';
 
 export default {
@@ -86,7 +94,8 @@ export default {
   components: {
     SfProperty,
     SfIcon,
-    SfButton
+    SfButton,
+    SfInput
   },
   props: {
     order: {

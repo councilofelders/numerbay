@@ -1,10 +1,14 @@
 import functools
-from typing import Any, Optional, Dict
+from decimal import Decimal
+from typing import Any, Optional, Dict, List
+import pandas as pd
 
 from fastapi.encoders import jsonable_encoder
+from numerapi import NumerAPI
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import Session
 
+from app import crud
 from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.product import Product
@@ -28,6 +32,11 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
+    def get_multi_by_state(
+        self, db: Session, *, state: str, skip: int = 0, limit: int = 100
+    ) -> List[Order]:
+        return db.query(self.model).filter(self.model.state == state).offset(skip).limit(limit).all()
 
     def search(
         self,
@@ -87,6 +96,59 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         data = query.offset(skip).limit(limit).all()
 
         return {"total": count, "data": data}
+
+    def get_numerai_wallet_transactions(self, public_id: str, secret_key: str) -> Any:
+        """
+        Retrieve products.
+        """
+        query = """
+                  query {
+                    account {
+                      username
+                      walletAddress
+                      walletTxns {
+                        amount
+                        from
+                        status
+                        time
+                        to
+                        tournament
+                        txHash
+                        type
+                      }
+                    }
+                  }
+                """
+
+        api = NumerAPI(public_id=public_id, secret_key=secret_key)
+        account = api.raw_query(query, authorization=True)["data"]["account"]
+        wallet_transactions = account["walletTxns"]
+        return wallet_transactions
+
+    def update_payment(self, db: Session, order_json: Dict) -> None:
+        if order_json['currency'] == 'NMR':
+            buyer = crud.user.get(db, id=order_json['buyer_id'])
+            if buyer:
+                numerai_wallet_transactions = self.get_numerai_wallet_transactions(public_id=buyer.numerai_api_key_public_id, secret_key=buyer.numerai_api_key_secret)
+                for transaction in numerai_wallet_transactions:
+                    time = pd.to_datetime(transaction["time"]).tz_localize(None).to_pydatetime()
+                    if time < pd.to_datetime(order_json["date_order"]).to_pydatetime():
+                        continue
+                    if transaction['to'] == order_json['to_address']:
+                        print(f"Transaction match for order {order_json['id']} "
+                              f"[{buyer.username}->{order_json['product']['name']}], "
+                              f"{transaction['amount']} {order_json['currency']} / "
+                              f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}")
+                        order_obj = crud.order.get(db, id=order_json['id'])
+                        order_obj.transaction_hash = transaction['txHash']
+                        if Decimal(transaction['amount']) >= Decimal(order_obj.price) and transaction['status'] == 'confirmed':
+                            order_obj.state = 'confirmed'
+                        db.commit()
+                        db.refresh(order_obj)
+                        break
+            return
+        else:
+            return
 
 
 order = CRUDOrder(Order)
