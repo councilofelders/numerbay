@@ -50,7 +50,6 @@
                     <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
-                {{form}}
                 <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
