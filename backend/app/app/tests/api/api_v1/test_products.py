@@ -16,6 +16,8 @@ def test_create_product(
         "price": 10,
         "category_id": 1,
         "description": "Description",
+        "is_on_platform": False,
+        "currency": "USD",
     }
     response = client.post(
         f"{settings.API_V1_STR}/products/",

@@ -19,6 +19,13 @@ def create_random_product(
     sku = f"test-{name}"
     description = random_lower_string()
     product_in = ProductCreate(
-        name=name, price=price, sku=sku, category_id=1, description=description, id=id
+        name=name,
+        price=price,
+        sku=sku,
+        category_id=1,
+        description=description,
+        is_on_platform=False,
+        currency="USD",
+        id=id,
     )
     return crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=owner_id)

@@ -12,7 +12,13 @@ def test_create_product(db: Session) -> None:
     sku = f"test-{name}"
     description = random_lower_string()
     product_in = ProductCreate(
-        name=name, price=price, sku=sku, category_id=1, description=description
+        name=name,
+        price=price,
+        sku=sku,
+        category_id=1,
+        description=description,
+        is_on_platform=False,
+        currency="USD",
     )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
@@ -27,7 +33,13 @@ def test_get_product(db: Session) -> None:
     sku = f"test-{name}"
     description = random_lower_string()
     product_in = ProductCreate(
-        name=name, price=price, sku=sku, category_id=1, description=description
+        name=name,
+        price=price,
+        sku=sku,
+        category_id=1,
+        description=description,
+        is_on_platform=False,
+        currency="USD",
     )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
@@ -46,7 +58,13 @@ def test_update_product(db: Session) -> None:
     sku = f"test-{name}"
     description = random_lower_string()
     product_in = ProductCreate(
-        name=name, price=price, sku=sku, category_id=1, description=description
+        name=name,
+        price=price,
+        sku=sku,
+        category_id=1,
+        description=description,
+        is_on_platform=False,
+        currency="USD",
     )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)
@@ -66,7 +84,13 @@ def test_delete_product(db: Session) -> None:
     sku = f"test-{name}"
     description = random_lower_string()
     product_in = ProductCreate(
-        name=name, price=price, sku=sku, category_id=1, description=description
+        name=name,
+        price=price,
+        sku=sku,
+        category_id=1,
+        description=description,
+        is_on_platform=False,
+        currency="USD",
     )
     user = create_random_user(db)
     product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id)

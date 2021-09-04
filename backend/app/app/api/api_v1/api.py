@@ -2,12 +2,12 @@ from fastapi import APIRouter
 
 from app.api.api_v1.endpoints import (
     categories,
-    orders,
     globals,
     items,
     login,
     models,
     numerai,
+    orders,
     products,
     scheduler,
     users,

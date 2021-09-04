@@ -1,10 +1,10 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from datetime import datetime
+
 from pydantic import BaseModel
 
-from app.schemas import Product
-from app.schemas.category import Category
+from app.schemas.product import Product
 from app.schemas.user import OrderBuyer
 
 

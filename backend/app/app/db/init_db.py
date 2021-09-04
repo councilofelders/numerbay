@@ -69,6 +69,8 @@ def init_db(db: Session) -> None:
                 sku="numerai-predictions-integration_test",
                 price=Decimal("10.34"),
                 category_id=sub_sub_category_numerai_1.id,
+                currency="USD",
+                is_on_platform=False,
             )
             product = crud.product.create_with_owner(  # noqa: F841
                 db, obj_in=product_in, owner_id=user.id

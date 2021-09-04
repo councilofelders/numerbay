@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Numeric, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
-    from .product import Product
+    from .product import Product  # noqa: F401
 
 
 class Order(Base):
