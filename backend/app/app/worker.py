@@ -64,7 +64,8 @@ def batch_update_models_task() -> None:
 def update_globals_task() -> None:
     db = SessionLocal()
     try:
-        crud.globals.update_singleton(db)
+        globals = crud.globals.update_singleton(db)
+        crud.product.bulk_expire(db, current_round=globals.selling_round)
     finally:
         db.close()
 

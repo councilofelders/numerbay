@@ -24,7 +24,7 @@ class Header {
   }
 
   get account(): Cypress.Chainable {
-    return el('app-header-account');
+    return cy.get('[name="app-header-account"]');
   }
 
   openLoginModal(): Cypress.Chainable {

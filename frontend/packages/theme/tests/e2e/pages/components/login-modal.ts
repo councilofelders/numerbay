@@ -12,7 +12,7 @@ class LoginModal {
   }
 
   get registerOptionButton(): Cypress.Chainable {
-    return el('register-option-button');
+    return cy.get('[name="register-option-button"]');
   }
 
   get username(): Cypress.Chainable {
@@ -24,15 +24,11 @@ class LoginModal {
   }
 
   get submitButton(): Cypress.Chainable {
-    return el('login-modal-submit');
+    return cy.get('[name="login-modal-submit"]');
   }
 
   get loginToAccountButton(): Cypress.Chainable {
     return el('login-modal-login-to-your-account');
-  }
-
-  get loginBtn(): Cypress.Chainable {
-    return el('login-modal-submit');
   }
 
   fillForm(user: User): void {

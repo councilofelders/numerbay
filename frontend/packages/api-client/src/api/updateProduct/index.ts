@@ -15,6 +15,10 @@ export default async function updateProduct(context, params, customQuery?: Custo
     avatar: params.avatar,
     // eslint-disable-next-line camelcase
     third_party_url: params.thirdPartyUrl,
+    // eslint-disable-next-line camelcase
+    is_active: params.isActive,
+    // eslint-disable-next-line camelcase
+    expiration_round: params.expirationRound,
     description: params.description
   };
 

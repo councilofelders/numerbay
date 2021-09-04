@@ -1,5 +1,5 @@
 import webpack from 'webpack';
-import { Integrations } from '@sentry/tracing';
+// import { Integrations } from '@sentry/tracing';
 // import { getRoutes } from './routes';
 
 export default {

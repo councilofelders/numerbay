@@ -28,12 +28,12 @@
           </SfTableHeading>
           <SfTableRow v-for="product in products" :key="productGetters.getId(product)">
             <SfTableData>
-              <SfLink :link="'/p/'+productGetters.getId(product)+'/'+productGetters.getSlug(product)">
+              <SfLink :link="'/p/'+productGetters.getId(product)+'/'+productGetters.getSlug(product)" :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">
                 {{ productGetters.getName(product).toUpperCase() }}
               </SfLink>
             </SfTableData>
-            <SfTableData>{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</SfTableData>
-            <SfTableData>{{ $n(productGetters.getPrice(product).regular, 'currency') }}</SfTableData>
+            <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</span></SfTableData>
+            <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ $n(productGetters.getPrice(product).regular, 'currency') }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                 {{ $t('Manage') }}
@@ -64,7 +64,8 @@ import {
   userGetters,
   productGetters,
   useCategory,
-  useNumerai
+  useNumerai,
+  useGlobals
 } from '@vue-storefront/numerbay';
 import { AgnosticOrderStatus } from '@vue-storefront/core';
 import { onSSR } from '@vue-storefront/core';
@@ -90,6 +91,7 @@ export default {
     const { user, updateUser, error: userError, loading: userLoading } = useUser();
     const { categories, search: categorySearch } = useCategory();
     const { getModels: getNumeraiModels, loading: numeraiLoading, error: numeraiError } = useNumerai('my-listings');
+    const { getGlobals } = useGlobals();
 
     onSSR(async () => {
       await categorySearch(); // {slug: 'all'}
@@ -109,6 +111,7 @@ export default {
 
     onSSR(async () => {
       await search({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}});
+      await getGlobals();
     });
 
     const tableHeaders = [

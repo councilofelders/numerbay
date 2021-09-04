@@ -58,7 +58,9 @@
                 <div v-if="error.login">
                   {{ error.login }}
                 </div>
-                <SfButton v-e2e="'login-modal-submit'"
+                <SfButton
+                  name="login-modal-submit"
+                  v-e2e="'login-modal-submit'"
                   type="submit"
                   class="sf-button--full-width form__button"
                   :disabled="loading"
@@ -76,7 +78,10 @@
             </div>-->
             <div class="bottom">
               <p class="bottom__paragraph">{{ $t('No account') }}</p>
-              <SfButton class="sf-button--text" @click="setIsLoginValue(false)" v-e2e="'register-option-button'">
+              <SfButton class="sf-button--text" @click="setIsLoginValue(false)"
+                        v-e2e="'register-option-button'"
+                        name="register-option-button"
+              >
                 {{ $t('Register today') }}
               </SfButton>
             </div>
@@ -111,6 +116,7 @@
                   {{ error.register }}
                 </div>
                 <SfButton
+                  name="login-modal-submit"
                   v-e2e="'login-modal-submit'"
                   type="submit"
                   class="sf-button--full-width form__button"

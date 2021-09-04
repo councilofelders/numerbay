@@ -50,6 +50,27 @@
                     <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
+                {{form}}
+                <div class="form__radio-group">
+                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="isActive"
+                      value="true"
+                      label="Active"
+                      details="People will be able to buy this product"
+                      v-model="form.isActive"
+                      class="form__radio"
+                    />
+                    <SfRadio
+                      name="isActive"
+                      value="false"
+                      label="Inactive"
+                      details="Buy button will be disabled without deleting the product"
+                      v-model="form.isActive"
+                      class="form__radio"
+                    />
+                  </ValidationProvider>
+                </div>
                 <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'listing-modal-price'"
@@ -97,6 +118,41 @@
                       disabled=""
                       selected="offPlatform"
                       class="form__radio"
+                    />
+                  </ValidationProvider>
+                </div>
+                <div class="form__radio-group">
+                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="isPerpetual"
+                      value="true"
+                      label="Perpetual Listing"
+                      details="Available for all rounds until delisted or deleted"
+                      v-model="form.isPerpetual"
+                      @change="onIsPerpetualChange(form.isPerpetual)"
+                      class="form__radio"
+                    />
+                    <SfRadio
+                      name="isPerpetual"
+                      value="false"
+                      label="Temporary Listing"
+                      details="Available until specified round"
+                      v-model="form.isPerpetual"
+                      @change="onIsPerpetualChange(form.isPerpetual)"
+                      class="form__radio"
+                    />
+                  </ValidationProvider>
+                </div>
+                <div v-if="form.isPerpetual === 'false'">
+                  <ValidationProvider v-slot="{ errors }">
+                    <SfInput
+                      v-e2e="'listing-modal-avatar'"
+                      v-model="form.expirationRound"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="expirationRound"
+                      label="Round after which this product is delisted"
+                      class="form__element"
                     />
                   </ValidationProvider>
                 </div>
@@ -185,7 +241,15 @@ import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, S
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, email, min_value } from 'vee-validate/dist/rules';
-import { userGetters, useUser, productGetters, useCategory, useProduct, useNumerai } from '@vue-storefront/numerbay';
+import {
+  userGetters,
+  useUser,
+  productGetters,
+  useCategory,
+  useProduct,
+  useNumerai,
+  useGlobals
+} from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
 
@@ -290,12 +354,22 @@ export default {
       }
     };
   },
+  methods: {
+    onIsPerpetualChange(isPerpetual) {
+      if (isPerpetual === 'true') {
+        this.form.expirationRound = null;
+      } else {
+        this.form.expirationRound = productGetters.getExpirationRound(this.currentListing) || this.globals.selling_round;
+      }
+    }
+  },
   setup() {
     const { isListingModalOpen, currentListing, toggleListingModal } = useUiState();
     const { categories, search: categorySearch } = useCategory();
     const { search: productSearch, createProduct, updateProduct, deleteProduct, loading, error: productError } = useProduct('products');
     const { numerai, error: numeraiError } = useNumerai('my-listings');
     const { user } = useUser();
+    const { globals } = useGlobals();
     onSSR(async () => {
       await categorySearch();
     });
@@ -306,6 +380,9 @@ export default {
       category: product ? productGetters.getCategoryIds(product)[0] : null,
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
+      isActive: product ? String(productGetters.getIsActive(product)) : 'true',
+      isPerpetual: String(productGetters.getExpirationRound(product) === null),
+      expirationRound: productGetters.getExpirationRound(product),
       thirdPartyUrl: product ? product.third_party_url : null
     });
     const form = ref(resetForm(currentListing));
@@ -321,6 +398,7 @@ export default {
     watch(currentListing, (product) => {
       if (currentListing) {
         form.value = resetForm(product);
+        console.log(product);
         resetErrorValues();
       }
     });
@@ -385,6 +463,7 @@ export default {
       currentListing,
       toggleListingModal,
       userGetters,
+      globals,
       numerai: computed(() => numerai ? numerai.value : null),
       numeraiError,
       leafCategories: computed(() => categories ? categories.value.filter((category) => {

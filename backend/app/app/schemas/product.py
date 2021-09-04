@@ -16,6 +16,8 @@ class ProductBase(BaseModel):
     avatar: Optional[str] = None
     third_party_url: Optional[str] = None
     description: Optional[str] = None
+    is_active: Optional[bool] = None
+    expiration_round: Optional[int] = None
 
 
 # Properties to receive on product creation

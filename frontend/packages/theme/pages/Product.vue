@@ -38,7 +38,7 @@
             <p class="last-sale-change" style="color: green;">$0 (0%)</p>
           </div>
           <BuyButton
-            :disabled="!product.third_party_url && !product.is_on_platform"
+            :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"
             :price="$n(productGetters.getPrice(product).regular, 'currency')"
             :label="product.is_on_platform ? 'Price' : 'Ref Price'"
             @click="handleBuyButtonClick(product)"

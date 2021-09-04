@@ -64,6 +64,13 @@ def create_product(
     """
     Create new product.
     """
+    if product_in.expiration_round is not None:
+        selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
+        if (
+            product_in.expiration_round < selling_round
+        ):  # deactivate automatically if already expired
+            product_in.is_active = False
+
     category = crud.category.get(db=db, id=product_in.category_id)
     product_in.sku = f"{category.slug}-{product_in.name.lower()}"  # type: ignore
     product = crud.product.get_by_sku(db, sku=product_in.sku)
@@ -88,6 +95,12 @@ def update_product(
     """
     Update an product.
     """
+    if product_in.expiration_round is not None:
+        selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
+        if (
+            product_in.expiration_round < selling_round
+        ):  # deactivate automatically if already expired
+            product_in.is_active = False
     product = crud.product.get(db=db, id=id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")

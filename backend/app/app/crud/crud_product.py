@@ -109,6 +109,16 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .all()
         )
 
+    def bulk_expire(self, db: Session, current_round: int) -> None:
+        products_to_expire = (
+            db.query(self.model).filter(Product.expiration_round < current_round).all()
+        )
+        print(f"products_to_expire: {products_to_expire}")
+        for product in products_to_expire:
+            product.is_active = False
+
+        db.commit()
+
     def search(
         self,
         db: Session,
@@ -119,7 +129,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         limit: int = 100,
         filters: Dict = None,
         term: str = None,
-        sort: str = None
+        sort: str = None,
     ) -> Any:
         all_child_categories = crud.category.get_all_subcategories(db, category_id=category_id)  # type: ignore
         all_child_category_ids = [c[0] for c in all_child_categories]

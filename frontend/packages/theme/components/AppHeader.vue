@@ -19,6 +19,7 @@
       <template #header-icons>
         <div class="sf-header__icons">
           <SfButton
+            name="app-header-account"
             v-e2e="'app-header-account'"
             class="sf-button--pure sf-header__action"
             @click="handleAccountClick"
@@ -132,7 +133,7 @@ export default {
     const { load: loadWishlist } = useWishlist();
     const {
       result: searchResult,
-      search: productsSearch,
+      search: productsSearch
       // loading: productsLoading,
     } = useFacet('AppHeader:Products');
     // const {

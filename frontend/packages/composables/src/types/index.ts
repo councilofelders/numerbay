@@ -130,5 +130,10 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getTotalReviews: (product: PRODUCT) => number;
     getAverageRating: (product: PRODUCT) => number;
     getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
+    getModelNmrStaked: (product: PRODUCT, decimals: number) => any;
+    getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
+    getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
+    getIsActive: (product: PRODUCT) => boolean;
+    getExpirationRound: (product: PRODUCT) => number;
     [getterName: string]: any;
 }

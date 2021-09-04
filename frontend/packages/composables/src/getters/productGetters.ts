@@ -72,6 +72,10 @@ export const getProductModelRep = (product: ProductVariant, key: string, decimal
 
 export const getProductModelReturn = (product: ProductVariant, key: string, decimals = 2): any => ((product as any)?.model?.latest_returns || {})[key]?.toFixed(decimals) || '-';
 
+export const getProductIsActive = (product: ProductVariant): boolean => (product as any)?.is_active;
+
+export const getProductExpirationRound = (product: ProductVariant): number => (product as any)?.expiration_round || null;
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -88,7 +92,9 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getAverageRating: getProductAverageRating,
   getModelNmrStaked: getProductModelNmrStaked,
   getModelRep: getProductModelRep,
-  getModelReturn: getProductModelReturn
+  getModelReturn: getProductModelReturn,
+  getIsActive: getProductIsActive,
+  getExpirationRound: getProductExpirationRound
 };
 
 export default productGetters;

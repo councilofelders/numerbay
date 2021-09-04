@@ -17,6 +17,7 @@ context(['regression'], 'User registration', () => {
     const data = this.fixtures.data[this.test.title];
     data.user.username = generator.email;
     page.home.visit();
+    cy.wait(150);
     page.home.header.openLoginModal();
     page.components.loginModal.loginOptionsTab.then($item => {
       $item[0].__vue__.toggle($item[0].__vue__.$children[1]._uid);
@@ -37,6 +38,7 @@ context(['regression'], 'User registration', () => {
       cy.clearCookies();
     });
     page.home.visit();
+    cy.wait(150);
     page.home.header.openLoginModal();
     page.components.loginModal.loginOptionsTab.then($item => {
       $item[0].__vue__.toggle($item[0].__vue__.$children[1]._uid);

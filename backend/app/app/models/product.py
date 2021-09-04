@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -19,6 +19,8 @@ class Product(Base):
     avatar = Column(String)
     third_party_url = Column(String)
     description = Column(String)
+    is_active = Column(Boolean, server_default="t")
+    expiration_round = Column(Integer)
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="products")
     category_id = Column(Integer, ForeignKey("category.id"))
