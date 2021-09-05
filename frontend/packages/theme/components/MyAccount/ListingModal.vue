@@ -451,7 +451,7 @@ export default {
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      isOnPlatform: product ? String(product.is_on_platform) : 'true',
+      isOnPlatform: product ? String(product.is_on_platform) : 'false', // todo turnkey rollout
       currency: product ? product.currency : 'NMR',
       thirdPartyUrl: product ? product.third_party_url : null
     });
