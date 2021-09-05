@@ -23,7 +23,7 @@
       />-->
       <SfProperty
         name="Total"
-        :value="productGetters.getFormattedPrice(products[0])"
+        :value="productGetters.getFormattedPrice(products[0], withCurrency=true, decimals=4)"
         class="sf-property--full-width sf-property--large property-total"
       />
     </div>
@@ -92,7 +92,7 @@ export default {
       discounts,
       totalItems,
       listIsHidden,
-      products: computed(() => products?.value?.data ? products?.value?.data[0] : []),
+      products: computed(() => products?.value?.data ? products?.value?.data : []),
       loading,
       productGetters,
       promoCode,

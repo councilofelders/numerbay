@@ -50,6 +50,18 @@
                     <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
+                <ValidationProvider rules="secureUrl" v-slot="{ errors }">
+                  <SfInput
+                    v-e2e="'listing-modal-avatar'"
+                    v-model="form.avatar"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="avatar"
+                    label="Avatar Image URL (e.g. Numerai avatar img link)"
+                    type="url"
+                    class="form__element"
+                  />
+                </ValidationProvider>
                 <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
@@ -70,32 +82,43 @@
                     />
                   </ValidationProvider>
                 </div>
-                <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
-                  <SfInput
-                    v-e2e="'listing-modal-price'"
-                    v-model="form.price"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]"
-                    name="price"
-                    label="Price (per round equivalent, in $USD)"
-                    type="number"
-                    step=any
-                    min=0
-                    class="form__element"
-                  />
-                </ValidationProvider>
-                <ValidationProvider rules="secureUrl" v-slot="{ errors }">
-                  <SfInput
-                    v-e2e="'listing-modal-avatar'"
-                    v-model="form.avatar"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]"
-                    name="avatar"
-                    label="Avatar Image URL (e.g. Numerai avatar img link)"
-                    type="url"
-                    class="form__element"
-                  />
-                </ValidationProvider>
+                <div class="form__radio-group">
+                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="isPerpetual"
+                      value="true"
+                      label="Perpetual Listing"
+                      details="Available for all rounds until delisted or deleted"
+                      v-model="form.isPerpetual"
+                      @change="onIsPerpetualChange(form.isPerpetual)"
+                      class="form__radio"
+                    />
+                    <SfRadio
+                      name="isPerpetual"
+                      value="false"
+                      label="Temporary Listing"
+                      details="Available until specified round"
+                      v-model="form.isPerpetual"
+                      @change="onIsPerpetualChange(form.isPerpetual)"
+                      class="form__radio"
+                    />
+                  </ValidationProvider>
+                </div>
+                <div v-if="form.isPerpetual === 'false'">
+                  <ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
+                    <SfInput
+                      v-e2e="'listing-modal-avatar'"
+                      v-model="form.expirationRound"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="expirationRound"
+                      label="Round after which this product is delisted"
+                      type="number"
+                      step=1.0
+                      class="form__element"
+                    />
+                  </ValidationProvider>
+                </div>
                 <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
@@ -169,43 +192,8 @@
                       name="price"
                       :label="`Price (per round equivalent, in ${form.currency})`"
                       type="number"
-                      step=any
+                      step=0.0001
                       min=0
-                      class="form__element"
-                    />
-                  </ValidationProvider>
-                </div>
-                <div class="form__radio-group">
-                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
-                    <SfRadio
-                      name="isPerpetual"
-                      value="true"
-                      label="Perpetual Listing"
-                      details="Available for all rounds until delisted or deleted"
-                      v-model="form.isPerpetual"
-                      @change="onIsPerpetualChange(form.isPerpetual)"
-                      class="form__radio"
-                    />
-                    <SfRadio
-                      name="isPerpetual"
-                      value="false"
-                      label="Temporary Listing"
-                      details="Available until specified round"
-                      v-model="form.isPerpetual"
-                      @change="onIsPerpetualChange(form.isPerpetual)"
-                      class="form__radio"
-                    />
-                  </ValidationProvider>
-                </div>
-                <div v-if="form.isPerpetual === 'false'">
-                  <ValidationProvider v-slot="{ errors }">
-                    <SfInput
-                      v-e2e="'listing-modal-avatar'"
-                      v-model="form.expirationRound"
-                      :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                      name="expirationRound"
-                      label="Round after which this product is delisted"
                       class="form__element"
                     />
                   </ValidationProvider>
@@ -220,7 +208,7 @@
                       name="price"
                       label="Price (per round equivalent, in $USD)"
                       type="number"
-                      step=any
+                      step=0.01
                       min=0
                       class="form__element"
                     />
@@ -310,7 +298,7 @@ import {ref, watch, reactive, computed} from '@vue/composition-api';
 import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
-import { required, min_value } from 'vee-validate/dist/rules';
+import { required, min_value, integer } from 'vee-validate/dist/rules';
 import {
   userGetters,
   useUser,
@@ -332,6 +320,11 @@ extend('min_value', {
   // eslint-disable-next-line camelcase
   ...min_value,
   message: 'This must be positive'
+});
+
+extend('integer', {
+  ...integer,
+  message: 'This field must be an integer'
 });
 
 extend('decimal', {
@@ -473,7 +466,6 @@ export default {
     watch(currentListing, (product) => {
       if (currentListing) {
         form.value = resetForm(product);
-        console.log(product);
         resetErrorValues();
       }
     });

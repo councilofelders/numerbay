@@ -39,7 +39,7 @@
           </div>
           <BuyButton
             :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"
-            :price="productGetters.getFormattedPrice(product, withCurrency=false, decimals=product.is_on_platform?4:2)"
+            :price="productGetters.getFormattedPrice(product, withCurrency=!product.is_on_platform, decimals=product.is_on_platform?4:2)"
             :label="product.is_on_platform ? 'NMR' : 'Ref Price'"
             @click="handleBuyButtonClick(product)"
           />

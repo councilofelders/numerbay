@@ -128,7 +128,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getDescription: (product: PRODUCT) => string;
     getCategoryIds: (product: PRODUCT) => string[];
     getId: (product: PRODUCT) => string;
-    getFormattedPrice: (price: PRODUCT) => string;
+    getFormattedPrice: (price: PRODUCT, withCurrency: boolean, decimals: number) => string;
     getTotalReviews: (product: PRODUCT) => number;
     getAverageRating: (product: PRODUCT) => number;
     getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
@@ -157,7 +157,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getItemName: (item: ORDER_ITEM) => string;
     getItemQty: (item: ORDER_ITEM) => number;
     getItemPrice: (item: ORDER_ITEM) => number;
-    getFormattedPrice: (item: ORDER_ITEM) => string;
+    getFormattedPrice: (item: ORDER_ITEM, withCurrency: boolean, decimals: number) => string;
     getBuyer: (item: ORDER_ITEM) => string;
     [getterName: string]: (element: any, options?: any) => unknown;
 }

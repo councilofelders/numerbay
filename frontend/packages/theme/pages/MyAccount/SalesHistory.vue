@@ -54,7 +54,7 @@
             </SfTableData>
             <SfTableData>{{ orderGetters.getRound(order) }}</SfTableData>
             <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
-            <SfTableData>{{ orderGetters.getFormattedPrice(order) }}</SfTableData>
+            <SfTableData>{{ orderGetters.getFormattedPrice(order, withCurrency=true, decimals=4) }}</SfTableData>
             <SfTableData>
               <span :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
             </SfTableData>

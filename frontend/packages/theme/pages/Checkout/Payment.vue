@@ -35,7 +35,7 @@
         <SfTableData class="table__data">{{ 1 }}</SfTableData>
         <SfTableData class="table__data price">
           <SfPrice
-            :regular="productGetters.getFormattedPrice(product)"
+            :regular="productGetters.getFormattedPrice(product, withCurrency=true, decimals=4)"
             class="product-price"
           />
         </SfTableData>
@@ -55,7 +55,7 @@
 
         <SfProperty
           name="Total price"
-          :value="productGetters.getFormattedPrice(products[0])"
+          :value="productGetters.getFormattedPrice(products[0], withCurrency=true, decimals=4)"
           class="sf-property--full-width sf-property--large summary__property-total"
         />
 
@@ -129,6 +129,10 @@ export default {
     // eslint-disable-next-line camelcase
     await this.orderSearch({ role: 'buyer', filters: {product: {in: [id]}, round_order: {in: [this.globals.selling_round]}} });
     if (this.orders?.data?.length > 0) {
+      this.send({
+        message: 'You already bought this product for this round',
+        type: 'info'
+      });
       this.$router.push(`/checkout/confirmation?order=${this.orders.data[0].id}`);
     }
   },
@@ -202,7 +206,8 @@ export default {
       tableHeaders: ['Description', 'Seller', 'Quantity', 'Amount'],
       productGetters,
       processOrder,
-      orderSearch
+      orderSearch,
+      send
     };
   }
 };

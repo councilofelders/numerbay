@@ -51,11 +51,14 @@ export const getItemPrice = (item: any): number => item?.price?.current || 0;
 export const getBuyer = (item: any): string => item?.buyer?.username || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getFormattedPrice = (item: any): string => {
-  const price = (item?.price || 0).toFixed(2);
-  const currency = item?.currency || 'USD';
-  if (currency === 'USD') return `$${price}`;
-  return `${price} ${currency}`;
+export const getFormattedPrice = (item: any, withCurrency = true, decimals = 2): string => {
+  const price = (item?.price || 0).toFixed(decimals);
+  if (withCurrency) {
+    const currency = item?.currency || 'USD';
+    if (currency === 'USD') return `$${price}`;
+    return `${price} ${currency}`;
+  }
+  return `${price}`;
 };
 
 const orderGetters: UserOrderGetters<Order, OrderItem> = {

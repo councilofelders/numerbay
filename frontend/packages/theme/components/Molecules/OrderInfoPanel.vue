@@ -53,7 +53,7 @@
     >
       <template #value>
         <span class="sf-property__value">
-          {{orderGetters.getFormattedPrice(order)}}
+          {{orderGetters.getFormattedPrice(order, withCurrency=true, decimals=4)}}
         <SfButton
             v-if="withCopyButtons"
             class="sf-button--text"
