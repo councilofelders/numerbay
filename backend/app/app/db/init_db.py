@@ -23,9 +23,8 @@ def init_db(db: Session) -> None:
             email=settings.FIRST_SUPERUSER,
             username=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
-            is_superuser=True,
         )
-        user = crud.user.create(db, obj_in=user_in)  # noqa: F841
+        user = crud.user.create(db, obj_in=user_in, is_superuser=True)  # noqa: F841
 
     categories = crud.category.get_multi(db)
     if not categories or len(categories) < 1:
