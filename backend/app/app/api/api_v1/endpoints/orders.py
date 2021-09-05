@@ -52,11 +52,26 @@ def create_order(
     """
     Create new order.
     """
+    # Product exists
     product = crud.product.get(db=db, id=id)
-    if not product.is_active:
+    if not product:
+        raise HTTPException(
+            status_code=404, detail="Product not found"
+        )
+
+    # Product active
+    if not product.is_active:  # todo handle expired api keys
         raise HTTPException(
             status_code=400, detail="This product is not available for sale"
         )
+
+    # Own product
+    if product.owner_id == current_user.id:
+        raise HTTPException(
+            status_code=400, detail="You cannot buy your own product"
+        )
+
+    # Duplicate order
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
     existing_order = crud.order.search(db, role='buyer', current_user_id=current_user.id,
                                        filters={'product': {'in': [product.id]}, 'round_order': {'in': [selling_round]}})
@@ -139,12 +154,12 @@ def create_order(
 #     return order
 
 
-@router.get("/schedule/", response_model=schemas.Msg, status_code=201)
-def schedule(
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Test Celery worker.
-    """
-    result = celery_app.send_task("app.worker.test_celery", args=["123"])
-    return {"msg": result.ready()}
+# @router.get("/schedule/", response_model=schemas.Msg, status_code=201)
+# def schedule(
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Test Celery worker.
+#     """
+#     result = celery_app.send_task("app.worker.test_celery", args=["123"])
+#     return {"msg": result.ready()}

@@ -169,8 +169,8 @@
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
             >
               <template #price="{price}">{{ price }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
-                                     data-emoji="glitch_black" title=":glitch_black:"
-                                     v-if="product.currency === 'NMR'">:glitch_black: </span>
+                                     data-emoji="glitch_black" title="Gas-free NMR payment"
+                                     v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
               </template>
             </SfProductCard>
           </transition-group>
@@ -201,8 +201,8 @@
                 <SfLink :link="link" class="sf-product-card-horizontal__link">
                   <h3 class="sf-product-card-horizontal__title">
                     {{ title }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
-                                     data-emoji="glitch_black" title=":glitch_black:"
-                                     v-if="product.currency === 'NMR'">:glitch_black: </span>
+                                     data-emoji="glitch_black" title="Gas-free NMR payment"
+                                     v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
                   </h3>
                 </SfLink>
               </template>

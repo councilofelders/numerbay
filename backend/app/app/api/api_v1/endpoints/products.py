@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -54,6 +55,83 @@ def read_my_products(
     return products
 
 
+def validate_product(db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
+    # Positive price
+    if product_in.price is not None:
+        if product_in.price <= 0:
+            raise HTTPException(
+                status_code=400, detail=f"Price must be positive",
+            )
+
+    # Positive expiration round
+    if product_in.expiration_round is not None:
+        if product_in.expiration_round <= 0:
+            raise HTTPException(
+                status_code=400, detail=f"Expiration round must be a positive integer",
+            )
+
+        # deactivate automatically if already expired
+        selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
+        if (
+                product_in.expiration_round < selling_round
+        ):
+            product_in.is_active = False
+
+    # Make currency upper case
+    if product_in.currency is not None:
+        product_in.currency = product_in.currency.upper()
+
+    if product_in.is_on_platform is not None:
+        if product_in.is_on_platform:
+            # On-platform currency type
+            if product_in.currency is not None and product_in.currency not in ['NMR']:
+                raise HTTPException(
+                    status_code=400, detail=f"{product_in.currency} is not supported for on-platform listing",
+                )
+
+            # On-platform decimal check
+            if product_in.price is not None:
+                precision = Decimal(product_in.price).as_tuple().exponent
+                if precision < -4:
+                    raise HTTPException(
+                        status_code=400, detail=f"On-platform listing price must not exceed {4} decimal places",
+                    )
+
+            # On-platform chain type
+            if product_in.chain is not None:
+                raise HTTPException(
+                    status_code=400, detail=f"Specifying chain is not yet supported for on-platform listing",
+                )
+        else:
+            # Off-platform currency type
+            if product_in.currency is not None and product_in.currency not in ['USD']:
+                raise HTTPException(
+                    status_code=400, detail=f"{product_in.currency} is not supported for off-platform listing",
+                )
+
+            # Off-platform decimal check
+            if product_in.price is not None:
+                precision = Decimal(product_in.price).as_tuple().exponent
+                if precision < -2:
+                    raise HTTPException(
+                        status_code=400, detail=f"On-platform listing price must not exceed {2} decimal places",
+                    )
+
+            # Off-platform chain type
+            if product_in.chain is not None:
+                raise HTTPException(
+                    status_code=400, detail=f"Specifying chain is not supported for off-platform listing",
+                )
+
+    # Avatar url scheme
+    if product_in.avatar and not product_in.avatar.startswith('https'):
+        raise HTTPException(
+            status_code=400, detail=f"Avatar image must be a HTTPS URL",
+        )
+
+    return product_in
+
+
 @router.post("/", response_model=schemas.Product)
 def create_product(
     *,
@@ -64,22 +142,42 @@ def create_product(
     """
     Create new product.
     """
-    if product_in.expiration_round is not None:
-        selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
-        if (
-            product_in.expiration_round < selling_round
-        ):  # deactivate automatically if already expired
-            product_in.is_active = False
+    product_in = validate_product(db, product_in)
 
+    # Category
     category = crud.category.get(db=db, id=product_in.category_id)
-    product_in.sku = f"{category.slug}-{product_in.name.lower()}"  # type: ignore
-    product = crud.product.get_by_sku(db, sku=product_in.sku)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    # Leaf category
+    child_categories_count = db.query(models.Category).filter(models.Category.parent_id == category.id).count()
+    if child_categories_count > 0:
+        raise HTTPException(
+            status_code=400, detail=f"Category must be a leaf category",
+        )
+
+    # Existing listing
+    sku = f"{category.slug}-{product_in.name.lower()}"  # type: ignore
+    product = crud.product.get_by_sku(db, sku=sku)
     if product:
         raise HTTPException(
-            status_code=400, detail=f"{product.sku} is already listed.",
+            status_code=400, detail=f"{product.sku} is already listed",
         )
+
+    # Model ownership
+    model = crud.model.get_by_name(db, name=product_in.name)
+    if not model:
+        raise HTTPException(
+            status_code=404, detail=f"Model not found",
+        )
+    if model.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail=f"You are not the owner of this model",
+        )
+
+    # Create product
     product = crud.product.create_with_owner(
-        db=db, obj_in=product_in, owner_id=current_user.id
+        db=db, obj_in=product_in, owner_id=current_user.id, sku=sku, model_id=model.id
     )
     return product
 
@@ -95,17 +193,15 @@ def update_product(
     """
     Update an product.
     """
-    if product_in.expiration_round is not None:
-        selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
-        if (
-            product_in.expiration_round < selling_round
-        ):  # deactivate automatically if already expired
-            product_in.is_active = False
     product = crud.product.get(db=db, id=id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    product_in = validate_product(db, product_in)
+
     if product.owner_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     product = crud.product.update(db=db, db_obj=product, obj_in=product_in)
     return product
 

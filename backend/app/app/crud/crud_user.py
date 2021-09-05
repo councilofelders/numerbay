@@ -52,14 +52,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return {"total": count, "data": data}
 
-    def create(self, db: Session, *, obj_in: UserCreate) -> User:
+    def create(self, db: Session, *, obj_in: UserCreate, is_superuser=False) -> User:
         db_obj = User(  # type: ignore
             username=obj_in.username,
             hashed_password=get_password_hash(obj_in.password),  # type: ignore
             email=obj_in.email,
             public_address=obj_in.public_address,
             nonce=obj_in.nonce,
-            is_superuser=obj_in.is_superuser,
+            is_superuser=is_superuser,
             is_active=obj_in.is_active,
         )
         db.add(db_obj)

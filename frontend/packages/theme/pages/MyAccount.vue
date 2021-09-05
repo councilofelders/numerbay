@@ -26,14 +26,6 @@
         </SfContentPage>
         <SfContentPage title="Log out" />
       </SfContentCategory>
-      <SfContentCategory title="Seller">
-        <SfContentPage title="My listings">
-          <MyListings />
-        </SfContentPage>
-        <SfContentPage title="Sales history">
-          <SalesHistory />
-        </SfContentPage>
-      </SfContentCategory>
 
       <SfContentCategory title="Buyer">
         <SfContentPage title="Order history">
@@ -44,6 +36,16 @@
           <MyReviews />
         </SfContentPage>-->
       </SfContentCategory>
+
+      <SfContentCategory title="Seller">
+        <SfContentPage title="My listings">
+          <MyListings />
+        </SfContentPage>
+        <SfContentPage title="Sales history">
+          <SalesHistory />
+        </SfContentPage>
+      </SfContentCategory>
+
     </SfContentPages>
   </div>
 </template>

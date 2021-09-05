@@ -20,8 +20,10 @@ class ModelBase(BaseModel):
 
 # Properties to receive on model creation
 class ModelCreate(ModelBase):
+    id: str
     name: str
     tournament: int
+    owner_id: int
 
 
 # Properties to receive on model update

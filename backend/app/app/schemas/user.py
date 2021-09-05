@@ -15,10 +15,14 @@ class UserBase(BaseModel):
 
 
 # Properties to receive via API on creation
-class UserCreate(UserBase):
-    password: Optional[str] = None
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    email: Optional[EmailStr] = None
+    public_address: Optional[str] = None
     signature: Optional[str] = None
     nonce: Optional[str] = None
+    is_active: Optional[bool] = True
 
 
 # Properties to receive via API on update

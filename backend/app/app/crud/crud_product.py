@@ -66,15 +66,15 @@ def parse_sort_option(sort: Optional[str]) -> Any:
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: ProductCreate, owner_id: int
+        self, db: Session, *, obj_in: ProductCreate, owner_id: int, sku: str, model_id=None
     ) -> Product:
         obj_in_data = jsonable_encoder(obj_in)
 
-        model_id = None
-        model = crud.model.get_by_name(db, name=obj_in.name)
-        if model:
-            model_id = model.id
-        db_obj = self.model(**obj_in_data, owner_id=owner_id, model_id=model_id)
+        if model_id is None:
+            model = crud.model.get_by_name(db, name=obj_in.name)
+            if model:
+                model_id = model.id
+        db_obj = self.model(**obj_in_data, owner_id=owner_id, model_id=model_id, sku=sku)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)

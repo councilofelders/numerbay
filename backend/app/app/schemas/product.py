@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 from app.schemas.category import Category
 from app.schemas.model import ModelSummary
@@ -10,14 +10,12 @@ from app.schemas.user import ProductOwner
 
 # Shared properties
 class ProductBase(BaseModel):
-    name: Optional[str] = None
-    sku: Optional[str] = None
     is_on_platform: Optional[bool] = True
     price: Optional[Decimal] = None
     currency: Optional[str] = None
     chain: Optional[str] = None
-    avatar: Optional[str] = None
-    third_party_url: Optional[str] = None
+    avatar: Optional[HttpUrl] = None
+    third_party_url: Optional[HttpUrl] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
     expiration_round: Optional[int] = None
@@ -35,7 +33,7 @@ class ProductCreate(ProductBase):
 
 # Properties to receive on product update
 class ProductUpdate(ProductBase):
-    category_id: Optional[int]
+    pass
 
 
 # Properties shared by models stored in DB
