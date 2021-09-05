@@ -16,9 +16,9 @@ export default async function createProduct(context, params, customQuery?: Custo
     currency: params.isOnPlatform === 'true' ? params.currency : 'USD',
     // eslint-disable-next-line camelcase
     category_id: Number(params.category),
-    avatar: params.avatar,
+    avatar: params.avatar ? params.avatar : null,
     // eslint-disable-next-line camelcase
-    third_party_url: params.thirdPartyUrl,
+    third_party_url: params.thirdPartyUrl ? params.thirdPartyUrl : null,
     // eslint-disable-next-line camelcase
     is_active: params.isActive,
     // eslint-disable-next-line camelcase

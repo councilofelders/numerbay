@@ -60,6 +60,7 @@
                     label="Avatar Image URL (e.g. Numerai avatar img link)"
                     type="url"
                     class="form__element"
+                    @change="encodeURL"
                   />
                 </ValidationProvider>
                 <div class="form__radio-group">
@@ -225,6 +226,7 @@
                       label="Third Party Listing URL (e.g. Gumroad product link)"
                       type="url"
                       class="form__element"
+                      @change="encodeURL"
                     />
                   </ValidationProvider>
                 </div>
@@ -428,6 +430,14 @@ export default {
         this.form.expirationRound = null;
       } else {
         this.form.expirationRound = productGetters.getExpirationRound(this.currentListing) || this.globals.selling_round;
+      }
+    },
+    encodeURL() {
+      if (this.form.avatar) {
+        this.form.avatar = encodeURI(this.form.avatar);
+      }
+      if (this.form.thirdPartyUrl) {
+        this.form.thirdPartyUrl = encodeURI(this.form.thirdPartyUrl);
       }
     }
   },

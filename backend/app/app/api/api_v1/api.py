@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 
 from app.api.api_v1.endpoints import (
+    admin,
     categories,
     globals,
     items,
     login,
-    models,
     numerai,
     orders,
     products,
@@ -23,6 +23,6 @@ api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
 api_router.include_router(numerai.router, prefix="/numerai", tags=["numerai"])
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 api_router.include_router(items.router, prefix="/items", tags=["items"])
-api_router.include_router(models.router, prefix="/models", tags=["models"])
+api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(scheduler.router, prefix="/scheduler", tags=["scheduler"])
 api_router.include_router(globals.router, prefix="/globals", tags=["globals"])

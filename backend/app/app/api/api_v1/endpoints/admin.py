@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app import models
@@ -10,7 +11,6 @@ from app.models import Model, Product
 router = APIRouter()
 
 
-# PUBLIC
 @router.post("/fix-product-models")
 def fix_product_models(
     *,
@@ -24,6 +24,32 @@ def fix_product_models(
     db.query(Product).filter(Product.name == Model.name).update(
         {Product.model_id: Model.id}, synchronize_session=False
     )
+    db.commit()
+    return {"msg": "success!"}
+
+
+@router.post("/fix-url-encoding")
+def fix_url_encoding(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Fix url encoding (for db migration only).
+    """
+    # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
+    products = (
+        db.query(Product)
+        .filter(
+            or_(Product.avatar.contains(" "), Product.third_party_url.contains(" "))
+        )
+        .all()
+    )
+    for product in products:
+        if product.avatar:
+            product.avatar = product.avatar.replace(" ", "%20")
+        if product.third_party_url:
+            product.third_party_url = product.third_party_url.replace(" ", "%20")
     db.commit()
     return {"msg": "success!"}
 

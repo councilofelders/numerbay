@@ -70,7 +70,7 @@ export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
         error.value.listingModal = null;
       } catch (err) {
         error.value.listingModal = err;
-        Logger.error('useProduct/updateProduct', err);
+        Logger.error('useProduct/updateProduct', JSON.stringify(err));
       } finally {
         loading.value = false;
       }
