@@ -1,9 +1,9 @@
 from decimal import Decimal
 
-from app import crud, schemas
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app import crud, schemas
 from app.core.config import settings
 from app.tests.utils.product import create_random_product
 from app.tests.utils.utils import random_lower_string
@@ -24,8 +24,15 @@ def test_create_product(
         "is_on_platform": False,
         "currency": "USD",
     }
-    model = crud.model.create(db, obj_in=schemas.ModelCreate(id=product_name, name=product_name, tournament=8,
-                                                             owner_id=current_user['id']))
+    model = crud.model.create(
+        db,
+        obj_in=schemas.ModelCreate(
+            id=product_name,
+            name=product_name,
+            tournament=8,
+            owner_id=current_user["id"],
+        ),
+    )
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -42,7 +49,7 @@ def test_create_product(
         f"{settings.API_V1_STR}/products/{content['id']}",
         headers=normal_user_token_headers,
     )
-    crud.model.remove(db, id=model.id)
+    crud.model.remove(db, id=model.id)  # type: ignore
 
 
 def test_read_product(client: TestClient, db: Session) -> None:
@@ -56,4 +63,4 @@ def test_read_product(client: TestClient, db: Session) -> None:
     assert content["owner"]["id"] == product.owner_id
 
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name).id)
+    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name).id)  # type: ignore

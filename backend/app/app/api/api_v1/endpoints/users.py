@@ -40,8 +40,7 @@ def create_user(
     """
     if user_in.username is None or user_in.password is None:
         raise HTTPException(
-            status_code=400,
-            detail="Please specify username and password",
+            status_code=400, detail="Please specify username and password",
         )
 
     user = crud.user.get_by_username(db, username=user_in.username)  # type: ignore

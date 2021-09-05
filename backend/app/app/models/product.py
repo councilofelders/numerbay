@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .user import User  # noqa: F401
     from .category import Category  # noqa: F401
     from .model import Model  # noqa: F401
+    from .artifact import Artifact  # noqa: F401
 
 
 class Product(Base):
@@ -30,3 +31,4 @@ class Product(Base):
     category = relationship("Category", lazy="subquery")
     model_id = Column(String, ForeignKey("model.id"))
     model = relationship("Model", lazy="subquery", back_populates="products")
+    artifacts = relationship("Artifact", back_populates="product")

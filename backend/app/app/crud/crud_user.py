@@ -52,7 +52,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return {"total": count, "data": data}
 
-    def create(self, db: Session, *, obj_in: UserCreate, is_superuser=False) -> User:
+    def create(
+        self, db: Session, *, obj_in: UserCreate, is_superuser: bool = False
+    ) -> User:
         db_obj = User(  # type: ignore
             username=obj_in.username,
             hashed_password=get_password_hash(obj_in.password),  # type: ignore

@@ -64,14 +64,23 @@ def init_db(db: Session) -> None:
 
         products = crud.product.get_multi(db)
         if not products or len(products) < 1:
+            name = "integration_test"
+            model_in = schemas.ModelCreate(
+                id=name, name=name, tournament=8, owner_id=user.id
+            )
+            model = crud.model.create(db, obj_in=model_in)  # noqa: F841
+
             product_in = schemas.ProductCreate(
                 name="integration_test",
-                sku="numerai-predictions-integration_test",
                 price=Decimal("10.34"),
                 category_id=sub_sub_category_numerai_1.id,
                 currency="USD",
                 is_on_platform=False,
             )
             product = crud.product.create_with_owner(  # noqa: F841
-                db, obj_in=product_in, owner_id=user.id
+                db,
+                obj_in=product_in,
+                owner_id=user.id,
+                sku="numerai-predictions-integration_test",
+                model_id=name,
             )

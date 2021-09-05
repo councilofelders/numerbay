@@ -27,23 +27,25 @@
         <SfContentPage title="Log out" />
       </SfContentCategory>
 
-      <SfContentCategory title="Buyer">
+      <!--todo turnkey rollout-->
+      <!--<SfContentCategory title="Buyer">
         <SfContentPage title="Order history">
           <OrderHistory />
         </SfContentPage>
 
-        <!--<SfContentPage title="My reviews">
+        &lt;!&ndash;<SfContentPage title="My reviews">
           <MyReviews />
-        </SfContentPage>-->
-      </SfContentCategory>
+        </SfContentPage>&ndash;&gt;
+      </SfContentCategory>-->
 
       <SfContentCategory title="Seller">
         <SfContentPage title="My listings">
           <MyListings />
         </SfContentPage>
-        <SfContentPage title="Sales history">
+        <!--todo turnkey rollout-->
+        <!--<SfContentPage title="Sales history">
           <SalesHistory />
-        </SfContentPage>
+        </SfContentPage>-->
       </SfContentCategory>
 
     </SfContentPages>

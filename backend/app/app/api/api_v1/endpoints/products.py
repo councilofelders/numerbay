@@ -55,26 +55,26 @@ def read_my_products(
     return products
 
 
-def validate_product(db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
+def validate_product(
+    db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]
+) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
     # Positive price
     if product_in.price is not None:
         if product_in.price <= 0:
             raise HTTPException(
-                status_code=400, detail=f"Price must be positive",
+                status_code=400, detail="Price must be positive",
             )
 
     # Positive expiration round
     if product_in.expiration_round is not None:
         if product_in.expiration_round <= 0:
             raise HTTPException(
-                status_code=400, detail=f"Expiration round must be a positive integer",
+                status_code=400, detail="Expiration round must be a positive integer",
             )
 
         # deactivate automatically if already expired
         selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
-        if (
-                product_in.expiration_round < selling_round
-        ):
+        if product_in.expiration_round < selling_round:
             product_in.is_active = False
 
     # Make currency upper case
@@ -84,9 +84,10 @@ def validate_product(db: Session, product_in: Union[schemas.ProductCreate, schem
     if product_in.is_on_platform is not None:
         if product_in.is_on_platform:
             # On-platform currency type
-            if product_in.currency is not None and product_in.currency not in ['NMR']:
+            if product_in.currency is not None and product_in.currency not in ["NMR"]:
                 raise HTTPException(
-                    status_code=400, detail=f"{product_in.currency} is not supported for on-platform listing",
+                    status_code=400,
+                    detail=f"{product_in.currency} is not supported for on-platform listing",
                 )
 
             # On-platform decimal check
@@ -94,19 +95,22 @@ def validate_product(db: Session, product_in: Union[schemas.ProductCreate, schem
                 precision = Decimal(product_in.price).as_tuple().exponent
                 if precision < -4:
                     raise HTTPException(
-                        status_code=400, detail=f"On-platform listing price must not exceed {4} decimal places",
+                        status_code=400,
+                        detail=f"On-platform listing price must not exceed {4} decimal places",
                     )
 
             # On-platform chain type
             if product_in.chain is not None:
                 raise HTTPException(
-                    status_code=400, detail=f"Specifying chain is not yet supported for on-platform listing",
+                    status_code=400,
+                    detail="Specifying chain is not yet supported for on-platform listing",
                 )
         else:
             # Off-platform currency type
-            if product_in.currency is not None and product_in.currency not in ['USD']:
+            if product_in.currency is not None and product_in.currency not in ["USD"]:
                 raise HTTPException(
-                    status_code=400, detail=f"{product_in.currency} is not supported for off-platform listing",
+                    status_code=400,
+                    detail=f"{product_in.currency} is not supported for off-platform listing",
                 )
 
             # Off-platform decimal check
@@ -114,19 +118,21 @@ def validate_product(db: Session, product_in: Union[schemas.ProductCreate, schem
                 precision = Decimal(product_in.price).as_tuple().exponent
                 if precision < -2:
                     raise HTTPException(
-                        status_code=400, detail=f"On-platform listing price must not exceed {2} decimal places",
+                        status_code=400,
+                        detail=f"On-platform listing price must not exceed {2} decimal places",
                     )
 
             # Off-platform chain type
             if product_in.chain is not None:
                 raise HTTPException(
-                    status_code=400, detail=f"Specifying chain is not supported for off-platform listing",
+                    status_code=400,
+                    detail="Specifying chain is not supported for off-platform listing",
                 )
 
     # Avatar url scheme
-    if product_in.avatar and not product_in.avatar.startswith('https'):
+    if product_in.avatar and not product_in.avatar.startswith("https"):
         raise HTTPException(
-            status_code=400, detail=f"Avatar image must be a HTTPS URL",
+            status_code=400, detail="Avatar image must be a HTTPS URL",
         )
 
     return product_in
@@ -142,7 +148,13 @@ def create_product(
     """
     Create new product.
     """
-    product_in = validate_product(db, product_in)
+    # todo turnkey rollout
+    if product_in.is_on_platform is not None and product_in.is_on_platform:
+        raise HTTPException(
+            status_code=400, detail="On-platform listing is not yet available",
+        )
+
+    product_in = validate_product(db, product_in)  # type: ignore
 
     # Category
     category = crud.category.get(db=db, id=product_in.category_id)
@@ -150,10 +162,14 @@ def create_product(
         raise HTTPException(status_code=404, detail="Category not found")
 
     # Leaf category
-    child_categories_count = db.query(models.Category).filter(models.Category.parent_id == category.id).count()
+    child_categories_count = (
+        db.query(models.Category)
+        .filter(models.Category.parent_id == category.id)
+        .count()
+    )
     if child_categories_count > 0:
         raise HTTPException(
-            status_code=400, detail=f"Category must be a leaf category",
+            status_code=400, detail="Category must be a leaf category",
         )
 
     # Existing listing
@@ -168,11 +184,11 @@ def create_product(
     model = crud.model.get_by_name(db, name=product_in.name)
     if not model:
         raise HTTPException(
-            status_code=404, detail=f"Model not found",
+            status_code=404, detail="Model not found",
         )
     if model.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail=f"You are not the owner of this model",
+            status_code=403, detail="You are not the owner of this model",
         )
 
     # Create product
@@ -193,11 +209,17 @@ def update_product(
     """
     Update an product.
     """
+    # todo turnkey rollout
+    if product_in.is_on_platform is not None and product_in.is_on_platform:
+        raise HTTPException(
+            status_code=400, detail="On-platform listing is not yet available",
+        )
+
     product = crud.product.get(db=db, id=id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    product_in = validate_product(db, product_in)
+    product_in = validate_product(db, product_in)  # type: ignore
 
     if product.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")

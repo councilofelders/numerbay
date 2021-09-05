@@ -1,8 +1,8 @@
 import functools
 from decimal import Decimal
-from typing import Any, Optional, Dict, List
-import pandas as pd
+from typing import Any, Dict, List, Optional
 
+import pandas as pd
 from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
 from sqlalchemy import and_, desc, or_
@@ -36,7 +36,13 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def get_multi_by_state(
         self, db: Session, *, state: str, skip: int = 0, limit: int = 100
     ) -> List[Order]:
-        return db.query(self.model).filter(self.model.state == state).offset(skip).limit(limit).all()
+        return (
+            db.query(self.model)
+            .filter(self.model.state == state)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def search(
         self,
@@ -50,7 +56,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         limit: int = 100,
         filters: Dict = None,
         # term: str = None,
-        sort: str = None
+        sort: str = None,
     ) -> Any:
         # all_child_categories = crud.category.get_all_subcategories(
         #     db, category_id=category_id  # type: ignore
@@ -78,11 +84,11 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             )
         if isinstance(filters, dict):
             for filter_key, filter_item in filters.items():
-                if filter_key == 'product':
-                    product_id_list = [int(i) for i in filter_item['in']]
+                if filter_key == "product":
+                    product_id_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Order.product_id.in_(product_id_list))
-                if filter_key == 'round_order':
-                    round_order_list = [int(i) for i in filter_item['in']]
+                if filter_key == "round_order":
+                    round_order_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Order.round_order.in_(round_order_list))
 
         query = db.query(self.model)
@@ -126,26 +132,40 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         return wallet_transactions
 
     def update_payment(self, db: Session, order_json: Dict) -> None:
-        if order_json['currency'] == 'NMR':
-            buyer = crud.user.get(db, id=order_json['buyer_id'])
+        if order_json["currency"] == "NMR":
+            buyer = crud.user.get(db, id=order_json["buyer_id"])
             if buyer:
-                numerai_wallet_transactions = self.get_numerai_wallet_transactions(public_id=buyer.numerai_api_key_public_id, secret_key=buyer.numerai_api_key_secret)
+                numerai_wallet_transactions = self.get_numerai_wallet_transactions(
+                    public_id=buyer.numerai_api_key_public_id,  # type: ignore
+                    secret_key=buyer.numerai_api_key_secret,  # type: ignore
+                )
                 for transaction in numerai_wallet_transactions:
-                    time = pd.to_datetime(transaction["time"]).tz_localize(None).to_pydatetime()
+                    time = (
+                        pd.to_datetime(transaction["time"])
+                        .tz_localize(None)
+                        .to_pydatetime()
+                    )
                     if time < pd.to_datetime(order_json["date_order"]).to_pydatetime():
                         continue
-                    if transaction['to'] == order_json['to_address']:
-                        print(f"Transaction match for order {order_json['id']} "
-                              f"[{buyer.username}->{order_json['product']['name']}], "
-                              f"{transaction['amount']} {order_json['currency']} / "
-                              f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}")
-                        order_obj = crud.order.get(db, id=order_json['id'])
-                        order_obj.transaction_hash = transaction['txHash']
-                        if Decimal(transaction['amount']) >= Decimal(order_obj.price) and transaction['status'] == 'confirmed':
-                            order_obj.state = 'confirmed'
-                        db.commit()
-                        db.refresh(order_obj)
-                        break
+                    if transaction["to"] == order_json["to_address"]:
+                        print(
+                            f"Transaction match for order {order_json['id']} "
+                            f"[{buyer.username}->{order_json['product']['name']}], "
+                            f"{transaction['amount']} {order_json['currency']} / "
+                            f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}"
+                        )
+                        order_obj = crud.order.get(db, id=order_json["id"])
+                        if order_obj:
+                            order_obj.transaction_hash = transaction["txHash"]
+                            if (
+                                Decimal(transaction["amount"])
+                                >= Decimal(order_obj.price)
+                                and transaction["status"] == "confirmed"
+                            ):
+                                order_obj.state = "confirmed"
+                            db.commit()
+                            db.refresh(order_obj)
+                            break
             return
         else:
             return

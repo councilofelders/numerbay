@@ -120,15 +120,17 @@
                   </ValidationProvider>
                 </div>
                 <div class="form__radio-group">
+                  <!--todo turnkey rollout-->
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
                       name="isOnPlatform"
                       value="true"
                       label="On-Platform"
                       details="Sell natively on NumerBay for cryptocurrency"
-                      description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution."
+                      description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution. [Coming Soon...]"
                       v-model="form.isOnPlatform"
                       @change="onPlatformChange(form.isOnPlatform)"
+                      disabled
                       class="form__radio"
                     />
                     <SfRadio

@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.core.celery_app import celery_app
 
 router = APIRouter()
 
@@ -42,7 +41,8 @@ def search_orders(
     return orders
 
 
-@router.post("/", response_model=schemas.Order)
+# todo turnkey rollout
+# @router.post("/", response_model=schemas.Order)
 def create_order(
     *,
     db: Session = Depends(deps.get_db),
@@ -55,9 +55,7 @@ def create_order(
     # Product exists
     product = crud.product.get(db=db, id=id)
     if not product:
-        raise HTTPException(
-            status_code=404, detail="Product not found"
-        )
+        raise HTTPException(status_code=404, detail="Product not found")
 
     # Product active
     if not product.is_active:  # todo handle expired api keys
@@ -67,15 +65,20 @@ def create_order(
 
     # Own product
     if product.owner_id == current_user.id:
-        raise HTTPException(
-            status_code=400, detail="You cannot buy your own product"
-        )
+        raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
     # Duplicate order
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-    existing_order = crud.order.search(db, role='buyer', current_user_id=current_user.id,
-                                       filters={'product': {'in': [product.id]}, 'round_order': {'in': [selling_round]}})
-    if len(existing_order.get('data', [])) > 0:
+    existing_order = crud.order.search(
+        db,
+        role="buyer",
+        current_user_id=current_user.id,
+        filters={
+            "product": {"in": [product.id]},
+            "round_order": {"in": [selling_round]},
+        },
+    )
+    if len(existing_order.get("data", [])) > 0:
         raise HTTPException(
             status_code=400, detail="Order for this product this round already exists"
         )

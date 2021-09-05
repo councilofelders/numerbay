@@ -1,3 +1,4 @@
+from .artifact import Artifact
 from .category import Category
 from .globals import Globals
 from .item import Item

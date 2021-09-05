@@ -16,7 +16,9 @@ def create_random_product(
         user = create_random_user(db)
         owner_id = user.id
     name = random_lower_string()
-    crud.model.create(db, obj_in=ModelCreate(id=name, name=name, tournament=8, owner_id=owner_id))
+    crud.model.create(
+        db, obj_in=ModelCreate(id=name, name=name, tournament=8, owner_id=owner_id)
+    )
 
     price = random_decimal()
     sku = f"test-{name}"
@@ -30,4 +32,6 @@ def create_random_product(
         currency="USD",
         id=id,
     )
-    return crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=owner_id, model_id=name, sku=sku)
+    return crud.product.create_with_owner(
+        db=db, obj_in=product_in, owner_id=owner_id, model_id=name, sku=sku
+    )

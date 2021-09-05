@@ -47,9 +47,9 @@ def update_model_subtask(user_json: Dict) -> Optional[Any]:
 def batch_update_models_task() -> None:
     db = SessionLocal()
     try:
-        users = crud.user.search(db, filters={"numerai_api_key_public_id": ["any"]}, limit=None)[
-            "data"
-        ]
+        users = crud.user.search(
+            db, filters={"numerai_api_key_public_id": ["any"]}, limit=None  # type: ignore
+        )["data"]
         print(f"total: {len(users)}")
         # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
         # commit_models_subtask.s(0)).delay()
@@ -71,7 +71,7 @@ def update_globals_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def update_payment_subtask(order_json: Dict) -> Optional[Any]:
+def update_payment_subtask(order_json: Dict) -> None:
     db = SessionLocal()
     try:
         # Update order payment
@@ -111,4 +111,5 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "schedule": crontab(day_of_week="sat", hour=18, minute=0),
         },
     }
-    sender.add_periodic_task(20.0, batch_update_payments_task.s(), name='batch update payments every 20 seconds')
+    # sender.add_periodic_task(20.0, batch_update_payments_task.s(), name='batch update payments every 20 seconds')
+    # todo turnkey rollout

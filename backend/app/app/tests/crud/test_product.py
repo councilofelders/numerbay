@@ -5,6 +5,7 @@ from app.schemas.product import ProductCreate, ProductUpdate
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_decimal, random_lower_string
 
+
 # todo fix tests for stricter validation rules or allow creation of test products
 def test_create_product(db: Session) -> None:
     name = random_lower_string()
@@ -20,7 +21,9 @@ def test_create_product(db: Session) -> None:
         currency="USD",
     )
     user = create_random_user(db)
-    product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id, sku=sku)
+    product = crud.product.create_with_owner(
+        db=db, obj_in=product_in, owner_id=user.id, sku=sku
+    )
     assert product.name == name
     assert product.description == description
     assert product.owner.id == user.id
@@ -42,7 +45,9 @@ def test_get_product(db: Session) -> None:
         currency="USD",
     )
     user = create_random_user(db)
-    product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id, sku=sku)
+    product = crud.product.create_with_owner(
+        db=db, obj_in=product_in, owner_id=user.id, sku=sku
+    )
     stored_product = crud.product.get(db=db, id=product.id)
     assert stored_product
     assert product.id == stored_product.id
@@ -68,7 +73,9 @@ def test_update_product(db: Session) -> None:
         currency="USD",
     )
     user = create_random_user(db)
-    product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id, sku=sku)
+    product = crud.product.create_with_owner(
+        db=db, obj_in=product_in, owner_id=user.id, sku=sku
+    )
     description2 = random_lower_string()
     product_update = ProductUpdate(description=description2)
     product2 = crud.product.update(db=db, db_obj=product, obj_in=product_update)
@@ -96,7 +103,9 @@ def test_delete_product(db: Session) -> None:
         currency="USD",
     )
     user = create_random_user(db)
-    product = crud.product.create_with_owner(db=db, obj_in=product_in, owner_id=user.id, sku=sku)
+    product = crud.product.create_with_owner(
+        db=db, obj_in=product_in, owner_id=user.id, sku=sku
+    )
     product2 = crud.product.remove(db=db, id=product.id)
     product3 = crud.product.get(db=db, id=product.id)
     assert product3 is None
