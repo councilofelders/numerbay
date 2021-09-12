@@ -93,6 +93,21 @@ export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
   error: ComputedProperty<UseUserOrderErrors>;
 }
 
+export interface UseProductArtifactErrors {
+  search: Error;
+  downloadArtifact: Error;
+  deleteArtifact: Error;
+}
+
+export interface UseProductArtifact<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> {
+  artifacts: ComputedProperty<ARTIFACTS>;
+  search(params: ComposableFunctionArgs<ARTIFACT_SEARCH_PARAMS>): Promise<void>;
+  loading: ComputedProperty<boolean>;
+  error: ComputedProperty<UseProductArtifactErrors>;
+  downloadArtifact(params: { productId: number, artifactId: number }): Promise<void>;
+  deleteArtifact(params: { productId: number, artifactId: number }): Promise<void>;
+}
+
 export interface UseGlobals {
   getGlobals: (identifier: string) => Promise<void>;
   loading: ComputedProperty<boolean>;
