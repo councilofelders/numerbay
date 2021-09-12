@@ -40,10 +40,10 @@
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getFormattedPrice(product, withCurrency=true, decimals=product.is_on_platform?4:2) }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <div class="listing-actions">
-                <SfButton class="sf-button--text action__element" @click="currentListing = product" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
+                <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="product.is_on_platform" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                   {{ $t('Artifacts') }}
                 </SfButton>
-                |
+                <span v-if="product.is_on_platform">|</span>
                 <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                   {{ $t('Edit') }}
                 </SfButton>

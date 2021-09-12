@@ -98,8 +98,16 @@ export default {
   },
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
-      console.log('poll');
-      await this.search({ role: 'buyer' });
+      if (this.currentOrder) {
+        // console.log('poll');
+        await this.search({ role: 'buyer' });
+        // console.log('this.orders', this.orders.filter((o)=>o.id === this.currentOrder.id))
+        this.currentOrder = this.orders.filter((o)=>o.id === this.currentOrder.id)[0];
+        if (orderGetters.getStatus(this.currentOrder) === 'confirmed') {
+          // console.log('order confirmed, canceling polling');
+          clearInterval(this.orderPollingTimer);
+        }
+      }
     }, 10000);
   },
   beforeDestroy() {
