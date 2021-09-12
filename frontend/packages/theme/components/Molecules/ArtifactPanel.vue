@@ -1,27 +1,88 @@
 <template>
-  <div class="highlighted highlighted--total">
-    <!--<dropzone id="foo" ref="foo" :options="dropzoneOptions" :destroyDropzone="true" @vdropzone-error="onUploadError" v-on:vdropzone-sending="onSending"></dropzone>-->
-<!--    <SfLoader :class="{ loader: componentLoading }" :loading="componentLoading">-->
-      <dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
-        v-on:vdropzone-error="s3UploadError"
-        v-on:vdropzone-success="s3UploadSuccess"
-        v-on:vdropzone-removed-file="onRemove"
-      >
-        Drop files here to upload<br/>Allowed extentions: {{this.dropzoneOptions.acceptedFiles}}<br/>File names are obfuscated on upload
-      </dropzone>
-<!--    </SfLoader>-->
-<!--    v-on:vdropzone-sending="onSending"-->
+  <div>
+    <div class="highlighted highlighted--total">
+      <!--<dropzone id="foo" ref="foo" :options="dropzoneOptions" :destroyDropzone="true" @vdropzone-error="onUploadError" v-on:vdropzone-sending="onSending"></dropzone>-->
+  <!--    <SfLoader :class="{ loader: componentLoading }" :loading="componentLoading">-->
+        <dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
+          v-on:vdropzone-error="s3UploadError"
+          v-on:vdropzone-success="s3UploadSuccess"
+          v-on:vdropzone-removed-file="onRemove"
+        >
+          Drop files here to upload<br/>Allowed extentions: {{this.dropzoneOptions.acceptedFiles}}<br/>File names are obfuscated on upload
+        </dropzone>
+  <!--    </SfLoader>-->
+  <!--    v-on:vdropzone-sending="onSending"-->
+    </div>
+    <div class="top-buttons">
+      <SfButton class="sf-button color-secondary" @click="isManualFormOpen = !isManualFormOpen" :disabled="loading">
+        {{ $t('Manually Add URL') }}
+      </SfButton>
+    </div>
+    <SfTable class="orders" v-if="artifacts && artifacts.data">
+      <SfTableHeading>
+        <SfTableHeader
+          v-for="tableHeader in tableHeaders"
+          :key="tableHeader"
+          >{{ tableHeader }}</SfTableHeader>
+        <!--<SfTableHeader class="orders__element&#45;&#45;right">
+          <span class="smartphone-only">{{ $t('Download') }}</span>
+          <SfButton
+            class="desktop-only sf-button&#45;&#45;text orders__download-all"
+            @click="downloadOrders()"
+          >
+            {{ $t('Download all') }}
+          </SfButton>
+        </SfTableHeader>-->
+      </SfTableHeading>
+      <SfTableRow v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
+        <SfTableData>{{ artifactGetters.getId(artifact) }}</SfTableData>
+        <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
+        <SfTableData>
+          <SfLoader :class="{ loader: componentLoading }" :loading="componentLoading">
+            <SfInput :value="artifact.description" style="margin-right: 10px" label="Description" @input="(value)=>handleEdit(value, product, artifact)"/>
+          </SfLoader>
+        </SfTableData>
+        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>
+        <SfTableData class="orders__view orders__element--right">
+          <SfLoader :class="{ loader: loading }" :loading="loading">
+            <span>
+              <SfButton class="sf-button--text" @click="onManualRemove(artifact)">
+                {{ $t('Delete') }}
+              </SfButton>
+            </span>
+          </SfLoader>
+        </SfTableData>
+      </SfTableRow>
+      <SfTableRow :key="'new'" v-if="isManualFormOpen">
+        <SfTableData></SfTableData>
+        <SfTableData><SfInput v-model="form.url" style="margin-right: 10px" label="URL"></SfInput></SfTableData>
+        <SfTableData><SfInput v-model="form.description" style="margin-right: 10px" label="Description"></SfInput></SfTableData>
+        <SfTableData></SfTableData>
+        <SfTableData class="orders__view orders__element--right">
+          <SfLoader :class="{ loader: loading }" :loading="loading">
+            <SfButton class="sf-button--text" @click="handleNew">
+              {{ $t('Save') }}
+            </SfButton>
+          </SfLoader>
+        </SfTableData>
+      </SfTableRow>
+    </SfTable>
   </div>
 </template>
 
 <script>
-import { SfProperty, SfIcon, SfButton, SfInput, SfLoader } from '@storefront-ui/vue';
-import { orderGetters, useProductArtifact } from '@vue-storefront/numerbay';
+import { SfProperty, SfIcon, SfButton, SfInput, SfLoader, SfTable } from '@storefront-ui/vue';
+import {
+  orderGetters,
+  artifactGetters,
+  useProductArtifact
+} from '@vue-storefront/numerbay';
 // import { authHeaders } from '@vue-storefront/numerbay-api/src/api/utils';
 import Dropzone from '../../components/Molecules/Dropzone';
 import 'nuxt-dropzone/dropzone.css';
-import {computed} from '@vue/composition-api';
+import {computed, ref} from '@vue/composition-api';
 import {Logger} from '@vue-storefront/core';
+import debounce from 'lodash.debounce';
 
 export default {
   name: 'ArtifactPanel',
@@ -31,6 +92,7 @@ export default {
     SfButton,
     SfInput,
     SfLoader,
+    SfTable,
     Dropzone
   },
   data() {
@@ -91,7 +153,7 @@ export default {
       if (artifacts) {
         // this.$refs.foo.removeAllFiles(true);
         for (const artifact of artifacts.data) {
-          const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size }; // , type: "image/png"
+          const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size };
           const url = '';
           this.$refs.foo.manuallyAddFile(file, url);
         }
@@ -99,11 +161,32 @@ export default {
     }
   },
   methods: {
-    async copyToClipboard(text) {
+    async handleEdit(value, product, artifact) {
+      const onComplete = async () => {
+        this.componentLoading = true;
+        try {
+          this.$refs.foo.disable();
+          this.componentKey += 1;
+          await this.search({ productId: this.product.id });
+        } finally {
+          this.$refs.foo.enable();
+          this.componentLoading = false;
+        }
+      };
+      await this.onArtifactEdit(value, product, artifact, onComplete);
+    },
+    async handleNew() {
+      await this.createArtifact({productId: this.product.id, artifact: this.form});
+      this.componentLoading = true;
       try {
-        await this.$copyText(text);
-      } catch (e) {
-        console.error('Copy failed: ', e);
+        this.$refs.foo.disable();
+        this.componentKey += 1;
+        await this.search({ productId: this.product.id });
+        this.form = this.resetForm();
+        this.isManualFormOpen = false;
+      } finally {
+        this.$refs.foo.enable();
+        this.componentLoading = false;
       }
     },
     onUploadError(file, message, xhr) {
@@ -140,6 +223,19 @@ export default {
     async onRemove(file, error, xhr) {
       Logger.debug('onRemove', file, error, xhr);
       await this.deleteArtifact({productId: this.product.id, artifactId: file.artifactId});
+      await this.search({ productId: this.product.id });
+    },
+    async onManualRemove(artifact) {
+      this.componentLoading = true;
+      try {
+        this.$refs.foo.disable();
+        await this.deleteArtifact({productId: this.product.id, artifactId: artifact.id});
+        this.componentKey += 1;
+        await this.search({ productId: this.product.id });
+      } finally {
+        this.$refs.foo.enable();
+        this.componentLoading = false;
+      }
     }
   },
   async mounted() {
@@ -151,16 +247,58 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit, root }) {
-    const { artifacts, search, deleteArtifact, loading } = useProductArtifact(`${props.product.id}`);
+    const { artifacts, search, createArtifact, updateArtifact, deleteArtifact, loading } = useProductArtifact(`${props.product.id}`);
 
     search({ productId: props.product.id });
 
+    const isManualFormOpen = ref(false);
+
+    const tableHeaders = [
+      'Artifact ID',
+      'Name',
+      'Description',
+      'Size',
+      'Action'
+    ];
+
+    const resetForm = () => ({
+      url: null,
+      description: null
+    });
+    const form = ref(resetForm());
+
+    const onArtifactEdit = debounce(async (value, product, artifact, onComplete) => {
+      await Promise.all([
+        updateArtifact({
+          productId: product.id,
+          artifactId: artifact.id,
+          description: value
+        }),
+        onComplete()
+        // categoriesSearch({
+        //   term: term.value,
+        // }),
+      ]);
+      //
+      // result.value = {
+      //   products: searchResult.value?.data?.products,
+      //   categories: categoryGetters.getTree(searchResult.value?.data?.categories[0])
+      // };
+    }, 1000);
+
     return {
       artifacts: computed(() => artifacts ? artifacts.value : null),
+      createArtifact,
       deleteArtifact,
       loading,
       search,
-      orderGetters
+      tableHeaders,
+      isManualFormOpen,
+      form,
+      resetForm,
+      onArtifactEdit,
+      orderGetters,
+      artifactGetters
     };
   }
 
@@ -193,6 +331,13 @@ export default {
     --property-name-font-weight: var(--font-weight--medium);
     --property-value-font-size: var(--font-size--lg);
     --property-value-font-weight: var(--font-weight--semibold);
+  }
+}
+.top-buttons {
+  @include for-desktop {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 }
 </style>

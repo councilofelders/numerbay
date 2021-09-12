@@ -20,6 +20,24 @@ const params: UseProductArtifactFactoryParams<ArtifactsResponse, ArtifactSearchP
     return response;
   },
 
+  createArtifact: async (context: Context, {productId, artifact}) => {
+    Logger.debug('createArtifact');
+    const response = await context.$numerbay.api.createArtifact({productId, ...artifact});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
+
+  updateArtifact: async (context: Context, {productId, artifactId, description}) => {
+    Logger.debug('updateArtifact');
+    const response = await context.$numerbay.api.updateArtifact({productId, artifactId, description});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
+
   deleteArtifact: async (context: Context, {productId, artifactId}) => {
     Logger.debug('deleteArtifact');
     const response = await context.$numerbay.api.deleteArtifact({productId, artifactId});
