@@ -131,7 +131,6 @@
                       description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution. [Coming Soon...]"
                       v-model="form.isOnPlatform"
                       @change="onPlatformChange(form.isOnPlatform)"
-                      disabled
                       class="form__radio"
                     />
                     <SfRadio
@@ -461,7 +460,7 @@ export default {
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      isOnPlatform: product ? String(product.is_on_platform) : 'false', // todo turnkey rollout
+      isOnPlatform: product ? String(product.is_on_platform) : 'true', // todo turnkey rollout
       currency: product ? product.currency : 'NMR',
       thirdPartyUrl: product ? product.third_party_url : null
     });

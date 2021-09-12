@@ -9,6 +9,7 @@ import userGetters from './userGetters';
 import userShippingGetters from './userShippingGetters';
 import userBillingGetters from './userBillingGetters';
 import orderGetters from './orderGetters';
+import artifactGetters from './artifactGetters';
 import wishlistGetters from './wishlistGetters';
 
 export {
@@ -22,5 +23,6 @@ export {
   userShippingGetters,
   userBillingGetters,
   orderGetters,
+  artifactGetters,
   wishlistGetters
 };

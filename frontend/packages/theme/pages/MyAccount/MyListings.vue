@@ -1,7 +1,11 @@
 <template>
   <SfTabs :open-tab="1">
     <SfTab title="My listings">
-      <div>
+      <div v-if="currentListing">
+        <SfButton class="sf-button--text all-orders" @click="currentListing = null">All Listings</SfButton>
+        <ArtifactPanel :product="currentListing"></ArtifactPanel>
+      </div>
+      <div v-else>
         <div class="top-buttons">
           <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
             {{ $t('New Listing') }}
@@ -35,9 +39,15 @@
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</span></SfTableData>
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getFormattedPrice(product, withCurrency=true, decimals=product.is_on_platform?4:2) }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
-              <SfButton class="sf-button--text desktop-only" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
-                {{ $t('Manage') }}
-              </SfButton>
+              <div class="listing-actions">
+                <SfButton class="sf-button--text action__element" @click="currentListing = product" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
+                  {{ $t('Artifacts') }}
+                </SfButton>
+                |
+                <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
+                  {{ $t('Edit') }}
+                </SfButton>
+              </div>
             </SfTableData>
           </SfTableRow>
         </SfTable>
@@ -70,6 +80,7 @@ import {
 import { AgnosticOrderStatus } from '@vue-storefront/core';
 import { onSSR } from '@vue-storefront/core';
 import NumeraiApiForm from '../../components/MyAccount/NumeraiApiForm';
+import ArtifactPanel from '../../components/Molecules/ArtifactPanel';
 
 export default {
   name: 'MyListings',
@@ -80,7 +91,8 @@ export default {
     SfProperty,
     SfLink,
     SfNotification,
-    NumeraiApiForm
+    NumeraiApiForm,
+    ArtifactPanel
   },
   mounted() {
     if (this.user.numerai_api_key_public_id) {
@@ -98,7 +110,7 @@ export default {
     });
     const { products, search } = useProduct('products');
     const { toggleListingModal } = useUiState();
-    const currentOrder = ref(null);
+    const currentListing = ref(null);
     const isNumeraiApiFormOpen = ref(false);
 
     const toggleNumeraiApiForm = async () => {
@@ -147,7 +159,7 @@ export default {
       handleListingClick,
       productGetters,
       orderGetters,
-      currentOrder,
+      currentListing,
       numeraiError
     };
   }
@@ -257,5 +269,18 @@ export default {
     --property-value-font-weight: var(--font-weight--semibold);
   }
 }
+.listing-actions {
+  display: flex; flex-direction: row;
+  .action__element {
+    @include for-desktop {
+      flex: 1;
+      margin-left: var(--spacer-xs);
+      margin-right: var(--spacer-xs);
+    }
 
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
 </style>
