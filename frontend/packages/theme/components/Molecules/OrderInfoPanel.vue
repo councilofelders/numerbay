@@ -84,7 +84,6 @@
         class="sf-property--full-width property"
       />
     </div>
-    <!--todo not freshing order status-->
     <SfTable class="orders" v-if="artifacts && artifacts.data">
       <SfTableHeading>
         <SfTableHeader
