@@ -309,10 +309,10 @@ def validate_new_artifact(product: models.Product, current_user: models.User, ur
         )
 
     # Input validation
-    if not url and not filename:
-        raise HTTPException(
-            status_code=400, detail="You must either provide a URL or upload a file",
-        )
+    # if not url and not filename:
+    #     raise HTTPException(
+    #         status_code=400, detail="You must either provide a URL or upload a file",
+    #     )
 
     if url and filename:
         raise HTTPException(
@@ -424,31 +424,30 @@ def generate_upload_url(
 
 
 @router.post('/{product_id}/artifacts', response_model=schemas.Artifact)
-async def create_artifact(
+async def create_product_artifact(
     *,
     product_id: int,
     description: str = Body(None),
     url: str = Body(None),
-    file_obj: UploadFile = File(None),
     filename: str = Body(None),
     db: Session = Depends(deps.get_db),
-    driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
+    # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(product=product, current_user=current_user, url=url, file_obj=file_obj, filename=filename)
+    validate_new_artifact(product=product, current_user=current_user, url=url, filename=filename)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     # Upload file if provided
-    object_name = None
-    if file_obj:
-        object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
-                                      override_filename=filename)
-        upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
-        if not upload_obj:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                detail="File could not be uploaded")
+    # object_name = None
+    # if file_obj:
+    #     object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
+    #                                   override_filename=filename)
+    #     upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
+    #     if not upload_obj:
+    #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #                             detail="File could not be uploaded")
 
     # Create artifact
     artifact_in = schemas.ArtifactCreate(
@@ -457,7 +456,7 @@ async def create_artifact(
         round_tournament=selling_round,
         description=description,
         url=url,
-        object_name=object_name,
+        # object_name=object_name,
     )
     artifact = crud.artifact.create(
         db=db, obj_in=artifact_in
@@ -466,41 +465,40 @@ async def create_artifact(
 
 
 @router.put('/{product_id}/artifacts/{artifact_id}')
-async def update_artifact(
+async def update_product_artifact(
     *,
     product_id: int,
     artifact_id: int,
     description: str = Body(None),
     url: str = Body(None),
-    file_obj: UploadFile = File(None),
     filename: str = Body(None),
     db: Session = Depends(deps.get_db),
-    driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
+    # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
+    print(description)
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(product=product, current_user=current_user, url=url, file_obj=file_obj, filename=filename)
+    validate_new_artifact(product=product, current_user=current_user, url=url, filename=filename)
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
     artifact = crud.artifact.get(db, id=artifact_id)
     validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
 
-    object_name = None
-    if file_obj:
-        object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
-                                      override_filename=filename)
-        upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
-        if not upload_obj:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                detail="File could not be uploaded")
+    # object_name = None
+    # if file_obj:
+    #     object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
+    #                                   override_filename=filename)
+    #     upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
+    #     if not upload_obj:
+    #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #                             detail="File could not be uploaded")
 
     # Update artifact
     artifact_dict = {}
-    if description:
-        artifact_dict['artifact_dict'] = description
+    artifact_dict['description'] = description
     if url:
         artifact_dict['url'] = url
-    if file_obj:
-        artifact_dict['object_name'] = object_name
+    # if file_obj:
+    #     artifact_dict['object_name'] = object_name
 
     artifact = crud.artifact.update(
         db=db, db_obj=artifact, obj_in=artifact_dict
@@ -630,9 +628,10 @@ def delete_product_artifact(
 
     artifact = crud.artifact.remove(db=db, id=artifact_id)
     object_name = artifact.object_name
-    try:
-        blob = bucket.blob(object_name)
-        blob.delete()
-    except NotFound:
-        pass
+    if object_name:
+        try:
+            blob = bucket.blob(object_name)
+            blob.delete()
+        except NotFound:
+            pass
     return artifact

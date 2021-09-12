@@ -5,6 +5,8 @@ import {UseProductArtifact, UseProductArtifactErrors} from '../types/composeable
 export interface UseProductArtifactFactoryParams<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> extends FactoryParams {
   searchArtifacts: (context: Context, params: ARTIFACT_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ARTIFACTS>;
   downloadArtifact: (context: Context, params: any) => Promise<any>;
+  createArtifact: (context: Context, params: any) => Promise<any>;
+  updateArtifact: (context: Context, params: any) => Promise<any>;
   deleteArtifact: (context: Context, params: any) => Promise<any>;
 }
 
@@ -17,6 +19,8 @@ export function useProductArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(fac
     const errorsFactory = (): UseProductArtifactErrors => ({
       search: null,
       downloadArtifact: null,
+      createArtifact: null,
+      updateArtifact: null,
       deleteArtifact: null
     });
     const error: Ref<UseProductArtifactErrors> = sharedRef(errorsFactory(), `useProductArtifact-error-${ssrKey}`);
@@ -57,6 +61,38 @@ export function useProductArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(fac
       return downloadUrl;
     };
 
+    const createArtifact = async ({productId, artifact: providedArtifact}) => {
+      Logger.debug('useProductArtifactFactory.createArtifact', productId, providedArtifact);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        await _factoryParams.createArtifact({productId, artifact: providedArtifact});
+        error.value.createArtifact = null;
+      } catch (err) {
+        error.value.createArtifact = err;
+        Logger.error('useProductArtifact/createArtifact', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const updateArtifact = async ({productId, artifactId, description}) => {
+      Logger.debug('useProductArtifactFactory.updateArtifact', productId, artifactId, description);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        await _factoryParams.updateArtifact({productId, artifactId, description});
+        error.value.updateArtifact = null;
+      } catch (err) {
+        error.value.updateArtifact = err;
+        Logger.error('useProductArtifact/updateArtifact', JSON.stringify(err));
+      } finally {
+        loading.value = false;
+      }
+    };
+
     const deleteArtifact = async ({productId, artifactId}) => {
       Logger.debug(`useProductArtifactFactory.deleteArtifact ${productId}/${artifactId}`);
       resetErrorValue();
@@ -76,6 +112,8 @@ export function useProductArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(fac
     return {
       search,
       downloadArtifact,
+      createArtifact,
+      updateArtifact,
       deleteArtifact,
       artifacts: computed(() => artifacts.value),
       loading: computed(() => loading.value),

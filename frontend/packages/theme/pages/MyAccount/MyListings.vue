@@ -43,7 +43,6 @@
                 <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="product.is_on_platform" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                   {{ $t('Artifacts') }}
                 </SfButton>
-                <span v-if="product.is_on_platform">|</span>
                 <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
                   {{ $t('Edit') }}
                 </SfButton>
@@ -274,8 +273,8 @@ export default {
   .action__element {
     @include for-desktop {
       flex: 1;
-      margin-left: var(--spacer-xs);
-      margin-right: var(--spacer-xs);
+      margin-left: var(--spacer-2xs);
+      margin-right: var(--spacer-2xs);
     }
 
     &:last-child {

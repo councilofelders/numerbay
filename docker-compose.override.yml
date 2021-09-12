@@ -47,6 +47,8 @@ services:
       - GCP_SERVICE_ACCOUNT_EMAIL=${GCP_SERVICE_ACCOUNT_EMAIL?Variable not set}
       - GCP_SERVICE_ACCOUNT_KEY=${GCP_SERVICE_ACCOUNT_KEY?Variable not set}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO?Variable not set}
+      - SMTP_USER=${SMTP_USER?Variable not set}
+      - SMTP_PASSWORD=${SMTP_PASSWORD?Variable not set}
     build:
       context: ./backend
       dockerfile: backend.dockerfile
