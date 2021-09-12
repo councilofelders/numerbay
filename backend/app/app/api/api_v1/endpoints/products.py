@@ -1,10 +1,20 @@
+import json
+import os
+import uuid
+from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Iterator
+from pathlib import Path
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, File, status, Form
+from google.api_core.exceptions import NotFound
+from google.cloud.storage import Bucket
+from libcloud.storage.base import StorageDriver, Object
 from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app import crud, models, schemas
+from app.core.config import settings
 from app.api import deps
 
 router = APIRouter()
@@ -55,7 +65,7 @@ def read_my_products(
     return products
 
 
-def validate_product(
+def validate_product_input(
     db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
     # Positive price
@@ -138,6 +148,15 @@ def validate_product(
     return product_in
 
 
+def validate_existing_product(db: Session, product_id: int, currend_user_id: int) -> models.Product:
+    product = crud.product.get(db=db, id=product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    if product.owner_id != currend_user_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return product
+
+
 @router.post("/", response_model=schemas.Product)
 def create_product(
     *,
@@ -149,12 +168,12 @@ def create_product(
     Create new product.
     """
     # todo turnkey rollout
-    if product_in.is_on_platform is not None and product_in.is_on_platform:
-        raise HTTPException(
-            status_code=400, detail="On-platform listing is not yet available",
-        )
+    # if product_in.is_on_platform is not None and product_in.is_on_platform:
+    #     raise HTTPException(
+    #         status_code=400, detail="On-platform listing is not yet available",
+    #     )
 
-    product_in = validate_product(db, product_in)  # type: ignore
+    product_in = validate_product_input(db, product_in)  # type: ignore
 
     # Category
     category = crud.category.get(db=db, id=product_in.category_id)
@@ -188,7 +207,7 @@ def create_product(
         )
     if model.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail="You are not the owner of this model",
+            status_code=403, detail="Not enough permissions",
         )
 
     # Create product
@@ -207,22 +226,17 @@ def update_product(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Update an product.
+    Update a product.
     """
     # todo turnkey rollout
-    if product_in.is_on_platform is not None and product_in.is_on_platform:
-        raise HTTPException(
-            status_code=400, detail="On-platform listing is not yet available",
-        )
+    # if product_in.is_on_platform is not None and product_in.is_on_platform:
+    #     raise HTTPException(
+    #         status_code=400, detail="On-platform listing is not yet available",
+    #     )
 
-    product = crud.product.get(db=db, id=id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+    product = validate_existing_product(db, product_id=id, currend_user_id=current_user.id)
 
-    product_in = validate_product(db, product_in)  # type: ignore
-
-    if product.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    product_in = validate_product_input(db, product_in)  # type: ignore
 
     product = crud.product.update(db=db, db_obj=product, obj_in=product_in)
     return product
@@ -247,12 +261,378 @@ def delete_product(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Delete an product.
+    Delete a product.
     """
-    product = crud.product.get(db=db, id=id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    if product.owner_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+    validate_existing_product(db, product_id=id, currend_user_id=current_user.id)
     product = crud.product.remove(db=db, id=id)
     return product
+
+
+def upload_file(driver: StorageDriver, file_obj: UploadFile, object_name: str) -> Object:
+    container_name = settings.GCP_STORAGE_BUCKET
+    container = driver.get_container(container_name=container_name)
+    upload_obj = driver.upload_object_via_stream(iterator=iter(file_obj.file),
+                                                 container=container,
+                                                 object_name=object_name)
+    return upload_obj
+
+
+def download_file(driver: StorageDriver, object_name: str) -> Iterator[bytes]:
+    container_name = settings.GCP_STORAGE_BUCKET
+    container = driver.get_container(container_name=container_name)
+    obj = container.get_object(object_name)
+    download_obj = container.download_object_as_stream(obj=obj, chunk_size=1024*1024)
+    return download_obj
+
+
+def get_object_name(sku: str, selling_round: str, original_filename: str, override_filename: str = None):
+    file_ext = Path(original_filename).suffix
+    object_name = f"{sku}_{selling_round}_{uuid.uuid4().hex}"
+    if override_filename:
+        object_name += f"_{override_filename}"
+    object_name += file_ext
+    return object_name
+
+
+def validate_new_artifact(product: models.Product, current_user: models.User, url: str = None,
+                              filename: str = None):
+    # Product exists
+    if not product:
+        raise HTTPException(
+            status_code=404, detail=f"Product not found",
+        )
+
+    # Product ownership
+    if product.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail=f"Not enough permissions",
+        )
+
+    # Input validation
+    if not url and not filename:
+        raise HTTPException(
+            status_code=400, detail="You must either provide a URL or upload a file",
+        )
+
+    if url and filename:
+        raise HTTPException(
+            status_code=400, detail="You can either provide a URL or upload a file, but not both",
+        )
+
+    # todo filename suffix / desc validation
+
+    # todo duplicate artifact
+
+
+# todo deprecated
+def validate_new_artifact_old(product: models.Product, current_user: models.User, url: str = None,
+                          file_obj: UploadFile = None, filename: str = None):
+    # Product exists
+    if not product:
+        raise HTTPException(
+            status_code=404, detail=f"Product not found",
+        )
+
+    # Product ownership
+    if product.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail=f"Not enough permissions",
+        )
+
+    # Input validation
+    if not url and not file_obj:
+        raise HTTPException(
+            status_code=400, detail="You must either provide a URL or upload a file",
+        )
+
+    if url and (file_obj or filename):
+        raise HTTPException(
+            status_code=400, detail="You can either provide a URL or upload a file, but not both",
+        )
+
+    # todo filename / desc validation
+
+    # todo duplicate artifact
+
+
+def validate_existing_artifact(artifact: models.Artifact, product_id: int, selling_round: int):
+    # artifact exists
+    if not artifact:
+        raise HTTPException(
+            status_code=404, detail=f"Artifact not found",
+        )
+
+    # artifact belongs to product
+    if artifact.product_id != product_id:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid artifact ID for product",
+        )
+
+    # artifact current round
+    if artifact.round_tournament != selling_round:
+        raise HTTPException(
+            status_code=400, detail=f"Artifact expired",
+        )
+
+
+@router.post('/{product_id}/artifacts/generate-upload-url')
+def generate_upload_url(
+    *,
+    product_id: int,
+    filename: str = Form(...),
+    filesize: int = Form(None),
+    action: str = Form(None),
+    filename_suffix: str = Form(None),
+    description: str = Form(None),
+    db: Session = Depends(deps.get_db),
+    bucket: Bucket = Depends(deps.get_gcs_bucket),
+    current_user: models.User = Depends(deps.get_current_active_user)
+):
+    product = crud.product.get(db, id=product_id)
+    validate_new_artifact(product=product, current_user=current_user, url=None, filename=filename)
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+    object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=filename,
+                                      override_filename=filename_suffix)
+
+    if not action:
+        action = 'PUT'
+    blob = bucket.blob(object_name)
+    url = blob.generate_signed_url(
+        expiration=timedelta(minutes=10),
+        content_type='application/octet-stream',
+        bucket_bound_hostname='https://storage.numerbay.ai',
+        method=action, version="v4")
+
+    # Create artifact
+    artifact_in = schemas.ArtifactCreate(
+        product_id=product_id,
+        date=datetime.utcnow(),
+        round_tournament=selling_round,
+        description=description,
+        url=None,
+        object_name=object_name,
+        object_size=filesize
+    )
+    artifact = crud.artifact.create(
+        db=db, obj_in=artifact_in
+    )
+    if not artifact:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Failed to create artifact")
+    return {'id': artifact.id, 'url': url}
+
+
+@router.post('/{product_id}/artifacts', response_model=schemas.Artifact)
+async def create_artifact(
+    *,
+    product_id: int,
+    description: str = Body(None),
+    url: str = Body(None),
+    file_obj: UploadFile = File(None),
+    filename: str = Body(None),
+    db: Session = Depends(deps.get_db),
+    driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    product = crud.product.get(db, id=product_id)
+    validate_new_artifact(product=product, current_user=current_user, url=url, file_obj=file_obj, filename=filename)
+
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+    # Upload file if provided
+    object_name = None
+    if file_obj:
+        object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
+                                      override_filename=filename)
+        upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
+        if not upload_obj:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="File could not be uploaded")
+
+    # Create artifact
+    artifact_in = schemas.ArtifactCreate(
+        product_id=product_id,
+        date=datetime.utcnow(),
+        round_tournament=selling_round,
+        description=description,
+        url=url,
+        object_name=object_name,
+    )
+    artifact = crud.artifact.create(
+        db=db, obj_in=artifact_in
+    )
+    return artifact
+
+
+@router.put('/{product_id}/artifacts/{artifact_id}')
+async def update_artifact(
+    *,
+    product_id: int,
+    artifact_id: int,
+    description: str = Body(None),
+    url: str = Body(None),
+    file_obj: UploadFile = File(None),
+    filename: str = Body(None),
+    db: Session = Depends(deps.get_db),
+    driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
+    current_user: models.User = Depends(deps.get_current_active_user),
+):
+    product = crud.product.get(db, id=product_id)
+    validate_new_artifact(product=product, current_user=current_user, url=url, file_obj=file_obj, filename=filename)
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    artifact = crud.artifact.get(db, id=artifact_id)
+    validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
+
+    object_name = None
+    if file_obj:
+        object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
+                                      override_filename=filename)
+        upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
+        if not upload_obj:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="File could not be uploaded")
+
+    # Update artifact
+    artifact_dict = {}
+    if description:
+        artifact_dict['artifact_dict'] = description
+    if url:
+        artifact_dict['url'] = url
+    if file_obj:
+        artifact_dict['object_name'] = object_name
+
+    artifact = crud.artifact.update(
+        db=db, db_obj=artifact, obj_in=artifact_dict
+    )
+    return artifact
+
+    # from datetime import datetime
+    #
+    # body = b''
+    # read_first = False
+    # async for chunk in file.stream():
+    #     if not read_first:
+    #         print(f'{datetime.now()} Read the first 100 bytes')
+    #     read_first = True
+    #     body += chunk
+    #
+    # print(f'{datetime.now()} Read all the file')
+
+    # chunk = await file.read(100)
+    # print(f'{datetime.now()} Read the first 100 bytes')
+    #
+    # remaining = await file.read()
+    # print(f'{datetime.now()} Read all the file')
+
+
+def validate_buyer(product: models.Product, current_user: models.User, selling_round: int) -> bool:
+    for order in current_user.orders:
+        if order.round_order == selling_round and order.product_id == product.id and order.state == 'confirmed':
+            return True
+    return False
+
+
+@router.get('/{product_id}/artifacts', response_model=Dict[str, Union[int, List[schemas.Artifact]]])
+def list_product_artifacts(
+    *,
+    product_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    product = crud.product.get(db=db, id=product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+    if product.owner_id != current_user.id and not validate_buyer(product, current_user, selling_round):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    artifacts = crud.artifact.get_multi_by_product_round(db, product_id=product.id, round_tournament=selling_round)
+    return {'total': len(artifacts), 'data': artifacts}
+
+
+@router.get('/{product_id}/artifacts/{artifact_id}/generate-download-url')
+def generate_download_url(
+    *,
+    product_id: int,
+    artifact_id: int,
+    db: Session = Depends(deps.get_db),
+    bucket: Bucket = Depends(deps.get_gcs_bucket),
+    current_user: models.User = Depends(deps.get_current_active_user)
+):
+    product = crud.product.get(db=db, id=product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+    if product.owner_id != current_user.id and not validate_buyer(product, current_user, selling_round):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    artifact = crud.artifact.get(db, id=artifact_id)
+    if not artifact:
+        raise HTTPException(status_code=404,
+                            detail="Artifact not found")
+
+    action = 'GET'
+    blob = bucket.blob(artifact.object_name)
+    url = blob.generate_signed_url(
+        expiration=timedelta(minutes=10),
+        # content_type='application/octet-stream',
+        bucket_bound_hostname='https://storage.numerbay.ai',
+        method=action, version="v4")
+    return url
+
+
+@router.get('/{product_id}/artifacts/{artifact_id}')
+def download_product_artifact(
+    *,
+    product_id: int,
+    artifact_id: int,
+    db: Session = Depends(deps.get_db),
+    driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    # product ownership
+    validate_existing_product(db, product_id=product_id, currend_user_id=current_user.id)
+
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    artifact = crud.artifact.get(db, id=artifact_id)
+    validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
+
+    if artifact.object_name:
+        download_obj = download_file(driver, object_name=artifact.object_name)
+        return StreamingResponse(download_obj)
+    else:
+        return artifact
+
+
+@router.delete('/{product_id}/artifacts/{artifact_id}', response_model=schemas.Artifact)
+def delete_product_artifact(
+    *,
+    product_id: int,
+    artifact_id: int,
+    db: Session = Depends(deps.get_db),
+    bucket: Bucket = Depends(deps.get_gcs_bucket),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Delete an artifact.
+    """
+    # product ownership
+    validate_existing_product(db, product_id=product_id, currend_user_id=current_user.id)
+
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    artifact = crud.artifact.get(db, id=artifact_id)
+    validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
+
+    artifact = crud.artifact.remove(db=db, id=artifact_id)
+    object_name = artifact.object_name
+    try:
+        blob = bucket.blob(object_name)
+        blob.delete()
+    except NotFound:
+        pass
+    return artifact

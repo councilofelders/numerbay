@@ -35,15 +35,15 @@
               v-for="tableHeader in tableHeaders"
               :key="tableHeader"
               >{{ tableHeader }}</SfTableHeader>
-            <SfTableHeader class="orders__element--right">
+            <!--<SfTableHeader class="orders__element&#45;&#45;right">
               <span class="smartphone-only">{{ $t('Download') }}</span>
               <SfButton
-                class="desktop-only sf-button--text orders__download-all"
+                class="desktop-only sf-button&#45;&#45;text orders__download-all"
                 @click="downloadOrders()"
               >
                 {{ $t('Download all') }}
               </SfButton>
-            </SfTableHeader>
+            </SfTableHeader>-->
           </SfTableHeading>
           <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)">
             <SfTableData>{{ orderGetters.getId(order) }}</SfTableData>
@@ -125,7 +125,8 @@ export default {
       'Round',
       'Buyer',
       'Amount',
-      'Status'
+      'Status',
+      'Action'
     ];
 
     const getStatusTextClass = (order) => {

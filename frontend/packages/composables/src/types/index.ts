@@ -37,6 +37,8 @@ export type Order = Record<string, unknown>;
 
 export type OrderItem = Record<string, unknown>;
 
+export type Artifact = Record<string, unknown>;
+
 export type Product = Record<string, unknown>;
 
 export type Review = Record<string, unknown>;
@@ -57,6 +59,13 @@ export type ProductsResponse = {
 export type OrderSearchParams = Record<string, any>;
 
 export type OrdersResponse = {
+  data: any[];
+  total: number;
+};
+
+export type ArtifactSearchParams = Record<string, any>;
+
+export type ArtifactsResponse = {
   data: any[];
   total: number;
 };
@@ -159,5 +168,26 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getItemPrice: (item: ORDER_ITEM) => number;
     getFormattedPrice: (item: ORDER_ITEM, withCurrency: boolean, decimals: number) => string;
     getBuyer: (item: ORDER_ITEM) => string;
+    [getterName: string]: (element: any, options?: any) => unknown;
+}
+
+export interface ProductArtifactGetters<ARTIFACT> {
+    getDate: (order: ARTIFACT) => string;
+    getId: (order: ARTIFACT) => string;
+    getObjectName: (order: ARTIFACT) => string;
+    getObjectSize: (order: ARTIFACT) => string;
+    getPrice: (order: ARTIFACT) => number;
+    getCurrency: (order: ARTIFACT) => string;
+    getFromAddress: (order: ARTIFACT) => string;
+    getToAddress: (order: ARTIFACT) => string;
+    getTransactionHash: (order: ARTIFACT) => string;
+    getProduct: (order: ARTIFACT) => any;
+    getItems: (order: ARTIFACT) => ARTIFACT[];
+    getItemSku: (item: ARTIFACT) => string;
+    getItemName: (item: ARTIFACT) => string;
+    getItemQty: (item: ARTIFACT) => number;
+    getItemPrice: (item: ARTIFACT) => number;
+    getFormattedPrice: (item: ARTIFACT, withCurrency: boolean, decimals: number) => string;
+    getBuyer: (item: ARTIFACT) => string;
     [getterName: string]: (element: any, options?: any) => unknown;
 }

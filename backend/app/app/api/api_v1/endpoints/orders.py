@@ -42,7 +42,7 @@ def search_orders(
 
 
 # todo turnkey rollout
-# @router.post("/", response_model=schemas.Order)
+@router.post("/", response_model=schemas.Order)
 def create_order(
     *,
     db: Session = Depends(deps.get_db),

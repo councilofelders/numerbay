@@ -44,6 +44,9 @@ services:
     environment:
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - GCP_SERVICE_ACCOUNT_EMAIL=${GCP_SERVICE_ACCOUNT_EMAIL?Variable not set}
+      - GCP_SERVICE_ACCOUNT_KEY=${GCP_SERVICE_ACCOUNT_KEY?Variable not set}
+      - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO?Variable not set}
     build:
       context: ./backend
       dockerfile: backend.dockerfile
