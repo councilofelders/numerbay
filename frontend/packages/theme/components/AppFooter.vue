@@ -24,6 +24,7 @@
 
 <script>
 import { SfFooter, SfList, SfImage, SfMenuItem } from '@storefront-ui/vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -31,6 +32,11 @@ export default {
     SfList,
     SfImage,
     SfMenuItem
+  },
+  data() {
+    return {
+      qeDashboardUrl: null
+    };
   },
   computed: {
     links () {
@@ -54,12 +60,17 @@ export default {
           name: 'Community',
           children: [
             { name: 'CoE Wallet', clickHandler: () => window.open('https://gnosis-safe.io/app/#/safes/0xF58B7c28DAF13926329ef0c74FA3f7258f5A9131/', '_blank') },
-            { name: 'Dashboard by @QE', clickHandler: () => window.open('https://app.powerbi.com/view?r=eyJrIjoiMzI3MTRkM2YtMTA1My00YmU1LWI0M2ItZGZjZTBiMjhlMzlhIiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9', '_blank') },
+            { name: 'Dashboard by @QE', clickHandler: () => window.open(this.qeDashboardUrl, '_blank') },
             { name: 'Newsletter by @Aventurine', clickHandler: () => window.open('https://coenumerainewsletter.substack.com/', '_blank') }
           ]
         }
       };
     }
+  },
+  mounted() { // dynamic iframe
+    axios.get('https://raw.githubusercontent.com/jos1977/numerai_statistics/main/ClassicDashboardLink.txt').then((response) => {
+      this.qeDashboardUrl = response.data;
+    });
   }
 };
 </script>
