@@ -81,7 +81,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             del update_data["password"]
             update_data["hashed_password"] = hashed_password
         if "username" in update_data and not update_data["username"]:
-            update_data["username"] = None
+            update_data.pop("username", None)
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def authenticate(

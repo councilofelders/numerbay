@@ -81,6 +81,24 @@ def test_check_if_user_is_superuser_normal_user(db: Session) -> None:
     crud.user.remove(db, id=user.id)
 
 
+def test_search_user(db: Session) -> None:
+    password = random_lower_string()
+    username = random_email()
+    user_in = UserCreate(username=username, password=password)
+    user = crud.user.create(db, obj_in=user_in)
+    user_results = crud.user.search(db, id=user.id)
+    assert user_results
+    assert user_results['total'] == 1
+    assert user.username == user_results['data'][0].username
+    assert jsonable_encoder(user) == jsonable_encoder(user_results['data'][0])
+
+    user_results = crud.user.search(db, term=username[:5])
+    assert user_results
+    assert user_results['total'] > 0
+
+    crud.user.remove(db, id=user.id)
+
+
 def test_get_user(db: Session) -> None:
     password = random_lower_string()
     username = random_email()
@@ -106,5 +124,19 @@ def test_update_user(db: Session) -> None:
     assert user_2
     assert user.username == user_2.username
     assert verify_password(new_password, user_2.hashed_password)  # type: ignore
+
+    crud.user.remove(db, id=user.id)
+
+
+def test_update_user_empty_username(db: Session) -> None:
+    password = random_lower_string()
+    email = random_email()
+    user_in = UserCreate(username=email, password=password)
+    user = crud.user.create(db, obj_in=user_in)
+
+    crud.user.update(db, db_obj=user, obj_in={'username': None})
+    user_2 = crud.user.get(db, id=user.id)
+    assert user_2
+    assert user.username == user_2.username
 
     crud.user.remove(db, id=user.id)

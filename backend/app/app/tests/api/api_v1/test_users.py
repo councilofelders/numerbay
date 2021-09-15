@@ -78,6 +78,61 @@ def test_create_user_existing_username(client: TestClient, db: Session) -> None:
     crud.user.remove(db, id=user.id)
 
 
+def test_create_user_empty(client: TestClient, db: Session) -> None:
+    username = ''
+    password = ''
+    user_in = UserCreate(username=username, password=password)
+    user = crud.user.create(db, obj_in=user_in)
+    data = {"username": username, "password": password}
+    r = client.post(f"{settings.API_V1_STR}/users/", json=data,)
+    created_user = r.json()
+    assert r.status_code == 400
+    assert "_id" not in created_user
+
+    crud.user.remove(db, id=user.id)
+
+
+def test_update_username_password(client: TestClient, db: Session, normal_user_token_headers: Dict[str, str]) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    user_id = current_user['id']
+    new_username = random_lower_string()
+    new_password = random_lower_string()
+    data = {"username": new_username, "password": new_password}
+    r = client.put(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers, json=data, )
+    assert 200 <= r.status_code < 300
+    updated_user = r.json()
+    user = crud.user.get_by_username(db, username=new_username)
+    assert user
+    assert user.id == user_id
+    assert user.username == updated_user["username"]
+
+    r = client.put(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers, json=current_user, )
+
+
+def test_update_username_conflict(client: TestClient, db: Session, normal_user_token_headers: Dict[str, str]) -> None:
+    username = random_email()
+    password = random_lower_string()
+    data = {"username": username, "password": password}
+    r = client.post(f"{settings.API_V1_STR}/users/", json=data, )
+    existing_user = r.json()
+
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    assert 200 <= r.status_code < 300
+    current_user = r.json()
+    print(current_user)
+
+    new_username = existing_user['username']
+    new_password = random_lower_string()
+    data = {"username": new_username, "password": new_password}
+    r = client.put(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers, json=data, )
+    updated_user = r.json()
+    assert r.status_code == 400
+    assert "_id" not in updated_user
+
+    crud.user.remove(db, id=existing_user['id'])
+
+
 # def test_retrieve_users(
 #     client: TestClient, superuser_token_headers: dict, db: Session
 # ) -> None:

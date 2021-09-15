@@ -38,7 +38,7 @@ def create_user(
     """
     Create new user.
     """
-    if user_in.username is None or user_in.password is None:
+    if user_in.username is None or user_in.username == '' or user_in.password is None or user_in.password == '':
         raise HTTPException(
             status_code=400, detail="Please specify username and password",
         )
