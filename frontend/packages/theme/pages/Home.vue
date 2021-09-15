@@ -66,7 +66,7 @@
     </LazyHydrate>-->
 
     <LazyHydrate when-visible>
-      <iframe width="100%" height="747" src="https://app.powerbi.com/view?r=eyJrIjoiMzI3MTRkM2YtMTA1My00YmU1LWI0M2ItZGZjZTBiMjhlMzlhIiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9" frameborder="0" allowFullScreen="true"></iframe>
+      <iframe width="100%" height="747" :src="iframe.src" frameborder="0" allowFullScreen="true" v-if="iframe.loaded"></iframe>
     </LazyHydrate>
 
     <LazyHydrate when-visible>
@@ -98,6 +98,7 @@ import {
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
+import axios from 'axios';
 
 export default {
   name: 'Home',
@@ -140,13 +141,23 @@ export default {
       banners: [
       ],
       products: [
-      ]
+      ],
+      iframe: {
+        src: '',
+        loaded: false
+      }
     };
   },
   methods: {
     toggleWishlist(index) {
       this.products[index].isInWishlist = !this.products[index].isInWishlist;
     }
+  },
+  mounted() {
+    axios.get('https://raw.githubusercontent.com/jos1977/numerai_statistics/main/ClassicDashboardLink.txt').then((response) => {
+      this.iframe.src = response.data;
+      this.iframe.loaded = true;
+    });
   }
 };
 </script>
