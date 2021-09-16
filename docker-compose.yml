@@ -144,6 +144,9 @@ services:
       - SERVER_HOST=https://${DOMAIN?Variable not set}
       # Allow explicit env var override for tests
       - SMTP_HOST=${SMTP_HOST}
+      - GCP_PROJECT=${GCP_PROJECT}
+      - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
+      - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
     build:
       context: ./backend
       dockerfile: backend.dockerfile

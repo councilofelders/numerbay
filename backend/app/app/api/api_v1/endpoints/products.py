@@ -278,21 +278,21 @@ def delete_product(
     return product
 
 
-def upload_file(driver: StorageDriver, file_obj: UploadFile, object_name: str) -> Object:
-    container_name = settings.GCP_STORAGE_BUCKET
-    container = driver.get_container(container_name=container_name)
-    upload_obj = driver.upload_object_via_stream(iterator=iter(file_obj.file),
-                                                 container=container,
-                                                 object_name=object_name)
-    return upload_obj
+# def upload_file(driver: StorageDriver, file_obj: UploadFile, object_name: str) -> Object:
+#     container_name = settings.GCP_STORAGE_BUCKET
+#     container = driver.get_container(container_name=container_name)
+#     upload_obj = driver.upload_object_via_stream(iterator=iter(file_obj.file),
+#                                                  container=container,
+#                                                  object_name=object_name)
+#     return upload_obj
 
 
-def download_file(driver: StorageDriver, object_name: str) -> Iterator[bytes]:
-    container_name = settings.GCP_STORAGE_BUCKET
-    container = driver.get_container(container_name=container_name)
-    obj = container.get_object(object_name)
-    download_obj = container.download_object_as_stream(obj=obj, chunk_size=1024*1024)
-    return download_obj
+# def download_file(driver: StorageDriver, object_name: str) -> Iterator[bytes]:
+#     container_name = settings.GCP_STORAGE_BUCKET
+#     container = driver.get_container(container_name=container_name)
+#     obj = container.get_object(object_name)
+#     download_obj = container.download_object_as_stream(obj=obj, chunk_size=1024*1024)
+#     return download_obj
 
 
 def get_object_name(sku: str, selling_round: str, original_filename: str, override_filename: str = None):
@@ -330,37 +330,6 @@ def validate_new_artifact(product: models.Product, current_user: models.User, ur
         )
 
     # todo filename suffix / desc validation
-
-    # todo duplicate artifact
-
-
-# todo deprecated
-def validate_new_artifact_old(product: models.Product, current_user: models.User, url: str = None,
-                          file_obj: UploadFile = None, filename: str = None):
-    # Product exists
-    if not product:
-        raise HTTPException(
-            status_code=404, detail=f"Product not found",
-        )
-
-    # Product ownership
-    if product.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail=f"Not enough permissions",
-        )
-
-    # Input validation
-    if not url and not file_obj:
-        raise HTTPException(
-            status_code=400, detail="You must either provide a URL or upload a file",
-        )
-
-    if url and (file_obj or filename):
-        raise HTTPException(
-            status_code=400, detail="You can either provide a URL or upload a file, but not both",
-        )
-
-    # todo filename / desc validation
 
     # todo duplicate artifact
 
@@ -407,11 +376,14 @@ def generate_upload_url(
 
     if not action:
         action = 'PUT'
+    if action.upper() not in ['PUT', 'POST']:
+        raise HTTPException(status_code=400, detail="Action type must be either PUT or POST for uploads")
     blob = bucket.blob(object_name)
     url = blob.generate_signed_url(
         expiration=timedelta(minutes=10),
         content_type='application/octet-stream',
-        bucket_bound_hostname='https://storage.numerbay.ai',
+        bucket_bound_hostname=('https://storage.numerbay.ai' if settings.GCP_STORAGE_BUCKET == 'storage.numerbay.ai'
+                               else None),
         method=action, version="v4")
 
     # Create artifact
@@ -437,27 +409,17 @@ def generate_upload_url(
 async def create_product_artifact(
     *,
     product_id: int,
+    url: str = Body(...),
     description: str = Body(None),
-    url: str = Body(None),
-    filename: str = Body(None),
+    # filename: str = Body(None),
     db: Session = Depends(deps.get_db),
     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(product=product, current_user=current_user, url=url, filename=filename)
+    validate_new_artifact(product=product, current_user=current_user, url=url, filename=None)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-
-    # Upload file if provided
-    # object_name = None
-    # if file_obj:
-    #     object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
-    #                                   override_filename=filename)
-    #     upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
-    #     if not upload_obj:
-    #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #                             detail="File could not be uploaded")
 
     # Create artifact
     artifact_in = schemas.ArtifactCreate(
@@ -589,32 +551,33 @@ def generate_download_url(
     url = blob.generate_signed_url(
         expiration=timedelta(minutes=10),
         # content_type='application/octet-stream',
-        bucket_bound_hostname='https://storage.numerbay.ai',
+        bucket_bound_hostname=('https://storage.numerbay.ai' if settings.GCP_STORAGE_BUCKET == 'storage.numerbay.ai'
+                               else None),
         method=action, version="v4")
     return url
 
 
-@router.get('/{product_id}/artifacts/{artifact_id}')
-def download_product_artifact(
-    *,
-    product_id: int,
-    artifact_id: int,
-    db: Session = Depends(deps.get_db),
-    driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    # product ownership
-    validate_existing_product(db, product_id=product_id, currend_user_id=current_user.id)
-
-    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-    artifact = crud.artifact.get(db, id=artifact_id)
-    validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
-
-    if artifact.object_name:
-        download_obj = download_file(driver, object_name=artifact.object_name)
-        return StreamingResponse(download_obj)
-    else:
-        return artifact
+# @router.get('/{product_id}/artifacts/{artifact_id}')
+# def download_product_artifact(
+#     *,
+#     product_id: int,
+#     artifact_id: int,
+#     db: Session = Depends(deps.get_db),
+#     driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
+#     current_user: models.User = Depends(deps.get_current_active_user),
+# ) -> Any:
+#     # product ownership
+#     validate_existing_product(db, product_id=product_id, currend_user_id=current_user.id)
+#
+#     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+#     artifact = crud.artifact.get(db, id=artifact_id)
+#     validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
+#
+#     if artifact.object_name:
+#         download_obj = download_file(driver, object_name=artifact.object_name)
+#         return StreamingResponse(download_obj)
+#     else:
+#         return artifact
 
 
 @router.delete('/{product_id}/artifacts/{artifact_id}', response_model=schemas.Artifact)

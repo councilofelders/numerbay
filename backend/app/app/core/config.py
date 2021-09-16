@@ -84,8 +84,8 @@ class Settings(BaseSettings):
     # Cloud
     GCP_PROJECT: Optional[str] = "numerbay"
     GCP_STORAGE_BUCKET: Optional[str] = "storage.numerbay.ai"
-    GCP_SERVICE_ACCOUNT_EMAIL: Optional[str] = None
-    GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
+    # GCP_SERVICE_ACCOUNT_EMAIL: Optional[str] = None
+    # GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
     GCP_SERVICE_ACCOUNT_INFO: Optional[str] = None
 
     class Config:

@@ -66,13 +66,13 @@ def get_current_active_superuser(
     return current_user
 
 
-def get_cloud_storage_driver() -> StorageDriver:
-    from libcloud.storage.drivers.google_storage import GoogleStorageDriver
-    driver = GoogleStorageDriver(
-        key=settings.GCP_SERVICE_ACCOUNT_EMAIL,
-        secret=settings.GCP_SERVICE_ACCOUNT_KEY.encode().decode('unicode-escape'),
-        project=settings.GCP_PROJECT)
-    return driver
+# def get_cloud_storage_driver() -> StorageDriver:
+#     from libcloud.storage.drivers.google_storage import GoogleStorageDriver
+#     driver = GoogleStorageDriver(
+#         key=settings.GCP_SERVICE_ACCOUNT_EMAIL,
+#         secret=settings.GCP_SERVICE_ACCOUNT_KEY.encode().decode('unicode-escape'),
+#         project=settings.GCP_PROJECT)
+#     return driver
 
 
 def get_gcs_bucket() -> Bucket:
@@ -80,17 +80,17 @@ def get_gcs_bucket() -> Bucket:
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     client = storage.Client(credentials=credentials)
     bucket = client.get_bucket(settings.GCP_STORAGE_BUCKET)
-    # bucket.cors = [
-    #     {
-    #         "origin": ["*"],
-    #         "responseHeader": [
-    #             "Content-Type", "Access-Control-Allow-Origin", "X-Requested-With",
-    #             "x-goog-resumable", 'cache-control'
-    #         ],
-    #         "method": ["GET", "PUT", "POST", "OPTIONS"],
-    #         "maxAgeSeconds": 3600
-    #     }
-    # ]
-    # bucket.patch()
+    bucket.cors = [
+        {
+            "origin": ["*"],
+            "responseHeader": [
+                "Content-Type", "Access-Control-Allow-Origin", "X-Requested-With",
+                "x-goog-resumable", 'cache-control'
+            ],
+            "method": ["GET", "PUT", "POST", "OPTIONS"],
+            "maxAgeSeconds": 3600
+        }
+    ]
+    bucket.patch()
     # print(f"{settings.GCP_STORAGE_BUCKET} Cors: {bucket.cors}")
     return bucket
