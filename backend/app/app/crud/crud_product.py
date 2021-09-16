@@ -121,7 +121,6 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         products_to_expire = (
             db.query(self.model).filter(Product.expiration_round < current_round).all()
         )
-        print(f"products_to_expire: {products_to_expire}")
         for product in products_to_expire:
             product.is_active = False
 

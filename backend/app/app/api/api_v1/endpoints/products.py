@@ -49,20 +49,20 @@ def search_products(
     return products
 
 
-@router.get("/my", response_model=List[schemas.Product])
-def read_my_products(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Retrieve products.
-    """
-    products = crud.product.get_multi_by_owner(
-        db=db, owner_id=current_user.id, skip=skip, limit=limit
-    )
-    return products
+# @router.get("/my", response_model=List[schemas.Product])
+# def read_my_products(
+#     db: Session = Depends(deps.get_db),
+#     skip: int = 0,
+#     limit: int = 100,
+#     current_user: models.User = Depends(deps.get_current_active_user),
+# ) -> Any:
+#     """
+#     Retrieve products.
+#     """
+#     products = crud.product.get_multi_by_owner(
+#         db=db, owner_id=current_user.id, skip=skip, limit=limit
+#     )
+#     return products
 
 
 def validate_product_input(
@@ -237,6 +237,16 @@ def update_product(
     product = validate_existing_product(db, product_id=id, currend_user_id=current_user.id)
 
     product_in = validate_product_input(db, product_in)  # type: ignore
+
+    # if hasattr(product_in, 'name') and product_in.name:
+    #     raise HTTPException(
+    #         status_code=400, detail="Product name cannot be changed after creation",
+    #     )
+    #
+    # if hasattr(product_in, 'category_id') and product_in.category_id:
+    #     raise HTTPException(
+    #         status_code=400, detail="Product category cannot be changed after creation",
+    #     )
 
     product = crud.product.update(db=db, db_obj=product, obj_in=product_in)
     return product
