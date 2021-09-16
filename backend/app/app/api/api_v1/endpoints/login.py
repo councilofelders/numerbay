@@ -2,6 +2,7 @@ import secrets
 from datetime import timedelta
 from typing import Any
 
+import eth_utils
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -54,9 +55,12 @@ def login_access_token_web3(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = crud.user.authenticate_web3(
-        db, public_address=public_address, signature=signature
-    )
+    try:
+        user = crud.user.authenticate_web3(
+            db, public_address=public_address, signature=signature
+        )
+    except eth_utils.exceptions.ValidationError:
+        raise HTTPException(status_code=400, detail="Incorrect signature")
     if user:
         # change nonce after login
         new_nonce = secrets.token_hex(32)
@@ -106,6 +110,9 @@ def login_nonce(
         )
         crud.user.create(db, obj_in=new_user)
         return {"nonce": nonce}
+    if not user.nonce:
+        # create nonce if none
+        crud.user.update(db, db_obj=user, obj_in={'nonce': secrets.token_hex(32)})
     return {"nonce": user.nonce}
 
 
@@ -118,6 +125,9 @@ def login_nonce_authenticated(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
+    if not current_user.nonce:
+        # create nonce if none
+        crud.user.update(db, db_obj=current_user, obj_in={'nonce': secrets.token_hex(32)})
     return {"nonce": current_user.nonce}
 
 
