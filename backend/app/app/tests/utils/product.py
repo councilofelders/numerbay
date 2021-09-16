@@ -10,7 +10,7 @@ from app.tests.utils.utils import random_decimal, random_lower_string
 
 
 def create_random_product(
-    db: Session, *, owner_id: Optional[int] = None
+    db: Session, *, owner_id: Optional[int] = None, is_on_platform: bool = False
 ) -> models.Product:
     if owner_id is None:
         user = create_random_user(db)
@@ -28,8 +28,8 @@ def create_random_product(
         price=price,
         category_id=3,
         description=description,
-        is_on_platform=False,
-        currency="USD",
+        is_on_platform=is_on_platform,
+        currency="NMR" if is_on_platform else "USD",
         id=id,
     )
     return crud.product.create_with_owner(
