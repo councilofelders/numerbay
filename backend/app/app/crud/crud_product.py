@@ -154,6 +154,17 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         if isinstance(filters, dict):
             for filter_key, filter_item in filters.items():
+                if filter_key == "platform":
+                    with_on_platform = 'on-platform' in filter_item["in"]
+                    with_off_platform = 'off-platform' in filter_item["in"]
+                    platform_list = []
+                    if with_on_platform:
+                        platform_list.append(True)
+                    if with_off_platform:
+                        platform_list.append(False)
+                    if len(platform_list) == 0:
+                        platform_list = [True, False]
+                    query_filters.append(Product.is_on_platform.in_(platform_list))
                 if filter_key == "user":
                     user_id_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Product.owner_id.in_(user_id_list))
@@ -263,6 +274,15 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         agg_stats = agg_query.one()
 
         aggregations = [
+            {
+                "attribute_code": "platform",
+                "count": None,
+                "label": "Platform",
+                "options": [
+                    {"label": "on-platform", "value": True},
+                    {"label": "off-platform", "value": False},
+                ],
+            },
             {
                 "attribute_code": "rank",
                 "count": None,

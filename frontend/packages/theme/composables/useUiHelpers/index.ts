@@ -71,7 +71,7 @@ const useUiHelpers = () => {
 
   // eslint-disable-next-line
   const isFacetCheckbox = (facet): boolean => {
-    return false;
+    return facet.id === 'platform';
   };
 
   const getSearchTermFromUrl = () => {
