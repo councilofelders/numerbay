@@ -162,8 +162,8 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    console.log('props', props);
     const { artifacts, search, downloadArtifact, loading } = useProductArtifact(`${props.order.product.id}`);
-
     search({ productId: props.order.product.id });
 
     const tableHeaders = [

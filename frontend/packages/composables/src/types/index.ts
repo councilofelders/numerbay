@@ -142,6 +142,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getAverageRating: (product: PRODUCT) => number;
     getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
     getModelNmrStaked: (product: PRODUCT, decimals: number) => any;
+    getModelRank: (product: PRODUCT, key: string) => any;
     getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
     getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
     getIsActive: (product: PRODUCT) => boolean;

@@ -1,4 +1,5 @@
 import functools
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
@@ -90,6 +91,9 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 if filter_key == "round_order":
                     round_order_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Order.round_order.in_(round_order_list))
+                if filter_key == "state":
+                    state_list = [str(i) for i in filter_item["in"]]
+                    query_filters.append(Order.state.in_(state_list))
 
         query = db.query(self.model)
         if role != "buyer":  # to handle filter on Product owner
@@ -132,42 +136,61 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         return wallet_transactions
 
     def update_payment(self, db: Session, order_json: Dict) -> None:
+        order_obj = crud.order.get(db, id=order_json["id"])
         if order_json["currency"] == "NMR":
             buyer = crud.user.get(db, id=order_json["buyer_id"])
             if buyer:
-                numerai_wallet_transactions = self.get_numerai_wallet_transactions(
-                    public_id=buyer.numerai_api_key_public_id,  # type: ignore
-                    secret_key=buyer.numerai_api_key_secret,  # type: ignore
-                )
-                for transaction in numerai_wallet_transactions:
-                    time = (
-                        pd.to_datetime(transaction["time"])
-                        .tz_localize(None)
-                        .to_pydatetime()
+                try:
+                    numerai_wallet_transactions = self.get_numerai_wallet_transactions(
+                        public_id=buyer.numerai_api_key_public_id,  # type: ignore
+                        secret_key=buyer.numerai_api_key_secret,  # type: ignore
                     )
-                    if time < pd.to_datetime(order_json["date_order"]).to_pydatetime():
-                        continue
-                    if transaction["to"] == order_json["to_address"]:
-                        print(
-                            f"Transaction match for order {order_json['id']} "
-                            f"[{buyer.username}->{order_json['product']['name']}], "
-                            f"{transaction['amount']} {order_json['currency']} / "
-                            f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}"
+                    for transaction in numerai_wallet_transactions:
+                        time = (
+                            pd.to_datetime(transaction["time"])
+                                .tz_localize(None)
+                                .to_pydatetime()
                         )
-                        order_obj = crud.order.get(db, id=order_json["id"])
-                        if order_obj:
-                            order_obj.transaction_hash = transaction["txHash"]
-                            if (
-                                Decimal(transaction["amount"])
-                                >= Decimal(order_obj.price)
-                                and transaction["status"] == "confirmed"
-                            ):
-                                order_obj.state = "confirmed"
-                            db.commit()
-                            db.refresh(order_obj)
-                            break
+                        if time < pd.to_datetime(order_json["date_order"]).to_pydatetime():
+                            continue
+                        if transaction["to"] == order_json["to_address"]:
+                            print(
+                                f"Transaction match for order {order_json['id']} "
+                                f"[{buyer.username}->{order_json['product']['name']}], "
+                                f"{transaction['amount']} {order_json['currency']} / "
+                                f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}"
+                            )
+                            if order_obj:
+                                order_obj.transaction_hash = transaction["txHash"]
+                                if (
+                                        Decimal(transaction["amount"])
+                                        >= Decimal(order_obj.price)
+                                        and transaction["status"] == "confirmed"
+                                ):
+                                    order_obj.state = "confirmed"
+                                db.commit()
+                                db.refresh(order_obj)
+                                break
+                except Exception:
+                    pass
+                # expiration
+                if order_obj and order_obj.state != "confirmed" and datetime.now()-order_obj.date_order > timedelta(minutes=15):
+                    print(f"Order {order_json['id']} expired")
+                    order_obj.state = "expired"
+                    db.commit()
+                    db.refresh(order_obj)
+
+            else:  # invalid buyer
+                if order_obj:
+                    order_obj.state = 'invalid_buyer'
+                db.commit()
+                db.refresh(order_obj)
             return
         else:
+            if order_obj:
+                order_obj.state = 'invalid_currency'
+            db.commit()
+            db.refresh(order_obj)
             return
 
 

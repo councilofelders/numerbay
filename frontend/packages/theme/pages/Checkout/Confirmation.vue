@@ -9,54 +9,12 @@
     />
     <SfHeading
       :level="5"
-      v-if="!isPaymentConfirmed && orderGetters.getCurrency(order) === 'NMR'"
+      v-if="!loading && !isPaymentConfirmed && orderGetters.getCurrency(order) === 'NMR'"
       title="Please make your NMR transfer through your Numerai wallet. You can leave this page."
       class="sf-heading--center sf-heading--no-underline content"
     />
-    <div v-if="!isPaymentConfirmed" class="order-info-panel">
+    <div v-if="!loading && !isPaymentConfirmed" class="order-info-panel">
       <OrderInfoPanel :order="order" withCopyButtons="true"/>
-      <!--<div class="highlighted highlighted&#45;&#45;total">
-          <SfProperty
-            name="Order ID"
-            :value="orderGetters.getId(order)"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="Product"
-            :value="orderGetters.getItemSku(orderGetters.getProduct(order))"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="Date"
-            :value="orderGetters.getDate(order)"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="Status"
-            :value="orderGetters.getStatus(order)"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="Total"
-            :value="orderGetters.getFormattedPrice(order)"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="From Address"
-            :value="orderGetters.getFromAddress(order)"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="To Address"
-            :value="orderGetters.getToAddress(order)"
-            class="sf-property&#45;&#45;full-width property"
-          />
-          <SfProperty
-            name="Transaction Hash"
-            :value="orderGetters.getTransactionHash(order) || 'Waiting...'"
-            class="sf-property&#45;&#45;full-width property"
-          />
-        </div>-->
       <SfButton class="sf-button--full-width color-secondary" @click="$router.push('/my-account/order-history')">
         {{ $t('Go to My Orders') }}
       </SfButton>
@@ -79,8 +37,7 @@ import {
   SfLink,
   SfLoader
 } from '@storefront-ui/vue';
-import { onSSR } from '@vue-storefront/core';
-import { ref, computed } from '@vue/composition-api';
+import { computed } from '@vue/composition-api';
 import { orderGetters, useUserOrder } from '@vue-storefront/numerbay';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
 
@@ -102,19 +59,20 @@ export default {
     OrderInfoPanel
   },
   watch: {
-    isPaymentConfirmed(value) {
-      console.log('isPaymentConfirmed: ', value);
-      if (value) {
+    orderStatus(value) {
+      if (value === 'confirmed') {
         this.$router.push('/my-account/order-history');
       }
     }
   },
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
-      if (this.isPaymentConfirmed.value) {
-        this.$router.push('/my-account/order-history');
+      console.log('status: ', this.orderStatus);
+      if (this.orderStatus.value !== 'pending') {
+        clearInterval(this.orderPollingTimer);
+        await this.$router.push('/my-account/order-history');
+        return;
       }
-      console.log('poll');
       const id = this.$route.query.order;
       await this.search({ role: 'buyer', id });
     }, 5000);
@@ -131,30 +89,19 @@ export default {
     const id = context.root.$route.query.order;
     const { orders, search, loading } = useUserOrder();
 
-    const isPaymentReady = ref(false);
-
-    onSSR(async () => {
-      // await load();
-      await search({ role: 'buyer', id });
-    });
+    search({ role: 'buyer', id });
 
     const order = computed(() => (orders?.value?.data || [])[0]);
+    const orderStatus = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]));
     const isPaymentConfirmed = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]) === 'confirmed');
 
-    // watch(isPaymentConfirmed, () => {
-    //   if (isPaymentConfirmed) {
-    //     console.log('confirmed');
-    //   }
-    // });
-
-    if (isPaymentConfirmed.value) {
-      // console.log('isPaymentConfirmed', isPaymentConfirmed.value);
+    if (orderStatus.value !== 'pending') {
       context.root.$router.push('/my-account/order-history');
     }
 
     return {
       loading,
-      isPaymentReady,
+      orderStatus,
       isPaymentConfirmed,
       search,
       order,

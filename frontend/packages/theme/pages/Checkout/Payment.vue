@@ -127,7 +127,7 @@ export default {
     const id = this.$route.query.product;
     await this.getGlobals();
     // eslint-disable-next-line camelcase
-    await this.orderSearch({ role: 'buyer', filters: {product: {in: [id]}, round_order: {in: [this.globals.selling_round]}} });
+    await this.orderSearch({ role: 'buyer', filters: {product: {in: [id]}, round_order: {in: [this.globals.selling_round]}, state: {in: ['pending', 'confirmed']}} });
     if (this.orders?.data?.length > 0) {
       this.send({
         message: 'You already bought this product for this round',

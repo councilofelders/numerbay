@@ -28,30 +28,30 @@ def fix_product_models(
     return {"msg": "success!"}
 
 
-@router.post("/fix-url-encoding")
-def fix_url_encoding(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Fix url encoding (for db migration only).
-    """
-    # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
-    products = (
-        db.query(Product)
-        .filter(
-            or_(Product.avatar.contains(" "), Product.third_party_url.contains(" "))
-        )
-        .all()
-    )
-    for product in products:
-        if product.avatar:
-            product.avatar = product.avatar.replace(" ", "%20")
-        if product.third_party_url:
-            product.third_party_url = product.third_party_url.replace(" ", "%20")
-    db.commit()
-    return {"msg": "success!"}
+# @router.post("/fix-url-encoding")
+# def fix_url_encoding(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Fix url encoding (for db migration only).
+#     """
+#     # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
+#     products = (
+#         db.query(Product)
+#         .filter(
+#             or_(Product.avatar.contains(" "), Product.third_party_url.contains(" "))
+#         )
+#         .all()
+#     )
+#     for product in products:
+#         if product.avatar:
+#             product.avatar = product.avatar.replace(" ", "%20")
+#         if product.third_party_url:
+#             product.third_party_url = product.third_party_url.replace(" ", "%20")
+#     db.commit()
+#     return {"msg": "success!"}
 
 
 # def read_models(

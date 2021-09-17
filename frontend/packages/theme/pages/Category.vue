@@ -207,7 +207,7 @@
                 </SfLink>
               </template>
               <template #price>
-                <span title="Corr Rank"># {{product.model ? product.model.latest_ranks.corr : '-'}}</span>
+                <span title="Corr Rank"># {{ productGetters.getModelRank(product, 'corr')}}</span>
               </template>
               <template #description></template>
               <template #configuration>

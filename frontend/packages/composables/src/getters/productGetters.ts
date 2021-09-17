@@ -76,6 +76,8 @@ export const getProductAverageRating = (product: ProductVariant): number => 0;
 
 export const getProductModelNmrStaked = (product: ProductVariant, decimals = 2): any => (product as any)?.model?.nmr_staked?.toFixed(decimals) || '-';
 
+export const getProductModelRank = (product: ProductVariant, key: string): any => ((product as any)?.model?.latest_ranks || {})[key] || '-';
+
 export const getProductModelRep = (product: ProductVariant, key: string, decimals = 4): any => ((product as any)?.model?.latest_reps || {})[key]?.toFixed(decimals) || '-';
 
 export const getProductModelReturn = (product: ProductVariant, key: string, decimals = 2): any => ((product as any)?.model?.latest_returns || {})[key]?.toFixed(decimals) || '-';
@@ -101,6 +103,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getTotalReviews: getProductTotalReviews,
   getAverageRating: getProductAverageRating,
   getModelNmrStaked: getProductModelNmrStaked,
+  getModelRank: getProductModelRank,
   getModelRep: getProductModelRep,
   getModelReturn: getProductModelReturn,
   getIsActive: getProductIsActive,
