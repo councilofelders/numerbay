@@ -140,6 +140,13 @@ export default {
     }
   },
   methods: {
+    async copyToClipboard(text) {
+      try {
+        await this.$copyText(text);
+      } catch (e) {
+        console.error('Copy failed: ', e);
+      }
+    },
     async download(artifact) {
       const downloadUrl = await this.downloadArtifact({productId: this.order.product.id, artifactId: artifact.id});
       const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
