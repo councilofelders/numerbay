@@ -93,7 +93,11 @@ def update_user_me(
         user_json = jsonable_encoder(user_in)
         user_json["id"] = current_user.id
         tmp_db = SessionLocal()
-        crud.user.update_numerai_api(tmp_db, user_json)
+        numerai_api_updated = crud.user.update_numerai_api(tmp_db, user_json)
+        if not numerai_api_updated:
+            raise HTTPException(
+                status_code=400, detail="Failed to update Numerai API"
+            )
         result = crud.model.update_model(tmp_db, user_json=user_json)
         if not result:
             raise HTTPException(

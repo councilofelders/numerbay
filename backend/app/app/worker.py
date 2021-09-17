@@ -108,7 +108,7 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         },
         "update_globals_task": {
             "task": "app.worker.update_globals_task",
-            "schedule": crontab(day_of_week="sat", hour=18, minute=0),
+            "schedule": crontab(day_of_week="sat", hour=18, minute=5),
         },
     }
     sender.add_periodic_task(20.0, batch_update_payments_task.s(), name='batch update payments every 20 seconds')

@@ -199,6 +199,15 @@ def create_product(
             status_code=400, detail=f"{product.sku} is already listed",
         )
 
+    # Numerai API
+    try:
+        crud.user.get_numerai_api_user_info(public_id=current_user.numerai_api_key_public_id,
+                                            secret_key=current_user.numerai_api_key_secret)
+    except Exception:
+        raise HTTPException(
+            status_code=400, detail="Numerai API Error: Insufficient Permission."
+        )
+
     # Model ownership
     model = crud.model.get_by_name(db, name=product_in.name)
     if not model:
