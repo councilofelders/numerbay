@@ -128,7 +128,7 @@
                       value="true"
                       label="On-Platform"
                       details="Sell natively on NumerBay for cryptocurrency"
-                      description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution. [Coming Soon...]"
+                      description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution."
                       v-model="form.isOnPlatform"
                       @change="onPlatformChange(form.isOnPlatform)"
                       class="form__radio"
@@ -152,7 +152,8 @@
                         name="currency"
                         value="NMR"
                         label="NMR"
-                        :details="`Payments are sent to your Numerai wallet: ${user.numerai_wallet_address}`"
+                        :details="`Payments go to your Numerai wallet ${user.numerai_wallet_address} by default`"
+                        description="Alternatively, specify a compatible wallet below"
                         v-model="form.currency"
                         class="form__radio"
                       >
@@ -185,6 +186,17 @@
                       />-->
                     </ValidationProvider>
                   </div>
+                  <ValidationProvider v-slot="{ errors }">
+                    <SfInput
+                      v-e2e="'listing-modal-price'"
+                      v-model="form.wallet"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="price"
+                      :label="`(Optional) Alternative Wallet for Receiving Payments`"
+                      class="form__element"
+                    />
+                  </ValidationProvider>
                   <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
                     <SfInput
                       v-e2e="'listing-modal-price'"
@@ -420,8 +432,10 @@ export default {
     onPlatformChange(isOnPlatform) {
       if (isOnPlatform === 'true') {
         this.form.currency = 'NMR';
+        this.form.wallet = this.currentListing ? this.currentListing.wallet : null;
       } else {
         this.form.currency = 'USD';
+        this.form.wallet = null;
       }
     },
     onIsPerpetualChange(isPerpetual) {
@@ -462,6 +476,7 @@ export default {
       expirationRound: productGetters.getExpirationRound(product),
       isOnPlatform: product ? String(product.is_on_platform) : 'true', // todo turnkey rollout
       currency: product ? product.currency : 'NMR',
+      wallet: product ? product.wallet : null,
       thirdPartyUrl: product ? product.third_party_url : null
     });
     const form = ref(resetForm(currentListing));

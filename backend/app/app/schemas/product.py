@@ -13,6 +13,7 @@ class ProductBase(BaseModel):
     is_on_platform: Optional[bool] = True
     price: Optional[Decimal] = None
     currency: Optional[str] = None
+    wallet: Optional[str] = None
     chain: Optional[str] = None
     avatar: Optional[HttpUrl] = None
     third_party_url: Optional[HttpUrl] = None

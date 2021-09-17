@@ -168,7 +168,7 @@
               @click:wishlist="addItemToWishlist({ product })"
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
             >
-              <template #price="{price}">{{ price }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
+              <template #price="{regularPrice}">{{ regularPrice }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
                                      data-emoji="glitch_black" title="Gas-free NMR payment"
                                      v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
               </template>

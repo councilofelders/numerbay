@@ -19,6 +19,7 @@ class Product(Base):
     is_on_platform = Column(Boolean, nullable=False, default=True, server_default="f")
     price = Column(Numeric, index=True, nullable=False)
     currency = Column(String, nullable=False, default="USD", server_default="USD")
+    wallet = Column(String, nullable=True)
     chain = Column(String)
     avatar = Column(String)
     third_party_url = Column(String)

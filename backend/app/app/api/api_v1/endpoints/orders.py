@@ -67,6 +67,12 @@ def create_order(
     if product.owner_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
+    # Own address
+    from_address = current_user.numerai_wallet_address
+    to_address = product.wallet if product.wallet else product.owner.numerai_wallet_address
+    if from_address == to_address:
+        raise HTTPException(status_code=400, detail="You cannot buy your own product")
+
     # Duplicate order
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
     existing_order = crud.order.search(
@@ -87,8 +93,8 @@ def create_order(
             price=product.price,
             currency=product.currency,
             chain=product.chain,
-            from_address=current_user.numerai_wallet_address,
-            to_address=product.owner.numerai_wallet_address,
+            from_address=from_address,
+            to_address=to_address,
             product_id=id,
             date_order=datetime.utcnow(),
             round_order=selling_round,
