@@ -24,6 +24,9 @@
       <div v-else>
         <p class="message">
           {{ $t('Details and status of orders') }}
+          <SfButton class="sf-button color-secondary" @click="refresh" :disabled="loading">
+            Refresh
+          </SfButton>
         </p>
         <div v-if="orders.length === 0" class="no-orders">
           <p class="no-orders__title">{{ $t('You currently have no orders') }}</p>
@@ -96,6 +99,11 @@ export default {
     SfLink,
     OrderInfoPanel
   },
+  methods: {
+    refresh() {
+      this.search({ role: 'buyer' });
+    }
+  },
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
       if (this.currentOrder) {
@@ -119,7 +127,7 @@ export default {
     next();
   },
   setup() {
-    const { orders, search } = useUserOrder('order-history');
+    const { orders, search, loading } = useUserOrder('order-history');
     const currentOrder = ref(null);
 
     onSSR(async () => {
@@ -176,6 +184,7 @@ export default {
       orders: computed(() => orders?.value?.data ? orders.value?.data : []),
       orderGetters,
       search,
+      loading,
       handleRefreshClick,
       getStatusTextClass,
       downloadOrder,
@@ -215,6 +224,9 @@ export default {
 .message {
   margin: 0 0 var(--spacer-xl) 0;
   font: var(--font-weight--light) var(--font-size--base) / 1.6 var(--font-family--primary);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   &__link {
     color: var(--c-primary);
     font-weight: var(--font-weight--medium);

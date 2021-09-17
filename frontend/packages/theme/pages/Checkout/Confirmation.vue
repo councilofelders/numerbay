@@ -68,7 +68,7 @@ export default {
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
       console.log('status: ', this.orderStatus);
-      if (this.orderStatus.value !== 'pending') {
+      if (this.orderStatus !== 'pending' && this.orderStatus !== 'unknown') {
         clearInterval(this.orderPollingTimer);
         await this.$router.push('/my-account/order-history');
         return;
@@ -95,7 +95,7 @@ export default {
     const orderStatus = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]));
     const isPaymentConfirmed = computed(() => orderGetters.getStatus((orders?.value?.data || [])[0]) === 'confirmed');
 
-    if (orderStatus.value !== 'pending') {
+    if (orderStatus.value !== 'pending' && orderStatus.value !== 'unknown') {
       context.root.$router.push('/my-account/order-history');
     }
 
