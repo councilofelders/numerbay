@@ -66,7 +66,9 @@
     </LazyHydrate>-->
 
     <LazyHydrate when-visible>
-      <iframe width="100%" height="747" :src="iframe.src" frameborder="0" allowFullScreen="true" v-if="iframe.loaded"></iframe>
+      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded">
+        <iframe width="100%" height="747" :src="iframe.src" frameborder="0" allowFullScreen="true" v-if="iframe.loaded"></iframe>
+      </SfLoader>
     </LazyHydrate>
 
     <LazyHydrate when-visible>
@@ -93,7 +95,8 @@ import {
   SfBannerGrid,
   SfHeading,
   SfArrow,
-  SfButton
+  SfButton,
+  SfLoader
 } from '@storefront-ui/vue';
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
@@ -115,6 +118,7 @@ export default {
     SfHeading,
     SfArrow,
     SfButton,
+    SfLoader,
     MobileStoreBanner,
     LazyHydrate
   },

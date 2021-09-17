@@ -252,7 +252,7 @@
             />
           </LazyHydrate>
 
-          <div
+          <!--<div
             v-show="pagination.totalPages > 1"
             class="products__show-on-page"
           >
@@ -273,7 +273,7 @@
                 </SfSelectOption>
               </SfSelect>
             </LazyHydrate>
-          </div>
+          </div>-->
         </div>
       </SfLoader>
     </div>
