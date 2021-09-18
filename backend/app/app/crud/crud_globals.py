@@ -62,6 +62,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
             )
             db.add(instance)
             db.commit()
+            db.refresh(instance)
             return instance
 
     def update_singleton(self, db: Session) -> Globals:
