@@ -1,0 +1,17 @@
+<mjml>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555" font-family="helvetica">{{ project_name }} - New Order</mj-text>
+        <mj-text font-size="16px" color="#555">Hi {{ username }}, thank you for your order. Please complete your payment <b>within 15 minutes</b> of ordering before the order expires:</mj-text>
+        <mj-text font-size="16px" color="#555">Time of Order: {{ date_order }}</mj-text>
+        <mj-text font-size="16px" color="#555">Product: {{ product }}</mj-text>
+        <mj-text font-size="16px" color="#555">Seller Address: <b>{{ to_address }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Amount: <b>{{ amount }} {{ currency }}</b></mj-text>
+        <mj-button padding="50px 0px" href="{{ link }}">Go to My Orders</mj-button>
+        <mj-divider border-color="#555" border-width="2px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

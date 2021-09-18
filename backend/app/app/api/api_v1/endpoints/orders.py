@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import Any, Dict, List, Union
 
+from app.core.config import settings
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.utils import send_new_order_email
 
 router = APIRouter()
 
@@ -104,6 +106,15 @@ def create_order(
         order = crud.order.create_with_buyer(
             db=db, obj_in=order_in, buyer_id=current_user.id
         )
+
+        if settings.EMAILS_ENABLED and current_user.email:
+            print(f'pasword: {settings.SMTP_PASSWORD}')
+            send_new_order_email(
+                email_to=current_user.email, username=current_user.username, date_order=order.date_order,
+                product=product.sku,
+                to_address=to_address, amount=product.price,
+                currency=product.currency   # type: ignore
+            )
         return order
     return None
 

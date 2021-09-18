@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -82,6 +83,29 @@ def send_new_account_email(email_to: str, username: str, password: str) -> None:
             "username": username,
             "password": password,
             "email": email_to,
+            "link": link,
+        },
+    )
+
+
+def send_new_order_email(email_to: str, username: str, date_order: datetime, product: str, to_address: str, amount: Decimal, currency: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New order for user {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_order.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST+'/my-account/order-history'
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": 'NumerBay',
+            "username": username,
+            "date_order": date_order,
+            "product": product,
+            "to_address": to_address,
+            "amount": amount,
+            "currency": currency,
             "link": link,
         },
     )
