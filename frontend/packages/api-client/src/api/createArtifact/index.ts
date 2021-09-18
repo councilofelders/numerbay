@@ -9,7 +9,7 @@ export default async function createArtifact(context, params, customQuery?: Cust
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
-    url: params.name,
+    url: params.url,
     description: params.description
   };
 

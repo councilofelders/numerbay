@@ -102,7 +102,7 @@
       </SfTableHeading>
       <SfTableRow v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
         <SfTableData>{{ artifactGetters.getId(artifact) }}</SfTableData>
-        <SfTableData>{{ artifactGetters.getObjectName(artifact) }}</SfTableData>
+        <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
         <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
@@ -148,6 +148,11 @@ export default {
       }
     },
     async download(artifact) {
+      if (!artifact.object_name && artifact.url) {
+        window.open(artifact.url, '_blank');
+        return;
+      }
+
       const downloadUrl = await this.downloadArtifact({productId: this.order.product.id, artifactId: artifact.id});
       const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
       const link = document.createElement('a');

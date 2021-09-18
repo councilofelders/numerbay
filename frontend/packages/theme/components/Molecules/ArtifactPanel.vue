@@ -55,7 +55,19 @@
       </SfTableRow>
       <SfTableRow :key="'new'" v-if="isManualFormOpen">
         <SfTableData></SfTableData>
-        <SfTableData><SfInput v-model="form.url" style="margin-right: 10px" label="URL"></SfInput></SfTableData>
+        <SfTableData>
+          <ValidationObserver v-slot="{ handleSubmit }">
+            <ValidationProvider rules="url" v-slot="{ errors }">
+              <SfInput v-model="form.url"
+                       style="margin-right: 10px"
+                       label="URL"
+                       type="url"
+                       :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                       @change="encodeURL"></SfInput>
+            </ValidationProvider>
+          </ValidationObserver>
+        </SfTableData>
         <SfTableData><SfInput v-model="form.description" style="margin-right: 10px" label="Description"></SfInput></SfTableData>
         <SfTableData></SfTableData>
         <SfTableData class="orders__view orders__element--right">
@@ -77,12 +89,25 @@ import {
   artifactGetters,
   useProductArtifact
 } from '@vue-storefront/numerbay';
+import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // import { authHeaders } from '@vue-storefront/numerbay-api/src/api/utils';
 import Dropzone from '../../components/Molecules/Dropzone';
 import 'nuxt-dropzone/dropzone.css';
 import {computed, ref} from '@vue/composition-api';
 import {Logger} from '@vue-storefront/core';
 import debounce from 'lodash.debounce';
+
+extend('url', {
+  validate: (value) => {
+    if (value) {
+      // eslint-disable-next-line
+      return /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(value);
+    }
+
+    return false;
+  },
+  message: 'This must be a valid URL'
+});
 
 export default {
   name: 'ArtifactPanel',
@@ -93,7 +118,9 @@ export default {
     SfInput,
     SfLoader,
     SfTable,
-    Dropzone
+    Dropzone,
+    ValidationProvider,
+    ValidationObserver
   },
   data() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
@@ -153,14 +180,21 @@ export default {
       if (artifacts) {
         // this.$refs.foo.removeAllFiles(true);
         for (const artifact of artifacts.data) {
-          const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size };
-          const url = '';
-          this.$refs.foo.manuallyAddFile(file, url);
+          if (artifact.object_name) {
+            const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size };
+            const url = '';
+            this.$refs.foo.manuallyAddFile(file, url);
+          }
         }
       }
     }
   },
   methods: {
+    encodeURL() {
+      if (this.form.url) {
+        this.form.url = encodeURI(this.form.url);
+      }
+    },
     async handleEdit(value, product, artifact) {
       const onComplete = async () => {
         this.componentLoading = true;

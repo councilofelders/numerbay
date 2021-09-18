@@ -30,7 +30,7 @@ export const getDate = (artifact: any): string => artifact?.date_artifact ? arti
 export const getId = (artifact: any): string => artifact?.id || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getObjectName = (artifact: any): string => artifact?.object_name || 'unknown';
+export const getObjectName = (artifact: any): string => artifact?.object_name || artifact?.url || 'unknown';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getObjectSize = (artifact: any): string => artifact?.object_size ? humanFileSize(artifact?.object_size) : '-';

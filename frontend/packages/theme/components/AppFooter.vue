@@ -52,7 +52,7 @@ export default {
           children: [
             { name: 'Numerai', clickHandler: () => window.open('https://numer.ai/', '_blank') },
             { name: 'Signals', clickHandler: () => window.open('https://signals.numer.ai/', '_blank') },
-            { name: 'Forum', clickHandler: () => window.open('hhttps://forum.numer.ai/', '_blank') },
+            { name: 'Forum', clickHandler: () => window.open('https://forum.numer.ai/', '_blank') },
             { name: 'RocketChat', clickHandler: () => window.open('https://community.numer.ai/', '_blank') }
           ]
         },

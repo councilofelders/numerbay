@@ -340,6 +340,11 @@ def validate_new_artifact(product: models.Product, current_user: models.User, ur
             status_code=400, detail="You can either provide a URL or upload a file, but not both",
         )
 
+    if url and not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(
+            status_code=400, detail="Invalid URL",
+        )
+
     # todo filename suffix / desc validation
 
     # todo duplicate artifact
@@ -556,6 +561,9 @@ def generate_download_url(
     if not artifact:
         raise HTTPException(status_code=404,
                             detail="Artifact not found")
+    if not artifact.object_name:
+        raise HTTPException(status_code=400,
+                            detail="Artifact not an upload")
 
     action = 'GET'
     blob = bucket.blob(artifact.object_name)
