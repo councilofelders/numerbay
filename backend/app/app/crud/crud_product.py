@@ -165,6 +165,17 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     if len(platform_list) == 0:
                         platform_list = [True, False]
                     query_filters.append(Product.is_on_platform.in_(platform_list))
+                if filter_key == "status":
+                    with_active = 'active' in filter_item["in"]
+                    with_inactive = 'inactive' in filter_item["in"]
+                    status_list = []
+                    if with_active:
+                        status_list.append(True)
+                    if with_inactive:
+                        status_list.append(False)
+                    if len(status_list) == 0:
+                        status_list = [True, False]
+                    query_filters.append(Product.is_active.in_(status_list))
                 if filter_key == "user":
                     user_id_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Product.owner_id.in_(user_id_list))
@@ -274,6 +285,15 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         agg_stats = agg_query.one()
 
         aggregations = [
+            {
+                "attribute_code": "status",
+                "count": None,
+                "label": "Status",
+                "options": [
+                    {"label": "active", "value": True},
+                    {"label": "inactive", "value": False},
+                ],
+            },
             {
                 "attribute_code": "platform",
                 "count": None,

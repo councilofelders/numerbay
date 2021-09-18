@@ -294,7 +294,7 @@
                     @click="handleDeleteProduct"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">
-                      <div>{{ $t('Delete') }}</div>
+                      <div>{{ $t('Deactivate') }}</div>
                     </SfLoader>
                   </SfButton>
                 </div>

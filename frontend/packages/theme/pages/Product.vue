@@ -24,7 +24,7 @@
           <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
             Round: <span class="product__subheader__highlight" v-if="!globalsLoading">{{ globals.selling_round }}</span>
             <span class='divider-pipe'>|</span>
-            Seller: <span class="product__subheader__highlight">{{ product.owner.username.toUpperCase() }}</span>
+            Seller: <span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span>
             <span class='divider-pipe'>|</span>
             Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
             <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!!product.third_party_url">3rd Party</SfBadge>

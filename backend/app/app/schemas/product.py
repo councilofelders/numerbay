@@ -54,7 +54,7 @@ class ProductInDBBase(ProductBase):
 
 # Properties to return to client
 class Product(ProductInDBBase):
-    owner: ProductOwner
+    owner: Optional[ProductOwner] = None
     model: Optional[ModelSummary] = None
 
 

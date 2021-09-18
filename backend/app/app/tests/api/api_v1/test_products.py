@@ -47,10 +47,7 @@ def test_create_product(
     assert "id" in content
     assert "owner" in content
 
-    client.delete(
-        f"{settings.API_V1_STR}/products/{content['id']}",
-        headers=normal_user_token_headers,
-    )
+    crud.product.remove(db, id=content['id'])
     crud.model.remove(db, id=model.id)  # type: ignore
 
 
@@ -262,8 +259,5 @@ def test_update_product(
     content = response.json()
     assert content['category']['id'] == 3
 
-    client.delete(
-        f"{settings.API_V1_STR}/products/{content['id']}",
-        headers=normal_user_token_headers,
-    )
+    crud.product.remove(db, id=content['id'])
     crud.model.remove(db, id=product.model_id)  # type: ignore

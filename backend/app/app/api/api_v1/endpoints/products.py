@@ -283,7 +283,9 @@ def delete_product(
     Delete a product.
     """
     validate_existing_product(db, product_id=id, currend_user_id=current_user.id)
-    product = crud.product.remove(db=db, id=id)
+    # product = crud.product.remove(db=db, id=id)
+    product = crud.product.get(db, id=id)
+    crud.product.update(db, db_obj=product, obj_in={'is_active': False})  # todo soft deletion
     return product
 
 
