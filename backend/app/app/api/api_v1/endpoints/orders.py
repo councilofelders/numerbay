@@ -17,11 +17,9 @@ def search_orders(
     db: Session = Depends(deps.get_db),
     role: str = Body(None),
     id: int = Body(None),
-    # category_id: int = Body(None),
     skip: int = Body(None),
     limit: int = Body(None),
     filters: Dict = None,
-    # term: str = Body(None),
     sort: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -33,11 +31,9 @@ def search_orders(
         role=role,
         current_user_id=current_user.id,
         id=id,
-        # category_id=category_id,
         skip=skip,
         limit=limit,
         filters=filters,
-        # term=term,
         sort=sort,
     )
     return orders
@@ -58,6 +54,12 @@ def create_order(
     product = crud.product.get(db=db, id=id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    # Product on-platform
+    if not product.is_on_platform:
+        raise HTTPException(
+            status_code=400, detail="This product is not available for sale on-platform"
+        )
 
     # Product active
     if not product.is_active:  # todo handle expired api keys

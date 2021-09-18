@@ -364,7 +364,7 @@ def validate_existing_artifact(artifact: models.Artifact, product_id: int, selli
         )
 
     # artifact current round
-    if artifact.round_tournament != selling_round:
+    if artifact.product.category.is_per_round and artifact.round_tournament < selling_round:
         raise HTTPException(
             status_code=400, detail=f"Artifact expired",
         )
@@ -493,24 +493,6 @@ async def update_product_artifact(
     )
     return artifact
 
-    # from datetime import datetime
-    #
-    # body = b''
-    # read_first = False
-    # async for chunk in file.stream():
-    #     if not read_first:
-    #         print(f'{datetime.now()} Read the first 100 bytes')
-    #     read_first = True
-    #     body += chunk
-    #
-    # print(f'{datetime.now()} Read all the file')
-
-    # chunk = await file.read(100)
-    # print(f'{datetime.now()} Read the first 100 bytes')
-    #
-    # remaining = await file.read()
-    # print(f'{datetime.now()} Read all the file')
-
 
 def validate_buyer(product: models.Product, current_user: models.User, selling_round: int) -> bool:
     for order in current_user.orders:
@@ -535,7 +517,7 @@ def list_product_artifacts(
     if product.owner_id != current_user.id and not validate_buyer(product, current_user, selling_round):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    artifacts = crud.artifact.get_multi_by_product_round(db, product_id=product.id, round_tournament=selling_round)
+    artifacts = crud.artifact.get_multi_by_product_round(db, product=product, round_tournament=selling_round)
     return {'total': len(artifacts), 'data': artifacts}
 
 
