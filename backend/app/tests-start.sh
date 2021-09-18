@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 set -e
 
-#bash ./scripts/lint.sh
+bash ./scripts/lint.sh
 
 python /app/app/tests_pre_start.py
 

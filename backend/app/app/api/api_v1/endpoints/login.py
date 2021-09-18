@@ -112,7 +112,7 @@ def login_nonce(
         return {"nonce": nonce}
     if not user.nonce:
         # create nonce if none
-        crud.user.update(db, db_obj=user, obj_in={'nonce': secrets.token_hex(32)})
+        crud.user.update(db, db_obj=user, obj_in={"nonce": secrets.token_hex(32)})
     return {"nonce": user.nonce}
 
 
@@ -127,7 +127,9 @@ def login_nonce_authenticated(
     """
     if not current_user.nonce:
         # create nonce if none
-        crud.user.update(db, db_obj=current_user, obj_in={'nonce': secrets.token_hex(32)})
+        crud.user.update(
+            db, db_obj=current_user, obj_in={"nonce": secrets.token_hex(32)}
+        )
     return {"nonce": current_user.nonce}
 
 

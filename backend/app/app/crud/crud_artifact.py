@@ -1,7 +1,5 @@
 from typing import List
 
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 from app import models
@@ -22,10 +20,7 @@ class CRUDArtifact(CRUDBase[Artifact, ArtifactCreate, ArtifactUpdate]):
                 .all()
             )
         else:
-            return (
-                db.query(self.model)
-                .filter(Artifact.product_id == product.id)
-                .all()
-            )
+            return db.query(self.model).filter(Artifact.product_id == product.id).all()
+
 
 artifact = CRUDArtifact(Artifact)

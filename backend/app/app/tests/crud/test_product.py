@@ -50,16 +50,16 @@ def test_search_product(db: Session) -> None:
     )
     stored_product = crud.product.search(db=db, id=product.id)
     assert stored_product
-    assert stored_product['total'] == 1
-    assert product.name == stored_product['data'][0].name
+    assert stored_product["total"] == 1
+    assert product.name == stored_product["data"][0].name
 
     stored_product = crud.product.search(db=db, term=name[:5])
     assert stored_product
-    assert stored_product['total'] > 0
+    assert stored_product["total"] > 0
 
-    stored_product = crud.product.search(db=db, filters={'user': {'in': [user.id]}})
+    stored_product = crud.product.search(db=db, filters={"user": {"in": [user.id]}})
     assert stored_product
-    assert stored_product['total'] > 0
+    assert stored_product["total"] > 0
 
     crud.product.remove(db=db, id=product.id)
 
@@ -165,7 +165,7 @@ def test_expire_products(db: Session) -> None:
         description=description,
         is_on_platform=False,
         currency="USD",
-        expiration_round=280
+        expiration_round=280,
     )
     user = create_random_user(db)
     product = crud.product.create_with_owner(
@@ -181,7 +181,7 @@ def test_expire_products(db: Session) -> None:
 
     crud.product.bulk_expire(db, current_round=281)
     product3 = crud.product.get(db, id=product.id)
-    assert product.expiration_round == 280
+    assert product3
     assert not product3.is_active
 
     crud.product.remove(db=db, id=product.id)

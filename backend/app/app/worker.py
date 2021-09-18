@@ -111,5 +111,9 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "schedule": crontab(day_of_week="sat", hour=18, minute=5),
         },
     }
-    sender.add_periodic_task(20.0, batch_update_payments_task.s(), name='batch update payments every 20 seconds')
+    sender.add_periodic_task(
+        settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
+        batch_update_payments_task.s(),
+        name=f"batch update payments every {settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS} seconds",
+    )
     # todo turnkey rollout

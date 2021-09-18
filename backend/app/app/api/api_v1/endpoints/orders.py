@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Any, Dict, List, Union
 
-from app.core.config import settings
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.core.config import settings
 from app.utils import send_new_order_email
 
 router = APIRouter()
@@ -71,9 +71,16 @@ def create_order(
     if product.owner_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
-    # Own address
+    # Addresses
     from_address = current_user.numerai_wallet_address
-    to_address = product.wallet if product.wallet else product.owner.numerai_wallet_address
+    to_address = (
+        product.wallet if product.wallet else product.owner.numerai_wallet_address
+    )
+
+    if not to_address or not from_address:
+        raise HTTPException(status_code=400, detail="Invalid buyer / seller address")
+
+    # Own address
     if from_address == to_address:
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
@@ -110,12 +117,15 @@ def create_order(
         )
 
         if settings.EMAILS_ENABLED and current_user.email:
-            print(f'pasword: {settings.SMTP_PASSWORD}')
+            print(f"pasword: {settings.SMTP_PASSWORD}")
             send_new_order_email(
-                email_to=current_user.email, username=current_user.username, date_order=order.date_order,
+                email_to=current_user.email,
+                username=current_user.username,
+                date_order=order.date_order,
                 product=product.sku,
-                to_address=to_address, amount=product.price,
-                currency=product.currency   # type: ignore
+                to_address=to_address,
+                amount=product.price,
+                currency=product.currency,  # type: ignore
             )
         return order
     return None

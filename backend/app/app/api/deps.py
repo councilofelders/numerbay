@@ -4,10 +4,9 @@ from typing import Generator
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from google.cloud import storage
-from google.oauth2 import service_account
 from google.cloud.storage import Bucket
+from google.oauth2 import service_account
 from jose import jwt
-from libcloud.storage.base import StorageDriver
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -76,21 +75,26 @@ def get_current_active_superuser(
 
 
 def get_gcs_bucket() -> Bucket:
-    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
+    credentials = service_account.Credentials.from_service_account_info(
+        service_account_info
+    )
     client = storage.Client(credentials=credentials)
     bucket = client.get_bucket(settings.GCP_STORAGE_BUCKET)
-    bucket.cors = [
-        {
-            "origin": ["*"],
-            "responseHeader": [
-                "Content-Type", "Access-Control-Allow-Origin", "X-Requested-With",
-                "x-goog-resumable", 'cache-control'
-            ],
-            "method": ["GET", "PUT", "POST", "OPTIONS"],
-            "maxAgeSeconds": 3600
-        }
-    ]
-    bucket.patch()
+    # bucket.cors = [
+    #     {
+    #         "origin": ["*"],
+    #         "responseHeader": [
+    #             "Content-Type",
+    #             "Access-Control-Allow-Origin",
+    #             "X-Requested-With",
+    #             "x-goog-resumable",
+    #             "cache-control",
+    #         ],
+    #         "method": ["GET", "PUT", "POST", "OPTIONS"],
+    #         "maxAgeSeconds": 3600,
+    #     }
+    # ]
+    # bucket.patch()
     # print(f"{settings.GCP_STORAGE_BUCKET} Cors: {bucket.cors}")
     return bucket

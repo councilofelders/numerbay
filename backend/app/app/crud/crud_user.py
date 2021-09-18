@@ -26,7 +26,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         *,
         id: int = None,
         skip: int = 0,
-        limit: int = 100,
+        limit: int = None,
         filters: Dict = None,
         term: str = None,
         sort: str = None,

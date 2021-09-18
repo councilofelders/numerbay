@@ -47,7 +47,7 @@ def test_create_product(
     assert "id" in content
     assert "owner" in content
 
-    crud.product.remove(db, id=content['id'])
+    crud.product.remove(db, id=content["id"])
     crud.model.remove(db, id=model.id)  # type: ignore
 
 
@@ -78,7 +78,7 @@ def test_create_product_invalid_inputs(
 
     # nagative price
     data = base_data.copy()
-    data['price'] = -10
+    data["price"] = -10
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -88,7 +88,7 @@ def test_create_product_invalid_inputs(
 
     # nagative expiration_round
     data = base_data.copy()
-    data['expiration_round'] = -10
+    data["expiration_round"] = -10
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -98,7 +98,7 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform currency
     data = base_data.copy()
-    data['is_on_platform'] = True
+    data["is_on_platform"] = True
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -108,9 +108,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform price precision
     data = base_data.copy()
-    data['is_on_platform'] = True
-    data['currency'] = 'NMR'
-    data['price'] = 0.00001
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    data["price"] = 0.00001
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -120,7 +120,7 @@ def test_create_product_invalid_inputs(
 
     # invalid off-platform currency
     data = base_data.copy()
-    data['currency'] = 'NMR'
+    data["currency"] = "NMR"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -130,7 +130,7 @@ def test_create_product_invalid_inputs(
 
     # invalid off-platform precision
     data = base_data.copy()
-    data['price'] = 0.001
+    data["price"] = 0.001
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -140,7 +140,7 @@ def test_create_product_invalid_inputs(
 
     # invalid avatar scheme
     data = base_data.copy()
-    data['avatar'] = 'http://example.com'
+    data["avatar"] = "http://example.com"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -153,14 +153,14 @@ def test_create_product_invalid_inputs(
 
 def test_search_products(client: TestClient, db: Session) -> None:
     product = create_random_product(db)
-    response = client.post(f"{settings.API_V1_STR}/products/search", json={
-        'category_id': product.category_id,
-        'term': product.name[:5]
-    })
+    response = client.post(
+        f"{settings.API_V1_STR}/products/search",
+        json={"category_id": product.category_id, "term": product.name[:5]},
+    )
     assert response.status_code == 200
     content = response.json()
     assert content["total"] > 0
-    assert product.name == content['data'][0]['name']
+    assert product.name == content["data"][0]["name"]
 
     crud.product.remove(db, id=product.id)
 
@@ -185,7 +185,7 @@ def test_update_product(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user['id'])
+    product = create_random_product(db, owner_id=current_user["id"])
     data = dict()
 
     # product_name = random_lower_string()
@@ -216,7 +216,7 @@ def test_update_product(
     # assert content["name"] == data["name"]
 
     # update price
-    data['price'] = 20.5
+    data["price"] = 20.5
     response = client.put(
         f"{settings.API_V1_STR}/products/{product.id}",
         headers=normal_user_token_headers,
@@ -230,34 +230,34 @@ def test_update_product(
     assert "owner" in content
 
     # invalid attempt to change owner id
-    data['owner_id'] = current_user['id']+1
+    data["owner_id"] = current_user["id"] + 1
     response = client.put(
         f"{settings.API_V1_STR}/products/{content['id']}",
         headers=normal_user_token_headers,
         json=data,
     )
     content = response.json()
-    assert content['owner']['id'] == current_user['id']
+    assert content["owner"]["id"] == current_user["id"]
 
     # invalid attempt to change product name
-    data['name'] = random_lower_string()
+    data["name"] = random_lower_string()  # type: ignore
     response = client.put(
         f"{settings.API_V1_STR}/products/{content['id']}",
         headers=normal_user_token_headers,
         json=data,
     )
     content = response.json()
-    assert content['name'] == product.name
+    assert content["name"] == product.name
 
     # invalid attempt to change category id
-    data['category_id'] = 2
+    data["category_id"] = 2
     response = client.put(
         f"{settings.API_V1_STR}/products/{content['id']}",
         headers=normal_user_token_headers,
         json=data,
     )
     content = response.json()
-    assert content['category']['id'] == 3
+    assert content["category"]["id"] == 3
 
-    crud.product.remove(db, id=content['id'])
+    crud.product.remove(db, id=content["id"])
     crud.model.remove(db, id=product.model_id)  # type: ignore

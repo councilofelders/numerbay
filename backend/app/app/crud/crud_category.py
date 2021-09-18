@@ -25,7 +25,7 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         return db.query(descendants).all()
 
     def get_multi_by_slug(
-        self, db: Session, *, slug: str, skip: int = 0, limit: int = 100
+        self, db: Session, *, slug: str, skip: int = 0, limit: int = None
     ) -> List[Category]:
         return (
             db.query(self.model)

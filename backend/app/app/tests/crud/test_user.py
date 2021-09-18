@@ -88,13 +88,13 @@ def test_search_user(db: Session) -> None:
     user = crud.user.create(db, obj_in=user_in)
     user_results = crud.user.search(db, id=user.id)
     assert user_results
-    assert user_results['total'] == 1
-    assert user.username == user_results['data'][0].username
-    assert jsonable_encoder(user) == jsonable_encoder(user_results['data'][0])
+    assert user_results["total"] == 1
+    assert user.username == user_results["data"][0].username
+    assert jsonable_encoder(user) == jsonable_encoder(user_results["data"][0])
 
     user_results = crud.user.search(db, term=username[:5])
     assert user_results
-    assert user_results['total'] > 0
+    assert user_results["total"] > 0
 
     crud.user.remove(db, id=user.id)
 
@@ -134,7 +134,7 @@ def test_update_user_empty_username(db: Session) -> None:
     user_in = UserCreate(username=email, password=password)
     user = crud.user.create(db, obj_in=user_in)
 
-    crud.user.update(db, db_obj=user, obj_in={'username': None})
+    crud.user.update(db, db_obj=user, obj_in={"username": None})
     user_2 = crud.user.get(db, id=user.id)
     assert user_2
     assert user.username == user_2.username

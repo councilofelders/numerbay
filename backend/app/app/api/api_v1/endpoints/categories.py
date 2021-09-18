@@ -14,7 +14,7 @@ def read_categories(
     db: Session = Depends(deps.get_db),
     slug: str = None,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = None,
 ) -> Any:
     """
     Retrieve categories.

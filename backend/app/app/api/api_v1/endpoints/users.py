@@ -38,7 +38,12 @@ def create_user(
     """
     Create new user.
     """
-    if user_in.username is None or user_in.username == '' or user_in.password is None or user_in.password == '':
+    if (
+        user_in.username is None
+        or user_in.username == ""
+        or user_in.password is None
+        or user_in.password == ""
+    ):
         raise HTTPException(
             status_code=400, detail="Please specify username and password",
         )
@@ -95,9 +100,7 @@ def update_user_me(
         tmp_db = SessionLocal()
         numerai_api_updated = crud.user.update_numerai_api(tmp_db, user_json)
         if not numerai_api_updated:
-            raise HTTPException(
-                status_code=400, detail="Failed to update Numerai API"
-            )
+            raise HTTPException(status_code=400, detail="Failed to update Numerai API")
         result = crud.model.update_model(tmp_db, user_json=user_json)
         if not result:
             raise HTTPException(

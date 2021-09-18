@@ -1,9 +1,7 @@
 from datetime import datetime
-from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel, HttpUrl
-from app.schemas.product import Product
+from pydantic import BaseModel
 
 
 # Shared properties

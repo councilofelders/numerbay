@@ -92,7 +92,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         return db.query(self.model).filter(Product.sku == sku).first()
 
     def get_multi_by_owner(
-        self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100
+        self, db: Session, *, owner_id: int, skip: int = 0, limit: int = None
     ) -> List[Product]:
         return (
             db.query(self.model)
@@ -103,7 +103,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         )
 
     def get_multi_by_category(
-        self, db: Session, *, category_id: int, skip: int = 0, limit: int = 100
+        self, db: Session, *, category_id: int, skip: int = 0, limit: int = None
     ) -> List[Product]:
         all_child_categories = crud.category.get_all_subcategories(
             db, category_id=category_id
@@ -133,7 +133,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         id: int = None,
         category_id: int = None,
         skip: int = 0,
-        limit: int = 100,
+        limit: int = None,
         filters: Dict = None,
         term: str = None,
         sort: str = None,
@@ -155,8 +155,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         if isinstance(filters, dict):
             for filter_key, filter_item in filters.items():
                 if filter_key == "platform":
-                    with_on_platform = 'on-platform' in filter_item["in"]
-                    with_off_platform = 'off-platform' in filter_item["in"]
+                    with_on_platform = "on-platform" in filter_item["in"]
+                    with_off_platform = "off-platform" in filter_item["in"]
                     platform_list = []
                     if with_on_platform:
                         platform_list.append(True)
@@ -166,8 +166,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                         platform_list = [True, False]
                     query_filters.append(Product.is_on_platform.in_(platform_list))
                 if filter_key == "status":
-                    with_active = 'active' in filter_item["in"]
-                    with_inactive = 'inactive' in filter_item["in"]
+                    with_active = "active" in filter_item["in"]
+                    with_inactive = "inactive" in filter_item["in"]
                     status_list = []
                     if with_active:
                         status_list.append(True)

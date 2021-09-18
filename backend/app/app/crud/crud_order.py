@@ -10,6 +10,7 @@ from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.product import Product
@@ -35,7 +36,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         return db_obj
 
     def get_multi_by_state(
-        self, db: Session, *, state: str, skip: int = 0, limit: int = 100
+        self, db: Session, *, state: str, skip: int = 0, limit: int = None
     ) -> List[Order]:
         return (
             db.query(self.model)
@@ -54,7 +55,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         id: int = None,
         # category_id: int = None,
         skip: int = 0,
-        limit: int = 100,
+        limit: int = None,
         filters: Dict = None,
         # term: str = None,
         sort: str = None,
@@ -148,10 +149,13 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     for transaction in numerai_wallet_transactions:
                         time = (
                             pd.to_datetime(transaction["time"])
-                                .tz_localize(None)
-                                .to_pydatetime()
+                            .tz_localize(None)
+                            .to_pydatetime()
                         )
-                        if time < pd.to_datetime(order_json["date_order"]).to_pydatetime():
+                        if (
+                            time
+                            < pd.to_datetime(order_json["date_order"]).to_pydatetime()
+                        ):
                             continue
                         if transaction["to"] == order_json["to_address"]:
                             print(
@@ -163,9 +167,9 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                             if order_obj:
                                 order_obj.transaction_hash = transaction["txHash"]
                                 if (
-                                        Decimal(transaction["amount"])
-                                        >= Decimal(order_obj.price)
-                                        and transaction["status"] == "confirmed"
+                                    Decimal(transaction["amount"])
+                                    >= Decimal(order_obj.price)
+                                    and transaction["status"] == "confirmed"
                                 ):
                                     order_obj.state = "confirmed"
                                 db.commit()
@@ -174,7 +178,12 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 except Exception:
                     pass
                 # expiration
-                if order_obj and order_obj.state != "confirmed" and datetime.now()-order_obj.date_order > timedelta(minutes=15):
+                if (
+                    order_obj
+                    and order_obj.state != "confirmed"
+                    and datetime.now() - order_obj.date_order
+                    > timedelta(minutes=settings.PENDING_ORDER_EXPIRE_MINUTES)
+                ):
                     print(f"Order {order_json['id']} expired")
                     order_obj.state = "expired"
                     db.commit()
@@ -182,13 +191,13 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
 
             else:  # invalid buyer
                 if order_obj:
-                    order_obj.state = 'invalid_buyer'
+                    order_obj.state = "invalid_buyer"
                 db.commit()
                 db.refresh(order_obj)
             return
         else:
             if order_obj:
-                order_obj.state = 'invalid_currency'
+                order_obj.state = "invalid_currency"
             db.commit()
             db.refresh(order_obj)
             return

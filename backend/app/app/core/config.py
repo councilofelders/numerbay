@@ -88,6 +88,12 @@ class Settings(BaseSettings):
     # GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
     GCP_SERVICE_ACCOUNT_INFO: Optional[str] = None
 
+    # NumerBay
+    PENDING_ORDER_EXPIRE_MINUTES: int = 15
+    ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES: int = 10
+    ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES: int = 10
+    ORDER_PAYMENT_POLL_FREQUENCY_SECONDS: float = 20.0
+
     class Config:
         case_sensitive = True
 

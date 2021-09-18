@@ -1,21 +1,17 @@
-import json
-import os
 import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Union, Iterator
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
-from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, File, status, Form
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
 from google.api_core.exceptions import NotFound
 from google.cloud.storage import Bucket
-from libcloud.storage.base import StorageDriver, Object
 from sqlalchemy.orm import Session
-from fastapi.responses import JSONResponse, StreamingResponse
 
 from app import crud, models, schemas
-from app.core.config import settings
 from app.api import deps
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -148,7 +144,9 @@ def validate_product_input(
     return product_in
 
 
-def validate_existing_product(db: Session, product_id: int, currend_user_id: int) -> models.Product:
+def validate_existing_product(
+    db: Session, product_id: int, currend_user_id: int
+) -> models.Product:
     product = crud.product.get(db=db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -201,8 +199,15 @@ def create_product(
 
     # Numerai API
     try:
-        crud.user.get_numerai_api_user_info(public_id=current_user.numerai_api_key_public_id,
-                                            secret_key=current_user.numerai_api_key_secret)
+        if (
+            not current_user.numerai_api_key_public_id
+            or not current_user.numerai_api_key_secret
+        ):
+            raise ValueError
+        crud.user.get_numerai_api_user_info(
+            public_id=current_user.numerai_api_key_public_id,
+            secret_key=current_user.numerai_api_key_secret,
+        )
     except Exception:
         raise HTTPException(
             status_code=400, detail="Numerai API Error: Insufficient Permission."
@@ -243,7 +248,9 @@ def update_product(
     #         status_code=400, detail="On-platform listing is not yet available",
     #     )
 
-    product = validate_existing_product(db, product_id=id, currend_user_id=current_user.id)
+    product = validate_existing_product(
+        db, product_id=id, currend_user_id=current_user.id
+    )
 
     product_in = validate_product_input(db, product_in)  # type: ignore
 
@@ -282,10 +289,14 @@ def delete_product(
     """
     Delete a product.
     """
-    validate_existing_product(db, product_id=id, currend_user_id=current_user.id)
+    product = validate_existing_product(
+        db, product_id=id, currend_user_id=current_user.id
+    )
     # product = crud.product.remove(db=db, id=id)
-    product = crud.product.get(db, id=id)
-    crud.product.update(db, db_obj=product, obj_in={'is_active': False})  # todo soft deletion
+    # product = crud.product.get(db, id=id)
+    crud.product.update(
+        db, db_obj=product, obj_in={"is_active": False}
+    )  # todo soft deletion
     return product
 
 
@@ -306,27 +317,33 @@ def delete_product(
 #     return download_obj
 
 
-def get_object_name(sku: str, selling_round: str, original_filename: str, override_filename: str = None):
+def get_object_name(
+    sku: str, selling_round: int, original_filename: str, override_filename: str = None
+) -> str:
     file_ext = Path(original_filename).suffix
-    object_name = f"{sku}_{selling_round}_{uuid.uuid4().hex}"
+    object_name = f"{sku}_{str(selling_round)}_{uuid.uuid4().hex}"
     if override_filename:
         object_name += f"_{override_filename}"
     object_name += file_ext
     return object_name
 
 
-def validate_new_artifact(product: models.Product, current_user: models.User, url: str = None,
-                              filename: str = None):
+def validate_new_artifact(
+    product: Optional[models.Product],
+    current_user: models.User,
+    url: str = None,
+    filename: str = None,
+) -> None:
     # Product exists
     if not product:
         raise HTTPException(
-            status_code=404, detail=f"Product not found",
+            status_code=404, detail="Product not found",
         )
 
     # Product ownership
     if product.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail=f"Not enough permissions",
+            status_code=403, detail="Not enough permissions",
         )
 
     # Input validation
@@ -337,7 +354,8 @@ def validate_new_artifact(product: models.Product, current_user: models.User, ur
 
     if url and filename:
         raise HTTPException(
-            status_code=400, detail="You can either provide a URL or upload a file, but not both",
+            status_code=400,
+            detail="You can either provide a URL or upload a file, but not both",
         )
 
     if url and not (url.startswith("http://") or url.startswith("https://")):
@@ -350,27 +368,33 @@ def validate_new_artifact(product: models.Product, current_user: models.User, ur
     # todo duplicate artifact
 
 
-def validate_existing_artifact(artifact: models.Artifact, product_id: int, selling_round: int):
+def validate_existing_artifact(
+    artifact: Optional[models.Artifact], product_id: int, selling_round: int
+) -> models.Artifact:
     # artifact exists
     if not artifact:
         raise HTTPException(
-            status_code=404, detail=f"Artifact not found",
+            status_code=404, detail="Artifact not found",
         )
 
     # artifact belongs to product
     if artifact.product_id != product_id:
         raise HTTPException(
-            status_code=400, detail=f"Invalid artifact ID for product",
+            status_code=400, detail="Invalid artifact ID for product",
         )
 
     # artifact current round
-    if artifact.product.category.is_per_round and artifact.round_tournament < selling_round:
+    if (
+        artifact.product.category.is_per_round  # type: ignore
+        and artifact.round_tournament < selling_round  # type: ignore
+    ):
         raise HTTPException(
-            status_code=400, detail=f"Artifact expired",
+            status_code=400, detail="Artifact expired",
         )
+    return artifact
 
 
-@router.post('/{product_id}/artifacts/generate-upload-url')
+@router.post("/{product_id}/artifacts/generate-upload-url")
 def generate_upload_url(
     *,
     product_id: int,
@@ -381,26 +405,39 @@ def generate_upload_url(
     description: str = Form(None),
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(product=product, current_user=current_user, url=None, filename=filename)
+    validate_new_artifact(
+        product=product, current_user=current_user, url=None, filename=filename
+    )
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
-    object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=filename,
-                                      override_filename=filename_suffix)
+    object_name = get_object_name(
+        sku=product.sku,  # type: ignore
+        selling_round=selling_round,
+        original_filename=filename,
+        override_filename=filename_suffix,
+    )
 
     if not action:
-        action = 'PUT'
-    if action.upper() not in ['PUT', 'POST']:
-        raise HTTPException(status_code=400, detail="Action type must be either PUT or POST for uploads")
+        action = "PUT"
+    if action.upper() not in ["PUT", "POST"]:
+        raise HTTPException(
+            status_code=400, detail="Action type must be either PUT or POST for uploads"
+        )
     blob = bucket.blob(object_name)
     url = blob.generate_signed_url(
-        expiration=timedelta(minutes=10),
-        content_type='application/octet-stream',
-        bucket_bound_hostname=('https://storage.numerbay.ai' if settings.GCP_STORAGE_BUCKET == 'storage.numerbay.ai'
-                               else None),
-        method=action, version="v4")
+        expiration=timedelta(minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES),
+        content_type="application/octet-stream",
+        bucket_bound_hostname=(
+            "https://storage.numerbay.ai"
+            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
+            else None
+        ),
+        method=action,
+        version="v4",
+    )
 
     # Create artifact
     artifact_in = schemas.ArtifactCreate(
@@ -410,18 +447,18 @@ def generate_upload_url(
         description=description,
         url=None,
         object_name=object_name,
-        object_size=filesize
+        object_size=filesize,
     )
-    artifact = crud.artifact.create(
-        db=db, obj_in=artifact_in
-    )
+    artifact = crud.artifact.create(db=db, obj_in=artifact_in)
     if not artifact:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Failed to create artifact")
-    return {'id': artifact.id, 'url': url}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create artifact",
+        )
+    return {"id": artifact.id, "url": url}
 
 
-@router.post('/{product_id}/artifacts', response_model=schemas.Artifact)
+@router.post("/{product_id}/artifacts", response_model=schemas.Artifact)
 async def create_product_artifact(
     *,
     product_id: int,
@@ -433,7 +470,9 @@ async def create_product_artifact(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(product=product, current_user=current_user, url=url, filename=None)
+    validate_new_artifact(
+        product=product, current_user=current_user, url=url, filename=None
+    )
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
@@ -446,13 +485,11 @@ async def create_product_artifact(
         url=url,
         # object_name=object_name,
     )
-    artifact = crud.artifact.create(
-        db=db, obj_in=artifact_in
-    )
+    artifact = crud.artifact.create(db=db, obj_in=artifact_in)
     return artifact
 
 
-@router.put('/{product_id}/artifacts/{artifact_id}')
+@router.put("/{product_id}/artifacts/{artifact_id}")
 async def update_product_artifact(
     *,
     product_id: int,
@@ -463,13 +500,17 @@ async def update_product_artifact(
     db: Session = Depends(deps.get_db),
     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
-):
+) -> Any:
     print(description)
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(product=product, current_user=current_user, url=url, filename=filename)
+    validate_new_artifact(
+        product=product, current_user=current_user, url=url, filename=filename
+    )
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
     artifact = crud.artifact.get(db, id=artifact_id)
-    validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
+    artifact = validate_existing_artifact(
+        artifact=artifact, product_id=product_id, selling_round=selling_round
+    )
 
     # object_name = None
     # if file_obj:
@@ -482,26 +523,33 @@ async def update_product_artifact(
 
     # Update artifact
     artifact_dict = {}
-    artifact_dict['description'] = description
+    artifact_dict["description"] = description
     if url:
-        artifact_dict['url'] = url
+        artifact_dict["url"] = url
     # if file_obj:
     #     artifact_dict['object_name'] = object_name
 
-    artifact = crud.artifact.update(
-        db=db, db_obj=artifact, obj_in=artifact_dict
-    )
+    artifact = crud.artifact.update(db=db, db_obj=artifact, obj_in=artifact_dict)
     return artifact
 
 
-def validate_buyer(product: models.Product, current_user: models.User, selling_round: int) -> bool:
-    for order in current_user.orders:
-        if order.round_order == selling_round and order.product_id == product.id and order.state == 'confirmed':
+def validate_buyer(
+    product: models.Product, current_user: models.User, selling_round: int
+) -> bool:
+    for order in current_user.orders:  # type: ignore
+        if (
+            order.round_order == selling_round
+            and order.product_id == product.id
+            and order.state == "confirmed"
+        ):
             return True
     return False
 
 
-@router.get('/{product_id}/artifacts', response_model=Dict[str, Union[int, List[schemas.Artifact]]])
+@router.get(
+    "/{product_id}/artifacts",
+    response_model=Dict[str, Union[int, List[schemas.Artifact]]],
+)
 def list_product_artifacts(
     *,
     product_id: int,
@@ -514,47 +562,56 @@ def list_product_artifacts(
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
-    if product.owner_id != current_user.id and not validate_buyer(product, current_user, selling_round):
+    if product.owner_id != current_user.id and not validate_buyer(
+        product, current_user, selling_round
+    ):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    artifacts = crud.artifact.get_multi_by_product_round(db, product=product, round_tournament=selling_round)
-    return {'total': len(artifacts), 'data': artifacts}
+    artifacts = crud.artifact.get_multi_by_product_round(
+        db, product=product, round_tournament=selling_round
+    )
+    return {"total": len(artifacts), "data": artifacts}
 
 
-@router.get('/{product_id}/artifacts/{artifact_id}/generate-download-url')
+@router.get("/{product_id}/artifacts/{artifact_id}/generate-download-url")
 def generate_download_url(
     *,
     product_id: int,
     artifact_id: int,
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     product = crud.product.get(db=db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
-    if product.owner_id != current_user.id and not validate_buyer(product, current_user, selling_round):
+    if product.owner_id != current_user.id and not validate_buyer(
+        product, current_user, selling_round
+    ):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     artifact = crud.artifact.get(db, id=artifact_id)
     if not artifact:
-        raise HTTPException(status_code=404,
-                            detail="Artifact not found")
+        raise HTTPException(status_code=404, detail="Artifact not found")
     if not artifact.object_name:
-        raise HTTPException(status_code=400,
-                            detail="Artifact not an upload")
+        raise HTTPException(status_code=400, detail="Artifact not an upload")
 
-    action = 'GET'
+    action = "GET"
     blob = bucket.blob(artifact.object_name)
     url = blob.generate_signed_url(
-        expiration=timedelta(minutes=10),
+        expiration=timedelta(minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES),
         # content_type='application/octet-stream',
-        bucket_bound_hostname=('https://storage.numerbay.ai' if settings.GCP_STORAGE_BUCKET == 'storage.numerbay.ai'
-                               else None),
-        method=action, version="v4")
+        bucket_bound_hostname=(
+            "https://storage.numerbay.ai"
+            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
+            else None
+        ),
+        method=action,
+        version="v4",
+    )
     return url
 
 
@@ -581,7 +638,7 @@ def generate_download_url(
 #         return artifact
 
 
-@router.delete('/{product_id}/artifacts/{artifact_id}', response_model=schemas.Artifact)
+@router.delete("/{product_id}/artifacts/{artifact_id}", response_model=schemas.Artifact)
 def delete_product_artifact(
     *,
     product_id: int,
@@ -594,11 +651,15 @@ def delete_product_artifact(
     Delete an artifact.
     """
     # product ownership
-    validate_existing_product(db, product_id=product_id, currend_user_id=current_user.id)
+    validate_existing_product(
+        db, product_id=product_id, currend_user_id=current_user.id
+    )
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
     artifact = crud.artifact.get(db, id=artifact_id)
-    validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
+    validate_existing_artifact(
+        artifact=artifact, product_id=product_id, selling_round=selling_round
+    )
 
     artifact = crud.artifact.remove(db=db, id=artifact_id)
     object_name = artifact.object_name

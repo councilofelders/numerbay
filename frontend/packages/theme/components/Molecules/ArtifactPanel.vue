@@ -149,7 +149,7 @@ export default {
         parallelUploads: 1,
         createImageThumbnails: false,
         maxFilesize: 200,
-        acceptedFiles: '.txt,.csv,.parquet,.zip,.ipynb,.docx',
+        acceptedFiles: '.txt,.csv,.parquet,.zip,.ipynb',
         // renameFile(file) {
         //   return file.renameFilename = `${vm.product.sku}_${'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx'.replace(/[x]/g, () => {
         //     const random = Math.floor(Math.random() * 16);
