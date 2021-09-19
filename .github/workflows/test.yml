@@ -69,8 +69,8 @@ jobs:
       - name: Test backend
         run: sh ./scripts/test.sh
         env:
-          GCP_STORAGE_BUCKET=storage.test.numerbay.ai
-          GCP_SERVICE_ACCOUNT_INFO=${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
+          GCP_STORAGE_BUCKET: storage.test.numerbay.ai
+          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
 
   # frontend jobs
   frontend-prepare-dependencies:
