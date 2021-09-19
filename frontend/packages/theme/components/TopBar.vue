@@ -1,7 +1,7 @@
 <template>
   <SfTopBar class="topbar">
     <template #left>
-      <p>NumerBay is under active development, features will change without prior notice.</p>
+      <p>NumerBay is in beta, please be careful. Neither Numerai nor NumerBay is responsible for any loss</p>
     </template>
     <!--<template #center>
     </template>-->

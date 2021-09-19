@@ -64,7 +64,7 @@
         <SfCheckbox v-e2e="'terms'" v-model="terms" name="terms" class="summary__terms">
           <template #label>
             <div class="sf-checkbox__label">
-              I understand my <b>payment goes directly to the seller</b>, and <b>NumerBay is not liable for any loss</b> resulted from this transaction.
+              I understand that I need to make payment in <b>1 single transaction in full that goes directly to the seller</b>, and <b>neither Numerai nor NumerBay is liable for any loss</b> resulted from this transaction.
             </div>
           </template>
         </SfCheckbox>

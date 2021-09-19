@@ -111,7 +111,7 @@ export default {
         {
           title: 'Delivery',
           description:
-            'You’ll receive dispatch confirmation when seller uploads the item',
+            'You’ll be able to download artifacts when seller uploads the item',
           icon: 'shipping'
         }
       ]
