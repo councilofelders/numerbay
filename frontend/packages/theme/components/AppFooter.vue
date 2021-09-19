@@ -44,7 +44,9 @@ export default {
         aboutNumerbay: {
           name: 'About NumerBay',
           children: [
-            { name: 'Sponsor: Numerai Council of Elders', link: '#' }
+            { name: 'Sponsor: Numerai Council of Elders', link: '#' },
+            { name: 'API Docs (Swagger)', clickHandler: () => window.open('https://numerbay.ai/docs', '_blank') },
+            { name: 'API Docs (ReDoc)', clickHandler: () => window.open('https://numerbay.ai/redoc', '_blank') }
           ]
         },
         officialNumerai: {

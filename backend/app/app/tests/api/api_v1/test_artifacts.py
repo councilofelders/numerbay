@@ -16,7 +16,7 @@ def test_generate_upload_url(
     product_id = product.id
     artifact_data = {
         "filename": "test.txt",  # todo file format requirements
-        "action0": "PUT",
+        "action": "PUT",
     }
 
     r = client.post(
@@ -48,7 +48,7 @@ def test_generate_download_url(
     product_id = product.id
     artifact_data = {
         "filename": "test.txt",  # todo file format requirements
-        "action0": "PUT",
+        "action": "PUT",
     }
 
     r = client.post(
@@ -104,7 +104,7 @@ def test_create_product_artifact(
     crud.model.remove(db, id=product.model.id)  # type: ignore
 
 
-def test_read_product(
+def test_read_product_artifact(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
@@ -131,7 +131,6 @@ def test_read_product(
     r = client.get(
         f"{settings.API_V1_STR}/products/{product_id}/artifacts",
         headers=normal_user_token_headers,
-        json=data,
     )
     assert r.status_code == 200
     content = r.json()
