@@ -129,3 +129,8 @@ jobs:
           FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
           POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
           PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
+          GCP_STORAGE_BUCKET: storage.numerbay.ai
+          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
+          SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
+          SMTP_USER: ${{ secrets.APP_SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
