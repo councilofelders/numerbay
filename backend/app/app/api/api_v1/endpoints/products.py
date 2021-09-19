@@ -166,10 +166,10 @@ def create_product(
     Create new product.
     """
     # todo turnkey rollout
-    # if product_in.is_on_platform is not None and product_in.is_on_platform:
-    #     raise HTTPException(
-    #         status_code=400, detail="On-platform listing is not yet available",
-    #     )
+    if product_in.is_on_platform is not None and product_in.is_on_platform:
+        raise HTTPException(
+            status_code=400, detail="On-platform listing is not yet available",
+        )
 
     product_in = validate_product_input(db, product_in)  # type: ignore
 
@@ -243,10 +243,10 @@ def update_product(
     Update a product.
     """
     # todo turnkey rollout
-    # if product_in.is_on_platform is not None and product_in.is_on_platform:
-    #     raise HTTPException(
-    #         status_code=400, detail="On-platform listing is not yet available",
-    #     )
+    if product_in.is_on_platform is not None and product_in.is_on_platform:
+        raise HTTPException(
+            status_code=400, detail="On-platform listing is not yet available",
+        )
 
     product = validate_existing_product(
         db, product_id=id, currend_user_id=current_user.id

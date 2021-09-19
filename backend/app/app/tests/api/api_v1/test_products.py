@@ -51,6 +51,8 @@ def test_create_product(
     crud.model.remove(db, id=model.id)  # type: ignore
 
 
+# todo turnkey rollout
+@pytest.mark.skip
 def test_create_product_invalid_inputs(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
@@ -179,6 +181,8 @@ def test_read_product(client: TestClient, db: Session) -> None:
     crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name).id)  # type: ignore
 
 
+# todo turnkey rollout
+@pytest.mark.skip
 def test_update_product(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:

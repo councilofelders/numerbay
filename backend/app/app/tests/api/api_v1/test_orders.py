@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,8 @@ from app.tests.utils.product import create_random_product
 from app.tests.utils.utils import random_lower_string
 
 
+# todo turnkey rollout
+@pytest.mark.skip
 def test_create_order(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
@@ -55,6 +58,8 @@ def test_create_order(
     crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
+# todo turnkey rollout
+@pytest.mark.skip
 def test_create_order_invalid_self(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
@@ -99,6 +104,8 @@ def test_create_order_invalid_self(
     crud.product.remove(db, id=product.id)
 
 
+# todo turnkey rollout
+@pytest.mark.skip
 def test_order_artifact(
     client: TestClient,
     superuser_token_headers: dict,

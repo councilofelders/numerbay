@@ -132,6 +132,7 @@
                       v-model="form.isOnPlatform"
                       @change="onPlatformChange(form.isOnPlatform)"
                       class="form__radio"
+                      disabled
                     />
                     <SfRadio
                       name="isOnPlatform"
@@ -142,6 +143,7 @@
                       v-model="form.isOnPlatform"
                       @change="onPlatformChange(form.isOnPlatform)"
                       class="form__radio"
+                      disabled
                     />
                   </ValidationProvider>
                 </div>
@@ -474,7 +476,7 @@ export default {
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      isOnPlatform: product ? String(product.is_on_platform) : 'true', // todo turnkey rollout
+      isOnPlatform: product ? String(product.is_on_platform) : 'false', // todo turnkey rollout
       currency: product ? product.currency : 'NMR',
       wallet: product ? product.wallet : null,
       thirdPartyUrl: product ? product.third_party_url : null
