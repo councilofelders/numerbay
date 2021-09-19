@@ -181,7 +181,7 @@ def test_read_product(client: TestClient, db: Session) -> None:
     crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name).id)  # type: ignore
 
 
-# todo turnkey rollout #
+# todo turnkey rollout
 @pytest.mark.skip
 def test_update_product(
     client: TestClient, normal_user_token_headers: dict, db: Session
