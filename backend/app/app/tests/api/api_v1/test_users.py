@@ -129,8 +129,7 @@ def test_update_username_conflict(
 
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     assert 200 <= r.status_code < 300
-    current_user = r.json()
-    print(current_user)
+    # current_user = r.json()
 
     new_username = existing_user["username"]
     new_password = random_lower_string()

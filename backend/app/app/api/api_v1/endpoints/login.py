@@ -110,9 +110,8 @@ def login_nonce(
         )
         crud.user.create(db, obj_in=new_user)
         return {"nonce": nonce}
-    if not user.nonce:
-        # create nonce if none
-        crud.user.update(db, db_obj=user, obj_in={"nonce": secrets.token_hex(32)})
+    # always update nonce
+    crud.user.update(db, db_obj=user, obj_in={"nonce": secrets.token_hex(32)})
     return {"nonce": user.nonce}
 
 

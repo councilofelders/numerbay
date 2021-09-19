@@ -123,7 +123,6 @@ export default {
     VsfPaymentProvider: () => import('~/components/Checkout/VsfPaymentProvider')
   },
   async mounted() {
-    console.log('this.orders?.data', this.orders?.data);
     const id = this.$route.query.product;
     await this.getGlobals();
     // eslint-disable-next-line camelcase

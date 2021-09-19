@@ -122,7 +122,6 @@ def create_order(
         )
 
         if settings.EMAILS_ENABLED and current_user.email:
-            print(f"pasword: {settings.SMTP_PASSWORD}")
             send_new_order_email(
                 email_to=current_user.email,
                 username=current_user.username,

@@ -67,7 +67,6 @@ export default {
   },
   mounted() {
     this.orderPollingTimer = setInterval(async () => {
-      console.log('status: ', this.orderStatus);
       if (this.orderStatus !== 'pending' && this.orderStatus !== 'unknown') {
         clearInterval(this.orderPollingTimer);
         await this.$router.push('/my-account/order-history');

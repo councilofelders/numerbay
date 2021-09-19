@@ -501,7 +501,6 @@ async def update_product_artifact(
     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    print(description)
     product = crud.product.get(db, id=product_id)
     validate_new_artifact(
         product=product, current_user=current_user, url=url, filename=filename
