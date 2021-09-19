@@ -192,7 +192,7 @@ export default {
   methods: {
     encodeURL() {
       if (this.form.url) {
-        this.form.url = encodeURI(this.form.url);
+        this.form.url = encodeURI(decodeURI(this.form.url));
       }
     },
     async handleEdit(value, product, artifact) {

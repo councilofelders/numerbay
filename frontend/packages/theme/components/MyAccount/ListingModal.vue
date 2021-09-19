@@ -449,10 +449,10 @@ export default {
     },
     encodeURL() {
       if (this.form.avatar) {
-        this.form.avatar = encodeURI(this.form.avatar);
+        this.form.avatar = encodeURI(decodeURI(this.form.avatar));
       }
       if (this.form.thirdPartyUrl) {
-        this.form.thirdPartyUrl = encodeURI(this.form.thirdPartyUrl);
+        this.form.thirdPartyUrl = encodeURI(decodeURI(this.form.thirdPartyUrl));
       }
     }
   },
