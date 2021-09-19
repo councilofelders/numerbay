@@ -39,7 +39,6 @@ def search_orders(
     return orders
 
 
-# todo turnkey rollout
 @router.post("/", response_model=schemas.Order)
 def create_order(
     *,
@@ -51,9 +50,9 @@ def create_order(
     Create new order.
     """
     # todo turnkey rollout
-    raise HTTPException(
-        status_code=400, detail="On-platform listing is not yet available",
-    )
+    # raise HTTPException(
+    #     status_code=400, detail="On-platform listing is not yet available",
+    # )
 
     # Product exists
     product = crud.product.get(db=db, id=id)

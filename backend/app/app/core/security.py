@@ -32,9 +32,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def verify_signature(public_address: str, nonce: str, signature: str) -> bool:
-    message_hash = encode_defunct(text=f"I am signing my one-time nonce: {nonce}")
-    signer = Account.recover_message(message_hash, signature=signature)
-    return signer.lower() == public_address.lower()
+    try:
+        message_hash = encode_defunct(text=f"I am signing my one-time nonce: {nonce}")
+        signer = Account.recover_message(message_hash, signature=signature)
+        return signer.lower() == public_address.lower()
+    except ValueError:
+        return False
 
 
 def get_password_hash(password: str) -> str:

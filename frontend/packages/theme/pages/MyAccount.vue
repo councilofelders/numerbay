@@ -28,24 +28,24 @@
       </SfContentCategory>
 
       <!--todo turnkey rollout-->
-      <!--<SfContentCategory title="Buyer">
+      <SfContentCategory title="Buyer">
         <SfContentPage title="Order history">
           <OrderHistory />
         </SfContentPage>
 
-        &lt;!&ndash;<SfContentPage title="My reviews">
+        <!--<SfContentPage title="My reviews">
           <MyReviews />
-        </SfContentPage>&ndash;&gt;
-      </SfContentCategory>-->
+        </SfContentPage>-->
+      </SfContentCategory>
 
       <SfContentCategory title="Seller">
         <SfContentPage title="My listings">
           <MyListings />
         </SfContentPage>
         <!--todo turnkey rollout-->
-        <!--<SfContentPage title="Sales history">
+        <SfContentPage title="Sales history">
           <SalesHistory />
-        </SfContentPage>-->
+        </SfContentPage>
       </SfContentCategory>
 
     </SfContentPages>
