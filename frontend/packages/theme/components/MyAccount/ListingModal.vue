@@ -197,7 +197,7 @@
                       class="form__element"
                     />
                   </ValidationProvider>
-                  <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
+                  <ValidationProvider rules="required|decimal|min_value:1" v-slot="{ errors }">
                     <SfInput
                       v-e2e="'listing-modal-price'"
                       v-model="form.price"
@@ -207,7 +207,7 @@
                       :label="`Price (per round equivalent, in ${form.currency})`"
                       type="number"
                       step=0.0001
-                      min=0
+                      min=1
                       class="form__element"
                     />
                   </ValidationProvider>
@@ -334,7 +334,7 @@ extend('required', {
 extend('min_value', {
   // eslint-disable-next-line camelcase
   ...min_value,
-  message: 'This must be positive'
+  message: 'This must be greater than 1'
 });
 
 extend('integer', {

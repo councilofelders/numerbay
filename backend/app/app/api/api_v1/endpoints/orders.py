@@ -97,6 +97,7 @@ def create_order(
         filters={
             "product": {"in": [product.id]},
             "round_order": {"in": [selling_round]},
+            "state": {"in": ["pending", "confirmed"]},
         },
     )
     if len(existing_order.get("data", [])) > 0:
