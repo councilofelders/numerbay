@@ -20,14 +20,23 @@
             <ValidationObserver v-slot="{ handleSubmit }" key="log-in">
               <form class="form" @submit.prevent="handleSubmit(handleProductForm)">
                 <ValidationProvider rules="required" v-slot="{ errors }">
+                  <SfSelect label="Category" v-model="form.category" v-e2e="'listing-modal-category'"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]" :disabled="!!currentListing" required>
+                    <SfSelectOption value=""></SfSelectOption>
+                    <SfSelectOption v-for="category in leafCategories" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
+                  </SfSelect>
+                </ValidationProvider>
+                <ValidationProvider rules="required" v-slot="{ errors }">
                   <SfSelect label="Model Name" v-model="form.name" v-e2e="'listing-modal-name'"
                     :valid="!errors[0]"
-                    :errorMessage="errors[0]" required :disabled="!!currentListing" @input="populateModelInfo">
+                    :errorMessage="errors[0]" required :disabled="!!currentListing || !form.category" @input="populateModelInfo">
                     <SfSelectOption value=""></SfSelectOption>
-                    <SfSelectOption value="">========== Numerai Models ==========</SfSelectOption>
-                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=8, sortDate=false)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
-                    <SfSelectOption value="">========== Signals Models ==========</SfSelectOption>
-                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=11, sortDate=false)" :key="model.name" :value="model.name">{{model.name}}</SfSelectOption>
+<!--                    <SfSelectOption value="">========== Numerai Models ==========</SfSelectOption>-->
+<!--                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=8, sortDate=false)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>-->
+<!--                    <SfSelectOption value="">========== Signals Models ==========</SfSelectOption>-->
+<!--                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=11, sortDate=false)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>-->
+                    <SfSelectOption v-for="model in getFilteredModels(form.category)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
                 <!--<ValidationProvider rules="required" v-slot="{ errors }">
@@ -42,14 +51,6 @@
                     :disabled="!!currentListing"
                   />
                 </ValidationProvider>-->
-                <ValidationProvider rules="required" v-slot="{ errors }">
-                  <SfSelect label="Category" v-model="form.category" v-e2e="'listing-modal-category'"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]" :disabled="!!currentListing || !form.name" required>
-                    <SfSelectOption value=""></SfSelectOption>
-                    <SfSelectOption v-for="category in getFilteredCategories(leafCategories, numerai.models, form.name)" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
-                  </SfSelect>
-                </ValidationProvider>
                 <ValidationProvider rules="secureUrl" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'listing-modal-avatar'"
@@ -429,6 +430,18 @@ export default {
     };
   },
   methods: {
+    getFilteredModels(categoryId) {
+      if (categoryId) {
+        const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
+        let tournament = 8;
+        if (category.slug.startsWith('signals-')) {
+          tournament = 11;
+        }
+        const models = userGetters.getModels(this.numerai, tournament, false);
+        return models;
+      }
+      return [];
+    },
     onPlatformChange(isOnPlatform) {
       if (isOnPlatform === 'true') {
         this.form.currency = 'NMR';
@@ -533,19 +546,6 @@ export default {
 
     const handleDeleteProduct = async () => handleForm(deleteProduct)();
 
-    const getFilteredCategories = (categories, numeraiModels, selectedModelName) => {
-      if (selectedModelName) {
-        const selectedModel = numeraiModels.filter(m=>m.name === selectedModelName)[0];
-        const tournament = selectedModel.tournament;
-        if (tournament === 8) {
-          return categories.filter(c=>c.slug.startsWith('numerai-'));
-        } else {
-          return categories.filter(c=>c.slug.startsWith('signals-'));
-        }
-      }
-      return categories;
-    };
-
     return {
       form,
       error,
@@ -561,13 +561,12 @@ export default {
       numeraiError,
       leafCategories: computed(() => categories ? categories.value.filter((category) => {
         return category.items.length === 0;
-      }) : []),
+      }).sort((a, b) => -a.slug.localeCompare(b.slug)) : []),
       resetForm,
       populateModelInfo,
       handleProductForm,
       deleteProduct,
-      handleDeleteProduct,
-      getFilteredCategories
+      handleDeleteProduct
     };
   }
 };
