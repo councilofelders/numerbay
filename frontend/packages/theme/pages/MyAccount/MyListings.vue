@@ -7,11 +7,11 @@
       </div>
       <div v-else>
         <div class="top-buttons">
-          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
+          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
             {{ $t('New Listing') }}
           </SfButton>
-          <SfButton class="sf-button" v-if="!user.numerai_api_key_public_id" :class="!user.numerai_api_key_public_id?'color-primary':'color-secondary'" @click="$router.push('/my-account/numerai-api')" :disabled="numeraiLoading || userLoading">
-            {{ !user.numerai_api_key_public_id?$t('Set Numerai API Key'):$t('Change Numerai API Key') }}
+          <SfButton class="sf-button" v-if="!userGetters.getNumeraiApiKeyPublicId(user)" :class="!userGetters.getNumeraiApiKeyPublicId(user)?'color-primary':'color-secondary'" @click="$router.push('/my-account/numerai-api')" :disabled="numeraiLoading || userLoading">
+            {{ !userGetters.getNumeraiApiKeyPublicId(user)?$t('Set Numerai API Key'):$t('Change Numerai API Key') }}
           </SfButton>
         </div>
         <!--<div v-if="isNumeraiApiFormOpen">
@@ -40,10 +40,10 @@
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getFormattedPrice(product, withCurrency=true, decimals=product.is_on_platform?4:2) }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <div class="listing-actions">
-                <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="product.is_on_platform" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
+                <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="product.is_on_platform" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Artifacts') }}
                 </SfButton>
-                <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !user.numerai_api_key_public_id || numeraiLoading || userLoading">
+                <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Edit') }}
                 </SfButton>
               </div>
@@ -94,7 +94,7 @@ export default {
     ArtifactPanel
   },
   mounted() {
-    if (this.user.numerai_api_key_public_id) {
+    if (this.userGetters.getNumeraiApiKeyPublicId(this.user)) {
       this.getNumeraiModels();
     }
   },
@@ -156,6 +156,7 @@ export default {
       toggleNumeraiApiForm,
       getStatusTextClass,
       handleListingClick,
+      userGetters,
       productGetters,
       orderGetters,
       currentListing,

@@ -122,6 +122,9 @@ export default {
     ValidationProvider,
     ValidationObserver
   },
+  middleware: [
+    'backend-url'
+  ],
   data() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
     const vm = this;
@@ -129,7 +132,7 @@ export default {
       componentKey: 0,
       componentLoading: false,
       gcs: {
-        signingURL: `http://${process.env.VUE_APP_DOMAIN_DEV || 'localhost'}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`,
+        signingURL: `${this.$root.$config._app.backendURL}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`,
         params: {},
         headers: {
           Authorization: `Bearer ${this.$cookies.get('nb-token')}`

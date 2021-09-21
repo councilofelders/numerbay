@@ -76,9 +76,14 @@ export default {
   middleware: [
     'is-authenticated'
   ],
+  mounted() {
+    if (!this.user) {
+      this.$router.push('/');
+    }
+  },
   setup(props, context) {
     const { $router, $route } = context.root;
-    const { logout, disconnectWeb3Modal } = useUser();
+    const { user, logout, disconnectWeb3Modal } = useUser();
     const activePage = computed(() => {
       const { pageName } = $route.params;
 
@@ -106,7 +111,7 @@ export default {
       $router.push(`/my-account/${(title || '').toLowerCase().replace(' ', '-')}`);
     };
 
-    return { changeActivePage, activePage };
+    return { changeActivePage, activePage, user };
   },
 
   data() {

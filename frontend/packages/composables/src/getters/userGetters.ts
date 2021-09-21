@@ -10,7 +10,7 @@ export const getUserEmailAddress = (user: User): string => user?.email || '';
 
 export const getPublicAddress = (user: User): string => user?.public_address || '';
 
-export const getNumeraiApiKeyPublicId = (user: User): string => user?.numerai_api_key_public_id || '';
+export const getNumeraiApiKeyPublicId = (user: User): string => user?.numerai_api_key_public_id || null;
 
 export const getNonce = (user: User): string => user?.nonce || '';
 
