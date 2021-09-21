@@ -74,7 +74,8 @@ export default {
     OrderHistory
   },
   middleware: [
-    'is-authenticated'
+    'is-authenticated',
+    'backend-url'
   ],
   mounted() {
     if (!this.user) {

@@ -122,17 +122,15 @@ export default {
     ValidationProvider,
     ValidationObserver
   },
-  middleware: [
-    'backend-url'
-  ],
   data() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
     const vm = this;
+    console.log(`${vm.$root.$config._app.backendURL}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`);
     return {
       componentKey: 0,
       componentLoading: false,
       gcs: {
-        signingURL: `${this.$root.$config._app.backendURL}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`,
+        signingURL: `${vm.$root.$config._app.backendURL}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`,
         params: {},
         headers: {
           Authorization: `Bearer ${this.$cookies.get('nb-token')}`
@@ -276,6 +274,7 @@ export default {
     }
   },
   async mounted() {
+    console.log('this.$root.$config._app.backendURL', this.$root.$config);
     // Logger.debug('artifacts', this.artifacts)
     //
     // var file = { size: 123, name: "Icon", type: "image/png" };
