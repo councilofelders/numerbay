@@ -27,7 +27,7 @@
             Seller: <span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span>
             <span class='divider-pipe'>|</span>
             Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
-            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!!product.third_party_url">3rd Party</SfBadge>
+            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!product.is_on_platform">3rd Party</SfBadge>
             <span class="product__subheader__highlight">{{ resolveProductPlatform(product) }}</span>
           </div>
         </div>
