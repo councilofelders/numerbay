@@ -9,11 +9,11 @@
     />
     <SfHeading
       :level="5"
-      v-if="!loading && !isPaymentConfirmed && orderGetters.getCurrency(order) === 'NMR'"
+      v-if="order && !isPaymentConfirmed && orderGetters.getCurrency(order) === 'NMR'"
       title="Please make your NMR transfer through your Numerai wallet within 15 minutes of ordering. You can leave this page."
       class="sf-heading--center sf-heading--no-underline content"
     />
-    <div v-if="!loading && !isPaymentConfirmed" class="order-info-panel">
+    <div v-if="order && !isPaymentConfirmed" class="order-info-panel">
       <OrderInfoPanel :order="order" withCopyButtons="true"/>
       <SfButton class="sf-button--full-width color-secondary" @click="$router.push('/my-account/order-history')">
         {{ $t('Go to My Orders') }}
@@ -60,7 +60,7 @@ export default {
   },
   watch: {
     orderStatus(value) {
-      if (value === 'confirmed') {
+      if (value !== 'pending' && value !== 'unknown') {
         this.$router.push('/my-account/order-history');
       }
     }
@@ -86,7 +86,7 @@ export default {
   },
   setup(props, context) {
     const id = context.root.$route.query.order;
-    const { orders, search, loading } = useUserOrder();
+    const { orders, search, loading } = useUserOrder(id);
 
     search({ role: 'buyer', id });
 
