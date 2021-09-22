@@ -80,7 +80,7 @@ if (process.browser) {
               // eslint-disable-next-line no-use-before-define
               const incFile = vm.awss3.includeFile === true;
               // eslint-disable-next-line no-use-before-define
-              const signed = await generateSignedUrl(that.awss3.signingURL, file, incFile, vm.awss3);
+              const signed = await generateSignedUrl(that.awss3.signingURL, that.awss3.params, file, incFile, vm.awss3);
               // eslint-disable-next-line no-use-before-define
               vm.setOption('headers', {
                 'Content-Type': 'application/octet-stream'

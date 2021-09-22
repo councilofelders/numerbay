@@ -18,6 +18,7 @@ import getOrder from './api/getOrder';
 import createOrder from './api/createOrder';
 import getGlobals from './api/getGlobals';
 import getArtifactDownloadUrl from './api/getArtifactDownloadUrl';
+import getArtifactUploadUrl from './api/getArtifactUploadUrl';
 import getArtifact from './api/getArtifact';
 import createArtifact from './api/createArtifact';
 import updateArtifact from './api/updateArtifact';
@@ -117,6 +118,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     createOrder,
     getGlobals,
     getArtifactDownloadUrl,
+    getArtifactUploadUrl,
     getArtifact,
     createArtifact,
     updateArtifact,

@@ -130,8 +130,10 @@ export default {
       componentKey: 0,
       componentLoading: false,
       gcs: {
-        signingURL: `${vm.$root.$config._app.backendURL}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`,
-        params: {},
+        signingURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
+        params: {
+          productId: vm.product.id
+        },
         headers: {
           Authorization: `Bearer ${this.$cookies.get('nb-token')}`
           // 'Cache-Control': 'no-cache'
