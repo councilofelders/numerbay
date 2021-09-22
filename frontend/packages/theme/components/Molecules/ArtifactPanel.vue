@@ -260,6 +260,7 @@ export default {
     async onRemove(file, error, xhr) {
       Logger.debug('onRemove', file, error, xhr);
       await this.deleteArtifact({productId: this.product.id, artifactId: file.artifactId});
+      this.componentKey += 1;
       await this.search({ productId: this.product.id });
     },
     async onManualRemove(artifact) {
