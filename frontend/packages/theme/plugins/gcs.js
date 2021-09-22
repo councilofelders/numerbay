@@ -19,7 +19,7 @@ export async function generateSignedUrl (signingURL, params, file, includeFile, 
     ...params
   });
   // console.log('upload url', response.url)
-  return response.url;
+  return response;
 }
 
 // function makeRequest(method, url, params, config) {
