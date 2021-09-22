@@ -274,7 +274,6 @@ export default {
     }
   },
   async mounted() {
-    console.log('this.$root.$config._app.backendURL', this.$root.$config);
     // Logger.debug('artifacts', this.artifacts)
     //
     // var file = { size: 123, name: "Icon", type: "image/png" };

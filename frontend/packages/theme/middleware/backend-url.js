@@ -1,5 +1,9 @@
 
 export default async ({ app }) => {
-  const scheme = !process.env.VUE_APP_DOMAIN_DEV || process.env.VUE_APP_DOMAIN_DEV === 'backend' || process.env.VUE_APP_DOMAIN_DEV === 'localhost' ? 'http' : 'https';
-  app.$config._app.backendURL = `${scheme}://${process.env.VUE_APP_DOMAIN_DEV || 'localhost'}`;
+  const backendURL = process.env.VUE_APP_DOMAIN_DEV;
+  if (backendURL) {
+    const scheme = !backendURL || backendURL === 'backend' || backendURL === 'localhost' ? 'http' : 'https';
+    app.$config._app.backendURL = `${scheme}://${backendURL || 'localhost'}`;
+    console.log('backendURL', backendURL);
+  }
 };
