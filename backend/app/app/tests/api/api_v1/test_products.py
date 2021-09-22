@@ -178,7 +178,7 @@ def test_read_product(client: TestClient, db: Session) -> None:
     assert content["owner"]["id"] == product.owner_id
 
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name).id)  # type: ignore
+    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name, tournament=8).id)  # type: ignore
 
 
 # todo turnkey rollout

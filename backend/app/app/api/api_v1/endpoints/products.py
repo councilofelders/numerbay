@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
-from fastapi.encoders import jsonable_encoder
 from google.api_core.exceptions import NotFound
 from google.cloud.storage import Bucket
 from sqlalchemy.orm import Session
@@ -43,16 +42,21 @@ def search_products(
         term=term,
         sort=sort,
     )
-    print(f'Product results ({len(products)}): {products}')
-    for product in products:
-        try:
-            jsonable_encoder(product)
-        except Exception:
-            raise HTTPException(status_code=500, detail=f'Encoding failed for product {product.id}')
-    try:
-        jsonable_encoder(products)
-    except:
-        raise HTTPException(status_code=500, detail=f'Encoding failed for all ({len(products)}) products')
+    # print(f"Product results ({len(products)}): {products}")
+    # for product in products:
+    #     try:
+    #         jsonable_encoder(product)
+    #     except Exception:
+    #         raise HTTPException(
+    #             status_code=500, detail=f"Encoding failed for product {product.id}"
+    #         )
+    # try:
+    #     jsonable_encoder(products)
+    # except:
+    #     raise HTTPException(
+    #         status_code=500,
+    #         detail=f"Encoding failed for all ({len(products)}) products",
+    #     )
     return products
 
 
@@ -225,7 +229,13 @@ def create_product(
         )
 
     # Model ownership
-    model = crud.model.get_by_name(db, name=product_in.name)
+    if category.slug.startswith(  # type: ignore
+        "signals-"
+    ):  # todo tmp fix, add tournament id to category
+        tournament = 11
+    else:
+        tournament = 8
+    model = crud.model.get_by_name(db, name=product_in.name, tournament=tournament)
     if not model:
         raise HTTPException(
             status_code=404, detail="Model not found",
@@ -237,7 +247,12 @@ def create_product(
 
     # Create product
     product = crud.product.create_with_owner(
-        db=db, obj_in=product_in, owner_id=current_user.id, sku=sku, model_id=model.id
+        db=db,
+        obj_in=product_in,
+        owner_id=current_user.id,
+        sku=sku,
+        model_id=model.id,
+        tournament=tournament,
     )
     return product
 

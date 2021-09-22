@@ -41,7 +41,11 @@ def fix_signals_models(
     signals_products = db.query(Product).filter(Product.category_id == 6).all()
     product_to_return = []
     for product in signals_products:
-        model = db.query(Model).filter(and_(Model.tournament == 11, Model.name == product.name)).first()
+        model = (
+            db.query(Model)
+            .filter(and_(Model.tournament == 11, Model.name == product.name))
+            .first()
+        )
         if model:
             product.model_id = model.id
             product_to_return.append(product.id)

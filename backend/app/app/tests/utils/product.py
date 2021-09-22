@@ -33,5 +33,10 @@ def create_random_product(
         id=id,
     )
     return crud.product.create_with_owner(
-        db=db, obj_in=product_in, owner_id=owner_id, model_id=name, sku=sku
+        db=db,
+        obj_in=product_in,
+        owner_id=owner_id,
+        model_id=name,
+        sku=sku,
+        tournament=8,
     )

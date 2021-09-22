@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -67,8 +68,14 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
 
 
 class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
-    def get_by_name(self, db: Session, *, name: str) -> Optional[Model]:
-        return db.query(self.model).filter(self.model.name == name).first()
+    def get_by_name(
+        self, db: Session, *, name: str, tournament: int
+    ) -> Optional[Model]:
+        return (
+            db.query(self.model)
+            .filter(and_(self.model.name == name, self.model.tournament == tournament))
+            .first()
+        )
 
     def create_with_owner(
         self, db: Session, *, obj_in: ModelCreate, owner_id: int

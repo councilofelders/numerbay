@@ -138,7 +138,7 @@ def test_read_product_artifact(
 
     crud.artifact.remove(db, id=artifact_id)
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name).id)  # type: ignore
+    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name, tournament=8).id)  # type: ignore
 
 
 def test_update_product_artifact(
