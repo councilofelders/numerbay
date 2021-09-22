@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import models
@@ -25,6 +26,28 @@ def fix_product_models(
     )
     db.commit()
     return {"msg": "success!"}
+
+
+@router.post("/fix-signals-models")
+def fix_signals_models(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Fix product model foreign keys (for db migration only).
+    """
+    # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
+    signals_products = db.query(Product).filter(Product.category_id == 6).all()
+    product_to_return = []
+    for product in signals_products:
+        model = db.query(Model).filter(and_(Model.tournament == 11, Model.name == product.name)).first()
+        if model:
+            product.model_id = model.id
+            product_to_return.append(product.id)
+    db.commit()
+    # signals_products = db.query(Product).filter(Product.category_id == 6)
+    return product_to_return
 
 
 # @router.post("/fix-url-encoding")
