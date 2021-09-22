@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from google.api_core.exceptions import NotFound
 from google.cloud.storage import Bucket
 from sqlalchemy.orm import Session
@@ -42,6 +43,16 @@ def search_products(
         term=term,
         sort=sort,
     )
+    print(f'Product results ({len(products)}): {products}')
+    for product in products:
+        try:
+            jsonable_encoder(product)
+        except Exception:
+            raise HTTPException(status_code=500, detail=f'Encoding failed for product {product.id}')
+    try:
+        jsonable_encoder(products)
+    except:
+        raise HTTPException(status_code=500, detail=f'Encoding failed for all ({len(products)}) products')
     return products
 
 

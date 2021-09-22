@@ -46,7 +46,7 @@ class ProductInDBBase(ProductBase):
     price: Decimal
     currency: str
     chain: Optional[str]
-    category: Category
+    category: Optional[Category]
 
     class Config:
         orm_mode = True
