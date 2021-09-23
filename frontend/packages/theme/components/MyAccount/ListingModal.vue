@@ -577,7 +577,7 @@ export default {
 .modal {
   --modal-index: 3;
   --overlay-z-index: 3;
-  --modal-width: 50%;
+  --modal-width: 70%;
 }
 .form {
   margin-top: var(--spacer-sm);
