@@ -10,7 +10,7 @@
     <SfHeading
       :level="5"
       v-if="order && !isPaymentConfirmed && orderGetters.getCurrency(order) === 'NMR'"
-      title="Please make your NMR transfer through your Numerai wallet within 15 minutes of ordering. You can leave this page."
+      title="Please make your NMR transfer through your Numerai wallet within 30 minutes of ordering. You can leave this page."
       class="sf-heading--center sf-heading--no-underline content"
     />
     <div v-if="order && !isPaymentConfirmed" class="order-info-panel">
