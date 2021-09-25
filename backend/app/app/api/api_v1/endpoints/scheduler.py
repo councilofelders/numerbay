@@ -40,11 +40,20 @@ def add_job_numerai_models(
     return {"msg": "success!"}
 
 
-@router.post("/globals")
+@router.post("/globals")  # todo deprecate old global update to new rollover
 def add_job_globals(
     *, current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     celery_app.send_task("app.worker.update_globals_task")
+
+    return {"msg": "success!"}
+
+
+@router.post("/round-rollover")
+def add_job_round_rollover(
+    # *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.update_round_rollover")
 
     return {"msg": "success!"}
 

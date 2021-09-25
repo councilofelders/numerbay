@@ -89,7 +89,8 @@ def create_order(
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
     # Duplicate order
-    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    globals = crud.globals.get_singleton(db=db)
+    selling_round = globals.selling_round  # type: ignore
     existing_order = crud.order.search(
         db,
         role="buyer",
@@ -104,6 +105,13 @@ def create_order(
         raise HTTPException(
             status_code=400, detail="Order for this product this round already exists"
         )
+
+    # not during round rollover
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
     if product:
         order_in = schemas.OrderCreate(
             price=product.price,

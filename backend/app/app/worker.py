@@ -1,4 +1,6 @@
 import sys
+from datetime import datetime, timezone
+import pandas as pd
 from typing import Any, Dict, Optional
 
 from celery import group
@@ -60,13 +62,52 @@ def batch_update_models_task() -> None:
         db.close()
 
 
-@celery_app.task  # (acks_late=True)
+@celery_app.task  # (acks_late=True) # todo deprecate old global update to new rollover
 def update_globals_task() -> None:
     db = SessionLocal()
     try:
         globals = crud.globals.update_singleton(db)
         crud.product.bulk_expire(db, current_round=globals.selling_round)
     finally:
+        db.close()
+
+
+@celery_app.task  # (acks_late=True)
+def update_round_rollover() -> None:
+    db = SessionLocal()
+    try:
+        globals = crud.globals.get_singleton(db)
+
+        active_round = crud.globals.get_numerai_active_round()
+        utc_time = datetime.now(timezone.utc)
+        open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
+        close_staking_time = pd.to_datetime(
+            active_round["closeStakingTime"]
+        ).to_pydatetime()
+        # next_round_open_time = pd.to_datetime(active_round["closeTime"]).to_pydatetime()
+
+        active_round_number = active_round["number"]
+        print(f'UTC time: {utc_time}, round open: {open_time}, round close: {close_staking_time}, round: {active_round_number}')
+
+        if open_time <= utc_time <= close_staking_time:  # new round opened and active
+            print('Activities freezed due to round rollover')
+            crud.globals.update(db, db_obj=globals, obj_in={'is_doing_round_rollover': True})  # freeze activities
+            celery_app.send_task("app.worker.update_round_rollover", countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS)  # try again soon
+        else:  # current round closed for staking, start selling next round, unfreeze activities
+            if active_round_number == globals.active_round:  # active round already up-to-date
+                print('Round already up-to-date, no action')
+            else:
+                print('Unfreeze activities, rollover completed')
+                selling_rouind = active_round_number + 1
+                crud.globals.update(db, db_obj=globals, obj_in={
+                    'active_round': active_round_number,
+                    'selling_round': selling_rouind,
+                })  # update round number and unfreeze
+                # expire old products
+                crud.product.bulk_expire(db, current_round=globals.selling_round)
+                crud.globals.update(db, db_obj=globals, obj_in={'is_doing_round_rollover': False})
+    finally:
+        print(f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}")
         db.close()
 
 
@@ -106,9 +147,13 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "task": "app.worker.batch_update_models_task",
             "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
         },
-        "update_globals_task": {
-            "task": "app.worker.update_globals_task",
-            "schedule": crontab(day_of_week="sat", hour=18, minute=5),
+        # "update_globals_task": {
+        #     "task": "app.worker.update_globals_task",
+        #     "schedule": crontab(day_of_week="sat", hour=18, minute=5),
+        # },
+        "update_round_rollover": {
+            "task": "app.worker.update_round_rollover",
+            "schedule": crontab(day_of_week="mon", hour=14, minute=00),
         },
     }
     sender.add_periodic_task(

@@ -96,6 +96,7 @@ import 'nuxt-dropzone/dropzone.css';
 import {computed, ref} from '@vue/composition-api';
 import {Logger} from '@vue-storefront/core';
 import debounce from 'lodash.debounce';
+import { useUiNotification } from '~/composables';
 
 extend('url', {
   validate: (value) => {
@@ -125,7 +126,6 @@ export default {
   data() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
     const vm = this;
-    console.log(`${vm.$root.$config._app.backendURL}/backend-api/v1/products/${vm.product.id}/artifacts/generate-upload-url`);
     return {
       componentKey: 0,
       componentLoading: false,
@@ -200,6 +200,12 @@ export default {
     },
     async handleEdit(value, product, artifact) {
       const onComplete = async () => {
+        if (this.error.updateArtifact) {
+          this.send({
+            message: this.error.updateArtifact.message,
+            type: 'danger'
+          });
+        }
         this.componentLoading = true;
         try {
           this.$refs.foo.disable();
@@ -213,7 +219,14 @@ export default {
       await this.onArtifactEdit(value, product, artifact, onComplete);
     },
     async handleNew() {
-      await this.createArtifact({productId: this.product.id, artifact: this.form});
+      await this.createArtifact({productId: this.product.id, artifact: this.form}).then(() => {
+        if (this.error.createArtifact) {
+          this.send({
+            message: this.error.createArtifact.message,
+            type: 'danger'
+          });
+        }
+      });
       this.componentLoading = true;
       try {
         this.$refs.foo.disable();
@@ -259,7 +272,14 @@ export default {
     // },
     async onRemove(file, error, xhr) {
       Logger.debug('onRemove', file, error, xhr);
-      await this.deleteArtifact({productId: this.product.id, artifactId: file.artifactId});
+      await this.deleteArtifact({productId: this.product.id, artifactId: file.artifactId}).then(() => {
+        if (this.error.deleteArtifact) {
+          this.send({
+            message: this.error.deleteArtifact.message,
+            type: 'danger'
+          });
+        }
+      });
       this.componentKey += 1;
       await this.search({ productId: this.product.id });
     },
@@ -267,7 +287,14 @@ export default {
       this.componentLoading = true;
       try {
         this.$refs.foo.disable();
-        await this.deleteArtifact({productId: this.product.id, artifactId: artifact.id});
+        await this.deleteArtifact({productId: this.product.id, artifactId: artifact.id}).then(() => {
+          if (this.error.deleteArtifact) {
+            this.send({
+              message: this.error.deleteArtifact.message,
+              type: 'danger'
+            });
+          }
+        });
         this.componentKey += 1;
         await this.search({ productId: this.product.id });
       } finally {
@@ -285,7 +312,8 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit, root }) {
-    const { artifacts, search, createArtifact, updateArtifact, deleteArtifact, loading } = useProductArtifact(`${props.product.id}`);
+    const { artifacts, search, createArtifact, updateArtifact, deleteArtifact, loading, error } = useProductArtifact(`${props.product.id}`);
+    const { send } = useUiNotification();
 
     search({ productId: props.product.id });
 
@@ -306,17 +334,23 @@ export default {
     const form = ref(resetForm());
 
     const onArtifactEdit = debounce(async (value, product, artifact, onComplete) => {
-      await Promise.all([
-        updateArtifact({
-          productId: product.id,
-          artifactId: artifact.id,
-          description: value
-        }),
-        onComplete()
-        // categoriesSearch({
-        //   term: term.value,
-        // }),
-      ]);
+      await updateArtifact({
+        productId: product.id,
+        artifactId: artifact.id,
+        description: value
+      }).then(onComplete);
+      // await Promise.all([
+      //   updateArtifact({
+      //     productId: product.id,
+      //     artifactId: artifact.id,
+      //     description: value
+      //   }),
+      //   onComplete()
+      //   // categoriesSearch({
+      //   //   term: term.value,
+      //   // }),
+      // ]);
+
       //
       // result.value = {
       //   products: searchResult.value?.data?.products,
@@ -329,6 +363,8 @@ export default {
       createArtifact,
       deleteArtifact,
       loading,
+      error,
+      send,
       search,
       tableHeaders,
       isManualFormOpen,

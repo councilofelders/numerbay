@@ -12,6 +12,8 @@ let component = {};
 if (process.browser) {
   const Dropzone = require('dropzone').Dropzone;
   const {generateSignedUrl} = require('../../plugins/gcs');
+  const useUiNotification = require('~/composables').useUiNotification;
+
   Dropzone.autoDiscover = false;
   component = {
     props: {
@@ -81,6 +83,13 @@ if (process.browser) {
               const incFile = vm.awss3.includeFile === true;
               // eslint-disable-next-line no-use-before-define
               const signed = await generateSignedUrl(that.awss3.signingURL, that.awss3.params, file, incFile, vm.awss3);
+              if (signed.error) {
+                const { send } = useUiNotification();
+                send({
+                  message: signed.detail,
+                  type: 'danger'
+                });
+              }
               // eslint-disable-next-line no-use-before-define
               vm.setOption('headers', {
                 'Content-Type': 'application/octet-stream'

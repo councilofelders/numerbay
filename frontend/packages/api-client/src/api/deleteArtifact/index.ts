@@ -8,8 +8,12 @@ export default async function deleteArtifact(context, params, customQuery?: Cust
   const token = context.config.auth.onTokenRead();
 
   // Use axios to send a DELETE request
-  const { data } = await context.client.delete(url.href, authHeaders(token));
+  const { data } = await context.client.delete(url.href, authHeaders(token)).catch((error) => {
+    if (error.response) {
+      error.response.data.error = error.response.status;
+      return error.response;
+    }
+  });
   // Return data from the API
   return data;
 }
-

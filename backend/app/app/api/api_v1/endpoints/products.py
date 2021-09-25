@@ -280,6 +280,13 @@ def update_product(
 
     product_in = validate_product_input(db, product_in)  # type: ignore
 
+    # not during round rollover
+    globals = crud.globals.get_singleton(db=db)
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
     # if hasattr(product_in, 'name') and product_in.name:
     #     raise HTTPException(
     #         status_code=400, detail="Product name cannot be changed after creation",
@@ -318,6 +325,14 @@ def delete_product(
     product = validate_existing_product(
         db, product_id=id, currend_user_id=current_user.id
     )
+
+    # not during round rollover
+    globals = crud.globals.get_singleton(db=db)
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
     # product = crud.product.remove(db=db, id=id)
     # product = crud.product.get(db, id=id)
     crud.product.update(
@@ -437,7 +452,15 @@ def generate_upload_url(
     validate_new_artifact(
         product=product, current_user=current_user, url=None, filename=filename
     )
-    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+    # not during round rollover
+    globals = crud.globals.get_singleton(db=db)
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
+    selling_round = globals.selling_round  # type: ignore
 
     object_name = get_object_name(
         sku=product.sku,  # type: ignore
@@ -500,7 +523,14 @@ async def create_product_artifact(
         product=product, current_user=current_user, url=url, filename=None
     )
 
-    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    # not during round rollover
+    globals = crud.globals.get_singleton(db=db)
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
+    selling_round = globals.selling_round  # type: ignore
 
     # Create artifact
     artifact_in = schemas.ArtifactCreate(
@@ -531,7 +561,16 @@ async def update_product_artifact(
     validate_new_artifact(
         product=product, current_user=current_user, url=url, filename=filename
     )
-    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+    # not during round rollover
+    globals = crud.globals.get_singleton(db=db)
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
+    selling_round = globals.selling_round  # type: ignore
+
     artifact = crud.artifact.get(db, id=artifact_id)
     artifact = validate_existing_artifact(
         artifact=artifact, product_id=product_id, selling_round=selling_round
@@ -680,7 +719,15 @@ def delete_product_artifact(
         db, product_id=product_id, currend_user_id=current_user.id
     )
 
-    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    # not during round rollover
+    globals = crud.globals.get_singleton(db=db)
+    if globals.is_doing_round_rollover:
+        raise HTTPException(
+            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+        )
+
+    selling_round = globals.selling_round  # type: ignore
+
     artifact = crud.artifact.get(db, id=artifact_id)
     validate_existing_artifact(
         artifact=artifact, product_id=product_id, selling_round=selling_round
