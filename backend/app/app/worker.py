@@ -1,8 +1,8 @@
 import sys
 from datetime import datetime, timezone
-import pandas as pd
 from typing import Any, Dict, Optional
 
+import pandas as pd
 from celery import group
 from celery.schedules import crontab
 from fastapi.encoders import jsonable_encoder
@@ -87,27 +87,44 @@ def update_round_rollover() -> None:
         # next_round_open_time = pd.to_datetime(active_round["closeTime"]).to_pydatetime()
 
         active_round_number = active_round["number"]
-        print(f'UTC time: {utc_time}, round open: {open_time}, round close: {close_staking_time}, round: {active_round_number}')
+        print(
+            f"UTC time: {utc_time}, round open: {open_time}, round close: {close_staking_time}, round: {active_round_number}"
+        )
 
         if open_time <= utc_time <= close_staking_time:  # new round opened and active
-            print('Activities freezed due to round rollover')
-            crud.globals.update(db, db_obj=globals, obj_in={'is_doing_round_rollover': True})  # freeze activities
-            celery_app.send_task("app.worker.update_round_rollover", countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS)  # try again soon
+            print("Activities freezed due to round rollover")
+            crud.globals.update(
+                db, db_obj=globals, obj_in={"is_doing_round_rollover": True}  # type: ignore
+            )  # freeze activities
+            celery_app.send_task(
+                "app.worker.update_round_rollover",
+                countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS,
+            )  # try again soon
         else:  # current round closed for staking, start selling next round, unfreeze activities
-            if active_round_number == globals.active_round:  # active round already up-to-date
-                print('Round already up-to-date, no action')
+            if (
+                active_round_number == globals.active_round  # type: ignore
+            ):  # active round already up-to-date
+                print("Round already up-to-date, no action")
             else:
-                print('Unfreeze activities, rollover completed')
+                print("Unfreeze activities, rollover completed")
                 selling_rouind = active_round_number + 1
-                crud.globals.update(db, db_obj=globals, obj_in={
-                    'active_round': active_round_number,
-                    'selling_round': selling_rouind,
-                })  # update round number and unfreeze
+                crud.globals.update(
+                    db,
+                    db_obj=globals,  # type: ignore
+                    obj_in={
+                        "active_round": active_round_number,
+                        "selling_round": selling_rouind,
+                    },
+                )  # update round number and unfreeze
                 # expire old products
-                crud.product.bulk_expire(db, current_round=globals.selling_round)
-                crud.globals.update(db, db_obj=globals, obj_in={'is_doing_round_rollover': False})
+                crud.product.bulk_expire(db, current_round=globals.selling_round)  # type: ignore
+                crud.globals.update(
+                    db, db_obj=globals, obj_in={"is_doing_round_rollover": False}  # type: ignore
+                )
     finally:
-        print(f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}")
+        print(
+            f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
+        )
         db.close()
 
 

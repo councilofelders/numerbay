@@ -107,9 +107,10 @@ def create_order(
         )
 
     # not during round rollover
-    if globals.is_doing_round_rollover:
+    if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
-            status_code=400, detail="Round rollover in progress, please try again after the round submission deadline"
+            status_code=400,
+            detail="Round rollover in progress, please try again after the round submission deadline",
         )
 
     if product:
