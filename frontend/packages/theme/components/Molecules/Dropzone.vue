@@ -443,8 +443,11 @@ module.exports = component;
   word-break: break-all !important;
   white-space: normal !important;
 }
-.vue-dropzone > .dz-preview .dz-details .dz-filename span,
 .vue-dropzone > .dz-preview .dz-details .dz-size span {
+  visibility: hidden;
+  display:none;
+}
+.vue-dropzone > .dz-preview .dz-details .dz-filename span {
   background-color: transparent;
 }
 .vue-dropzone > .dz-preview .dz-details .dz-filename:not(:hover) span {

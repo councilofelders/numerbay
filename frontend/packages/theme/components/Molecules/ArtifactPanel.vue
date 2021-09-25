@@ -42,7 +42,7 @@
             <SfInput :value="artifact.description" style="margin-right: 10px" label="Description" @input="(value)=>handleEdit(value, product, artifact)"/>
           </SfLoader>
         </SfTableData>
-        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>
+<!--        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>-->
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
             <span>
@@ -69,7 +69,7 @@
           </ValidationObserver>
         </SfTableData>
         <SfTableData><SfInput v-model="form.description" style="margin-right: 10px" label="Description"></SfInput></SfTableData>
-        <SfTableData></SfTableData>
+<!--        <SfTableData></SfTableData>-->
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
             <SfButton class="sf-button--text" @click="handleNew">
@@ -151,7 +151,7 @@ export default {
         timeout: 300000,
         parallelUploads: 1,
         createImageThumbnails: false,
-        maxFilesize: 200,
+        maxFilesize: 2000,
         acceptedFiles: '.txt,.csv,.parquet,.zip,.ipynb',
         // renameFile(file) {
         //   return file.renameFilename = `${vm.product.sku}_${'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx'.replace(/[x]/g, () => {
@@ -323,7 +323,7 @@ export default {
       'Artifact ID',
       'Name',
       'Description',
-      'Size',
+      // 'Size',
       'Action'
     ];
 
