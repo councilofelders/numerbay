@@ -51,7 +51,7 @@ def add_job_globals(
 
 @router.post("/round-rollover")
 def add_job_round_rollover(
-    # *, current_user: models.User = Depends(deps.get_current_active_superuser),
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     celery_app.send_task("app.worker.update_round_rollover")
 
