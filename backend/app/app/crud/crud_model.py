@@ -44,12 +44,12 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
         normalized_data["modelPerformance"] = {}
         if data["v2SignalsProfile"]["latestRanks"]:
             normalized_data["modelPerformance"]["latestRanks"] = {
-                "corr": data["v2SignalsProfile"]["latestRanks"]["corr"],
-                "mmc": data["v2SignalsProfile"]["latestRanks"]["mmc"],
+                "corr": data["v2SignalsProfile"]["latestRanks"]["corr20d"],
+                "mmc": data["v2SignalsProfile"]["latestRanks"]["mmc20d"],
             }
             normalized_data["modelPerformance"]["latestReps"] = {
-                "corr": data["v2SignalsProfile"]["latestReps"]["corr"],
-                "mmc": data["v2SignalsProfile"]["latestReps"]["mmc"],
+                "corr": data["v2SignalsProfile"]["latestReps"]["corr20d"],
+                "mmc": data["v2SignalsProfile"]["latestReps"]["mmc20d"],
             }
             normalized_data["modelPerformance"]["latestReturns"] = data[
                 "v2SignalsProfile"
@@ -60,9 +60,14 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
             normalized_data["modelPerformance"]["latestReturns"] = {}
         normalized_data["modelPerformance"]["roundModelPerformances"] = []
         for round_performance in data["v2SignalsProfile"]["roundModelPerformances"]:
-            if round_performance["corr"] is not None:
+            if round_performance["corr20d"] is not None:
+                round_performance_normalized = {
+                    "roundNumber": round_performance["roundNumber"],
+                    "corr": round_performance["corr20d"],
+                    "mmc": round_performance["mmc20d"],
+                }
                 normalized_data["modelPerformance"]["roundModelPerformances"].append(
-                    round_performance
+                    round_performance_normalized
                 )
     return normalized_data
 
@@ -174,16 +179,16 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                     nmrStaked
                     roundModelPerformances {
                       roundNumber
-                      corr
-                      mmc
+                      corr20d
+                      mmc20d
                     }
                     latestReps {
-                      corr
-                      mmc
+                      corr20d
+                      mmc20d
                     }
                     latestRanks {
-                      corr
-                      mmc
+                      corr20d
+                      mmc20d
                     }
                     latestReturns {
                       oneDay
