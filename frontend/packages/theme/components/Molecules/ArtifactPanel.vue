@@ -45,8 +45,11 @@
 <!--        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>-->
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
-            <span>
-              <SfButton class="sf-button--text" @click="onManualRemove(artifact)">
+            <span class="artifact-actions">
+              <SfButton class="sf-button--text action__element" @click="download(artifact)">
+                {{ $t('Download') }}
+              </SfButton>
+              <SfButton class="sf-button--text action__element" @click="onManualRemove(artifact)">
                 {{ $t('Delete') }}
               </SfButton>
             </span>
@@ -193,6 +196,30 @@ export default {
     }
   },
   methods: {
+    async download(artifact) {
+      if (!artifact.object_name && artifact.url) {
+        window.open(artifact.url, '_blank');
+        return;
+      }
+
+      const downloadUrl = await this.downloadArtifact({productId: artifact.product_id, artifactId: artifact.id});
+      const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      link.click();
+      // console.log('downloadUrl', downloadUrl);
+      // axios.get(downloadUrl, { responseType: 'blob', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'} })
+      //   .then(response => {
+      //     const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
+      //     const blob = new Blob([response.data], { type: 'application/pdf' });
+      //     const link = document.createElement('a');
+      //     link.href = URL.createObjectURL(blob);
+      //     link.download = filename;
+      //     link.click();
+      //     URL.revokeObjectURL(link.href);
+      //   }).catch(console.error);
+    },
     encodeURL() {
       if (this.form.url) {
         this.form.url = encodeURI(decodeURI(this.form.url));
@@ -312,7 +339,7 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit, root }) {
-    const { artifacts, search, createArtifact, updateArtifact, deleteArtifact, loading, error } = useProductArtifact(`${props.product.id}`);
+    const { artifacts, search, createArtifact, updateArtifact, downloadArtifact, deleteArtifact, loading, error } = useProductArtifact(`${props.product.id}`);
     const { send } = useUiNotification();
 
     search({ productId: props.product.id });
@@ -361,6 +388,7 @@ export default {
     return {
       artifacts: computed(() => artifacts ? artifacts.value : null),
       createArtifact,
+      downloadArtifact,
       deleteArtifact,
       loading,
       error,
@@ -412,6 +440,20 @@ export default {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+  }
+}
+.artifact-actions {
+  display: flex; flex-direction: row;
+  .action__element {
+    @include for-desktop {
+      flex: 1;
+      margin-left: var(--spacer-2xs);
+      margin-right: var(--spacer-2xs);
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
   }
 }
 </style>
