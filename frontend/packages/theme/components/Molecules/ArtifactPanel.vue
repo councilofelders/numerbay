@@ -151,7 +151,7 @@ export default {
         url: 'https://httpbin.org/post', // placeholder url
         method: 'put',
         addRemoveLinks: true,
-        timeout: 300000,
+        timeout: 600000,
         parallelUploads: 1,
         createImageThumbnails: false,
         maxFilesize: 2000,
