@@ -12,6 +12,7 @@ from app import crud
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
+from app.utils import send_email
 
 client_sentry = Client(settings.SENTRY_DSN)
 
@@ -31,6 +32,21 @@ def tick(msg: str) -> str:
 
     time.sleep(2)
     return msg
+
+
+@celery_app.task  # (acks_late=True)
+def send_email_task(
+    email_to: str,
+    subject_template: str = "",
+    html_template: str = "",
+    environment: Dict[str, Any] = {},
+) -> None:
+    send_email(
+        email_to=email_to,
+        subject_template=subject_template,
+        html_template=html_template,
+        environment=environment,
+    )
 
 
 @celery_app.task  # (acks_late=True)

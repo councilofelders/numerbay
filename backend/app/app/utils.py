@@ -7,6 +7,7 @@ import emails
 from emails.template import JinjaTemplate
 from jose import jwt
 
+from app.core.celery_app import celery_app
 from app.core.config import settings
 
 
@@ -48,7 +49,7 @@ def send_test_email(email_to: str) -> None:
 
 def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - Password recovery for user {email}"
+    subject = f"{project_name} - Password recovery for {email}"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "reset_password.html") as f:
         template_str = f.read()
     server_host = settings.SERVER_HOST
@@ -67,54 +68,199 @@ def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     )
 
 
-def send_new_account_email(email_to: str, username: str, password: str) -> None:
-    project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - New account for user {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
-        template_str = f.read()
-    link = settings.SERVER_HOST
-    send_email(
-        email_to=email_to,
-        subject_template=subject,
-        html_template=template_str,
-        environment={
-            "project_name": settings.PROJECT_NAME,
-            "username": username,
-            "password": password,
-            "email": email_to,
-            "link": link,
-        },
-    )
+# def send_new_account_email(email_to: str, username: str, password: str) -> None:
+#     project_name = settings.PROJECT_NAME
+#     subject = f"{project_name} - New account for {username}"
+#     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
+#         template_str = f.read()
+#     link = settings.SERVER_HOST
+#     send_email(
+#         email_to=email_to,
+#         subject_template=subject,
+#         html_template=template_str,
+#         environment={
+#             "project_name": settings.PROJECT_NAME,
+#             "username": username,
+#             "password": password,
+#             "email": email_to,
+#             "link": link,
+#         },
+#     )
 
 
 def send_new_order_email(
     email_to: str,
     username: str,
+    timeout: int,
+    round_order: int,
     date_order: datetime,
     product: str,
+    from_address: str,
     to_address: str,
     amount: float,
     currency: str,
 ) -> None:
     project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - New order for user {username}"
+    subject = f"{project_name} - New order for {username}"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_order.html") as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/order-history"
-    send_email(
-        email_to=email_to,
-        subject_template=subject,
-        html_template=template_str,
-        environment={
-            "project_name": "NumerBay",
-            "username": username,
-            "date_order": date_order,
-            "product": product,
-            "to_address": to_address,
-            "amount": amount,
-            "currency": currency,
-            "link": link,
-        },
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "timeout": timeout,
+                "round_order": round_order,
+                "date_order": date_order,
+                "product": product,
+                "from_address": from_address,
+                "to_address": to_address,
+                "amount": amount,
+                "currency": currency,
+                "link": link,
+            },
+        ),
+    )
+    # send_email(
+    #     email_to=email_to,
+    #     subject_template=subject,
+    #     html_template=template_str,
+    #     environment={
+    #         "project_name": "NumerBay",
+    #         "username": username,
+    #         "date_order": date_order,
+    #         "product": product,
+    #         "from_address": from_address,
+    #         "to_address": to_address,
+    #         "amount": amount,
+    #         "currency": currency,
+    #         "link": link,
+    #     },
+    # )
+
+
+def send_new_confirmed_sale_email(
+    email_to: str,
+    username: str,
+    round_order: int,
+    date_order: datetime,
+    product: str,
+    buyer: str,
+    from_address: str,
+    to_address: str,
+    transaction_hash: str,
+    amount: float,
+    currency: str,
+) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New confirmed sale for {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_confirmed_sale.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/my-account/sales-history"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "round_order": round_order,
+                "date_order": date_order,
+                "product": product,
+                "buyer": buyer,
+                "from_address": from_address,
+                "to_address": to_address,
+                "transaction_hash": transaction_hash,
+                "amount": amount,
+                "currency": currency,
+                "link": link,
+            },
+        ),
+    )
+
+
+def send_order_confirmed_email(
+    email_to: str,
+    username: str,
+    round_order: int,
+    date_order: datetime,
+    product: str,
+    from_address: str,
+    to_address: str,
+    transaction_hash: str,
+    amount: float,
+    currency: str,
+) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Order confirmed for {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "order_confirmed.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/my-account/order-history"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "round_order": round_order,
+                "date_order": date_order,
+                "product": product,
+                "from_address": from_address,
+                "to_address": to_address,
+                "transaction_hash": transaction_hash,
+                "amount": amount,
+                "currency": currency,
+                "link": link,
+            },
+        ),
+    )
+
+
+def send_order_expired_email(
+    email_to: str,
+    username: str,
+    round_order: int,
+    date_order: datetime,
+    product: str,
+    from_address: str,
+    to_address: str,
+    amount: float,
+    currency: str,
+) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Order expired for {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "order_expired.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/my-account/order-history"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "round_order": round_order,
+                "date_order": date_order,
+                "product": product,
+                "from_address": from_address,
+                "to_address": to_address,
+                "amount": amount,
+                "currency": currency,
+                "link": link,
+            },
+        ),
     )
 
 

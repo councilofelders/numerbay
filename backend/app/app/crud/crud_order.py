@@ -15,6 +15,11 @@ from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.product import Product
 from app.schemas.order import OrderCreate, OrderUpdate
+from app.utils import (
+    send_new_confirmed_sale_email,
+    send_order_confirmed_email,
+    send_order_expired_email,
+)
 
 
 def parse_sort_option(sort: Optional[str]) -> Any:
@@ -165,6 +170,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                 f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}"
                             )
                             if order_obj:
+                                # Confirmed
                                 order_obj.transaction_hash = transaction["txHash"]
                                 if (
                                     Decimal(transaction["amount"])
@@ -174,6 +180,40 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                     order_obj.state = "confirmed"
                                 db.commit()
                                 db.refresh(order_obj)
+
+                                if settings.EMAILS_ENABLED:
+                                    product = order_obj.product
+                                    # Send seller email
+                                    if product.owner.email:
+                                        send_new_confirmed_sale_email(
+                                            email_to=product.owner.email,
+                                            username=product.owner.username,
+                                            round_order=order_obj.round_order,
+                                            date_order=order_obj.date_order,
+                                            product=product.sku,
+                                            buyer=order_obj.buyer.username,
+                                            from_address=order_obj.from_address,  # type: ignore
+                                            to_address=order_obj.to_address,  # type: ignore
+                                            transaction_hash=order_obj.transaction_hash,  # type: ignore
+                                            amount=order_obj.price,
+                                            currency=order_obj.currency,  # type: ignore
+                                        )
+
+                                    # Send buyer email
+                                    if order_obj.buyer.email:
+                                        send_order_confirmed_email(
+                                            email_to=order_obj.buyer.email,
+                                            username=order_obj.buyer.username,
+                                            round_order=order_obj.round_order,
+                                            date_order=order_obj.date_order,
+                                            product=product.sku,
+                                            from_address=order_obj.from_address,  # type: ignore
+                                            to_address=order_obj.to_address,  # type: ignore
+                                            transaction_hash=order_obj.transaction_hash,  # type: ignore
+                                            amount=order_obj.price,
+                                            currency=order_obj.currency,  # type: ignore
+                                        )
+
                                 break
                 except Exception:
                     pass
@@ -188,6 +228,22 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     order_obj.state = "expired"
                     db.commit()
                     db.refresh(order_obj)
+
+                    if settings.EMAILS_ENABLED:
+                        # Send buyer email
+                        product = order_obj.product
+                        if order_obj.buyer.email:
+                            send_order_expired_email(
+                                email_to=order_obj.buyer.email,
+                                username=order_obj.buyer.username,
+                                round_order=order_obj.round_order,
+                                date_order=order_obj.date_order,
+                                product=product.sku,
+                                from_address=order_obj.from_address,  # type: ignore
+                                to_address=order_obj.to_address,  # type: ignore
+                                amount=order_obj.price,
+                                currency=order_obj.currency,  # type: ignore
+                            )
 
             else:  # invalid buyer
                 if order_obj:

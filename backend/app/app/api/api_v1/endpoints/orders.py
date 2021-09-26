@@ -130,16 +130,21 @@ def create_order(
             db=db, obj_in=order_in, buyer_id=current_user.id
         )
 
-        if settings.EMAILS_ENABLED and current_user.email:
-            send_new_order_email(
-                email_to=current_user.email,
-                username=current_user.username,
-                date_order=order.date_order,
-                product=product.sku,
-                to_address=to_address,
-                amount=product.price,
-                currency=product.currency,  # type: ignore
-            )
+        if settings.EMAILS_ENABLED:
+            # email buyer
+            if current_user.email:
+                send_new_order_email(
+                    email_to=current_user.email,
+                    username=current_user.username,
+                    timeout=settings.PENDING_ORDER_EXPIRE_MINUTES,
+                    round_order=order.round_order,
+                    date_order=order.date_order,
+                    product=product.sku,
+                    from_address=order.from_address,  # type: ignore
+                    to_address=order.to_address,  # type: ignore
+                    amount=order.price,
+                    currency=order.currency,  # type: ignore
+                )
         return order
     return None
 

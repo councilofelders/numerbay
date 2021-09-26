@@ -8,13 +8,14 @@
     <mj-section>
       <mj-column>
         <mj-divider border-color="#555"></mj-divider>
-        <mj-text font-size="20px" color="#555" font-family="helvetica">{{ project_name }} - New Order</mj-text>
-        <mj-text font-size="16px" color="#555">Hi {{ username }}, thank you for your order. Please complete your payment <b>from your Numerai wallet, in 1 single transaction, within {{ timeout }} minutes</b> of ordering before the order expires:</mj-text>
+        <mj-text font-size="20px" color="#555" font-family="helvetica">{{ project_name }} - Order Confirmed</mj-text>
+        <mj-text font-size="16px" color="#555">Hi {{ username }}, you following order has been confirmed:</mj-text>
         <mj-text font-size="16px" color="#555">Round: <b>{{ round_order }}</b></mj-text>
         <mj-text font-size="16px" color="#555">Time of Order: {{ date_order }}</mj-text>
-        <mj-text font-size="16px" color="#555">Product: {{ product }}</mj-text>
-        <mj-text font-size="16px" color="#555">Buyer Address: <b>{{ from_address }}</b></mj-text>
-        <mj-text font-size="16px" color="#555">Seller Address: <b>{{ to_address }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Product: <b>{{ product }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Buyer Address: {{ from_address }}</mj-text>
+        <mj-text font-size="16px" color="#555">Seller Address: {{ to_address }}</mj-text>
+        <mj-text font-size="16px" color="#555">Transaction Hash: <a href="https://etherscan.io/tx/{{ transaction_hash }}" class="link-nostyle" target="_blank">{{ transaction_hash }}</a></mj-text>
         <mj-text font-size="16px" color="#555">Amount: <b>{{ amount }} {{ currency }}</b></mj-text>
         <mj-button padding="50px 0px" href="{{ link }}">Go to My Orders</mj-button>
         <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the <a href="https://community.numer.ai/channel/numerbay" class="link-nostyle" target="_blank">#numerbay</a> channel on Numerai RocketChat.</mj-text>

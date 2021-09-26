@@ -42,7 +42,7 @@ def search_products(
         term=term,
         sort=sort,
     )
-    print(f"Product results: ({len(products)}): {products}")
+    # print(f"Product results: ({len(products)}): {products}")
     # for product in products:
     #     try:
     #         jsonable_encoder(product)
