@@ -130,13 +130,11 @@ def update_round_rollover() -> None:
                     obj_in={
                         "active_round": active_round_number,
                         "selling_round": selling_rouind,
+                        "is_doing_round_rollover": False
                     },
                 )  # update round number and unfreeze
                 # expire old products
                 crud.product.bulk_expire(db, current_round=globals.selling_round)  # type: ignore
-                crud.globals.update(
-                    db, db_obj=globals, obj_in={"is_doing_round_rollover": False}  # type: ignore
-                )
     finally:
         print(
             f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
