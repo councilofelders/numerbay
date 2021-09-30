@@ -198,6 +198,52 @@
                       class="form__element"
                     />
                   </ValidationProvider>
+                  <div class="form__radio-group">
+                    <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                      <SfRadio
+                        name="mode"
+                        value="file"
+                        label="Distribute File"
+                        details="Buyers can download artifact files"
+                        description=""
+                        v-model="form.mode"
+                        class="form__radio"
+                      />
+                      <SfRadio
+                        name="mode"
+                        value="stake"
+                        label="Stake Only"
+                        details="Submit for buyers automatically without distributing artifact files"
+                        description="No Stake Limit"
+                        v-model="form.mode"
+                        class="form__radio"
+                      />
+                      <SfRadio
+                        name="mode"
+                        value="stake_with_limit"
+                        label="Stake Only with Limit"
+                        details="Submit for buyers automatically without distributing artifact files"
+                        description="Specify a stake limit (in NMR)"
+                        v-model="form.mode"
+                        class="form__radio"
+                      />
+                    </ValidationProvider>
+                  </div>
+                  <div v-if="form.mode === 'stake_with_limit'">
+                    <ValidationProvider rules="required|decimal|min_value:1"  v-slot="{ errors }">
+                      <SfInput
+                        v-model="form.stakeLimit"
+                        :valid="!errors[0]"
+                        :errorMessage="errors[0]"
+                        name="price"
+                        label="Stake Limit for Buyers (in NMR)"
+                        type="number"
+                        step=0.0001
+                        min=1
+                        class="form__element"
+                      />
+                    </ValidationProvider>
+                  </div>
                   <ValidationProvider rules="required|decimal|min_value:1" v-slot="{ errors }">
                     <SfInput
                       v-e2e="'listing-modal-price'"
@@ -490,6 +536,8 @@ export default {
       isOnPlatform: product ? String(product.is_on_platform) : 'true', // todo turnkey rollout
       currency: product ? product.currency : 'NMR',
       wallet: product ? product.wallet : null,
+      mode: product ? product.mode : 'file',
+      stakeLimit: product ? product.stake_limit : null,
       thirdPartyUrl: product ? product.third_party_url : null
     });
     const form = ref(resetForm(currentListing));

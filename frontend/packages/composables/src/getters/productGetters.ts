@@ -68,6 +68,20 @@ export const getFormattedPrice = (product: ProductVariant, withCurrency = true, 
   return `${price}`;
 };
 
+export const getProductMode = (product: ProductVariant): string => (product as any)?.mode;
+
+export const getProductTournamentId = (product: ProductVariant): number => {
+  const slug = (product as any)?.category?.slug;
+  if (slug) {
+    if (slug.startsWith('signals-')) {
+      return 11;
+    } else if (slug.startsWith('numerai-')) {
+      return 8;
+    }
+  }
+  return null;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductTotalReviews = (product: ProductVariant): number => 0;
 
@@ -100,6 +114,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getCategoryIds: getProductCategoryIds,
   getId: getProductId,
   getFormattedPrice: getFormattedPrice,
+  getMode: getProductMode,
+  getTournamentId: getProductTournamentId,
   getTotalReviews: getProductTotalReviews,
   getAverageRating: getProductAverageRating,
   getModelNmrStaked: getProductModelNmrStaked,

@@ -23,7 +23,7 @@ def test_create_order(
     )
 
     # Active product: accept
-    product = create_random_product(db, is_on_platform=True)
+    product = create_random_product(db, is_on_platform=True, mode="file")
     crud.user.update(
         db,
         db_obj=crud.user.get(db, id=product.owner_id),  # type: ignore
@@ -73,7 +73,7 @@ def test_create_order_invalid_self(
     )
 
     product = create_random_product(
-        db, owner_id=current_user["id"], is_on_platform=True
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
     )
 
     order_data = {
@@ -88,7 +88,7 @@ def test_create_order_invalid_self(
 
     crud.product.remove(db, id=product.id)
 
-    product = create_random_product(db, is_on_platform=True)
+    product = create_random_product(db, is_on_platform=True, mode="file")
     crud.product.update(db, db_obj=product, obj_in={"wallet": buyer_wallet})
 
     order_data = {
@@ -129,7 +129,9 @@ def test_order_artifact(
         obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
     )
 
-    product = create_random_product(db, owner_id=seller_user["id"], is_on_platform=True)
+    product = create_random_product(
+        db, owner_id=seller_user["id"], is_on_platform=True, mode="file"
+    )
     url = "http://exmaple.com"  # todo validate input
     data = {"url": url}
 

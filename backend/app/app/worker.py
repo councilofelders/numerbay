@@ -130,7 +130,7 @@ def update_round_rollover() -> None:
                     obj_in={
                         "active_round": active_round_number,
                         "selling_round": selling_rouind,
-                        "is_doing_round_rollover": False
+                        "is_doing_round_rollover": False,
                     },
                 )  # update round number and unfreeze
                 # expire old products

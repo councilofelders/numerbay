@@ -27,6 +27,11 @@
         class="sf-property--full-width property"
       />
       <SfProperty
+        name="Submit to Model"
+        :value="orderGetters.getSubmitModelName(order)"
+        class="sf-property--full-width property"
+      />
+      <SfProperty
         name="From Address"
         :value="orderGetters.getFromAddress(order)"
         class="sf-property--full-width property"
@@ -84,6 +89,7 @@
         class="sf-property--full-width property"
       />
     </div>
+    {{order}}
     <SfTable class="orders" v-if="artifacts && artifacts.data">
       <SfTableHeading>
         <SfTableHeader
@@ -103,12 +109,17 @@
       <SfTableRow v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
         <SfTableData>{{ artifactGetters.getId(artifact) }}</SfTableData>
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
-        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>
+        <SfTableData>{{ artifactGetters.getDescription(artifact) }}</SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
-            <SfButton class="sf-button--text" @click="download(artifact)">
-              {{ $t('Download') }}
-            </SfButton>
+            <span class="artifact-actions">
+              <SfButton class="sf-button--text action__element" @click="download(artifact)">
+                {{ $t('Download') }}
+              </SfButton>
+              <SfButton class="sf-button--text action__element" @click="download(artifact)">
+                {{ $t('Submit') }}
+              </SfButton>
+            </span>
           </SfLoader>
         </SfTableData>
       </SfTableRow>
@@ -120,6 +131,7 @@
 import {SfProperty, SfIcon, SfButton, SfInput, SfTable, SfLoader} from '@storefront-ui/vue';
 import { orderGetters, artifactGetters, useProductArtifact } from '@vue-storefront/numerbay';
 import {computed} from '@vue/composition-api';
+import { useUiNotification } from '~/composables';
 
 export default {
   name: 'OrderInfoPanel',
@@ -154,6 +166,14 @@ export default {
       }
 
       const downloadUrl = await this.downloadArtifact({productId: this.order.product.id, artifactId: artifact.id});
+      if (this.error.downloadArtifact) {
+        this.send({
+          message: this.error.downloadArtifact.message,
+          type: 'danger'
+        });
+        return;
+      }
+
       const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -174,13 +194,16 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const { artifacts, search, downloadArtifact, loading } = useProductArtifact(`${props.order.product.id}`);
+    const { artifacts, search, downloadArtifact, loading, error } = useProductArtifact(`${props.order.product.id}`);
+    const { send } = useUiNotification();
+
     search({ productId: props.order.product.id });
 
     const tableHeaders = [
       'Artifact ID',
       'Name',
-      'Size',
+      'Description',
+      // 'Size',
       'Action'
     ];
 
@@ -188,6 +211,8 @@ export default {
       tableHeaders,
       artifacts: computed(() => artifacts ? artifacts.value : null),
       loading,
+      error,
+      send,
       downloadArtifact,
       orderGetters,
       artifactGetters
@@ -223,6 +248,20 @@ export default {
     --property-name-font-weight: var(--font-weight--medium);
     --property-value-font-size: var(--font-size--lg);
     --property-value-font-weight: var(--font-weight--semibold);
+  }
+}
+.artifact-actions {
+  display: flex; flex-direction: row;
+  .action__element {
+    @include for-desktop {
+      flex: 1;
+      margin-left: var(--spacer-2xs);
+      margin-right: var(--spacer-2xs);
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
   }
 }
 </style>

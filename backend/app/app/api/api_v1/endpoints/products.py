@@ -120,6 +120,28 @@ def validate_product_input(
                         detail=f"On-platform listing price must not exceed {4} decimal places",
                     )
 
+            # On-platform Mode check
+            if product_in.mode not in ["file", "stake", "stake_with_limit"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']",
+                )
+
+            # On-platform Stake limit check
+            if product_in.mode == "stake_with_limit":
+                if product_in.stake_limit is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Stake limit is required for 'stake_with_limit' mode",
+                    )
+                # Stake limit decimal check
+                precision = Decimal(product_in.stake_limit).as_tuple().exponent
+                if precision < -4:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Stake limit must not exceed {4} decimal places",
+                    )
+
             # On-platform chain type
             if product_in.chain is not None:
                 raise HTTPException(
@@ -604,15 +626,15 @@ async def update_product_artifact(
 
 def validate_buyer(
     product: models.Product, current_user: models.User, selling_round: int
-) -> bool:
+) -> Optional[models.Order]:
     for order in current_user.orders:  # type: ignore
         if (
             order.round_order == selling_round
             and order.product_id == product.id
             and order.state == "confirmed"
         ):
-            return True
-    return False
+            return order
+    return None
 
 
 @router.get(
@@ -657,10 +679,18 @@ def generate_download_url(
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
-    if product.owner_id != current_user.id and not validate_buyer(
-        product, current_user, selling_round
-    ):
+    is_seller = product.owner_id == current_user.id
+    order = validate_buyer(product, current_user, selling_round)
+
+    # owner or buyer
+    if not is_seller and not order:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # file mode
+    if order and not is_seller and order.mode != "file":
+        raise HTTPException(
+            status_code=403, detail="Download not allowed for this artifact"
+        )
 
     artifact = crud.artifact.get(db, id=artifact_id)
     if not artifact:

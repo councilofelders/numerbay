@@ -12,7 +12,9 @@ def test_generate_upload_url(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"])
+    product = create_random_product(
+        db, owner_id=current_user["id"], mode="file"
+    )  # todo check on-platform
     product_id = product.id
     artifact_data = {
         "filename": "test.txt",  # todo file format requirements
@@ -44,7 +46,7 @@ def test_generate_download_url(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"])
+    product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
     artifact_data = {
         "filename": "test.txt",  # todo file format requirements
@@ -82,7 +84,7 @@ def test_create_product_artifact(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"])
+    product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
 
     url = "http://exmaple.com"  # todo validate input
@@ -110,7 +112,7 @@ def test_read_product_artifact(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"])
+    product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
 
     url = "http://exmaple.com"
@@ -148,7 +150,7 @@ def test_update_product_artifact(
     assert r.status_code == 200
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"])
+    product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
 
     url = "http://exmaple.com"

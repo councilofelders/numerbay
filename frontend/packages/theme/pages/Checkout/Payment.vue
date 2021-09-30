@@ -68,11 +68,29 @@
             </div>
           </template>
         </SfCheckbox>
+        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'">
+          <template #label>
+            <div class="sf-checkbox__label">
+              (Optional) Submit this model to Numerai for me automatically.
+            </div>
+          </template>
+        </SfCheckbox>
+        <SfCheckbox disabled selected name="terms" class="summary__submit" v-else>
+          <template #label>
+            <div class="sf-checkbox__label">
+              Submit this model to Numerai for me automatically.
+            </div>
+          </template>
+        </SfCheckbox>
+        <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(products[0])!=='file')">
+          <SfSelectOption value=""></SfSelectOption>
+          <SfSelectOption v-for="model in models" :key="`${model.id}`" :value="`${model.id}`">{{model.name}}</SfSelectOption>
+        </SfSelect>
 
         <div class="summary__action">
           <SfButton
             v-e2e="'make-an-order'"
-            :disabled="loading || !terms"
+            :disabled="loading || productLoading || numeraiLoading || !terms || ((submitModel || productGetters.getMode(products[0])!=='file') && !submitModelId)"
             class="summary__action-button"
             @click="processOrder"
           >
@@ -95,13 +113,23 @@ import {
   SfIcon,
   SfPrice,
   SfProperty,
+  SfSelect,
   SfAccordion,
   SfLink,
   SfLoader
 } from '@storefront-ui/vue';
 import { onSSR } from '@vue-storefront/core';
 import { ref, computed } from '@vue/composition-api';
-import {useProduct, useMakeOrder, useCart, useUserOrder, productGetters, useGlobals} from '@vue-storefront/numerbay';
+import {
+  useProduct,
+  useMakeOrder,
+  useCart,
+  useUserOrder,
+  useNumerai,
+  productGetters,
+  useGlobals,
+  userGetters
+} from '@vue-storefront/numerbay';
 import { useUiNotification } from '~/composables';
 // import Web3 from 'web3';
 
@@ -117,6 +145,7 @@ export default {
     SfIcon,
     SfPrice,
     SfProperty,
+    SfSelect,
     SfAccordion,
     SfLink,
     SfLoader,
@@ -142,17 +171,22 @@ export default {
     const { orders, search: orderSearch } = useUserOrder('order-history');
     const { products, search, loading: productLoading } = useProduct(String(id));
     const { globals, getGlobals } = useGlobals();
+    const { numerai, getModels, loading: numeraiLoading } = useNumerai('my-listings'); // , error: numeraiError
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     // const { web3User, initWeb3Modal, ethereumListener } = useUser();
     const { send } = useUiNotification();
 
     const isPaymentReady = ref(false);
     const terms = ref(false);
+    const submitModel = ref(false);
+    const submitModelId = ref(null);
 
     onSSR(async () => {
       await load();
       await search({ id });
     });
+
+    getModels();
 
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     const pay = async (successCallback, failureCallback) => {
@@ -181,7 +215,7 @@ export default {
     };
 
     const processOrder = async () => {
-      await make({id});
+      await make({id, submitModelId: submitModelId.value});
       if (makeOrderError.value.make) {
         send({
           message: makeOrderError.value.make.message,
@@ -196,12 +230,16 @@ export default {
     return {
       isPaymentReady,
       terms,
+      submitModel,
+      submitModelId,
       loading,
       orders,
       globals: computed(() => globals?.value ? globals?.value : {}),
       getGlobals,
       products: computed(() => products?.value?.data ? products?.value?.data : []),
       productLoading,
+      models: computed(() => products?.value?.data ? userGetters.getModels(numerai.value, productGetters.getTournamentId(products?.value?.data[0]), false) : []),
+      numeraiLoading,
       tableHeaders: ['Description', 'Seller', 'Quantity', 'Amount'],
       productGetters,
       processOrder,
