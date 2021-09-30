@@ -44,9 +44,16 @@ export default {
         aboutNumerbay: {
           name: 'About NumerBay',
           children: [
+            { name: 'Maintainer: Numerai Community', link: '#' },
             { name: 'Sponsor: Numerai Council of Elders', link: '#' },
-            { name: 'API Docs (Swagger)', clickHandler: () => window.open('https://numerbay.ai/docs', '_blank') },
-            { name: 'API Docs (ReDoc)', clickHandler: () => window.open('https://numerbay.ai/redoc', '_blank') }
+            { name: 'Logo: Numerai, 2021', link: '#' }
+          ]
+        },
+        api: {
+          name: 'NumerBay API Docs',
+          children: [
+            { name: 'Swagger', clickHandler: () => window.open('https://numerbay.ai/docs', '_blank') },
+            { name: 'ReDoc', clickHandler: () => window.open('https://numerbay.ai/redoc', '_blank') }
           ]
         },
         officialNumerai: {
@@ -59,7 +66,7 @@ export default {
           ]
         },
         community: {
-          name: 'Community',
+          name: 'Numerai Community',
           children: [
             { name: 'CoE Wallet', clickHandler: () => window.open('https://gnosis-safe.io/app/#/safes/0xF58B7c28DAF13926329ef0c74FA3f7258f5A9131/', '_blank') },
             { name: 'Dashboard by @QE', clickHandler: () => window.open(this.qeDashboardUrl, '_blank') },
