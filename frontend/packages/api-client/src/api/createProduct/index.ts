@@ -15,6 +15,9 @@ export default async function createProduct(context, params, customQuery?: Custo
     price: Number(params.price),
     currency: params.isOnPlatform === 'true' ? params.currency : 'USD',
     wallet: params.wallet ? params.wallet : null,
+    mode: params.mode,
+    // eslint-disable-next-line camelcase
+    stake_limit: params.stakeLimit ? params.stakeLimit : null,
     // eslint-disable-next-line camelcase
     category_id: Number(params.category),
     avatar: params.avatar ? params.avatar : null,

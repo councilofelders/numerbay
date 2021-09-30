@@ -203,6 +203,14 @@ export default {
       }
 
       const downloadUrl = await this.downloadArtifact({productId: artifact.product_id, artifactId: artifact.id});
+      if (this.error.downloadArtifact) {
+        this.send({
+          message: this.error.downloadArtifact.message,
+          type: 'danger'
+        });
+        return;
+      }
+
       const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
       const link = document.createElement('a');
       link.href = downloadUrl;

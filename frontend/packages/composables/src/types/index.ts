@@ -138,6 +138,8 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getCategoryIds: (product: PRODUCT) => string[];
     getId: (product: PRODUCT) => string;
     getFormattedPrice: (price: PRODUCT, withCurrency: boolean, decimals: number) => string;
+    getMode: (product: PRODUCT) => string;
+    getTournamentId: (product: PRODUCT) => number;
     getTotalReviews: (product: PRODUCT) => number;
     getAverageRating: (product: PRODUCT) => number;
     getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
@@ -162,6 +164,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getToAddress: (order: ORDER) => string;
     getTransactionHash: (order: ORDER) => string;
     getProduct: (order: ORDER) => any;
+    getSubmitModelName: (order: ORDER) => string;
     getItems: (order: ORDER) => ORDER_ITEM[];
     getItemSku: (item: ORDER_ITEM) => string;
     getItemName: (item: ORDER_ITEM) => string;
@@ -177,6 +180,7 @@ export interface ProductArtifactGetters<ARTIFACT> {
     getId: (order: ARTIFACT) => string;
     getObjectName: (order: ARTIFACT) => string;
     getObjectSize: (order: ARTIFACT) => string;
+    getDescription: (order: ARTIFACT) => string;
     getPrice: (order: ARTIFACT) => number;
     getCurrency: (order: ARTIFACT) => string;
     getFromAddress: (order: ARTIFACT) => string;

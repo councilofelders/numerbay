@@ -14,6 +14,10 @@ class OrderBase(BaseModel):
     round_order: Optional[int] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None
+    mode: Optional[str] = None
+    stake_limit: Optional[Decimal] = None
+    submit_model_id: Optional[str] = None
+    submit_model_name: Optional[str] = None
     chain: Optional[str] = None
     from_address: Optional[str] = None
     to_address: Optional[str] = None
@@ -25,6 +29,7 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     price: Decimal
     currency: str
+    mode: str
     chain: Optional[str]
     from_address: str
     to_address: str

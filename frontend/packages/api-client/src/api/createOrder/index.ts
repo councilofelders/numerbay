@@ -16,7 +16,9 @@ export default async function createOrder(context, params, customQuery?: CustomQ
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
-    id: Number(params.id)
+    id: Number(params.id),
+    // eslint-disable-next-line camelcase
+    submit_model_id: params.submitModelId
   };
 
   // Use axios to send a POST request

@@ -36,6 +36,9 @@ export const getObjectName = (artifact: any): string => artifact?.object_name ||
 export const getObjectSize = (artifact: any): string => artifact?.object_size ? humanFileSize(artifact?.object_size) : '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getDescription = (artifact: any): string => artifact?.description;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getPrice = (artifact: any): number | null => artifact?.price || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -87,6 +90,7 @@ const artifactGetters: ProductArtifactGetters<Artifact> = {
   getId,
   getObjectName,
   getObjectSize,
+  getDescription,
   getPrice,
   getCurrency,
   getFromAddress,

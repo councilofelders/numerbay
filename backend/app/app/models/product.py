@@ -20,6 +20,8 @@ class Product(Base):
     price = Column(Numeric, index=True, nullable=False)
     currency = Column(String, nullable=False, default="USD", server_default="USD")
     wallet = Column(String, nullable=True)
+    mode = Column(String, nullable=True)
+    stake_limit = Column(Numeric, nullable=True)
     chain = Column(String)
     avatar = Column(String)
     third_party_url = Column(String)

@@ -5,8 +5,8 @@ const factoryParams = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   make: async (context: Context, params): Promise<Order> => {
     Logger.debug('makeOrder');
-    const { id } = params;
-    const response = await context.$numerbay.api.createOrder({ id });
+    const { id, submitModelId } = params;
+    const response = await context.$numerbay.api.createOrder({ id, submitModelId });
     if (response?.error) {
       throw new Error(response.detail);
     }

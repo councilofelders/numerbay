@@ -44,6 +44,7 @@ def create_order(
     *,
     db: Session = Depends(deps.get_db),
     id: int = Body(..., embed=True),
+    submit_model_id: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -113,10 +114,19 @@ def create_order(
             detail="Round rollover in progress, please try again after the round submission deadline",
         )
 
+    # todo api key permission
+
+    # todo submit model ownership
+
+    # todo compulsory submit model for non-file modes
+
     if product:
         order_in = schemas.OrderCreate(
             price=product.price,
             currency=product.currency,
+            mode=product.mode,
+            stake_limit=product.stake_limit,
+            submit_model_id=submit_model_id,
             chain=product.chain,
             from_address=from_address,
             to_address=to_address,

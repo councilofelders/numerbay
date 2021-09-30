@@ -10,10 +10,12 @@ from app.schemas.user import ProductOwner
 
 # Shared properties
 class ProductBase(BaseModel):
-    is_on_platform: Optional[bool] = True
+    is_on_platform: Optional[bool] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None
     wallet: Optional[str] = None
+    mode: Optional[str] = None
+    stake_limit: Optional[Decimal] = None
     chain: Optional[str] = None
     avatar: Optional[HttpUrl] = None
     third_party_url: Optional[HttpUrl] = None
