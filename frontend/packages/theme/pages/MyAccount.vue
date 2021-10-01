@@ -27,7 +27,6 @@
         <SfContentPage title="Log out" />
       </SfContentCategory>
 
-      <!--todo turnkey rollout-->
       <SfContentCategory title="Buyer">
         <SfContentPage title="Order history">
           <OrderHistory />
@@ -42,7 +41,6 @@
         <SfContentPage title="My listings">
           <MyListings />
         </SfContentPage>
-        <!--todo turnkey rollout-->
         <SfContentPage title="Sales history">
           <SalesHistory />
         </SfContentPage>

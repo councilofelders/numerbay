@@ -122,7 +122,6 @@
                   </ValidationProvider>
                 </div>
                 <div class="form__radio-group">
-                  <!--todo turnkey rollout-->
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
                       name="isOnPlatform"
@@ -533,7 +532,7 @@ export default {
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      isOnPlatform: product ? String(product.is_on_platform) : 'true', // todo turnkey rollout
+      isOnPlatform: product ? String(product.is_on_platform) : 'true',
       currency: product ? product.currency : 'NMR',
       wallet: product ? product.wallet : null,
       mode: product ? product.mode : 'file',

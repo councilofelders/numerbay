@@ -50,11 +50,6 @@ def create_order(
     """
     Create new order.
     """
-    # todo turnkey rollout
-    # raise HTTPException(
-    #     status_code=400, detail="On-platform listing is not yet available",
-    # )
-
     # Product exists
     product = crud.product.get(db=db, id=id)
     if not product:

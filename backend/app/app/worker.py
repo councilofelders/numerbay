@@ -192,4 +192,3 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         batch_update_payments_task.s(),
         name=f"batch update payments every {settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS} seconds",
     )
-    # todo turnkey rollout
