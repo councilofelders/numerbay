@@ -491,9 +491,13 @@ export default {
       if (isOnPlatform === 'true') {
         this.form.currency = 'NMR';
         this.form.wallet = this.currentListing ? this.currentListing.wallet : null;
+        this.form.mode = this.currentListing?.mode || 'file';
+        this.form.stakeLimit = this.currentListing?.stake_limit;
       } else {
         this.form.currency = 'USD';
         this.form.wallet = null;
+        this.form.mode = null;
+        this.form.stakeLimit = null;
       }
     },
     onIsPerpetualChange(isPerpetual) {
