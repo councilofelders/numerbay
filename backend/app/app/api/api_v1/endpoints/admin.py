@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.post("/fix-product-models")
-def fix_product_models(
+def fill_product_mode(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_superuser),
@@ -20,38 +20,54 @@ def fix_product_models(
     """
     Fix product model foreign keys (for db migration only).
     """
-    # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
-    db.query(Product).filter(Product.name == Model.name).update(
-        {Product.model_id: Model.id}, synchronize_session=False
+    db.query(Product).filter(Product.is_on_platform).update(
+        {Product.mode: "file"}, synchronize_session=False
     )
     db.commit()
     return {"msg": "success!"}
 
 
-@router.post("/fix-signals-models")
-def fix_signals_models(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Fix product model foreign keys (for db migration only).
-    """
-    # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
-    signals_products = db.query(Product).filter(Product.category_id == 6).all()
-    product_to_return = []
-    for product in signals_products:
-        model = (
-            db.query(Model)
-            .filter(and_(Model.tournament == 11, Model.name == product.name))
-            .first()
-        )
-        if model:
-            product.model_id = model.id
-            product_to_return.append(product.id)
-    db.commit()
-    # signals_products = db.query(Product).filter(Product.category_id == 6)
-    return product_to_return
+# @router.post("/fix-product-models")
+# def fix_product_models(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Fix product model foreign keys (for db migration only).
+#     """
+#     # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
+#     db.query(Product).filter(Product.name == Model.name).update(
+#         {Product.model_id: Model.id}, synchronize_session=False
+#     )
+#     db.commit()
+#     return {"msg": "success!"}
+
+
+# @router.post("/fix-signals-models")
+# def fix_signals_models(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Fix product model foreign keys (for db migration only).
+#     """
+#     # match_statement = select([Product.id, Product.name, Model.id]).where(Product.name == Model.name)
+#     signals_products = db.query(Product).filter(Product.category_id == 6).all()
+#     product_to_return = []
+#     for product in signals_products:
+#         model = (
+#             db.query(Model)
+#             .filter(and_(Model.tournament == 11, Model.name == product.name))
+#             .first()
+#         )
+#         if model:
+#             product.model_id = model.id
+#             product_to_return.append(product.id)
+#     db.commit()
+#     # signals_products = db.query(Product).filter(Product.category_id == 6)
+#     return product_to_return
 
 
 # @router.post("/fix-url-encoding")
