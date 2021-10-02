@@ -1,4 +1,3 @@
-import functools
 import io
 import sys
 from datetime import datetime, timedelta, timezone
@@ -11,9 +10,8 @@ from celery.schedules import crontab
 from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
 from raven import Client
-from sqlalchemy import and_, or_
 
-from app import crud, models
+from app import crud
 from app.api import deps
 from app.core.celery_app import celery_app
 from app.core.config import settings
@@ -401,18 +399,9 @@ def batch_submit_numerai_models_task() -> None:
     db = SessionLocal()
     try:
         globals = crud.globals.update_singleton(db)
-
-        query_filters = [
-            models.Order.round_order == globals.selling_round,  # type: ignore
-            models.Order.state == "confirmed",
-            or_(
-                models.Order.submit_state.is_(None),
-                models.Order.submit_state != "completed",
-            ),
-            models.Order.submit_model_id.is_not(None),  # type: ignore
-        ]
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
-        orders = db.query(models.Order).filter(query_filter).all()
+        orders = crud.order.get_pending_submission_orders(
+            db, round_order=globals.selling_round
+        )
 
         print(f"total orders to submit: {len(orders)}")
 

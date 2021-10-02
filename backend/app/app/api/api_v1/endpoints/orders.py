@@ -102,18 +102,50 @@ def create_order(
             status_code=400, detail="Order for this product this round already exists"
         )
 
-    # not during round rollover
+    # Not during round rollover
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
             detail="Round rollover in progress, please try again after the round submission deadline",
         )
 
-    # todo api key permission
+    # todo test
+    # Compulsory submit model for non-file modes
+    if product.mode != "file" and submit_model_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Specifying Numerai model ID for submission is required for this product",
+        )
 
-    # todo submit model ownership
+    # Numerai api permissions
+    if product.mode != "file" or (
+        submit_model_id is not None
+    ):  # if stake modes or file mode with submit_model_id
+        # check buyer api permissions
+        if (
+            product.mode == "stake_with_limit"
+            and not current_user.numerai_api_key_can_stake
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Numerai API Key does not have permission to stake",
+            )
+        if not current_user.numerai_api_key_can_upload_submission:
+            raise HTTPException(
+                status_code=403,
+                detail="Numerai API Key does not have permission to upload submissions",
+            )
 
-    # todo compulsory submit model for non-file modes
+    # Own submit model id
+    owner_model_ids = [
+        model.id
+        for model in current_user.models  # type: ignore
+        if model.tournament == product.model.tournament
+    ]
+    if submit_model_id is not None and submit_model_id not in owner_model_ids:
+        raise HTTPException(
+            status_code=403, detail="Invalid Numerai model ID for submission"
+        )
 
     if product:
         order_in = schemas.OrderCreate(

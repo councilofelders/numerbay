@@ -1,4 +1,3 @@
-import functools
 import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -8,7 +7,6 @@ from typing import Any, Dict, List, Optional, Union
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
 from google.api_core.exceptions import NotFound
 from google.cloud.storage import Bucket
-from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -522,18 +520,9 @@ def generate_upload_url(
         )
 
     # Upload artifact for confirmed orders
-    query_filters = [
-        models.Order.round_order == globals.selling_round,  # type: ignore
-        models.Order.state == "confirmed",
-        or_(
-            models.Order.submit_state.is_(None),
-            models.Order.submit_state != "completed",
-        ),
-        models.Order.submit_model_id.is_not(None),  # type: ignore
-    ]
-    query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
-    orders = db.query(models.Order).filter(query_filter).all()
-
+    orders = crud.order.get_pending_submission_orders(
+        db, round_order=globals.selling_round  # type: ignore
+    )
     for order in orders:
         print(f"Uploading csv artifact {object_name} for order {order.id}")
         celery_app.send_task(

@@ -53,6 +53,22 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             .all()
         )
 
+    def get_pending_submission_orders(
+        self, db: Session, *, round_order: int
+    ) -> List[Order]:
+        query_filters = [
+            self.model.round_order == round_order,  # type: ignore
+            self.model.state == "confirmed",
+            or_(
+                self.model.submit_state.is_(None),
+                self.model.submit_state != "completed",
+            ),
+            self.model.submit_model_id.is_not(None),  # type: ignore
+        ]
+        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        orders = db.query(self.model).filter(query_filter).all()
+        return orders
+
     def search(
         self,
         db: Session,
