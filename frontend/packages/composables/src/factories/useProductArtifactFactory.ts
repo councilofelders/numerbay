@@ -5,6 +5,7 @@ import {UseProductArtifact, UseProductArtifactErrors} from '../types/composeable
 export interface UseProductArtifactFactoryParams<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> extends FactoryParams {
   searchArtifacts: (context: Context, params: ARTIFACT_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ARTIFACTS>;
   downloadArtifact: (context: Context, params: any) => Promise<any>;
+  submitArtifact: (context: Context, params: any) => Promise<any>;
   createArtifact: (context: Context, params: any) => Promise<any>;
   updateArtifact: (context: Context, params: any) => Promise<any>;
   deleteArtifact: (context: Context, params: any) => Promise<any>;
@@ -19,6 +20,7 @@ export function useProductArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(fac
     const errorsFactory = (): UseProductArtifactErrors => ({
       search: null,
       downloadArtifact: null,
+      submitArtifact: null,
       createArtifact: null,
       updateArtifact: null,
       deleteArtifact: null
@@ -59,6 +61,22 @@ export function useProductArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(fac
         loading.value = false;
       }
       return downloadUrl;
+    };
+
+    const submitArtifact = async ({orderId, artifactId}) => {
+      Logger.debug(`useProductArtifactFactory.submitArtifact ${orderId}/${artifactId}`);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        await _factoryParams.submitArtifact({orderId, artifactId});
+        error.value.submitArtifact = null;
+      } catch (err) {
+        error.value.submitArtifact = err;
+        Logger.error('useProductArtifact/submitArtifact', err);
+      } finally {
+        loading.value = false;
+      }
     };
 
     const createArtifact = async ({productId, artifact: providedArtifact}) => {
@@ -112,6 +130,7 @@ export function useProductArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(fac
     return {
       search,
       downloadArtifact,
+      submitArtifact,
       createArtifact,
       updateArtifact,
       deleteArtifact,

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import send_new_order_email
 
@@ -184,6 +185,55 @@ def create_order(
                 )
         return order
     return None
+
+
+# todo rate limit
+@router.post("/{order_id}/submit-artifact/{artifact_id}")
+def submit_artifact(
+    *,
+    order_id: int,
+    artifact_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    order = crud.order.get(db=db, id=order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.buyer_id != current_user.id and order.product.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.state != "confirmed":
+        raise HTTPException(status_code=403, detail="Order not confirmed")
+    if not order.buyer.numerai_api_key_can_upload_submission:
+        raise HTTPException(
+            status_code=403,
+            detail="Buyer's Numerai API Key does not have permission to upload submissions",
+        )
+
+    active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
+
+    artfact = crud.artifact.get(db, id=artifact_id)
+    if not artfact:
+        raise HTTPException(status_code=404, detail="Artifact not found")
+    if artfact.round_tournament != active_round:
+        raise HTTPException(
+            status_code=400, detail=f"Round {artfact.round_tournament} is not active"
+        )
+    if artfact.product_id != order.product_id:
+        raise HTTPException(status_code=400, detail="Invalid artifact")
+
+    celery_app.send_task(
+        "app.worker.upload_numerai_artifact_task",
+        kwargs=dict(
+            order_id=order.id,
+            object_name=artfact.object_name,
+            model_id=order.submit_model_id,
+            numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
+            numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+            tournament=order.product.model.tournament,
+            version=1,
+        ),
+    )
+    return {"msg": "success!"}
 
 
 # @router.put("/{id}", response_model=schemas.Order)

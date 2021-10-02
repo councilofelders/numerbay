@@ -12,8 +12,17 @@ const params: UseProductArtifactFactoryParams<ArtifactsResponse, ArtifactSearchP
   },
 
   downloadArtifact: async (context: Context, {productId, artifactId}) => {
-    Logger.debug('deleteArtifact');
+    Logger.debug('downloadArtifact');
     const response = await context.$numerbay.api.getArtifactDownloadUrl({productId, artifactId});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
+
+  submitArtifact: async (context: Context, {orderId, artifactId}) => {
+    Logger.debug('submitArtifact');
+    const response = await context.$numerbay.api.submitArtifact({orderId, artifactId});
     if (response?.error) {
       throw new Error(response.detail);
     }

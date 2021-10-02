@@ -21,6 +21,7 @@ import getArtifactDownloadUrl from './api/getArtifactDownloadUrl';
 import getArtifactUploadUrl from './api/getArtifactUploadUrl';
 import getArtifact from './api/getArtifact';
 import createArtifact from './api/createArtifact';
+import submitArtifact from './api/submitArtifact';
 import updateArtifact from './api/updateArtifact';
 import deleteArtifact from './api/deleteArtifact';
 import axios from 'axios';
@@ -121,6 +122,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     getArtifactUploadUrl,
     getArtifact,
     createArtifact,
+    submitArtifact,
     updateArtifact,
     deleteArtifact
   },

@@ -96,6 +96,7 @@ export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
 export interface UseProductArtifactErrors {
   search: Error;
   downloadArtifact: Error;
+  submitArtifact: Error;
   createArtifact: Error;
   updateArtifact: Error;
   deleteArtifact: Error;
@@ -107,6 +108,7 @@ export interface UseProductArtifact<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> {
   loading: ComputedProperty<boolean>;
   error: ComputedProperty<UseProductArtifactErrors>;
   downloadArtifact(params: { productId: number, artifactId: number }): Promise<void>;
+  submitArtifact(params: { orderId: number, artifactId: number }): Promise<void>;
   createArtifact(params: { artifact: any }): Promise<void>;
   updateArtifact(params: { productId: number, artifactId: number, description: string }): Promise<void>;
   deleteArtifact(params: { productId: number, artifactId: number }): Promise<void>;

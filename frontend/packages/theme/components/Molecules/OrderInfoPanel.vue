@@ -116,7 +116,7 @@
               <SfButton class="sf-button--text action__element" @click="download(artifact)">
                 {{ $t('Download') }}
               </SfButton>
-              <SfButton class="sf-button--text action__element" @click="download(artifact)">
+              <SfButton class="sf-button--text action__element" @click="submit(artifact)">
                 {{ $t('Submit') }}
               </SfButton>
             </span>
@@ -190,11 +190,14 @@ export default {
       //     link.click();
       //     URL.revokeObjectURL(link.href);
       //   }).catch(console.error);
+    },
+    async submit(artifact) {
+      await this.submitArtifact({orderId: this.order.id, artifactId: artifact.id});
     }
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const { artifacts, search, downloadArtifact, loading, error } = useProductArtifact(`${props.order.product.id}`);
+    const { artifacts, search, downloadArtifact, submitArtifact, loading, error } = useProductArtifact(`${props.order.product.id}`);
     const { send } = useUiNotification();
 
     search({ productId: props.order.product.id });
@@ -214,6 +217,7 @@ export default {
       error,
       send,
       downloadArtifact,
+      submitArtifact,
       orderGetters,
       artifactGetters
     };
