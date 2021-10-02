@@ -212,6 +212,7 @@ def batch_update_payments_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def upload_numerai_artifact_task(
+    order_id: int,
     object_name: str,
     model_id: str,
     numerai_api_key_public_id: str,
@@ -301,6 +302,14 @@ def upload_numerai_artifact_task(
         create = api.raw_query(create_query, arguments, authorization=True)
     submission_id = create["data"]["create_submission"]["id"]
     print(f"submission_id: {submission_id}")
+    if submission_id:
+        # submision successful, mark order submit_state to completed
+        db = SessionLocal()
+        try:
+            order = crud.order.get(db, id=order_id)
+            crud.order.update(db, db_obj=order, obj_in={"submit_state": "completed"})  # type: ignore
+        finally:
+            db.close()
     return submission_id
 
 
@@ -308,7 +317,8 @@ def upload_numerai_artifact_task(
 def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Optional[Any]:
     db = SessionLocal()
     try:
-        print(f"Checking artifact submission for order [{order_json['id']}]")
+        order_id = order_json["id"]
+        print(f"Checking artifact submission for order [{order_id}]")
 
         # Get artifacts
         product = crud.product.get(db=db, id=order_json["product_id"])
@@ -334,13 +344,13 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
         ):
             if globals.is_doing_round_rollover:  # Round about to close, finish
                 print(
-                    f"Submission for order [{order_json['id']}] interrupted due to round closing"
+                    f"Submission for order [{order_id}] interrupted due to round closing"
                 )
                 return None
             else:  # Check again later
                 if retry:
                     print(
-                        f"No csv artifact for order [{order_json['id']}], trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                        f"No csv artifact for order [{order_id}], trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
                     )
                     celery_app.send_task(
                         "app.worker.submit_numerai_model_subtask",
@@ -348,7 +358,7 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
                         countdown=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
                     )
                 else:
-                    print(f"No csv artifact for order [{order_json['id']}]")
+                    print(f"No csv artifact for order [{order_id}]")
                 return None
 
         # Has csv artifact
@@ -361,7 +371,7 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
             if retry:
                 # Check again later
                 print(
-                    f"Csv artifact for order [{order_json['id']}] not yet uploaded, trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                    f"Csv artifact for order [{order_id}] not yet uploaded, trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
                 )
                 celery_app.send_task(
                     "app.worker.submit_numerai_model_subtask",
@@ -369,18 +379,19 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
                     countdown=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
                 )
             else:
-                print(f"Csv artifact for order [{order_json['id']}] not yet uploaded")
+                print(f"Csv artifact for order [{order_id}] not yet uploaded")
             return None
 
         buyer = crud.user.get(db, id=order_json["buyer_id"])
 
         if buyer:
             print(
-                f"Uploading csv artifact {csv_artifact.object_name} for order {order_json['id']}"
+                f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}"
             )
             celery_app.send_task(
                 "app.worker.upload_numerai_artifact_task",
                 kwargs=dict(
+                    order_id=order_id,
                     object_name=csv_artifact.object_name,
                     model_id=order_json["submit_model_id"],
                     numerai_api_key_public_id=buyer.numerai_api_key_public_id,

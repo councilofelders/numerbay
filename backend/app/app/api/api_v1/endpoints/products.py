@@ -528,6 +528,7 @@ def generate_upload_url(
         celery_app.send_task(
             "app.worker.upload_numerai_artifact_task",
             kwargs=dict(
+                order_id=order.id,
                 object_name=object_name,
                 model_id=order.submit_model_id,
                 numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,

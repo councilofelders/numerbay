@@ -230,6 +230,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                                 celery_app.send_task(
                                                     "app.worker.upload_numerai_artifact_task",
                                                     kwargs=dict(
+                                                        order_id=order_obj.id,
                                                         object_name=csv_artifact.object_name,
                                                         model_id=order_json[
                                                             "submit_model_id"
