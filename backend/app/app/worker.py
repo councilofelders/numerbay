@@ -383,7 +383,7 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
                     model_id=order_json["submit_model_id"],
                     numerai_api_key_public_id=buyer.numerai_api_key_public_id,
                     numerai_api_key_secret=buyer.numerai_api_key_secret,
-                    tournament=8,
+                    tournament=product.model.tournament,  # type: ignore
                     version=1,
                 ),
             )

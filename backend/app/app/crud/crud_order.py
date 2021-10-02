@@ -220,7 +220,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                                         ],
                                                         numerai_api_key_public_id=buyer.numerai_api_key_public_id,
                                                         numerai_api_key_secret=buyer.numerai_api_key_secret,
-                                                        tournament=8,
+                                                        tournament=order_obj.product.model.tournament,
                                                         version=1,
                                                     ),
                                                 )

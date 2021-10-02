@@ -543,10 +543,10 @@ def generate_upload_url(
                 model_id=order.submit_model_id,
                 numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
                 numerai_api_key_secret=order.buyer.numerai_api_key_secret,
-                tournament=8,
+                tournament=order.product.model.tournament,
                 version=1,
             ),
-            countdown=1 * 60,
+            countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
         )
     return {"id": artifact.id, "url": url}
 
