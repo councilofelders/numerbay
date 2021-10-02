@@ -89,8 +89,7 @@
         class="sf-property--full-width property"
       />
     </div>
-    {{order}}
-    <SfTable class="orders" v-if="artifacts && artifacts.data">
+    <SfTable class="orders" v-if="artifacts">
       <SfTableHeading>
         <SfTableHeader
           v-for="tableHeader in tableHeaders"
@@ -106,6 +105,7 @@
           </SfButton>
         </SfTableHeader>-->
       </SfTableHeading>
+      <SfTableRow v-if="artifacts && artifacts.total===0">Please wait for the seller to upload artifacts after the round opens</SfTableRow>
       <SfTableRow v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
         <SfTableData>{{ artifactGetters.getId(artifact) }}</SfTableData>
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>

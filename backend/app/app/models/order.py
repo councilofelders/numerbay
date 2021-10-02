@@ -20,6 +20,7 @@ class Order(Base):
     stake_limit = Column(Numeric, nullable=True)
     submit_model_id = Column(String, nullable=True)
     submit_model_name = Column(String, nullable=True)
+    submit_state = Column(String)
     chain = Column(String, nullable=False, default="ethereum")
     from_address = Column(String)
     to_address = Column(String)

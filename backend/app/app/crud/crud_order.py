@@ -10,6 +10,8 @@ from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.api import deps
+from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.models.order import Order
@@ -180,6 +182,48 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                     order_obj.state = "confirmed"
                                 db.commit()
                                 db.refresh(order_obj)
+
+                                # Upload csv artifact for order if round open
+                                globals = crud.globals.update_singleton(db)
+                                selling_round = globals.selling_round  # type: ignore
+                                if (
+                                    selling_round == globals.active_round
+                                ):  # if round open
+                                    print(
+                                        f"Round {globals.active_round} is open, search for artifact to upload"
+                                    )
+                                    artifacts = crud.artifact.get_multi_by_product_round(
+                                        db,
+                                        product=order_obj.product,
+                                        round_tournament=selling_round,
+                                    )
+                                    if artifacts:
+                                        csv_artifacts = [
+                                            artifact
+                                            for artifact in artifacts
+                                            if artifact.object_name.endswith(".csv")  # type: ignore
+                                        ]
+                                        if csv_artifacts:
+                                            csv_artifact = csv_artifacts[-1]
+                                            bucket = deps.get_gcs_bucket()
+                                            blob = bucket.blob(csv_artifact.object_name)
+                                            if blob.exists():
+                                                print(
+                                                    f"Uploading csv artifact {csv_artifact.object_name} for order {order_obj.id}"
+                                                )
+                                                celery_app.send_task(
+                                                    "app.worker.upload_numerai_artifact_task",
+                                                    kwargs=dict(
+                                                        object_name=csv_artifact.object_name,
+                                                        model_id=order_json[
+                                                            "submit_model_id"
+                                                        ],
+                                                        numerai_api_key_public_id=buyer.numerai_api_key_public_id,
+                                                        numerai_api_key_secret=buyer.numerai_api_key_secret,
+                                                        tournament=8,
+                                                        version=1,
+                                                    ),
+                                                )
 
                                 if settings.EMAILS_ENABLED:
                                     product = order_obj.product

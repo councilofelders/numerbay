@@ -65,3 +65,12 @@ def add_job_payments(
     celery_app.send_task("app.worker.batch_update_payments_task")
 
     return {"msg": "success!"}
+
+
+@router.post("/submit")
+def add_job_submit_numerai_models(
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.batch_submit_numerai_models_task")
+
+    return {"msg": "success!"}

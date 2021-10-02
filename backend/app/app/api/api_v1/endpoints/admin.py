@@ -1,17 +1,16 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import models
 from app.api import deps
-from app.models import Model, Product
+from app.models import Product
 
 router = APIRouter()
 
 
-@router.post("/fix-product-models")
+@router.post("/fill-product-mode")
 def fill_product_mode(
     *,
     db: Session = Depends(deps.get_db),
