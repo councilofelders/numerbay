@@ -114,14 +114,18 @@ def update_active_round() -> None:
 
         if open_time <= utc_time <= close_staking_time:  # new round opened and active
             print(f"Round {active_round_number} opened")
+            # update active round
             crud.globals.update(
                 db, db_obj=globals, obj_in={"active_round": active_round_number}  # type: ignore
-            )  # update active round
-        else:  # New round not yet opened
+            )
+            # trigger Numerai submissions
+            celery_app.send_task("app.worker.batch_submit_numerai_models_task")
+        else:
+            # New round not yet opened, try again soon
             celery_app.send_task(
                 "app.worker.update_active_round",
                 countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS,
-            )  # try again soon
+            )
     finally:
         print(
             f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
@@ -235,17 +239,17 @@ def upload_numerai_artifact_task(
 
     # Upload URL
     auth_query = """
-                            query($filename: String!
-                                  $tournament: Int!
-                                  $modelId: String) {
-                                submission_upload_auth(filename: $filename
-                                                       tournament: $tournament
-                                                       modelId: $modelId) {
-                                    filename
-                                    url
-                                }
+                        query($filename: String!
+                              $tournament: Int!
+                              $modelId: String) {
+                            submission_upload_auth(filename: $filename
+                                                   tournament: $tournament
+                                                   modelId: $modelId) {
+                                filename
+                                url
                             }
-                            """
+                        }
+                        """
 
     arguments = {
         "filename": "predictions.csv",
