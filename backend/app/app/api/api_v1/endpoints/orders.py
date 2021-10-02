@@ -187,7 +187,6 @@ def create_order(
     return None
 
 
-# todo rate limit
 @router.post("/{order_id}/submit-artifact/{artifact_id}")
 def submit_artifact(
     *,
@@ -207,6 +206,10 @@ def submit_artifact(
         raise HTTPException(
             status_code=403,
             detail="Buyer's Numerai API Key does not have permission to upload submissions",
+        )
+    if order.submit_state == "queued":
+        raise HTTPException(
+            status_code=400, detail="Submission for this order is already queued"
         )
 
     active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
@@ -233,6 +236,7 @@ def submit_artifact(
             version=1,
         ),
     )
+    crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
     return {"msg": "success!"}
 
 

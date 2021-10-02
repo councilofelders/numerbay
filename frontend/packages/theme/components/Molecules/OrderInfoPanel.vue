@@ -84,8 +84,13 @@
         </template>
       </SfProperty>
       <SfProperty
-        name="Status"
+        name="Order Status"
         :value="orderGetters.getStatus(order)"
+        class="sf-property--full-width property"
+      />
+      <SfProperty
+        name="Submission Status"
+        :value="orderGetters.getSubmissionStatus(order)"
         class="sf-property--full-width property"
       />
     </div>
@@ -193,6 +198,12 @@ export default {
     },
     async submit(artifact) {
       await this.submitArtifact({orderId: this.order.id, artifactId: artifact.id});
+      if (this.error.submitArtifact) {
+        this.send({
+          message: this.error.submitArtifact.message,
+          type: 'danger'
+        });
+      }
     }
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars

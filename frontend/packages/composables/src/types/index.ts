@@ -157,6 +157,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getDate: (order: ORDER) => string;
     getId: (order: ORDER) => string;
     getStatus: (order: ORDER) => string;
+    getSubmissionStatus: (order: ORDER) => string;
     getRound: (order: ORDER) => string;
     getPrice: (order: ORDER) => number;
     getCurrency: (order: ORDER) => string;
