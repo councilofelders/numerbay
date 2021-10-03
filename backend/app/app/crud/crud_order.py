@@ -203,17 +203,26 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                 db.refresh(order_obj)
 
                                 # Update product sales stats
-                                crud.product.update(db, db_obj=order_obj.product, obj_in={
-                                    "total_num_sales": order_obj.product.total_num_sales+1,
-                                    "last_sale_price_delta": order_obj.price - order_obj.product.last_sale_price if order_obj.product.last_sale_price else None,
-                                    "last_sale_price": order_obj.price
-                                })
+                                crud.product.update(
+                                    db,
+                                    db_obj=order_obj.product,
+                                    obj_in={
+                                        "total_num_sales": order_obj.product.total_num_sales
+                                        + 1,
+                                        "last_sale_price_delta": order_obj.price
+                                        - order_obj.product.last_sale_price
+                                        if order_obj.product.last_sale_price
+                                        else None,
+                                        "last_sale_price": order_obj.price,
+                                    },
+                                )
 
                                 # Upload csv artifact for order if round open
                                 globals = crud.globals.update_singleton(db)
                                 selling_round = globals.selling_round  # type: ignore
                                 if (
-                                    selling_round == globals.active_round and order_obj.submit_model_id
+                                    selling_round == globals.active_round
+                                    and order_obj.submit_model_id
                                 ):  # if round open
                                     print(
                                         f"Round {globals.active_round} is open, search for artifact to upload"

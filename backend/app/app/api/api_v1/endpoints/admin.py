@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.api import deps
-from app.models import Product, Order
+from app.models import Order, Product
 
 router = APIRouter()
 
@@ -39,17 +39,16 @@ def refresh_sales_stats(
     """
     products = db.query(Product).filter(Product.is_on_platform).all()
     for product in products:
-        query_filters = [
-            Order.product_id == product.id,
-            Order.state == "confirmed"
-        ]
+        query_filters = [Order.product_id == product.id, Order.state == "confirmed"]
         query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
         orders = db.query(Order).filter(query_filter).order_by(desc(Order.id)).all()
         if orders and len(orders) > 0:
             product.total_num_sales = len(orders)
             product.last_sale_price = orders[0].price
             if len(orders) > 1:
-                product.last_sale_price_delta = product.last_sale_price - orders[1].price
+                product.last_sale_price_delta = (
+                    product.last_sale_price - orders[1].price
+                )
     db.commit()
     return {"msg": "success!"}
 
