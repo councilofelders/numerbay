@@ -33,9 +33,14 @@
         </div>
         <div class="product__pricing">
           <div class="last-sale">
-            <h3>Last Sale</h3>
-            <div class="sale-value">$-</div>
-            <p class="last-sale-change" style="color: green;">$0 (0%)</p>
+            <div class="last-sale" v-if="product.is_on_platform">
+              <h3>Total # Sales</h3>
+              <div class="sale-value">{{ product.total_num_sales }}</div>
+              <span class='divider-pipe'>|</span>
+              <h3>Last Sale</h3>
+              <div class="sale-value">{{ product.last_sale_price ? `${product.last_sale_price} ${product.currency}` : '-' }}</div>
+              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${product.currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
+            </div>
           </div>
           <BuyButton
             :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"
@@ -583,7 +588,7 @@ export default {
 }
 .sale-value {
   margin: 0 var(--spacer-xs) 0 var(--spacer-xs);
-  font-size: var(--h3-font-size);
+  font-size: var(--h4-font-size);
 }
 .numerai-chart {
   margin-top: var(--spacer-xl);

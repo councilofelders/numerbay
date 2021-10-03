@@ -6,20 +6,20 @@
     <!--<template #center>
     </template>-->
     <template #right>
-      <p>This is NOT an official Numerai project. For support, please post in<SfButton class="topbar__button sf-button--text" link="https://community.numer.ai/channel/numerbay">#numerbay</SfButton></p>
+      <p>This is NOT an official Numerai project. For support, please post in<SfLink class="topbar__button sf-button--text" href="https://community.numer.ai/channel/numerbay" target="_blank">#numerbay</SfLink></p>
 <!--      <LocaleSelector />-->
     </template>
   </SfTopBar>
 </template>
 
 <script>
-import { SfButton, SfTopBar } from '@storefront-ui/vue';
+import { SfLink, SfTopBar } from '@storefront-ui/vue';
 import LocaleSelector from './LocaleSelector';
 
 export default {
   components: {
     SfTopBar,
-    SfButton,
+    SfLink,
     LocaleSelector
   }
 };

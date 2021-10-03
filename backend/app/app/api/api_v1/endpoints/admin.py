@@ -1,11 +1,13 @@
+import functools
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
 from app import models
 from app.api import deps
-from app.models import Product
+from app.models import Product, Order
 
 router = APIRouter()
 
@@ -17,11 +19,37 @@ def fill_product_mode(
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Fix product model foreign keys (for db migration only).
+    Fill product mode (for db migration only).
     """
     db.query(Product).filter(Product.is_on_platform).update(
         {Product.mode: "file"}, synchronize_session=False
     )
+    db.commit()
+    return {"msg": "success!"}
+
+
+@router.post("/refresh-sales-stats")
+def refresh_sales_stats(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Calculate sales stats for all products (for db migration only).
+    """
+    products = db.query(Product).filter(Product.is_on_platform).all()
+    for product in products:
+        query_filters = [
+            Order.product_id == product.id,
+            Order.state == "confirmed"
+        ]
+        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        orders = db.query(Order).filter(query_filter).order_by(desc(Order.id)).all()
+        if orders and len(orders) > 0:
+            product.total_num_sales = len(orders)
+            product.last_sale_price = orders[0].price
+            if len(orders) > 1:
+                product.last_sale_price_delta = product.last_sale_price - orders[1].price
     db.commit()
     return {"msg": "success!"}
 

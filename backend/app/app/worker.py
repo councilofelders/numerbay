@@ -449,7 +449,7 @@ def validate_artifact_upload_task(artifact_id: int) -> None:
                 print(
                     f"Uploading csv artifact {artifact.object_name} for order {order.id}"
                 )
-                if order.product_id == artifact.product_id:
+                if order.submit_model_id and order.product_id == artifact.product_id:
                     celery_app.send_task(
                         "app.worker.upload_numerai_artifact_task",
                         kwargs=dict(
