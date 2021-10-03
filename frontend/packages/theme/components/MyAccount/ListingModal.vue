@@ -208,23 +208,26 @@
                         v-model="form.mode"
                         class="form__radio"
                       />
+                      <!--todo turnkey rollout-->
                       <SfRadio
                         name="mode"
                         value="stake"
                         label="Stake Only"
                         details="Submit for buyers automatically without distributing artifact files"
-                        description="No Stake Limit"
+                        description="No Stake Limit [Coming Soon]"
                         v-model="form.mode"
                         class="form__radio"
+                        disabled
                       />
                       <SfRadio
                         name="mode"
                         value="stake_with_limit"
                         label="Stake Only with Limit"
                         details="Submit for buyers automatically without distributing artifact files"
-                        description="Specify a stake limit (in NMR)"
+                        description="Specify a stake limit (in NMR) [Coming Soon]"
                         v-model="form.mode"
                         class="form__radio"
+                        disabled
                       />
                     </ValidationProvider>
                   </div>
