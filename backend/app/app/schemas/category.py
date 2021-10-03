@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class CategoryBase(BaseModel):
     name: Optional[str] = None
     slug: Optional[str] = None
+    tournament: Optional[int] = None
 
 
 # Properties to receive on category creation

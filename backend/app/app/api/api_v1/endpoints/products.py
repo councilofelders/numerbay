@@ -246,21 +246,19 @@ def create_product(
         )
 
     # Model ownership
-    if category.slug.startswith(  # type: ignore
-        "signals-"
-    ):  # todo tmp fix, add tournament id to category
-        tournament = 11
-    else:
-        tournament = 8
-    model = crud.model.get_by_name(db, name=product_in.name, tournament=tournament)
-    if not model:
-        raise HTTPException(
-            status_code=404, detail="Model not found",
-        )
-    if model.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="Not enough permissions",
-        )
+    tournament = category.tournament
+    model_id = None
+    if tournament:
+        model = crud.model.get_by_name(db, name=product_in.name, tournament=tournament)
+        if not model:
+            raise HTTPException(
+                status_code=404, detail="Model not found",
+            )
+        if model.owner_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="Not enough permissions",
+            )
+        model_id = model.id
 
     # Create product
     product = crud.product.create_with_owner(
@@ -268,7 +266,7 @@ def create_product(
         obj_in=product_in,
         owner_id=current_user.id,
         sku=sku,
-        model_id=model.id,
+        model_id=model_id,
         tournament=tournament,
     )
     return product

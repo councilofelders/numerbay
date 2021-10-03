@@ -72,15 +72,18 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         obj_in: ProductCreate,
         owner_id: int,
         sku: str,
-        model_id: str = None,
-        tournament: int = 8,  # todo tmp fix
+        model_id: Optional[str] = None,
+        tournament: Optional[int] = 8,
     ) -> Product:
         obj_in_data = jsonable_encoder(obj_in)
 
         if model_id is None:
-            model = crud.model.get_by_name(db, name=obj_in.name, tournament=tournament)
-            if model:
-                model_id = model.id
+            if tournament:
+                model = crud.model.get_by_name(
+                    db, name=obj_in.name, tournament=tournament
+                )
+                if model:
+                    model_id = model.id
         db_obj = self.model(
             **obj_in_data, owner_id=owner_id, model_id=model_id, sku=sku
         )
