@@ -39,18 +39,26 @@
         <SfTableData>{{ artifactGetters.getId(artifact) }}</SfTableData>
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
         <SfTableData>
-          <SfLoader :class="{ loader: componentLoading }" :loading="componentLoading">
-            <SfInput :value="artifact.description" style="margin-right: 10px" label="Description" @input="(value)=>handleEdit(value, product, artifact)"/>
+          <SfLoader :class="{ loader: componentLoading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="componentLoading && !!activeArtifact && activeArtifact.id===artifact.id">
+            <SfInput :value="artifact.description" style="margin-right: 10px" label="Description" :disabled="(componentLoading || loading) && !!activeArtifact" @input="(value)=>{artifact.description=value; activeArtifact=artifact}"/>
+<!--             @input="(value)=>(formEdit=(()=>handleEdit(value, product, artifact)))"-->
           </SfLoader>
         </SfTableData>
 <!--        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>-->
         <SfTableData class="orders__view orders__element--right">
-          <SfLoader :class="{ loader: loading }" :loading="loading">
-            <span class="artifact-actions">
-              <SfButton class="sf-button--text action__element" @click="download(artifact)">
+          <SfLoader :class="{ loader: loading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="loading && activeArtifact && activeArtifact.id===artifact.id">
+            <span class="artifact-actions" v-if="!!activeArtifact && activeArtifact.id===artifact.id">
+              <SfLoader :class="{ loader: loading }" :loading="loading">
+                <SfButton class="sf-button--text" @click="handleEdit(product, activeArtifact)">
+                  {{ $t('Save') }}
+                </SfButton>
+              </SfLoader>
+            </span>
+            <span class="artifact-actions" v-else>
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact" @click="download(artifact)">
                 {{ $t('Download') }}
               </SfButton>
-              <SfButton class="sf-button--text action__element" @click="onManualRemove(artifact)">
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact" @click="onManualRemove(artifact)">
                 {{ $t('Delete') }}
               </SfButton>
             </span>
@@ -202,8 +210,9 @@ export default {
         window.open(artifact.url, '_blank');
         return;
       }
-
+      this.activeArtifact = artifact;
       const downloadUrl = await this.downloadArtifact({productId: artifact.product_id, artifactId: artifact.id});
+      this.activeArtifact = null;
       if (this.error.downloadArtifact) {
         this.send({
           message: this.error.downloadArtifact.message,
@@ -234,7 +243,7 @@ export default {
         this.form.url = encodeURI(decodeURI(this.form.url));
       }
     },
-    async handleEdit(value, product, artifact) {
+    async handleEdit(product, artifact) {
       const onComplete = async () => {
         if (this.error.updateArtifact) {
           this.send({
@@ -250,9 +259,10 @@ export default {
         } finally {
           this.$refs.foo.enable();
           this.componentLoading = false;
+          this.activeArtifact = null;
         }
       };
-      await this.onArtifactEdit(value, product, artifact, onComplete);
+      await this.onArtifactEdit(artifact.description, product, artifact, onComplete);
     },
     async handleNew() {
       await this.createArtifact({productId: this.product.id, artifact: this.form}).then(() => {
@@ -320,6 +330,7 @@ export default {
       await this.search({ productId: this.product.id });
     },
     async onManualRemove(artifact) {
+      this.activeArtifact = artifact;
       this.componentLoading = true;
       try {
         this.$refs.foo.disable();
@@ -336,6 +347,7 @@ export default {
       } finally {
         this.$refs.foo.enable();
         this.componentLoading = false;
+        this.activeArtifact = null;
       }
     }
   },
@@ -354,6 +366,7 @@ export default {
     search({ productId: props.product.id });
 
     const isManualFormOpen = ref(false);
+    const activeArtifact = ref(null);
 
     const tableHeaders = [
       'Artifact ID',
@@ -404,6 +417,7 @@ export default {
       send,
       search,
       tableHeaders,
+      activeArtifact,
       isManualFormOpen,
       form,
       resetForm,
