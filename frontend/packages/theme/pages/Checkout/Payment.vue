@@ -68,7 +68,8 @@
             </div>
           </template>
         </SfCheckbox>
-        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'">
+        <!--todo turnkey rollout-->
+        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'" disabled>
           <template #label>
             <div class="sf-checkbox__label">
               (Optional) Submit this model to Numerai for me automatically.
