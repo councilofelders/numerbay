@@ -76,7 +76,7 @@
       >
         <template #value>
           <span class="sf-property__value" v-if="orderGetters.getTransactionHash(order)" >
-            <SfInput :value="orderGetters.getTransactionHash(order)" class="sf-input--outline"></SfInput>
+            <SfLink :href="`https://etherscan.io/tx/${orderGetters.getTransactionHash(order)}`" target="_blank">{{orderGetters.getTransactionHash(order)}}</SfLink>
           </span>
           <span class="sf-property__value" v-else>
             waiting
@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import {SfProperty, SfIcon, SfButton, SfInput, SfTable, SfLoader} from '@storefront-ui/vue';
+import {SfProperty, SfIcon, SfButton, SfInput, SfTable, SfLoader, SfLink} from '@storefront-ui/vue';
 import { orderGetters, artifactGetters, useProductArtifact } from '@vue-storefront/numerbay';
 import {computed} from '@vue/composition-api';
 import { useUiNotification } from '~/composables';
@@ -146,7 +146,8 @@ export default {
     SfButton,
     SfInput,
     SfTable,
-    SfLoader
+    SfLoader,
+    SfLink
   },
   props: {
     order: {

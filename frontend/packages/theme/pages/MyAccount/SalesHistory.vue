@@ -86,7 +86,6 @@ import {
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import { useUserOrder, orderGetters } from '@vue-storefront/numerbay';
-import { AgnosticOrderStatus } from '@vue-storefront/core';
 import { onSSR } from '@vue-storefront/core';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
 
@@ -148,9 +147,11 @@ export default {
     const getStatusTextClass = (order) => {
       const status = orderGetters.getStatus(order);
       switch (status) {
-        case AgnosticOrderStatus.Open:
+        case 'expired':
+          return 'text-danger';
+        case 'pending':
           return 'text-warning';
-        case AgnosticOrderStatus.Complete:
+        case 'confirmed':
           return 'text-success';
         default:
           return '';

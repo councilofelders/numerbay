@@ -60,6 +60,9 @@
             <SfTableData>
               <span :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
             </SfTableData>
+            <SfTableData>
+              <span :class="getSubmissionStatusTextClass(order)">{{ orderGetters.getSubmissionStatus(order) }}</span>
+            </SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <SfButton class="sf-button--text smartphone-only" @click="downloadOrder(order)">
                 {{ $t('Download') }}
@@ -85,7 +88,6 @@ import {
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import { useUserOrder, orderGetters } from '@vue-storefront/numerbay';
-import { AgnosticOrderStatus } from '@vue-storefront/core';
 import { onSSR } from '@vue-storefront/core';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
 
@@ -139,16 +141,33 @@ export default {
       'Product',
       'Round',
       'Amount',
-      'Status',
+      'Order Status',
+      'Submission',
       'Action'
     ];
 
     const getStatusTextClass = (order) => {
       const status = orderGetters.getStatus(order);
       switch (status) {
-        case AgnosticOrderStatus.Open:
+        case 'expired':
+          return 'text-danger';
+        case 'pending':
           return 'text-warning';
-        case AgnosticOrderStatus.Complete:
+        case 'confirmed':
+          return 'text-success';
+        default:
+          return '';
+      }
+    };
+
+    const getSubmissionStatusTextClass = (order) => {
+      const status = orderGetters.getSubmissionStatus(order);
+      switch (status) {
+        case 'failed':
+          return 'text-danger';
+        case 'queued':
+          return 'text-warning';
+        case 'completed':
           return 'text-success';
         default:
           return '';
@@ -187,6 +206,7 @@ export default {
       loading,
       handleRefreshClick,
       getStatusTextClass,
+      getSubmissionStatusTextClass,
       downloadOrder,
       downloadOrders,
       currentOrder
