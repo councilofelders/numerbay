@@ -217,7 +217,6 @@
                         description="No Stake Limit [Coming Soon]"
                         v-model="form.mode"
                         class="form__radio"
-                        disabled
                       />
                       <SfRadio
                         name="mode"
@@ -227,7 +226,6 @@
                         description="Specify a stake limit (in NMR) [Coming Soon]"
                         v-model="form.mode"
                         class="form__radio"
-                        disabled
                       />
                     </ValidationProvider>
                   </div>
