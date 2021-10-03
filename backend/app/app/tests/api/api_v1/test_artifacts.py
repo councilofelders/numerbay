@@ -16,6 +16,7 @@ def test_generate_upload_url(
         db, owner_id=current_user["id"], mode="file"
     )  # todo check on-platform
     product_id = product.id
+    model_id = product.model.id  # type: ignore
     artifact_data = {
         "filename": "test.txt",  # todo file format requirements
         "action": "PUT",
@@ -37,7 +38,7 @@ def test_generate_upload_url(
 
     crud.artifact.remove(db, id=artifact.id)
     crud.product.remove(db, id=product_id)
-    crud.model.remove(db, id=product.model.id)  # type: ignore
+    crud.model.remove(db, id=model_id)  # type: ignore
 
 
 def test_generate_download_url(
@@ -48,6 +49,7 @@ def test_generate_download_url(
 
     product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
+    model_id = product.model.id  # type: ignore
     artifact_data = {
         "filename": "test.txt",  # todo file format requirements
         "action": "PUT",
@@ -75,7 +77,7 @@ def test_generate_download_url(
 
     crud.artifact.remove(db, id=artifact.id)
     crud.product.remove(db, id=product_id)
-    crud.model.remove(db, id=product.model.id)  # type: ignore
+    crud.model.remove(db, id=model_id)  # type: ignore
 
 
 def test_create_product_artifact(
@@ -86,6 +88,7 @@ def test_create_product_artifact(
 
     product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
+    model_id = product.model.id  # type: ignore
 
     url = "http://exmaple.com"  # todo validate input
     data = {"url": url}
@@ -103,7 +106,7 @@ def test_create_product_artifact(
 
     crud.artifact.remove(db, id=content["id"])
     crud.product.remove(db, id=product_id)
-    crud.model.remove(db, id=product.model.id)  # type: ignore
+    crud.model.remove(db, id=model_id)  # type: ignore
 
 
 def test_read_product_artifact(
@@ -152,6 +155,7 @@ def test_update_product_artifact(
 
     product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
+    model_id = product.model.id  # type: ignore
 
     url = "http://exmaple.com"
     data = {"url": url}  # todo validate input
@@ -185,4 +189,4 @@ def test_update_product_artifact(
         headers=normal_user_token_headers,
     )
     crud.product.remove(db, id=product_id)
-    crud.model.remove(db, id=product.model.id)  # type: ignore
+    crud.model.remove(db, id=model_id)  # type: ignore

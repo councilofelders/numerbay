@@ -22,6 +22,8 @@ def test_create_order(
 
     # Active product: accept
     product = create_random_product(db, is_on_platform=True, mode="file")
+    model_id = product.model.id  # type: ignore
+
     crud.user.update(
         db,
         db_obj=crud.user.get(db, id=product.owner_id),  # type: ignore
@@ -52,7 +54,7 @@ def test_create_order(
 
     crud.order.remove(db, id=content["id"])
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=product.model.id)  # type: ignore
+    crud.model.remove(db, id=model_id)  # type: ignore
     crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
@@ -194,6 +196,7 @@ def test_search_orders(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
     order = create_random_order(db, buyer_id=current_user["id"])
+    model_id = order.product.model.id  # type: ignore
 
     response = client.post(
         f"{settings.API_V1_STR}/orders/search",
@@ -213,5 +216,5 @@ def test_search_orders(
         f"{settings.API_V1_STR}/products/{order.product_id}",
         headers=normal_user_token_headers,
     )
-    crud.model.remove(db, id=order.product.model.id)  # type: ignore
+    crud.model.remove(db, id=model_id)  # type: ignore
     crud.user.remove(db, id=order.product.owner_id)  # type: ignore

@@ -13,6 +13,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.core.celery_app import celery_app
 from app.core.config import settings
+from app.utils import send_new_artifact_email
 
 router = APIRouter()
 
@@ -517,25 +518,32 @@ def generate_upload_url(
             detail="Failed to create artifact",
         )
 
-    # Upload artifact for confirmed orders
-    orders = crud.order.get_pending_submission_orders(
-        db, round_order=globals.selling_round  # type: ignore
+    # Check upload later after link expires
+    celery_app.send_task(
+        "app.worker.validate_artifact_upload_task",
+        kwargs=dict(artifact_id=artifact.id),
+        countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
     )
-    for order in orders:
-        print(f"Uploading csv artifact {object_name} for order {order.id}")
-        celery_app.send_task(
-            "app.worker.upload_numerai_artifact_task",
-            kwargs=dict(
-                order_id=order.id,
-                object_name=object_name,
-                model_id=order.submit_model_id,
-                numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-                numerai_api_key_secret=order.buyer.numerai_api_key_secret,
-                tournament=order.product.model.tournament,
-                version=1,
-            ),
-            countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
-        )
+
+    # Upload artifact for confirmed orders
+    # orders = crud.order.get_pending_submission_orders(
+    #     db, round_order=globals.selling_round  # type: ignore
+    # )
+    # for order in orders:
+    #     print(f"Uploading csv artifact {object_name} for order {order.id}")
+    #     celery_app.send_task(
+    #         "app.worker.upload_numerai_artifact_task",
+    #         kwargs=dict(
+    #             order_id=order.id,
+    #             object_name=object_name,
+    #             model_id=order.submit_model_id,
+    #             numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
+    #             numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+    #             tournament=order.product.model.tournament,
+    #             version=1,
+    #         ),
+    #         countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
+    #     )
     return {"id": artifact.id, "url": url}
 
 
@@ -575,6 +583,24 @@ async def create_product_artifact(
         # object_name=object_name,
     )
     artifact = crud.artifact.create(db=db, obj_in=artifact_in)
+
+    # Send notification emails
+    if settings.EMAILS_ENABLED:
+        orders = crud.order.get_multi_by_state(
+            db, state="confirmed", round_order=globals.selling_round  # type: ignore
+        )
+        for order in orders:
+            if order.product_id == artifact.product_id:
+                # Send new artifact email notifications to buyers
+                if order.buyer.email:
+                    send_new_artifact_email(
+                        email_to=order.buyer.email,
+                        username=order.buyer.username,
+                        round_order=order.round_order,
+                        product=order.product.sku,
+                        order_id=order.id,
+                        artifact=artifact.url,  # type: ignore
+                    )
     return artifact
 
 

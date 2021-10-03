@@ -16,7 +16,7 @@ from app.api import deps
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.utils import send_email
+from app.utils import send_email, send_new_artifact_email
 
 client_sentry = Client(settings.SENTRY_DSN)
 
@@ -422,6 +422,63 @@ def batch_submit_numerai_models_task() -> None:
                 for order in orders
             ]
         ).delay()
+    finally:
+        db.close()
+
+
+@celery_app.task  # (acks_late=True)
+def validate_artifact_upload_task(artifact_id: int) -> None:
+    db = SessionLocal()
+    try:
+        artifact = crud.artifact.get(db, id=artifact_id)
+        if artifact and artifact.object_name:
+            bucket = deps.get_gcs_bucket()
+            blob = bucket.blob(artifact.object_name)
+            if not blob.exists():
+                print(
+                    f"Artifact {artifact_id} {artifact.object_name} not uploaded, deleting"
+                )
+                crud.artifact.remove(db, id=artifact_id)
+                return None
+
+            selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+            orders = crud.order.get_pending_submission_orders(
+                db, round_order=selling_round
+            )
+            for order in orders:
+                print(
+                    f"Uploading csv artifact {artifact.object_name} for order {order.id}"
+                )
+                if order.product_id == artifact.product_id:
+                    celery_app.send_task(
+                        "app.worker.upload_numerai_artifact_task",
+                        kwargs=dict(
+                            order_id=order.id,
+                            object_name=artifact.object_name,
+                            model_id=order.submit_model_id,
+                            numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
+                            numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+                            tournament=order.product.model.tournament,
+                            version=1,
+                        ),
+                    )
+
+            if settings.EMAILS_ENABLED:
+                orders = crud.order.get_multi_by_state(
+                    db, state="confirmed", round_order=selling_round
+                )
+                for order in orders:
+                    if order.product_id == artifact.product_id:
+                        # Send new artifact email notifications to buyers
+                        if order.buyer.email:
+                            send_new_artifact_email(
+                                email_to=order.buyer.email,
+                                username=order.buyer.username,
+                                round_order=order.round_order,
+                                product=order.product.sku,
+                                order_id=order.id,
+                                artifact=artifact.object_name,
+                            )
     finally:
         db.close()
 

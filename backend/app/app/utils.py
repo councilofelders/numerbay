@@ -264,6 +264,38 @@ def send_order_expired_email(
     )
 
 
+def send_new_artifact_email(
+    email_to: str,
+    username: str,
+    round_order: int,
+    product: str,
+    order_id: int,
+    artifact: str,
+) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New artifact for order for {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/my-account/order-history"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "round_order": round_order,
+                "product": product,
+                "order_id": order_id,
+                "artifact": artifact,
+                "link": link,
+            },
+        ),
+    )
+
+
 def generate_password_reset_token(email: str) -> str:
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
     now = datetime.utcnow()

@@ -43,15 +43,18 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         return db_obj
 
     def get_multi_by_state(
-        self, db: Session, *, state: str, skip: int = 0, limit: int = None
+        self, db: Session, *, state: str, round_order: Optional[int] = None
     ) -> List[Order]:
-        return (
-            db.query(self.model)
-            .filter(self.model.state == state)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        if round_order:
+            query_filters = [
+                self.model.round_order == round_order,  # type: ignore
+                self.model.state == state,
+            ]
+            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        else:
+            query_filter = self.model.state == state
+        orders = db.query(self.model).filter(query_filter).all()
+        return orders
 
     def get_pending_submission_orders(
         self, db: Session, *, round_order: int

@@ -17,4 +17,5 @@ celery_app.conf.task_routes = {
     "app.worker.upload_numerai_artifact_task": "beat-queue",
     "app.worker.submit_numerai_model_subtask": "beat-queue",
     "app.worker.batch_submit_numerai_models_task": "beat-queue",
+    "app.worker.validate_artifact_upload_task": "beat-queue",
 }

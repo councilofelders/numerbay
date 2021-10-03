@@ -1,0 +1,23 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .link-nostyle { color: inherit; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555" font-family="helvetica">{{ project_name }} - New Artifact for Order</mj-text>
+        <mj-text font-size="16px" color="#555">Hi {{ username }}, a new artifact for your order is now available for download / submission:</mj-text>
+        <mj-text font-size="16px" color="#555">Round: <b>{{ round_order }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Product: <b>{{ product }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Order ID: <b>{{ order_id }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Artifact: <b>{{ artifact }}</b></mj-text>
+        <mj-button padding="50px 0px" href="{{ link }}">Go to My Orders</mj-button>
+        <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the <a href="https://community.numer.ai/channel/numerbay" class="link-nostyle" target="_blank">#numerbay</a> channel on Numerai RocketChat.</mj-text>
+        <mj-divider border-color="#555" border-width="2px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

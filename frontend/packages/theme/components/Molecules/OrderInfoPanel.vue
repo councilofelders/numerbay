@@ -94,7 +94,7 @@
         class="sf-property--full-width property"
       />
     </div>
-    <SfTable class="orders" v-if="artifacts">
+    <SfTable class="orders" v-if="artifacts && orderGetters.getStatus(order)=='confirmed'">
       <SfTableHeading>
         <SfTableHeader
           v-for="tableHeader in tableHeaders"
