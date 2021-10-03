@@ -33,5 +33,5 @@ class Product(Base):
     category_id = Column(Integer, ForeignKey("category.id"))
     category = relationship("Category", lazy="subquery")
     model_id = Column(String, ForeignKey("model.id"))
-    model = relationship("Model", lazy="subquery", back_populates="products")
+    model = relationship("Model", lazy="select", back_populates="products")
     artifacts = relationship("Artifact", back_populates="product")
