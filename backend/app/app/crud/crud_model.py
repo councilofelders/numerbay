@@ -104,9 +104,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         )
 
     def get_numerai_models(self, public_id: str, secret_key: str) -> Any:
-        """
-        Retrieve products.
-        """
         query = """
                   query {
                     account {
@@ -136,9 +133,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return all_models
 
     def get_numerai_model_performance(self, tournament: int, model_name: str) -> Any:
-        """
-        Retrieve products.
-        """
         numerai_query = """
                 query($username: String!) {
                   rounds(tournament: 8, number: 0) {
@@ -210,6 +204,57 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         data = normalize_data(data, tournament=tournament)
 
         return data
+
+    def get_target_stake(
+        self, public_id: str, secret_key: str, tournament: int, model_name: str
+    ) -> float:
+        """
+        Retrieve products.
+        """
+        query = """
+                  query {
+                      account {
+                        models {
+                          name
+                          tournament
+                          v2Stake {
+                            latestValue
+                            latestValueSettled
+                            status
+                            tournamentNumber
+                            txHash
+                            pendingV2ChangeStakeRequest {
+                              dueDate
+                              requestedAmount
+                              status
+                              type
+                            }
+                          }
+                        }
+                      }
+                    }
+                """
+
+        arguments = {"username": model_name}
+        api = NumerAPI(public_id=public_id, secret_key=secret_key)
+        models = api.raw_query(query, arguments, authorization=True)["data"]["account"][
+            "models"
+        ]
+        for model in models:
+            if model["name"] == model_name and model["tournament"] == tournament:
+                stake_dict = model["v2Stake"]
+                stake_amount = float(stake_dict["latestValueSettled"])
+                pending_stake_change = stake_dict.get(
+                    "pendingV2ChangeStakeRequest", None
+                )
+                if pending_stake_change and pending_stake_change["status"] == "pending":
+                    delta_amount = float(pending_stake_change["requestedAmount"])
+                    if pending_stake_change["type"] == "increase":
+                        stake_amount += delta_amount
+                    else:
+                        stake_amount -= delta_amount
+                return stake_amount
+        raise ValueError("No Matching Model.")
 
     def update_model(self, db: Session, user_json: Dict) -> Optional[str]:
         if (

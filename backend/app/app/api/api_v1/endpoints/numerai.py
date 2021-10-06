@@ -12,9 +12,6 @@ router = APIRouter()
 def get_numerai_models(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """
-    Retrieve products.
-    """
     if (
         current_user.numerai_api_key_secret is None
         or len(current_user.numerai_api_key_secret) == 0
@@ -38,9 +35,6 @@ def get_numerai_models(
 
 @router.get("/{tournament}/{model_name}", response_model=Dict)
 def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
-    """
-    Retrieve products.
-    """
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
@@ -50,3 +44,32 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
     except Exception as e:
         raise HTTPException(status_code=400, detail="Numerai API Error: " + str(e))
     return data
+
+
+@router.get("/{tournament}/{model_name}/target-stake", response_model=Dict)
+def get_numerai_model_target_stake(
+    tournament: int,
+    model_name: str,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Dict:
+    if (
+        current_user.numerai_api_key_secret is None
+        or len(current_user.numerai_api_key_secret) == 0
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Numerai API Key is required to perform this action",
+        )
+    try:
+        target_stake = crud.model.get_target_stake(
+            public_id=current_user.numerai_api_key_public_id,  # type: ignore
+            secret_key=current_user.numerai_api_key_secret,
+            tournament=tournament,
+            model_name=model_name,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail="Numerai API Error: " + str(e) + " Please try changing the API key.",
+        )
+    return {"target_stake": target_stake}
