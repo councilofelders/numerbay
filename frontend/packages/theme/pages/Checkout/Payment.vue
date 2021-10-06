@@ -218,9 +218,12 @@ export default {
     const processOrder = async () => {
       await make({id, submitModelId: submitModelId.value});
       if (makeOrderError.value.make) {
+        const isNumeraiApiError = makeOrderError.value.make.message.includes('Numerai API');
         send({
           message: makeOrderError.value.make.message,
-          type: 'danger'
+          type: 'danger',
+          action: isNumeraiApiError ? {text: 'Change Numerai API Key', onClick: ()=>context.root.$router.push('/my-account/numerai-api')} : null,
+          persist: isNumeraiApiError
         });
         return;
       }

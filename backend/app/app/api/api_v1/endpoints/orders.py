@@ -144,12 +144,12 @@ def create_order(
             )
 
     # Own submit model id
-    owner_model_ids = [
-        model.id
+    submit_models = [
+        model
         for model in current_user.models  # type: ignore
-        if model.tournament == product.model.tournament
+        if model.tournament == product.model.tournament and model.id == submit_model_id
     ]
-    if submit_model_id is not None and submit_model_id not in owner_model_ids:
+    if submit_model_id is not None and len(submit_models) == 0:
         raise HTTPException(
             status_code=403, detail="Invalid Numerai model ID for submission"
         )
@@ -161,6 +161,9 @@ def create_order(
             mode=product.mode,
             stake_limit=product.stake_limit,
             submit_model_id=submit_model_id,
+            submit_model_name=submit_models[0].name
+            if (submit_model_id and len(submit_models) > 0)
+            else None,
             chain=product.chain,
             from_address=from_address,
             to_address=to_address,
