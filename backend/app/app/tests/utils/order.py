@@ -21,6 +21,7 @@ def create_random_order(
         buyer = crud.user.get(db, id=buyer_id)
     else:
         buyer = create_random_user(db)
+        buyer_id = buyer.id
     crud.user.update(
         db, db_obj=buyer, obj_in={"numerai_wallet_address": Account.create().address}  # type: ignore
     )

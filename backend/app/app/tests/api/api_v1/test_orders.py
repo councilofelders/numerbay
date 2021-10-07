@@ -255,7 +255,7 @@ def test_order_artifact(
     crud.product.remove(db, id=product.id)
 
 
-def test_search_orders(
+def test_search_buyer_orders(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
@@ -283,3 +283,33 @@ def test_search_orders(
     )
     crud.model.remove(db, id=model_id)  # type: ignore
     crud.user.remove(db, id=order.product.owner_id)  # type: ignore
+
+
+def test_search_seller_orders(
+    client: TestClient, normal_user_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    order = create_random_order(db, owner_id=current_user["id"])
+    model_id = order.product.model.id  # type: ignore
+    buyer_id = order.buyer_id
+
+    response = client.post(
+        f"{settings.API_V1_STR}/orders/search",
+        headers=normal_user_token_headers,
+        json={"role": "seller", "filters": {"product": {"in": [order.product_id]}}},
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["total"] > 0
+    assert order.product.name == content["data"][0]["product"]["name"]
+
+    client.delete(
+        f"{settings.API_V1_STR}/orders/{order.id}", headers=normal_user_token_headers,
+    )
+    client.delete(
+        f"{settings.API_V1_STR}/products/{order.product_id}",
+        headers=normal_user_token_headers,
+    )
+    crud.model.remove(db, id=model_id)  # type: ignore
+    crud.user.remove(db, id=buyer_id)  # type: ignore

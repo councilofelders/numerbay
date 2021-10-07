@@ -178,17 +178,12 @@ export default {
       downloadFile(new Blob([JSON.stringify(order)], {type: 'application/json'}), 'order ' + orderGetters.getId(order) + '.json');
     };
 
-    const handleRefreshClick = async () => {
-      await search({ role: 'buyer' });
-    };
-
     return {
       tableHeaders,
       orders: computed(() => orders?.value?.data ? orders.value?.data : []),
       orderGetters,
       search,
       loading,
-      handleRefreshClick,
       getStatusTextClass,
       downloadOrder,
       downloadOrders,
