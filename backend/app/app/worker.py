@@ -1,6 +1,7 @@
 import io
 import sys
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -152,13 +153,19 @@ def update_round_rollover() -> None:
 
         if open_time <= utc_time <= close_staking_time:  # new round opened and active
             print("Activities freezed due to round rollover")
+            # freeze activities
             crud.globals.update(
                 db, db_obj=globals, obj_in={"is_doing_round_rollover": True}  # type: ignore
-            )  # freeze activities
+            )
+
+            # check order stake
+            celery_app.send_task("app.worker.batch_validate_numerai_models_stake_task",)
+
+            # check again soon
             celery_app.send_task(
                 "app.worker.update_round_rollover",
                 countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS,
-            )  # try again soon
+            )
         else:  # current round closed for staking, start selling next round, unfreeze activities
             if (
                 globals.active_round == active_round_number  # type: ignore
@@ -479,6 +486,45 @@ def validate_artifact_upload_task(artifact_id: int) -> None:
                                 order_id=order.id,
                                 artifact=artifact.object_name,
                             )
+    finally:
+        db.close()
+
+
+@celery_app.task  # (acks_late=True)
+def batch_validate_numerai_models_stake_task() -> None:
+    db = SessionLocal()
+    try:
+        globals = crud.globals.update_singleton(db)
+        orders = crud.order.get_multi_by_state(
+            db, state="confirmed", round_order=globals.selling_round
+        )
+
+        print(f"total orders to check for stake limit: {len(orders)}")
+
+        for order in orders:
+            if order.mode != "stake_with_limit" or not order.submit_model_id:
+                continue
+            target_stake = crud.model.get_target_stake(
+                public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
+                secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
+                tournament=order.product.model.tournament,  # type: ignore
+                model_name=order.submit_model_name,  # type: ignore
+            )
+            stake_limit = Decimal(order.stake_limit)  # type: ignore
+            if target_stake > stake_limit:
+                print(
+                    f"Order {order.id} model {order.submit_model_name} [user {order.buyer_id}: {order.buyer.username}] exceeded stake limit {target_stake} / {stake_limit}"
+                )
+                result = crud.model.set_target_stake(
+                    public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
+                    secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
+                    tournament=order.product.model.tournament,  # type: ignore
+                    model_name=order.submit_model_name,  # type: ignore
+                    target_stake_amount=stake_limit,
+                )
+                print(
+                    f"Adjustment result for model {order.submit_model_name}: {result}"
+                )
     finally:
         db.close()
 

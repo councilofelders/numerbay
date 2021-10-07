@@ -207,14 +207,12 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
     def get_target_stake(
         self, public_id: str, secret_key: str, tournament: int, model_name: str
-    ) -> float:
-        """
-        Retrieve products.
-        """
+    ) -> Decimal:
         query = """
                   query {
                       account {
                         models {
+                          id
                           name
                           tournament
                           v2Stake {
@@ -243,18 +241,94 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         for model in models:
             if model["name"] == model_name and model["tournament"] == tournament:
                 stake_dict = model["v2Stake"]
-                stake_amount = float(stake_dict["latestValueSettled"])
+                stake_amount = Decimal(stake_dict["latestValueSettled"])
                 pending_stake_change = stake_dict.get(
                     "pendingV2ChangeStakeRequest", None
                 )
                 if pending_stake_change and pending_stake_change["status"] == "pending":
-                    delta_amount = float(pending_stake_change["requestedAmount"])
+                    delta_amount = Decimal(pending_stake_change["requestedAmount"])
                     if pending_stake_change["type"] == "increase":
                         stake_amount += delta_amount
                     else:
                         stake_amount -= delta_amount
                 return stake_amount
         raise ValueError("No Matching Model.")
+
+    def set_target_stake(
+        self,
+        public_id: str,
+        secret_key: str,
+        tournament: int,
+        model_name: str,
+        target_stake_amount: Decimal,
+    ) -> Dict:
+        query = """
+                  query {
+                      account {
+                        models {
+                          id
+                          name
+                          tournament
+                          v2Stake {
+                            latestValue
+                            latestValueSettled
+                            status
+                            tournamentNumber
+                            txHash
+                            pendingV2ChangeStakeRequest {
+                              dueDate
+                              requestedAmount
+                              status
+                              type
+                            }
+                          }
+                        }
+                      }
+                    }
+                """
+
+        arguments = {"username": model_name}
+        api = NumerAPI(public_id=public_id, secret_key=secret_key)
+        models = api.raw_query(query, arguments, authorization=True)["data"]["account"][
+            "models"
+        ]
+        stake_amount = None
+        pending_delta_amount = None
+        matched_model = None
+
+        for model in models:
+            if model["name"] == model_name and model["tournament"] == tournament:
+                matched_model = model
+                stake_dict = model["v2Stake"]
+                stake_amount = Decimal(stake_dict["latestValueSettled"])
+                pending_stake_change = stake_dict.get(
+                    "pendingV2ChangeStakeRequest", None
+                )
+                if pending_stake_change and pending_stake_change["status"] == "pending":
+                    pending_delta_amount = Decimal(
+                        pending_stake_change["requestedAmount"]
+                    )
+                    if pending_stake_change["type"] == "decrease":
+                        pending_delta_amount = -pending_delta_amount
+        if matched_model is None or stake_amount is None:
+            raise ValueError("No Matching Model.")
+
+        pending_delta_amount = (
+            pending_delta_amount if pending_delta_amount else Decimal("0")
+        )
+        remaining_delta_amount = Decimal(target_stake_amount) - (
+            stake_amount + pending_delta_amount
+        )
+        net_delta_amount = pending_delta_amount + remaining_delta_amount
+        print(f"apply delta {net_delta_amount}")
+
+        result_stake = api.stake_change(
+            abs(net_delta_amount),
+            action="increase" if net_delta_amount > 0 else "decrease",
+            model_id=matched_model["id"],
+            tournament=tournament,
+        )
+        return result_stake
 
     def update_model(self, db: Session, user_json: Dict) -> Optional[str]:
         if (
