@@ -122,6 +122,13 @@ def validate_product_input(
                         detail=f"On-platform listing price must not exceed {4} decimal places",
                     )
 
+                # On-platform amount check
+                if product_in.currency == "NMR" and product_in.price < 1:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="On-platform listing price must be greater than 1 NMR",
+                    )
+
             # On-platform Mode check
             if product_in.mode not in ["file", "stake", "stake_with_limit"]:
                 raise HTTPException(
@@ -142,6 +149,12 @@ def validate_product_input(
                     raise HTTPException(
                         status_code=400,
                         detail=f"Stake limit must not exceed {4} decimal places",
+                    )
+                # Stake limit amount check
+                if product_in.stake_limit < 1:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Stake limit must be greater than 1 NMR",
                     )
 
             # On-platform chain type
