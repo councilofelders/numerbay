@@ -34,15 +34,25 @@ def init_db(db: Session) -> None:
         ]
         sub_sub_categories_numerai_in = [
             schemas.CategoryCreate(
-                name="Predictions", slug="numerai-predictions", tournament=8
+                name="Predictions",
+                slug="numerai-predictions",
+                is_per_round=True,
+                tournament=8,
             ),
-            schemas.CategoryCreate(name="Models", slug="numerai-models", tournament=8),
+            schemas.CategoryCreate(
+                name="Models", slug="numerai-models", is_per_round=False, tournament=8
+            ),
         ]
         sub_sub_categories_signals_in = [
             schemas.CategoryCreate(
-                name="Predictions", slug="signals-predictions", tournament=11
+                name="Predictions",
+                slug="signals-predictions",
+                is_per_round=True,
+                tournament=11,
             ),
-            schemas.CategoryCreate(name="Data", slug="signals-data", tournament=11),
+            schemas.CategoryCreate(
+                name="Data", slug="signals-data", is_per_round=True, tournament=11
+            ),
         ]
         category_in = schemas.CategoryCreate(name="All", slug="all")
         category = crud.category.create(db, obj_in=category_in)

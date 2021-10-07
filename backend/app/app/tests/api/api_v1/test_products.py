@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -10,11 +9,10 @@ from app.tests.utils.product import create_random_product
 from app.tests.utils.utils import random_lower_string
 
 
-@pytest.mark.skip
 def test_create_product(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     product_name = random_lower_string()
@@ -25,6 +23,7 @@ def test_create_product(
         "description": "Description",
         "is_on_platform": False,
         "currency": "USD",
+        "expiration_round": 283,
     }
     model = crud.model.create(
         db,
@@ -36,14 +35,14 @@ def test_create_product(
         ),
     )
     response = client.post(
-        f"{settings.API_V1_STR}/products/",
-        headers=normal_user_token_headers,
-        json=data,
+        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == data["name"]
     assert content["price"] == data["price"]
+    assert "model" in content
+    assert content["model"]["name"] == model.name
     assert "id" in content
     assert "owner" in content
 
@@ -96,9 +95,33 @@ def test_create_product_invalid_inputs(
     )
     assert response.status_code == 400
 
+    # invalid on-platform no mode
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform mode
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    data["mode"] = "wrong_mode"
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
     # invalid on-platform currency
     data = base_data.copy()
     data["is_on_platform"] = True
+    data["mode"] = "file"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -109,8 +132,73 @@ def test_create_product_invalid_inputs(
     # invalid on-platform price precision
     data = base_data.copy()
     data["is_on_platform"] = True
+    data["mode"] = "file"
     data["currency"] = "NMR"
     data["price"] = 0.00001
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform too low price
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["mode"] = "file"
+    data["currency"] = "NMR"
+    data["price"] = 0.9
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform stake_with_limit mode without stake limit
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    data["mode"] = "stake_with_limit"
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform stake_with_limit mode stake limit precision
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    data["mode"] = "stake_with_limit"
+    data["stake_limit"] = 1.00001
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform stake_with_limit mode stake limit too low
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    data["mode"] = "stake_with_limit"
+    data["stake_limit"] = 0.9
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform chain
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["mode"] = "file"
+    data["currency"] = "NMR"
+    data["chain"] = "ethereum"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -259,5 +347,11 @@ def test_update_product(
     content = response.json()
     assert content["category"]["id"] == 3
 
-    crud.product.remove(db, id=content["id"])
+    response = client.delete(
+        f"{settings.API_V1_STR}/products/{content['id']}",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 200
+    # crud.product.remove(db, id=content["id"])
     crud.model.remove(db, id=product.model_id)  # type: ignore

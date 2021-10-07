@@ -36,7 +36,10 @@ def test_generate_upload_url(
     artifact = crud.artifact.get(db, id=content["id"])
     assert artifact
 
-    crud.artifact.remove(db, id=artifact.id)
+    client.delete(
+        f"{settings.API_V1_STR}/products/{product_id}/artifacts/{artifact.id}",
+        headers=normal_user_token_headers,
+    )
     crud.product.remove(db, id=product_id)
     crud.model.remove(db, id=model_id)  # type: ignore
 

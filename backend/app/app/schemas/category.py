@@ -8,6 +8,7 @@ class CategoryBase(BaseModel):
     name: Optional[str] = None
     slug: Optional[str] = None
     tournament: Optional[int] = None
+    is_per_round: Optional[bool] = None
 
 
 # Properties to receive on category creation
