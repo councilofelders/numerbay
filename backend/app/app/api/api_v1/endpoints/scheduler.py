@@ -40,6 +40,15 @@ def add_job_numerai_models(
     return {"msg": "success!"}
 
 
+@router.post("/numerai-model-scores")
+def add_job_numerai_model_scores(
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.batch_update_model_scores_task")
+
+    return {"msg": "success!"}
+
+
 @router.post("/globals")  # todo deprecate old global update to new rollover
 def add_job_globals(
     *, current_user: models.User = Depends(deps.get_current_active_superuser),

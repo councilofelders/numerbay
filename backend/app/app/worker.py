@@ -83,6 +83,34 @@ def batch_update_models_task() -> None:
         db.close()
 
 
+@celery_app.task  # (acks_late=True)
+def batch_update_model_scores_task() -> None:
+    pipeline_status = crud.model.get_numerai_pipeline_status(tournament=8)
+    if pipeline_status["resolvedAt"]:
+        print("Numerai pipeline completed, update model scores...")
+        db = SessionLocal()
+        try:
+            users = crud.user.search(
+                db, filters={"numerai_api_key_public_id": ["any"]}, limit=None  # type: ignore
+            )["data"]
+            print(f"total: {len(users)}")
+            # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
+            # commit_models_subtask.s(0)).delay()
+            group(
+                [update_model_subtask.s(jsonable_encoder(user)) for user in users]
+            ).delay()
+        finally:
+            db.close()
+    else:
+        print(
+            f"Numerai pipeline not ready, checking again in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
+        )
+        celery_app.send_task(
+            "app.worker.batch_update_model_scores_task",
+            countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+        )
+
+
 @celery_app.task  # (acks_late=True) # todo deprecate old global update to new rollover
 def update_globals_task() -> None:
     db = SessionLocal()
@@ -538,9 +566,13 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
             "args": (["cron test"]),
         },
-        "batch_update_models": {
-            "task": "app.worker.batch_update_models_task",
-            "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
+        # "batch_update_models": {
+        #     "task": "app.worker.batch_update_models_task",
+        #     "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
+        # },
+        "batch_update_model_scores": {
+            "task": "app.worker.batch_update_model_scores_task",
+            "schedule": crontab(day_of_week="tue-sat", hour=14, minute=0),
         },
         # "update_globals_task": {
         #     "task": "app.worker.update_globals_task",

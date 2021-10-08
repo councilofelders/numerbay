@@ -330,6 +330,28 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         )
         return result_stake
 
+    def get_numerai_pipeline_status(self, tournament: int) -> Any:
+        query = """
+                query($date: String!, $tournament: String!) {
+                  pipelineStatus(date: $date, tournament: $tournament) {
+                    dataReadyAt
+                    isScoringDay
+                    resolvedAt
+                    scoredAt
+                    startedAt
+                    tournament
+                  }
+                }
+        """
+        arguments = {
+            "date": str(datetime.utcnow().date()),
+            "tournament": "classic" if tournament == 8 else "signals",
+        }
+        api = NumerAPI()
+        data = api.raw_query(query, arguments)["data"]
+
+        return data["pipelineStatus"]
+
     def update_model(self, db: Session, user_json: Dict) -> Optional[str]:
         if (
             "numerai_api_key_secret" not in user_json

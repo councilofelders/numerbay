@@ -34,6 +34,17 @@ def get_numerai_models(
     return all_models
 
 
+@router.get("/{tournament}/pipeline-status", response_model=Dict)
+def get_numerai_pipeline_status(tournament: int) -> Any:
+    if tournament not in [8, 11]:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    try:
+        data = crud.model.get_numerai_pipeline_status(tournament=tournament)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Numerai API Error: " + str(e))
+    return data[""]
+
+
 @router.get("/{tournament}/{model_name}", response_model=Dict)
 def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
     if tournament not in [8, 11]:
