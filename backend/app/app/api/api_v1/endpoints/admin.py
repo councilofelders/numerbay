@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.api import deps
-from app.models import Order, Product
+from app.models import Artifact, Order, Product
 
 router = APIRouter()
 
@@ -49,6 +49,28 @@ def refresh_sales_stats(
                 product.last_sale_price_delta = (
                     product.last_sale_price - orders[1].price
                 )
+    db.commit()
+    return {"msg": "success!"}
+
+
+@router.post("/remove-failed-uploads")
+def remove_failed_uploads(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Remove failed uploads (for db migration only).
+    """
+    artifacts = db.query(Artifact).filter(Artifact.object_name.is_not(None))  # type: ignore
+    for artifact in artifacts:
+        bucket = deps.get_gcs_bucket()
+        blob = bucket.blob(artifact.object_name)
+        if not blob.exists():
+            print(
+                f"Remove artifact {artifact.object_name} for product {artifact.product.name}"
+            )
+            db.delete(artifact)
     db.commit()
     return {"msg": "success!"}
 
