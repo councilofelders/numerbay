@@ -203,6 +203,8 @@
                     {{ title }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
                                      data-emoji="glitch_black" title="Gas-free NMR payment"
                                      v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
+                    <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake'">Stake Only</SfBadge>
+                    <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake_with_limit'">Stake Limit: {{ productGetters.getStakeLimit(product) }}</SfBadge>
                   </h3>
                 </SfLink>
               </template>
@@ -385,7 +387,8 @@ import {
   SfLoader,
   SfRange,
   SfProperty,
-  SfLink
+  SfLink,
+  SfBadge
 } from '@storefront-ui/vue';
 import { ref, computed, onMounted } from '@vue/composition-api';
 import { useCart, useWishlist, productGetters, useFacet, useUser, facetGetters } from '@vue-storefront/numerbay';
@@ -574,6 +577,7 @@ export default {
     SfHeading,
     SfProperty,
     SfLink,
+    SfBadge,
     BuyButton,
     LazyHydrate
   }
@@ -938,5 +942,9 @@ export default {
 }
 .delta-negative {
   color: #d24141;
+}
+.mode-badge {
+  padding: 0.4em;
+  --badge-background: var(--c-gray-variant)
 }
 </style>
