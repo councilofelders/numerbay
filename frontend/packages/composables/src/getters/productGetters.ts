@@ -70,6 +70,8 @@ export const getFormattedPrice = (product: ProductVariant, withCurrency = true, 
 
 export const getProductMode = (product: ProductVariant): string => (product as any)?.mode;
 
+export const getProductStakeLimit = (product: ProductVariant): string => (product as any)?.stake_limit ? `${(product as any)?.stake_limit} NMR` : '-';
+
 export const getProductTournamentId = (product: ProductVariant): number => {
   const slug = (product as any)?.category?.slug;
   if (slug) {
@@ -115,6 +117,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getId: getProductId,
   getFormattedPrice: getFormattedPrice,
   getMode: getProductMode,
+  getStakeLimit: getProductStakeLimit,
   getTournamentId: getProductTournamentId,
   getTotalReviews: getProductTotalReviews,
   getAverageRating: getProductAverageRating,

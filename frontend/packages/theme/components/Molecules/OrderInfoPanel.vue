@@ -89,8 +89,15 @@
         class="sf-property--full-width property"
       />
       <SfProperty
+        v-if="orderGetters.getStatus(order) === 'confirmed'"
         name="Submission Status"
         :value="orderGetters.getSubmissionStatus(order)"
+        class="sf-property--full-width property"
+      />
+      <SfProperty
+        v-if="orderGetters.getStatus(order) === 'confirmed'"
+        name="Stake Limit"
+        :value="orderGetters.getStakeLimit(order)"
         class="sf-property--full-width property"
       />
     </div>

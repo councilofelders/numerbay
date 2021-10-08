@@ -197,7 +197,7 @@
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
               :link="localePath(`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`)"
             >
-              <template #title="{ title, link}">
+              <template #title="{ title, link }">
                 <SfLink :link="link" class="sf-product-card-horizontal__link">
                   <h3 class="sf-product-card-horizontal__title">
                     {{ title }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"

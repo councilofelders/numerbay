@@ -29,6 +29,10 @@
             Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
             <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!product.is_on_platform">3rd Party</SfBadge>
             <span class="product__subheader__highlight">{{ resolveProductPlatform(product) }}</span>
+            <div v-if="productGetters.getMode(product)">
+              Mode: <span class="product__subheader__highlight">{{ productGetters.getMode(product).toUpperCase() }}</span>
+              <span class='divider-pipe' v-if="productGetters.getMode(product)==='stake_with_limit'">|</span> <span v-if="productGetters.getMode(product)==='stake_with_limit'">Stake Limit:</span> <span class="product__subheader__highlight" v-if="productGetters.getMode(product)==='stake_with_limit'">{{ productGetters.getStakeLimit(product) }}</span>
+            </div>
           </div>
         </div>
         <div class="product__pricing">

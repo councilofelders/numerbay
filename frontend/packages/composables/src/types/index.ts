@@ -139,6 +139,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getId: (product: PRODUCT) => string;
     getFormattedPrice: (price: PRODUCT, withCurrency: boolean, decimals: number) => string;
     getMode: (product: PRODUCT) => string;
+    getStakeLimit: (product: PRODUCT) => string;
     getTournamentId: (product: PRODUCT) => number;
     getTotalReviews: (product: PRODUCT) => number;
     getAverageRating: (product: PRODUCT) => number;
@@ -158,6 +159,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getId: (order: ORDER) => string;
     getStatus: (order: ORDER) => string;
     getSubmissionStatus: (order: ORDER) => string;
+    getStakeLimit: (order: ORDER) => string;
     getRound: (order: ORDER) => string;
     getPrice: (order: ORDER) => number;
     getCurrency: (order: ORDER) => string;
