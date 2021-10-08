@@ -296,7 +296,7 @@ def upload_numerai_artifact_task(
     submission_auth = api.raw_query(auth_query, arguments, authorization=True)["data"][
         "submission_upload_auth"
     ]
-    print(f"Upload url: {submission_auth['url']}")
+    # print(f"Upload url: {submission_auth['url']}")
 
     # Bridge Upload file
     file_stream = requests.get(url, stream=True)
@@ -329,23 +329,49 @@ def upload_numerai_artifact_task(
         "modelId": model_id,
         "triggerId": None,
     }  # os.getenv('TRIGGER_ID', None)}
+    create = None
     try:
         create = api.raw_query(create_query, arguments, authorization=True)
     except ValueError:  # try again with new data version
         print("Retrying upload with version 2")
         arguments["version"] = 2
-        create = api.raw_query(create_query, arguments, authorization=True)
-    submission_id = create["data"]["create_submission"]["id"]
-    print(f"submission_id: {submission_id}")
-    if submission_id:
-        # submision successful, mark order submit_state to completed
+        try:
+            create = api.raw_query(create_query, arguments, authorization=True)
+        except Exception as e:  # other errors
+            print("Retry failed, marking submission as failed")
+            # mark failed submission
+            db = SessionLocal()
+            try:
+                order = crud.order.get(db, id=order_id)
+                crud.order.update(db, db_obj=order, obj_in={"submit_state": "failed"})  # type: ignore
+            finally:
+                db.close()
+                raise e
+    except Exception as e:  # other errors
+        print("Submission failed")
+        # mark failed submission
         db = SessionLocal()
         try:
             order = crud.order.get(db, id=order_id)
-            crud.order.update(db, db_obj=order, obj_in={"submit_state": "completed"})  # type: ignore
+            crud.order.update(db, db_obj=order, obj_in={"submit_state": "failed"})  # type: ignore
         finally:
             db.close()
-    return submission_id
+            raise e
+    if create:
+        submission_id = create["data"]["create_submission"]["id"]
+        print(f"submission_id: {submission_id}")
+        if submission_id:
+            # submision successful, mark order submit_state to completed
+            db = SessionLocal()
+            try:
+                order = crud.order.get(db, id=order_id)
+                crud.order.update(db, db_obj=order, obj_in={"submit_state": "completed"})  # type: ignore
+            finally:
+                db.close()
+        return submission_id
+    else:
+        print("Submission failed")
+        return None
 
 
 @celery_app.task  # (acks_late=True)
