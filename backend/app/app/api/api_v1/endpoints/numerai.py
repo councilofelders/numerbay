@@ -42,7 +42,7 @@ def get_numerai_pipeline_status(tournament: int) -> Any:
         data = crud.model.get_numerai_pipeline_status(tournament=tournament)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Numerai API Error: " + str(e))
-    return data[""]
+    return data
 
 
 @router.get("/{tournament}/{model_name}", response_model=Dict)

@@ -203,15 +203,18 @@
                     {{ title }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
                                      data-emoji="glitch_black" title="Gas-free NMR payment"
                                      v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
-                    <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake'">Stake Only</SfBadge>
-                    <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake_with_limit'">Stake Limit: {{ productGetters.getStakeLimit(product) }}</SfBadge>
                   </h3>
                 </SfLink>
               </template>
               <template #price>
                 <span title="Corr Rank"># {{ productGetters.getModelRank(product, 'corr')}}</span>
               </template>
-              <template #description></template>
+              <template #description>
+                <p class="sf-product-card-horizontal__description desktop-only">
+                  <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(product) }}</SfBadge>
+                </p>
+              </template>
               <template #configuration>
                 <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`"/>
                 <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)"/>
