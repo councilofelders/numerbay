@@ -22,8 +22,8 @@
         </div>
         <div class="product__subheader">
           <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
-            Round: <span class="product__subheader__highlight" v-if="!globalsLoading">{{ globals.selling_round }}</span>
-            <span class='divider-pipe'>|</span>
+            <span v-if="!!product.category.tournament">Round: </span><span class="product__subheader__highlight" v-if="!globalsLoading && !!product.category.tournament">{{ globals.selling_round }}</span>
+            <span class='divider-pipe' v-if="!!product.category.tournament">|</span>
             Seller: <span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span>
             <span class='divider-pipe'>|</span>
             Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
@@ -53,10 +53,10 @@
             @click="handleBuyButtonClick(product)"
           />
         </div>
-        <SfLoader :class="{ loader: !numerai.modelInfo }" :loading="!numerai.modelInfo">
-          <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
+        <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
+          <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!product.category.tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
         </SfLoader>
-        <SfLoader :class="{ loader: !numerai.modelInfo }" :loading="!numerai.modelInfo">
+        <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
         <div class="product__details" v-if="!!numerai.modelInfo">
           <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
           <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
@@ -162,7 +162,9 @@ export default {
       await search({ id });
       // await searchRelatedProducts({ catId: [categories.value[0]], limit: 8 });
       // await searchReviews({ productId: id });
-      await getModelInfo({tournament: product?.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value.name});
+      if (product?.value?.category?.tournament) {
+        await getModelInfo({tournament: product?.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value.name});
+      }
       await getGlobals();
     });
 

@@ -25,7 +25,7 @@
           <div v-if="isLogin">
             <ValidationObserver v-slot="{ handleSubmit }" key="log-in">
               <form class="form" @submit.prevent="handleSubmit(handleLogin)">
-                <ValidationProvider rules="required" v-slot="{ errors }">
+                <ValidationProvider rules="required|min:2" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'login-modal-username'"
                     v-model="form.username"
@@ -36,7 +36,7 @@
                     class="form__element"
                   />
                 </ValidationProvider>
-                <ValidationProvider rules="required" v-slot="{ errors }">
+                <ValidationProvider rules="required|min:6" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'login-modal-password'"
                     v-model="form.password"
@@ -89,7 +89,7 @@
           <div v-else class="form">
             <ValidationObserver v-slot="{ handleSubmit }" key="sign-up">
               <form class="form" @submit.prevent="handleSubmit(handleRegister)" autocomplete="off">
-                <ValidationProvider rules="required" v-slot="{ errors }">
+                <ValidationProvider rules="required|min:2" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'login-modal-username'"
                     v-model="form.username"
@@ -100,7 +100,7 @@
                     class="form__element"
                   />
                 </ValidationProvider>
-                <ValidationProvider rules="required" v-slot="{ errors }">
+                <ValidationProvider rules="required|min:6" v-slot="{ errors }">
                   <SfInput
                     v-e2e="'login-modal-password'"
                     v-model="form.password"
@@ -144,7 +144,7 @@
 import { ref, watch, reactive } from '@vue/composition-api';
 import { SfModal, SfTabs, SfInput, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
-import { required, email } from 'vee-validate/dist/rules';
+import { required, email, min } from 'vee-validate/dist/rules';
 import { useUser} from '@vue-storefront/numerbay';
 import { Logger } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
@@ -159,6 +159,11 @@ extend('email', {
 extend('required', {
   ...required,
   message: 'This field is required'
+});
+
+extend('min', {
+  ...min,
+  message: 'The field should have at least {length} characters'
 });
 
 export default {

@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -81,6 +82,13 @@ def search_products(
 def validate_product_input(
     db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
+    # product name
+    if isinstance(product_in, schemas.ProductCreate) and re.match(r"^[\w-]+$", product_in.name) is None:  # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid product name (should only contain alphabetic characters, numbers, dashes or underscores)",
+        )
+
     # Positive price
     if product_in.price is not None:
         if product_in.price <= 0:

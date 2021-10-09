@@ -22,12 +22,12 @@
                 <ValidationProvider rules="required" v-slot="{ errors }">
                   <SfSelect label="Category" v-model="form.category" v-e2e="'listing-modal-category'"
                     :valid="!errors[0]"
-                    :errorMessage="errors[0]" :disabled="!!currentListing" required>
+                    :errorMessage="errors[0]" :disabled="!!currentListing" required @input="onCategoryChange">
                     <SfSelectOption value=""></SfSelectOption>
                     <SfSelectOption v-for="category in leafCategories" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
-                <ValidationProvider rules="required" v-slot="{ errors }">
+                <ValidationProvider rules="required" v-slot="{ errors }" v-if="isTournamentCategory(form.category)">
                   <SfSelect label="Model Name" v-model="form.name" v-e2e="'listing-modal-name'"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]" required :disabled="!!currentListing || !form.category" @input="populateModelInfo">
@@ -38,6 +38,17 @@
 <!--                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=11, sortDate=false)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>-->
                     <SfSelectOption v-for="model in getFilteredModels(form.category)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>
                   </SfSelect>
+                </ValidationProvider>
+                <ValidationProvider rules="required|min:2|alpha_dash" v-slot="{ errors }" v-else>
+                  <SfInput
+                    v-model="form.name"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="name"
+                    label="Product Name"
+                    class="form__element"
+                    :disabled="!!currentListing"
+                  />
                 </ValidationProvider>
                 <!--<ValidationProvider rules="required" v-slot="{ errors }">
                   <SfInput
@@ -131,6 +142,7 @@
                       description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution."
                       v-model="form.isOnPlatform"
                       @change="onPlatformChange(form.isOnPlatform)"
+                      :disabled="!!form.category && !isTournamentCategory(form.category)"
                       class="form__radio"
                     />
                     <SfRadio
@@ -356,11 +368,11 @@
   </SfModal>
 </template>
 <script>
-import {ref, watch, reactive, computed} from '@vue/composition-api';
+import { ref, watch, reactive, computed } from '@vue/composition-api';
 import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
-import { required, min_value, integer } from 'vee-validate/dist/rules';
+import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist/rules';
 import {
   userGetters,
   useUser,
@@ -435,6 +447,17 @@ extend('secureUrl', {
   message: 'This must be a valid HTTPS URL'
 });
 
+extend('min', {
+  ...min,
+  message: 'The field should have at least {length} characters'
+});
+
+extend('alpha_dash', {
+  // eslint-disable-next-line camelcase
+  ...alpha_dash,
+  message: 'The field should only contain alphabetic characters, numbers, dashes or underscores'
+});
+
 export default {
   name: 'ListingModal',
   components: {
@@ -476,6 +499,22 @@ export default {
     };
   },
   methods: {
+    onCategoryChange(categoryId) {
+      const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
+      if (!category.tournament) {
+        this.form.isOnPlatform = 'false';
+        this.onPlatformChange(this.form.isOnPlatform);
+      }
+    },
+    isTournamentCategory(categoryId) {
+      if (categoryId) {
+        const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
+        if (Boolean(category) && Boolean(category.tournament)) {
+          return true;
+        }
+      }
+      return false;
+    },
     getFilteredModels(categoryId) {
       if (categoryId) {
         const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];

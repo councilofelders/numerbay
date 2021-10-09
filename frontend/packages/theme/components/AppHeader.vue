@@ -12,6 +12,7 @@
       <template #navigation>
         <SfHeaderNavigationItem class="nav-item" v-e2e="'app-header-url_numerai'" label="Numerai" :link="localePath('/c/numerai')"/>
         <SfHeaderNavigationItem class="nav-item"  v-e2e="'app-header-url_signals'" label="Signals" :link="localePath('/c/signals')" />
+        <SfHeaderNavigationItem class="nav-item"  v-e2e="'app-header-url_onlyfams'" label="OnlyFams" :link="localePath('/c/onlyfams')" />
       </template>
       <template #aside>
         <LocaleSelector class="smartphone-only" />
