@@ -179,6 +179,7 @@ export default {
       term.value = !paramValue.target ? paramValue : paramValue.target.value;
       await Promise.all([
         productsSearch({
+          categorySlug: 'all',
           itemsPerPage: 12,
           term: term.value
         })
