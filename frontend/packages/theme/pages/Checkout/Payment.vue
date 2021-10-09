@@ -72,7 +72,7 @@
         <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'">
           <template #label>
             <div class="sf-checkbox__label">
-              (Optional) Submit this model to Numerai for me automatically.
+              (Optional) Submit this model to Numerai for me automatically if seller submits to NumerBay. [This will not happen if seller provides self-managed file URL.]
             </div>
           </template>
         </SfCheckbox>

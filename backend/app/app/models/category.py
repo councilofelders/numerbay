@@ -10,6 +10,7 @@ class Category(Base):
     slug = Column(String, index=True)
     tournament = Column(Integer, nullable=True, index=True)
     is_per_round = Column(Boolean, server_default="t")
+    is_submission = Column(Boolean, server_default="f")
     parent_id = Column(Integer, ForeignKey("category.id"))
     items = relationship(
         "Category", lazy="joined", backref=backref("parent", remote_side=[id])

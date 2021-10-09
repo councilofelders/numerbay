@@ -232,6 +232,11 @@ def submit_artifact(
     artfact = crud.artifact.get(db, id=artifact_id)
     if not artfact:
         raise HTTPException(status_code=404, detail="Artifact not found")
+    if not artfact.object_name:
+        raise HTTPException(
+            status_code=400,
+            detail="Automated submission is not supported for external artifact URL",
+        )
     if artfact.round_tournament != active_round:
         raise HTTPException(
             status_code=400, detail=f"Round {artfact.round_tournament} is not active"

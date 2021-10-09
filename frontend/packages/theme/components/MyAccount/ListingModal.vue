@@ -216,7 +216,7 @@
                         value="file"
                         label="Distribute File"
                         details="Buyers can download artifact files"
-                        description=""
+                        description="You can upload artifacts to NumerBay or add external file URLs"
                         v-model="form.mode"
                         class="form__radio"
                       />
@@ -225,19 +225,21 @@
                         name="mode"
                         value="stake"
                         label="Stake Only"
-                        details="Submit for buyers automatically without distributing artifact files"
-                        description="No Stake Limit [Coming Soon]"
+                        details="Submit for buyers automatically without distributing artifact files, without stake limit"
+                        description="You must upload artifacts to NumerBay"
                         v-model="form.mode"
                         class="form__radio"
+                        :disabled="!isSubmissionCategory(form.category)"
                       />
                       <SfRadio
                         name="mode"
                         value="stake_with_limit"
                         label="Stake Only with Limit"
-                        details="Submit for buyers automatically without distributing artifact files"
-                        description="Specify a stake limit (in NMR) [Coming Soon]"
+                        details="Submit for buyers automatically without distributing artifact files, with a stake limit (in NMR)"
+                        description="You must upload artifacts to NumerBay"
                         v-model="form.mode"
                         class="form__radio"
+                        :disabled="!isSubmissionCategory(form.category)"
                       />
                     </ValidationProvider>
                   </div>
@@ -499,11 +501,21 @@ export default {
     };
   },
   methods: {
+    isSubmissionCategory(categoryId) {
+      if (categoryId) {
+        const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
+        return category?.is_submission;
+      }
+      return false;
+    },
     onCategoryChange(categoryId) {
       const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
       if (!category.tournament) {
         this.form.isOnPlatform = 'false';
         this.onPlatformChange(this.form.isOnPlatform);
+      }
+      if (this.form.isOnPlatform === 'true' && !category.is_submission) {
+        this.form.mode = 'file';
       }
     },
     isTournamentCategory(categoryId) {

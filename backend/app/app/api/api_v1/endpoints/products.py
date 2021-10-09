@@ -236,6 +236,17 @@ def create_product(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # On-platform Category Mode check
+    if (
+        product_in.is_on_platform
+        and product_in.mode in ["stake", "stake_with_limit"]
+        and not category.is_submission
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Stake modes are not allowed for non-submission categories",
+        )
+
     # Leaf category
     child_categories_count = (
         db.query(models.Category)
@@ -589,9 +600,16 @@ async def create_product_artifact(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     product = crud.product.get(db, id=product_id)
+
     validate_new_artifact(
         product=product, current_user=current_user, url=url, filename=None
     )
+
+    if product.mode in ["stake", "stake_with_limit"]:  # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail="Stake modes require native artifact uploads for automated submissions",
+        )
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)

@@ -4,7 +4,7 @@ import { authHeaders } from '../utils';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/explicit-module-boundary-types
 export default async function createArtifact(context, params, customQuery?: CustomQuery) {
   // Create URL object containing full endpoint URL
-  const url = new URL(`products/${params.productId}/artifacts/`, context.config.api.url);
+  const url = new URL(`products/${params.productId}/artifacts`, context.config.api.url);
   const token = context.config.auth.onTokenRead();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
