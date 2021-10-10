@@ -151,7 +151,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         if category_id is not None:
             query_filters.append(Product.category_id.in_(all_child_category_ids))
         if term is not None:
-            query_filters.append(Product.name.like("%{}%".format(term)))
+            query_filters.append(Product.name.ilike("%{}%".format(term)))
 
         stake_step = 1
         return3m_step = 0.01

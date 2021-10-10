@@ -97,7 +97,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         # if category_id is not None:
         #     query_filters.append(Order.category_id.in_(all_child_category_ids))
         # if term is not None:
-        #     query_filters.append(Order.name.like("%{}%".format(term)))
+        #     query_filters.append(Order.name.ilike("%{}%".format(term)))
 
         if role == "buyer":
             query_filters.append(Order.buyer_id == current_user_id)

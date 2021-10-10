@@ -35,7 +35,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         if id is not None:
             query_filters.append(User.id == id)
         if term is not None:
-            query_filters.append(User.username.like("%{}%".format(term)))
+            query_filters.append(User.username.ilike("%{}%".format(term)))
 
         if isinstance(filters, dict):
             for filter_key, filter_item in filters.items():
