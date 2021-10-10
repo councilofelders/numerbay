@@ -112,6 +112,31 @@ def test_create_product_artifact(
     crud.model.remove(db, id=model_id)  # type: ignore
 
 
+def test_create_product_invalid_artifact(
+    client: TestClient, normal_user_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+
+    product = create_random_product(db, owner_id=current_user["id"], mode="file")
+    product_id = product.id
+    crud.product.update(db, db_obj=product, obj_in={"mode": "stake"})
+    model_id = product.model.id  # type: ignore
+
+    url = "http://exmaple.com"  # todo validate input
+    data = {"url": url}
+
+    r = client.post(
+        f"{settings.API_V1_STR}/products/{product_id}/artifacts",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert r.status_code == 400
+
+    crud.product.remove(db, id=product_id)
+    crud.model.remove(db, id=model_id)  # type: ignore
+
+
 def test_read_product_artifact(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:

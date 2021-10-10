@@ -75,6 +75,16 @@ def test_create_product_invalid_inputs(
         ),
     )
 
+    # invalid name
+    data = base_data.copy()
+    data["name"] = "invalid name"
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
     # nagative price
     data = base_data.copy()
     data["price"] = -10
@@ -106,7 +116,20 @@ def test_create_product_invalid_inputs(
     )
     assert response.status_code == 400
 
-    # invalid on-platform mode
+    # invalid on-platform invalid category mode
+    data = base_data.copy()
+    data["is_on_platform"] = True
+    data["currency"] = "NMR"
+    data["mode"] = "stake"
+    data["category_id"] = 4
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+
+    # invalid on-platform non-existent mode
     data = base_data.copy()
     data["is_on_platform"] = True
     data["currency"] = "NMR"
