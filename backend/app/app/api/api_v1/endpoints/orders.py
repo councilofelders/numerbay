@@ -52,10 +52,10 @@ def create_order(
     Create new order.
     """
     # todo turnkey rollout
-    # if submit_model_id is not None:
-    #     raise HTTPException(
-    #         status_code=400, detail="Automated submission not yet supported"
-    #     )
+    if submit_model_id is not None:
+        raise HTTPException(
+            status_code=400, detail="Automated submission not yet supported"
+        )
 
     # Product exists
     product = crud.product.get(db=db, id=id)
@@ -205,10 +205,10 @@ def submit_artifact(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     # todo turnkey rollout
-    # if order_id is not None:
-    #     raise HTTPException(
-    #         status_code=400, detail="Automated submission not yet supported"
-    #     )
+    if order_id is not None:
+        raise HTTPException(
+            status_code=400, detail="Automated submission not yet supported"
+        )
 
     order = crud.order.get(db=db, id=order_id)
     if not order:
