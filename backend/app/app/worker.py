@@ -19,6 +19,7 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from app.utils import (
     send_email,
+    send_failed_artifact_seller_email,
     send_new_artifact_email,
     send_new_artifact_seller_email,
 )
@@ -504,6 +505,18 @@ def validate_artifact_upload_task(artifact_id: int) -> None:
                 print(
                     f"Artifact {artifact_id} {artifact.object_name} not uploaded, deleting"
                 )
+
+                if settings.EMAILS_ENABLED:
+                    # Send failed artifact email notification to seller
+                    if artifact.product.owner.email:
+                        send_failed_artifact_seller_email(
+                            email_to=artifact.product.owner.email,
+                            username=artifact.product.owner.username,
+                            round_tournament=artifact.round_tournament,  # type: ignore
+                            product=artifact.product.sku,
+                            artifact=artifact.object_name,
+                        )
+
                 crud.artifact.remove(db, id=artifact_id)
                 return None
 
