@@ -229,7 +229,7 @@
                         description="You must upload artifacts to NumerBay"
                         v-model="form.mode"
                         class="form__radio"
-                        :disabled="true || !isSubmissionCategory(form.category)"
+                        :disabled="!isSubmissionCategory(form.category)"
                       />
                       <SfRadio
                         name="mode"
@@ -239,7 +239,7 @@
                         description="You must upload artifacts to NumerBay"
                         v-model="form.mode"
                         class="form__radio"
-                        :disabled="true || !isSubmissionCategory(form.category)"
+                        :disabled="!isSubmissionCategory(form.category)"
                       />
                     </ValidationProvider>
                   </div>

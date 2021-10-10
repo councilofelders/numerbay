@@ -226,8 +226,8 @@ def create_product(
     Create new product.
     """
     # todo turnkey rollout
-    if product_in.mode in ["stake", "stake_with_limit"]:
-        raise HTTPException(status_code=400, detail="Stake modes not yet supported")
+    # if product_in.mode in ["stake", "stake_with_limit"]:
+    #     raise HTTPException(status_code=400, detail="Stake modes not yet supported")
 
     product_in = validate_product_input(db, product_in)  # type: ignore
 
@@ -322,8 +322,8 @@ def update_product(
     Update a product.
     """
     # todo turnkey rollout
-    if product_in.mode in ["stake", "stake_with_limit"]:
-        raise HTTPException(status_code=400, detail="Stake modes not yet supported")
+    # if product_in.mode in ["stake", "stake_with_limit"]:
+    #     raise HTTPException(status_code=400, detail="Stake modes not yet supported")
 
     product = validate_existing_product(
         db, product_id=id, currend_user_id=current_user.id

@@ -1,5 +1,4 @@
 # import pytest
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -104,7 +103,7 @@ def test_create_order_invalid_self(
 
 
 # todo turnkey rollout
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_create_order_invalid_api_permissions(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:

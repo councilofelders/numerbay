@@ -69,7 +69,7 @@
           </template>
         </SfCheckbox>
         <!--todo turnkey rollout-->
-        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'" disabled>
+        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'">
           <template #label>
             <div class="sf-checkbox__label">
               (Optional) Submit this model to Numerai for me automatically if seller submits to NumerBay. [This will not happen if seller provides self-managed file URL]
@@ -83,7 +83,7 @@
             </div>
           </template>
         </SfCheckbox>
-        <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(products[0])!=='file')" disabled>
+        <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(products[0])!=='file')">
           <SfSelectOption value=""></SfSelectOption>
           <SfSelectOption v-for="model in models" :key="`${model.id}`" :value="`${model.id}`">{{model.name}}</SfSelectOption>
         </SfSelect>
