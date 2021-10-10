@@ -38,6 +38,7 @@ def init_db(db: Session) -> None:
                 slug="numerai-predictions",
                 is_per_round=True,
                 tournament=8,
+                is_submission=True,
             ),
             schemas.CategoryCreate(
                 name="Models", slug="numerai-models", is_per_round=False, tournament=8
@@ -49,6 +50,7 @@ def init_db(db: Session) -> None:
                 slug="signals-predictions",
                 is_per_round=True,
                 tournament=11,
+                is_submission=True,
             ),
             schemas.CategoryCreate(
                 name="Data", slug="signals-data", is_per_round=True, tournament=11

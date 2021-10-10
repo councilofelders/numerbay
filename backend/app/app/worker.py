@@ -17,7 +17,11 @@ from app.api import deps
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.utils import send_email, send_new_artifact_email
+from app.utils import (
+    send_email,
+    send_new_artifact_email,
+    send_new_artifact_seller_email,
+)
 
 client_sentry = Client(settings.SENTRY_DSN)
 
@@ -541,6 +545,16 @@ def validate_artifact_upload_task(artifact_id: int) -> None:
                                 order_id=order.id,
                                 artifact=artifact.object_name,
                             )
+
+                # Send new artifact email notification to seller
+                if artifact.product.owner.email:
+                    send_new_artifact_seller_email(
+                        email_to=artifact.product.owner.email,
+                        username=artifact.product.owner.username,
+                        round_tournament=artifact.round_tournament,  # type: ignore
+                        product=artifact.product.sku,
+                        artifact=artifact.object_name,
+                    )
     finally:
         db.close()
 

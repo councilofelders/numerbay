@@ -296,6 +296,32 @@ def send_new_artifact_email(
     )
 
 
+def send_new_artifact_seller_email(
+    email_to: str, username: str, round_tournament: int, product: str, artifact: str,
+) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New artifact added for {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact_seller.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/my-account/my-listings"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "round_tournament": round_tournament,
+                "product": product,
+                "artifact": artifact,
+                "link": link,
+            },
+        ),
+    )
+
+
 def generate_password_reset_token(email: str) -> str:
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
     now = datetime.utcnow()
