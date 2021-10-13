@@ -19,6 +19,7 @@ import createOrder from './api/createOrder';
 import getGlobals from './api/getGlobals';
 import getArtifactDownloadUrl from './api/getArtifactDownloadUrl';
 import getArtifactUploadUrl from './api/getArtifactUploadUrl';
+import validateArtifactUpload from './api/validateArtifactUpload';
 import getArtifact from './api/getArtifact';
 import createArtifact from './api/createArtifact';
 import submitArtifact from './api/submitArtifact';
@@ -120,6 +121,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     getGlobals,
     getArtifactDownloadUrl,
     getArtifactUploadUrl,
+    validateArtifactUpload,
     getArtifact,
     createArtifact,
     submitArtifact,

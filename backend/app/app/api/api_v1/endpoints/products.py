@@ -588,6 +588,50 @@ def generate_upload_url(
     return {"id": artifact.id, "url": url}
 
 
+@router.post("/{product_id}/artifacts/{artifact_id}/validate-upload")
+def validate_upload(
+    *,
+    product_id: int,
+    artifact_id: int,
+    db: Session = Depends(deps.get_db),
+    bucket: Bucket = Depends(deps.get_gcs_bucket),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    globals = crud.globals.get_singleton(db=db)
+    selling_round = globals.selling_round  # type: ignore
+
+    artifact = crud.artifact.get(db, id=artifact_id)
+    artifact = validate_existing_artifact(
+        artifact=artifact, product_id=product_id, selling_round=selling_round
+    )
+
+    product = crud.product.get(db, id=product_id)
+    validate_new_artifact(
+        product=product, current_user=current_user, url=artifact.url, filename=artifact.object_name  # type: ignore
+    )
+
+    if not artifact.object_name:
+        raise HTTPException(
+            status_code=400, detail="Artifact not an upload object",
+        )
+
+    blob = bucket.blob(artifact.object_name)
+    if not blob.exists():
+        raise HTTPException(
+            status_code=404, detail="Artifact file not uploaded",
+        )
+
+    crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
+
+    # validate and fulfill orders immediately
+    celery_app.send_task(
+        "app.worker.validate_artifact_upload_task",
+        kwargs=dict(artifact_id=artifact.id, skip_if_active=False),
+    )
+
+    return artifact
+
+
 @router.post("/{product_id}/artifacts", response_model=schemas.Artifact)
 async def create_product_artifact(
     *,

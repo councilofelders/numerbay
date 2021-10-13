@@ -6,6 +6,8 @@
         <dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
           v-on:vdropzone-error="s3UploadError"
           v-on:vdropzone-success="s3UploadSuccess"
+          v-on:vdropzone-total-upload-progress="s3UploadProgress"
+          v-on:vdropzone-queue-complete="s3UploadAllComplete"
           v-on:vdropzone-removed-file="onRemove"
         >
           Drop files here to upload<br/>Allowed extentions: {{this.dropzoneOptions.acceptedFiles}}<br/>File names are obfuscated on upload
@@ -161,7 +163,7 @@ export default {
         method: 'put',
         addRemoveLinks: true,
         timeout: 600000,
-        parallelUploads: 1,
+        // parallelUploads: 1,
         createImageThumbnails: false,
         maxFilesize: 2000,
         acceptedFiles: '.txt,.csv,.parquet,.zip,.ipynb',
@@ -296,18 +298,27 @@ export default {
     //     _send.call(xhr, file);
     //   };
     // },
-    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    async s3UploadSuccess(response) {
-      Logger.debug('Upload success', this.product.id);
-      this.componentLoading = true;
-      try {
-        this.$refs.foo.disable();
-        this.componentKey += 1;
-        await this.search({ productId: this.product.id });
-      } finally {
-        this.$refs.foo.enable();
-        this.componentLoading = false;
+    async s3UploadProgress(progress) {
+      if (progress === 100) {
+        this.componentLoading = true;
       }
+    },
+    async s3UploadAllComplete() {
+      if (this.componentLoading) {
+        try {
+          this.$refs.foo.disable();
+          this.componentKey += 1;
+          await this.search({ productId: this.product.id });
+        } finally {
+          this.$refs.foo.enable();
+          this.componentLoading = false;
+        }
+      }
+    },
+    async s3UploadSuccess(file) {
+      Logger.debug('Upload success', this.product.id, file.artifactId);
+      const response = await this.$root.context.$vsf.$numerbay.api.validateArtifactUpload({productId: this.product.id, artifactId: file.artifactId});
+      Logger.debug('response: ', response);
     },
     s3UploadError(errorMessage) {
       Logger.error('s3 error', errorMessage);

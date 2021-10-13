@@ -128,7 +128,7 @@
               <SfButton class="sf-button--text action__element" @click="download(artifact)">
                 {{ $t('Download') }}
               </SfButton>
-              <SfButton class="sf-button--text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name">
+              <SfButton class="sf-button--text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name && !!order.submit_model_id">
                 {{ $t('Submit') }}
               </SfButton>
             </span>

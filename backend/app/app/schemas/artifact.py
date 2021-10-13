@@ -12,6 +12,7 @@ class ArtifactBase(BaseModel):
     url: Optional[str] = None
     object_name: Optional[str] = None
     object_size: Optional[int] = None
+    state: Optional[str] = None
 
 
 # Properties to receive on artifact creation

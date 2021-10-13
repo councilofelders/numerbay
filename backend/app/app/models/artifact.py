@@ -17,5 +17,6 @@ class Artifact(Base):
     url = Column(String)
     object_name = Column(String, index=True, nullable=True)
     object_size = Column(Integer, nullable=True)
+    state = Column(String, nullable=False, default="pending", server_default="pending")
     product_id = Column(Integer, ForeignKey("product.id"))
     product = relationship("Product", back_populates="artifacts")

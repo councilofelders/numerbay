@@ -60,6 +60,48 @@ def send_email_task(
 
 
 @celery_app.task  # (acks_late=True)
+def send_new_artifact_emails_task(artifact_id: int) -> None:
+    if settings.EMAILS_ENABLED:
+        db = SessionLocal()
+        try:
+            artifact = crud.artifact.get(db, id=artifact_id)
+
+            if not artifact:
+                return None
+
+            globals = crud.globals.update_singleton(db)
+            selling_round = globals.selling_round  # type: ignore
+
+            orders = crud.order.get_multi_by_state(
+                db, state="confirmed", round_order=selling_round
+            )
+            for order in orders:
+                if order.product_id == artifact.product_id:
+                    # Send new artifact email notifications to buyers
+                    if order.buyer.email:
+                        send_new_artifact_email(
+                            email_to=order.buyer.email,
+                            username=order.buyer.username,
+                            round_order=order.round_order,
+                            product=order.product.sku,
+                            order_id=order.id,
+                            artifact=artifact.object_name,  # type: ignore
+                        )
+
+            # Send new artifact email notification to seller
+            if artifact.product.owner.email:
+                send_new_artifact_seller_email(
+                    email_to=artifact.product.owner.email,
+                    username=artifact.product.owner.username,
+                    round_tournament=artifact.round_tournament,  # type: ignore
+                    product=artifact.product.sku,
+                    artifact=artifact.object_name,  # type: ignore
+                )
+        finally:
+            db.close()
+
+
+@celery_app.task  # (acks_late=True)
 def update_model_subtask(user_json: Dict) -> Optional[Any]:
     db = SessionLocal()
     try:
@@ -261,6 +303,19 @@ def upload_numerai_artifact_task(
     tournament: int = 8,
     version: int = 1,
 ) -> Optional[Any]:
+    db = SessionLocal()
+    try:
+        order = crud.order.get(db=db, id=order_id)
+        if not order:
+            print(f"Order {order_id} not found, skipped")
+            return None
+        if order.submit_state == "queued":  # already queued for submission
+            print(f"Order {order.id} already queued for submission, skipped")
+            return None
+        crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
+    finally:
+        db.close()
+
     bucket = deps.get_gcs_bucket()
     blob = bucket.blob(object_name)
 
@@ -292,7 +347,7 @@ def upload_numerai_artifact_task(
                         """
 
     arguments = {
-        "filename": "predictions.csv",
+        "filename": object_name,
         "tournament": tournament,
         "modelId": model_id,
     }
@@ -494,11 +549,20 @@ def batch_submit_numerai_models_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def validate_artifact_upload_task(artifact_id: int) -> None:
+def validate_artifact_upload_task(
+    artifact_id: int, skip_if_active: bool = True
+) -> None:
     db = SessionLocal()
     try:
         artifact = crud.artifact.get(db, id=artifact_id)
-        if artifact and artifact.object_name:
+
+        if skip_if_active and artifact and artifact.state == "active":
+            print(
+                f"Artifact {artifact_id} {artifact.object_name} already validated, skipping"
+            )
+            return None
+
+        if artifact and artifact.object_name:  # if is file
             bucket = deps.get_gcs_bucket()
             blob = bucket.blob(artifact.object_name)
             if not blob.exists():
@@ -517,14 +581,29 @@ def validate_artifact_upload_task(artifact_id: int) -> None:
                             artifact=artifact.object_name,
                         )
 
-                crud.artifact.remove(db, id=artifact_id)
+                # crud.artifact.remove(db, id=artifact_id)
+                crud.artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
                 return None
 
+            print(
+                f"Artifact {artifact_id} {artifact.object_name} is valid, searching for orders to upload..."
+            )
+
             selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-            orders = crud.order.get_pending_submission_orders(
-                db, round_order=selling_round
+
+            # Submit for all confirmed orders with submit_model_id regardless if submitted or not
+            orders = crud.order.get_multi_by_state(
+                db, state="confirmed", round_order=selling_round  # type: ignore
             )
             for order in orders:
+                if not order.submit_model_id:
+                    continue
+                if (
+                    order.submit_state == "queued"
+                ):  # already queued for submission, skip
+                    print(f"Order {order.id} already queued for submission, skipped")
+                    continue
+
                 print(
                     f"Uploading csv artifact {artifact.object_name} for order {order.id}"
                 )
@@ -542,32 +621,15 @@ def validate_artifact_upload_task(artifact_id: int) -> None:
                         ),
                     )
 
-            if settings.EMAILS_ENABLED:
-                orders = crud.order.get_multi_by_state(
-                    db, state="confirmed", round_order=selling_round
-                )
-                for order in orders:
-                    if order.product_id == artifact.product_id:
-                        # Send new artifact email notifications to buyers
-                        if order.buyer.email:
-                            send_new_artifact_email(
-                                email_to=order.buyer.email,
-                                username=order.buyer.username,
-                                round_order=order.round_order,
-                                product=order.product.sku,
-                                order_id=order.id,
-                                artifact=artifact.object_name,
-                            )
-
-                # Send new artifact email notification to seller
-                if artifact.product.owner.email:
-                    send_new_artifact_seller_email(
-                        email_to=artifact.product.owner.email,
-                        username=artifact.product.owner.username,
-                        round_tournament=artifact.round_tournament,  # type: ignore
-                        product=artifact.product.sku,
-                        artifact=artifact.object_name,
-                    )
+            # if artifact.state == "pending":  # artifact not yet validated and notified
+            print(
+                f"Mark artifact {artifact.id} as active and send out email notifications"
+            )
+            celery_app.send_task(
+                "app.worker.send_new_artifact_emails_task",
+                kwargs=dict(artifact_id=artifact.id),
+            )
+            crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
     finally:
         db.close()
 

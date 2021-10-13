@@ -217,6 +217,10 @@ def submit_artifact(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if order.state != "confirmed":
         raise HTTPException(status_code=403, detail="Order not confirmed")
+    if not order.submit_model_id:
+        raise HTTPException(
+            status_code=400, detail="Order does not have a model ID to submit to"
+        )
     if not order.buyer.numerai_api_key_can_upload_submission:
         raise HTTPException(
             status_code=403,

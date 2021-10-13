@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
-from app import models
+from app import crud, models
 from app.api import deps
 from app.models import Artifact, Order, Product
 
@@ -71,6 +71,38 @@ def remove_failed_uploads(
                 f"Remove artifact {artifact.object_name} for product {artifact.product.name}"
             )
             db.delete(artifact)
+    db.commit()
+    return {"msg": "success!"}
+
+
+@router.post("/update-artifact-states")
+def update_artifact_states(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Update artifact states (for db migration only).
+    """
+    globals = crud.globals.update_singleton(db)
+    selling_round = globals.selling_round  # type: ignore
+
+    artifacts = db.query(Artifact)
+    for artifact in artifacts:
+        if (
+            artifact.round_tournament < selling_round
+            and artifact.product.category.is_per_round
+        ):
+            artifact.state = "expired"
+            continue
+
+        if artifact.object_name:
+            bucket = deps.get_gcs_bucket()
+            blob = bucket.blob(artifact.object_name)
+            if not blob.exists():
+                artifact.state = "failed"
+                continue
+        artifact.state = "active"
     db.commit()
     return {"msg": "success!"}
 
