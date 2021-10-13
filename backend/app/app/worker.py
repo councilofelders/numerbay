@@ -92,7 +92,7 @@ def batch_update_models_task() -> None:
 def batch_update_model_scores_task() -> None:
     pipeline_status = crud.model.get_numerai_pipeline_status(tournament=8)
     if pipeline_status["isScoringDay"]:
-        if pipeline_status["resolvedAt"]:
+        if True or pipeline_status["resolvedAt"]:
             print("Numerai pipeline completed, update model scores...")
             db = SessionLocal()
             try:
@@ -104,7 +104,7 @@ def batch_update_model_scores_task() -> None:
                 # commit_models_subtask.s(0)).delay()
                 group(
                     [update_model_subtask.s(jsonable_encoder(user)) for user in users]
-                ).delay()
+                ).apply_async(countdown=60)
             finally:
                 db.close()
         else:
