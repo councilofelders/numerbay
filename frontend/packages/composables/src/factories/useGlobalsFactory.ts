@@ -6,7 +6,7 @@ import {
   Logger,
   sharedRef
 } from '@vue-storefront/core';
-import { UseGlobals } from '../types/composeables';
+import { UseGlobals } from '../types/composables';
 
 export interface UseGlobalsFactoryParams extends FactoryParams{
   getGlobals: (context: Context) => Promise<any>;

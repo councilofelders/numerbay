@@ -1,6 +1,6 @@
 import { Ref, computed } from '@vue/composition-api';
 import { Context, FactoryParams, CustomQuery, sharedRef, Logger, configureFactoryParams } from '@vue-storefront/core';
-import { UseUserOrder, UseUserOrderErrors } from '../types/composeables';
+import { UseUserOrder, UseUserOrderErrors } from '../types/composables';
 
 export interface UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS> extends FactoryParams {
   searchOrders: (context: Context, params: ORDER_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ORDERS>;

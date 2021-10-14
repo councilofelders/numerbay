@@ -37,7 +37,19 @@
         </div>
         <div class="product__pricing">
           <div class="last-sale">
+            <div>
+              <div class="product__rating">
+                <SfRating
+                  :score="averageRating"
+                  :max="5"
+                />
+                <a v-if="!!totalReviews" href="#" class="product__count">
+                  ({{ totalReviews }})
+                </a>
+              </div>
+            </div>
             <div class="last-sale" v-if="product.is_on_platform">
+              <span class='divider-pipe'>|</span>
               <h3>Total # Sales</h3>
               <div class="sale-value">{{ product.total_num_sales }}</div>
               <span class='divider-pipe'>|</span>
@@ -67,7 +79,7 @@
         </div>
         </SfLoader>
         <LazyHydrate when-idle>
-          <SfTabs :open-tab="1" class="product__tabs">
+          <SfTabs id="tabs" :open-tab="1" class="product__tabs">
             <SfTab title="Description">
               <div class="product__description" v-html="productGetters.getDescription(product)">
               </div>
@@ -84,6 +96,34 @@
                   </SfButton>
                 </template>
               </SfProperty>-->
+            </SfTab>
+            <SfTab title="Read reviews">
+              {{reviews}}
+              <div v-show="reviewsLoading">
+                <SfLoader />
+              </div>
+              <SfReview
+                v-for="review in reviews"
+                v-show="!reviewsLoading"
+                :key="reviewGetters.getReviewId(review)"
+                :author="reviewGetters.getReviewAuthor(review)"
+                :date="reviewGetters.getReviewDate(review)"
+                :message="reviewGetters.getReviewMessage(review)"
+                :max-rating="5"
+                :rating="reviewGetters.getReviewRating(review)"
+                :char-limit="250"
+                read-more-text="Read more"
+                hide-full-text="Read less"
+                class="product__review"
+              />
+              <div
+                v-show="!reviewsLoading"
+                id="addReview"
+              >
+                <ProductAddReviewForm
+                  @add-review="successAddReview"
+                />
+              </div>
             </SfTab>
           </SfTabs>
         </LazyHydrate>
@@ -118,13 +158,14 @@ import {
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import RelatedProducts from '~/components/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
-import {useProduct, productGetters, reviewGetters, useNumerai, useUser, useGlobals} from '@vue-storefront/numerbay';
+import {useProduct, productGetters, useReview, reviewGetters, useNumerai, useUser, useGlobals} from '@vue-storefront/numerbay';
 import { useUiState, useUiNotification } from '~/composables';
 import { onSSR } from '@vue-storefront/core';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
 import BuyButton from '../components/Molecules/BuyButton';
+import ProductAddReviewForm from '~/components/ProductAddReviewForm.vue';
 // import Web3 from 'web3';
 
 export default {
@@ -136,7 +177,7 @@ export default {
     const { products, search, loading: productLoading } = useProduct(String(id));
     // const { products: relatedProducts, search: searchRelatedProducts, loading: relatedLoading } = useProduct('relatedProducts');
     // const { addItem, loading } = useCart();
-    // const { reviews: productReviews, search: searchReviews } = useReview('productReviews');
+    const { reviews: productReviews, search: searchReviews, loading: reviewsLoading, addReview } = useReview('productReviews');
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
     const { user, isAuthenticated } = useUser();
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
@@ -147,7 +188,7 @@ export default {
     const options = computed(() => productGetters.getAttributes(products.value.data, ['color', 'size']));
     const configuration = computed(() => productGetters.getAttributes(product.value, ['color', 'size']));
     // const categories = computed(() => productGetters.getCategoryIds(product.value));
-    // const reviews = computed(() => reviewGetters.getItems(productReviews.value));
+    const reviews = computed(() => reviewGetters.getItems(productReviews.value));
 
     // TODO: Breadcrumbs are temporary disabled because productGetters return undefined. We have a mocks in data
     // const breadcrumbs = computed(() => productGetters.getBreadcrumbs ? productGetters.getBreadcrumbs(product.value) : props.fallbackBreadcrumbs);
@@ -161,7 +202,7 @@ export default {
     onSSR(async () => {
       await search({ id });
       // await searchRelatedProducts({ catId: [categories.value[0]], limit: 8 });
-      // await searchReviews({ productId: id });
+      await searchReviews({ productId: id });
       if (product?.value?.category?.tournament) {
         await getModelInfo({tournament: product?.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value.name});
       }
@@ -260,6 +301,13 @@ export default {
     //   // web3.sendTransaction({to: receiver, from: sender, value: web3.toWei("0.5", "ether")})
     // };
 
+    const successAddReview = async (reviewData) => {
+      await addReview(reviewData);
+      document
+        .querySelector('#tabs')
+        .scrollIntoView({ behavior: 'smooth', block: 'end' });
+    };
+
     return {
       updateFilter,
       getModelInfo,
@@ -269,7 +317,9 @@ export default {
       // handleCryptoBuyButtonClick,
       configuration,
       product,
-      // reviews,
+      reviews,
+      reviewsLoading,
+      successAddReview,
       reviewGetters,
       averageRating: computed(() => productGetters.getAverageRating(product.value)),
       totalReviews: computed(() => productGetters.getTotalReviews(product.value)),
@@ -315,7 +365,8 @@ export default {
     MobileStoreBanner,
     LazyHydrate,
     NumeraiChart,
-    BuyButton
+    BuyButton,
+    ProductAddReviewForm
   },
   // test
   data() {

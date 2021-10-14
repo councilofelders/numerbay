@@ -1,6 +1,6 @@
 import { Ref, computed } from '@vue/composition-api';
 import { Context, FactoryParams, CustomQuery, sharedRef, Logger, configureFactoryParams } from '@vue-storefront/core';
-import {UseProductArtifact, UseProductArtifactErrors} from '../types/composeables';
+import {UseProductArtifact, UseProductArtifactErrors} from '../types/composables';
 
 export interface UseProductArtifactFactoryParams<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> extends FactoryParams {
   searchArtifacts: (context: Context, params: ARTIFACT_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ARTIFACTS>;

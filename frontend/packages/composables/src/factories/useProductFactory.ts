@@ -1,7 +1,7 @@
 import { CustomQuery, ProductsSearchParams, Context, FactoryParams } from '@vue-storefront/core';
 import { Ref, computed } from '@vue/composition-api';
 import { sharedRef, Logger, configureFactoryParams } from '@vue-storefront/core';
-import { UseProduct, UseProductErrors } from '../types/composeables';
+import { UseProduct, UseProductErrors } from '../types/composables';
 
 export interface UseProductFactoryParams<PRODUCTS, PRODUCT_SEARCH_PARAMS extends ProductsSearchParams> extends FactoryParams {
   productsSearch: (context: Context, params: PRODUCT_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<PRODUCTS>;

@@ -41,6 +41,7 @@ export default {
   },
   loading: { color: '#fff' },
   plugins: [
+    { src: 'plugins/nuxt-star-rating-plugin', ssr: false },
     { src: 'plugins/nuxt-quill-plugin', ssr: false },
     { src: 'plugins/nuxt-clipboard2', ssr: false }
   ],

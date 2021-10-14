@@ -4,7 +4,7 @@ import {
   AgnosticBreadcrumb,
   AgnosticMediaGalleryItem,
   AgnosticPrice,
-  FacetSearchResult
+  FacetSearchResult, ReviewGetters
 } from '@vue-storefront/core';
 
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
@@ -198,4 +198,9 @@ export interface ProductArtifactGetters<ARTIFACT> {
     getFormattedPrice: (item: ARTIFACT, withCurrency: boolean, decimals: number) => string;
     getBuyer: (item: ARTIFACT) => string;
     [getterName: string]: (element: any, options?: any) => unknown;
+}
+
+export interface NumerBayReviewGetters extends ReviewGetters<any, any> {
+  getReviewMetadata(reviewData: any[]): any[];
+  getProductName(reviewData: any): string;
 }

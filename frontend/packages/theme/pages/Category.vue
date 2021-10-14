@@ -230,7 +230,7 @@
                   </SfProperty>
                 </div>
               </template>
-              <template #reviews><span></span></template>
+<!--              <template #reviews><span></span></template>-->
               <template #add-to-cart>
                 <BuyButton
                   :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"

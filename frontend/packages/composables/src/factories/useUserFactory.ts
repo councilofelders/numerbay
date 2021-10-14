@@ -1,6 +1,6 @@
 import { Ref, computed } from '@vue/composition-api';
 import { Context, FactoryParams, CustomQuery } from '@vue-storefront/core';
-import { UseUser, UseWeb3User, UseUserErrors } from '../types/composeables';
+import { UseUser, UseWeb3User, UseUserErrors } from '../types/composables';
 import { sharedRef, Logger, mask, configureFactoryParams } from '@vue-storefront/core';
 
 export interface UseUserFactoryParams<USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS> extends FactoryParams {

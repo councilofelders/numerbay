@@ -6,7 +6,7 @@ import {
   Logger,
   sharedRef
 } from '@vue-storefront/core';
-import { UseNumerai, UseNumeraiErrors } from '../types/composeables';
+import { UseNumerai, UseNumeraiErrors } from '../types/composables';
 
 export interface UseNumeraiFactoryParams extends FactoryParams{
   getModels: (context: Context) => Promise<any>;

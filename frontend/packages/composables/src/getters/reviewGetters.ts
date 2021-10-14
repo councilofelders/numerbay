@@ -1,4 +1,5 @@
-import { ReviewGetters, AgnosticRateCount } from '@vue-storefront/core';
+import { AgnosticRateCount } from '@vue-storefront/core';
+import { NumerBayReviewGetters } from '../types';
 
 type Review = any;
 type ReviewItem = any;
@@ -33,7 +34,17 @@ export const getRatesCount = (review: Review): AgnosticRateCount[] => [];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getReviewsPage = (review: Review): number => 1;
 
-const reviewGetters: ReviewGetters<Review, ReviewItem> = {
+export const getReviewMetadata = (reviewData: any[]): any[] => reviewData?.map((m) => ({
+  ...m,
+  values: m.values.map((v) => ({
+    label: (Number.parseInt(v.value, 10) || v.value),
+    id: v.value_id
+  }))
+}));
+
+export const getProductName = (review: any): string => review?.product?.name || '';
+
+const reviewGetters: NumerBayReviewGetters = {
   getItems,
   getReviewId,
   getReviewAuthor,
@@ -43,7 +54,9 @@ const reviewGetters: ReviewGetters<Review, ReviewItem> = {
   getTotalReviews,
   getAverageRating,
   getRatesCount,
-  getReviewsPage
+  getReviewsPage,
+  getReviewMetadata,
+  getProductName
 };
 
 export default reviewGetters;
