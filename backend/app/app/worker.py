@@ -134,7 +134,7 @@ def batch_update_models_task() -> None:
 def batch_update_model_scores_task() -> None:
     pipeline_status = crud.model.get_numerai_pipeline_status(tournament=8)
     if pipeline_status["isScoringDay"]:
-        if True or pipeline_status["resolvedAt"]:
+        if pipeline_status.get("resolvedAt", None):
             print("Numerai pipeline completed, update model scores...")
             db = SessionLocal()
             try:
