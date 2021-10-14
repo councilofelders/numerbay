@@ -83,10 +83,12 @@
             </div>
           </template>
         </SfCheckbox>
-        <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(products[0])!=='file')">
-          <SfSelectOption value=""></SfSelectOption>
-          <SfSelectOption v-for="model in models" :key="`${model.id}`" :value="`${model.id}`">{{model.name}}</SfSelectOption>
-        </SfSelect>
+        <SfLoader :class="{ loader: loading || productLoading || numeraiLoading }" :loading="loading || productLoading || numeraiLoading">
+          <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(products[0])!=='file')">
+            <SfSelectOption value=""></SfSelectOption>
+            <SfSelectOption v-for="model in models" :key="`${model.id}`" :value="`${model.id}`">{{model.name}}</SfSelectOption>
+          </SfSelect>
+        </SfLoader>
 
         <div class="summary__action">
           <SfButton

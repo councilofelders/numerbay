@@ -125,7 +125,7 @@
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
             <span class="artifact-actions">
-              <SfButton class="sf-button--text action__element" @click="download(artifact)">
+              <SfButton class="sf-button--text action__element" @click="download(artifact)" v-if="order.mode === 'file'">
                 {{ $t('Download') }}
               </SfButton>
               <SfButton class="sf-button--text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name && !!order.submit_model_id">
