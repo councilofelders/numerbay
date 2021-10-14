@@ -12,20 +12,20 @@ from app.models import Artifact, Order, Product
 router = APIRouter()
 
 
-@router.post("/fill-product-mode")
-def fill_product_mode(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Fill product mode (for db migration only).
-    """
-    db.query(Product).filter(Product.is_on_platform).update(
-        {Product.mode: "file"}, synchronize_session=False
-    )
-    db.commit()
-    return {"msg": "success!"}
+# @router.post("/fill-product-mode")
+# def fill_product_mode(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Fill product mode (for db migration only).
+#     """
+#     db.query(Product).filter(Product.is_on_platform).update(
+#         {Product.mode: "file"}, synchronize_session=False
+#     )
+#     db.commit()
+#     return {"msg": "success!"}
 
 
 @router.post("/refresh-sales-stats")
@@ -103,6 +103,28 @@ def update_artifact_states(
                 artifact.state = "failed"
                 continue
         artifact.state = "active"
+    db.commit()
+    return {"msg": "success!"}
+
+
+@router.post("/fill-product-readiness")
+def fill_product_readiness(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Fill product readiness (for db migration only).
+    """
+    globals = crud.globals.update_singleton(db)
+    selling_round = globals.selling_round  # type: ignore
+
+    products = db.query(Product).filter(Product.is_on_platform).all()
+    for product in products:
+        artifacts = crud.artifact.get_multi_by_product_round(
+            db, product=product, round_tournament=selling_round
+        )
+        product.is_ready = len(artifacts) > 0
     db.commit()
     return {"msg": "success!"}
 

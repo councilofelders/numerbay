@@ -263,6 +263,9 @@ def update_round_rollover() -> None:
                 )  # update round number and unfreeze
                 # expire old products
                 crud.product.bulk_expire(db, current_round=globals.selling_round)  # type: ignore
+
+                # unmark product readiness
+                crud.product.bulk_unmark_is_ready(db)
     finally:
         print(
             f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
@@ -630,6 +633,12 @@ def validate_artifact_upload_task(
                 kwargs=dict(artifact_id=artifact.id),
             )
             crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
+
+            # mark product as ready
+            product = crud.product.get(db, id=artifact.product_id)
+            if product:
+                if product.is_on_platform and not product.is_ready:
+                    crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
     finally:
         db.close()
 

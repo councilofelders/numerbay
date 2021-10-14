@@ -623,6 +623,11 @@ def validate_upload(
 
     crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
 
+    # mark product as ready
+    if product:
+        if product.is_on_platform and not product.is_ready:
+            crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
+
     # validate and fulfill orders immediately
     celery_app.send_task(
         "app.worker.validate_artifact_upload_task",
@@ -675,6 +680,11 @@ async def create_product_artifact(
         # object_name=object_name,
     )
     artifact = crud.artifact.create(db=db, obj_in=artifact_in)
+
+    # mark product as ready
+    if product:
+        if product.is_on_platform and not product.is_ready:
+            crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
 
     # Send notification emails
     if settings.EMAILS_ENABLED:

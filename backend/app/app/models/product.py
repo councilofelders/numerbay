@@ -27,6 +27,7 @@ class Product(Base):
     third_party_url = Column(String)
     description = Column(String)
     is_active = Column(Boolean, server_default="t")
+    is_ready = Column(Boolean)
     expiration_round = Column(Integer)
     total_num_sales = Column(Integer, default=0, server_default="0")
     last_sale_price = Column(Numeric)

@@ -130,6 +130,14 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         db.commit()
 
+    def bulk_unmark_is_ready(self, db: Session) -> None:
+        products_to_unmark = db.query(self.model).filter(Product.is_ready).all()
+        for product in products_to_unmark:
+            if product.category.is_per_round:
+                product.is_ready = False
+
+        db.commit()
+
     def search(
         self,
         db: Session,

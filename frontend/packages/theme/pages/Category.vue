@@ -210,10 +210,13 @@
                 <span title="Corr Rank" v-show="!!product.category.tournament"># {{ productGetters.getModelRank(product, 'corr')}}</span>
               </template>
               <template #description>
-                <p class="sf-product-card-horizontal__description desktop-only">
+                <div class="sf-product-card-horizontal__description desktop-only">
+                  <SfBadge class="sf-badge ready-badge" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Ready</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(product) }}</SfBadge>
-                </p>
+                </div>
               </template>
               <template #configuration>
                 <div v-show="!!product.category.tournament">
@@ -947,6 +950,10 @@ export default {
 }
 .delta-negative {
   color: #d24141;
+}
+.ready-badge {
+  padding: 0.4em;
+  --badge-background: var(--c-primary)
 }
 .mode-badge {
   padding: 0.4em;
