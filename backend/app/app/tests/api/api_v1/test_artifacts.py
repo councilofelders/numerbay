@@ -36,11 +36,13 @@ def test_generate_upload_url(
     artifact = crud.artifact.get(db, id=content["id"])
     assert artifact
 
-    client.delete(
+    response = client.delete(
         f"{settings.API_V1_STR}/products/{product_id}/artifacts/{artifact.id}",
         headers=normal_user_token_headers,
     )
-    crud.product.remove(db, id=product_id)
+    assert response.status_code == 200
+    product = crud.product.remove(db, id=product_id)
+    assert product.id == product_id
     crud.model.remove(db, id=model_id)  # type: ignore
 
 
@@ -79,7 +81,8 @@ def test_generate_download_url(
     assert r.status_code == 200
 
     crud.artifact.remove(db, id=artifact.id)
-    crud.product.remove(db, id=product_id)
+    product = crud.product.remove(db, id=product_id)
+    assert product.id == product_id
     crud.model.remove(db, id=model_id)  # type: ignore
 
 
@@ -108,7 +111,8 @@ def test_create_product_artifact(
     assert content["url"] == url
 
     crud.artifact.remove(db, id=content["id"])
-    crud.product.remove(db, id=product_id)
+    product = crud.product.remove(db, id=product_id)
+    assert product.id == product_id
     crud.model.remove(db, id=model_id)  # type: ignore
 
 
@@ -133,7 +137,8 @@ def test_create_product_invalid_artifact(
     )
     assert r.status_code == 400
 
-    crud.product.remove(db, id=product_id)
+    product = crud.product.remove(db, id=product_id)
+    assert product.id == product_id
     crud.model.remove(db, id=model_id)  # type: ignore
 
 
@@ -170,7 +175,8 @@ def test_read_product_artifact(
     assert content["total"] > 0
 
     crud.artifact.remove(db, id=artifact_id)
-    crud.product.remove(db, id=product.id)
+    product = crud.product.remove(db, id=product.id)
+    assert product.id == product_id
     crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name, tournament=8).id)  # type: ignore
 
 
@@ -212,9 +218,11 @@ def test_update_product_artifact(
 
     assert content["url"] == new_url
 
-    client.delete(
+    response = client.delete(
         f"{settings.API_V1_STR}/products/{product_id}/artifacts/{content['id']}",
         headers=normal_user_token_headers,
     )
-    crud.product.remove(db, id=product_id)
+    assert response.status_code == 200
+    product = crud.product.remove(db, id=product_id)
+    assert product.id == product_id
     crud.model.remove(db, id=model_id)  # type: ignore

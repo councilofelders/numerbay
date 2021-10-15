@@ -54,7 +54,8 @@ def test_create_order(
 
     crud.order.remove(db, id=content["id"])
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=model_id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
     crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
@@ -85,8 +86,10 @@ def test_create_order_invalid_self(
     assert response.status_code == 400
 
     crud.product.remove(db, id=product.id)
+    crud.model.remove(db, id=product.model_id)  # type: ignore
 
     product = create_random_product(db, is_on_platform=True, mode="file")
+    owner_id = product.owner_id
     crud.product.update(db, db_obj=product, obj_in={"wallet": buyer_wallet})
 
     order_data = {
@@ -100,6 +103,8 @@ def test_create_order_invalid_self(
     assert response.status_code == 400
 
     crud.product.remove(db, id=product.id)
+    crud.model.remove(db, id=product.model_id)  # type: ignore
+    crud.user.remove(db, id=owner_id)  # type: ignore
 
 
 # todo turnkey rollout
@@ -117,7 +122,7 @@ def test_create_order_invalid_api_permissions(
 
     # Stake mode product
     product = create_random_product(db, is_on_platform=True, mode="stake")
-    model_id = product.model.id  # type: ignore
+    model_id = product.model_id  # type: ignore
 
     crud.user.update(
         db,
@@ -165,7 +170,8 @@ def test_create_order_invalid_api_permissions(
     assert response.status_code == 403
 
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=model_id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
     crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
@@ -255,6 +261,7 @@ def test_order_artifact(
     crud.artifact.remove(db, id=artifact_id)
     crud.order.remove(db, id=order.id)
     crud.product.remove(db, id=product.id)
+    crud.model.remove(db, id=product.model_id)  # type: ignore
 
 
 def test_search_buyer_orders(
@@ -276,14 +283,10 @@ def test_search_buyer_orders(
     assert order.product.name == content["data"][0]["product"]["name"]
     assert current_user["id"] == content["data"][0]["buyer"]["id"]
 
-    client.delete(
-        f"{settings.API_V1_STR}/orders/{order.id}", headers=normal_user_token_headers,
-    )
-    client.delete(
-        f"{settings.API_V1_STR}/products/{order.product_id}",
-        headers=normal_user_token_headers,
-    )
-    crud.model.remove(db, id=model_id)  # type: ignore
+    crud.order.remove(db, id=order.id)
+    crud.product.remove(db, id=order.product_id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
     crud.user.remove(db, id=order.product.owner_id)  # type: ignore
 
 
@@ -306,12 +309,14 @@ def test_search_seller_orders(
     assert content["total"] > 0
     assert order.product.name == content["data"][0]["product"]["name"]
 
-    client.delete(
-        f"{settings.API_V1_STR}/orders/{order.id}", headers=normal_user_token_headers,
-    )
-    client.delete(
-        f"{settings.API_V1_STR}/products/{order.product_id}",
-        headers=normal_user_token_headers,
-    )
-    crud.model.remove(db, id=model_id)  # type: ignore
+    crud.order.remove(db, id=order.id)
+    # todo soft delete
+    # response = client.delete(
+    #     f"{settings.API_V1_STR}/products/{order.product_id}",
+    #     headers=normal_user_token_headers,
+    # )
+    # assert response.status_code == 200
+    crud.product.remove(db, id=order.product_id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
     crud.user.remove(db, id=buyer_id)  # type: ignore

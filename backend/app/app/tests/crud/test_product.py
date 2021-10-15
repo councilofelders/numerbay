@@ -29,6 +29,7 @@ def test_create_product(db: Session) -> None:
     assert product.owner.id == user.id
 
     crud.product.remove(db=db, id=product.id)
+    crud.user.remove(db=db, id=user.id)
 
 
 def test_search_product(db: Session) -> None:
@@ -62,6 +63,7 @@ def test_search_product(db: Session) -> None:
     assert stored_product["total"] > 0
 
     crud.product.remove(db=db, id=product.id)
+    crud.user.remove(db=db, id=user.id)
 
 
 def test_get_multiple_products(db: Session) -> None:
@@ -90,6 +92,7 @@ def test_get_multiple_products(db: Session) -> None:
     assert len(stored_product) > 0
 
     crud.product.remove(db=db, id=product.id)
+    crud.user.remove(db=db, id=user.id)
 
 
 def test_get_product(db: Session) -> None:
@@ -122,6 +125,7 @@ def test_get_product(db: Session) -> None:
     assert product.id == stored_product.id
 
     crud.product.remove(db=db, id=product.id)
+    crud.user.remove(db=db, id=user.id)
 
 
 def test_update_product(db: Session) -> None:
@@ -151,6 +155,7 @@ def test_update_product(db: Session) -> None:
     assert product.owner.id == product2.owner_id
 
     crud.product.remove(db=db, id=product.id)
+    crud.user.remove(db=db, id=user.id)
 
 
 def test_expire_products(db: Session) -> None:
@@ -185,6 +190,7 @@ def test_expire_products(db: Session) -> None:
     assert not product3.is_active
 
     crud.product.remove(db=db, id=product.id)
+    crud.user.remove(db=db, id=user.id)
 
 
 def test_delete_product(db: Session) -> None:
@@ -213,3 +219,5 @@ def test_delete_product(db: Session) -> None:
     assert product2.price == price
     assert product2.description == description
     assert product2.owner.id == user.id
+
+    crud.user.remove(db=db, id=user.id)

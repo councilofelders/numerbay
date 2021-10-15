@@ -19,7 +19,7 @@ def create_random_product(
     if owner_id is None:
         user = create_random_user(db)
         owner_id = user.id
-    name = random_lower_string()
+    name = "zzz" + random_lower_string()
     crud.model.create(
         db, obj_in=ModelCreate(id=name, name=name, tournament=8, owner_id=owner_id)
     )

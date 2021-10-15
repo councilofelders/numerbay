@@ -44,14 +44,15 @@ def test_use_access_token(
     assert "username" in result
 
 
-def test_login_nonce(client: TestClient) -> None:
-    nonce_request_data = {
-        "public_address": "0xtest_address",
-    }
+def test_login_nonce(client: TestClient, db: Session) -> None:
+    public_address = "0xtest_address"
+    nonce_request_data = {"public_address": public_address}
     r = client.post(f"{settings.API_V1_STR}/login/nonce", json=nonce_request_data)
     result = r.json()
     assert r.status_code == 200
     assert "nonce" in result
+
+    crud.user.remove(db, id=crud.user.get_by_username(db, username=public_address).id)  # type: ignore
 
 
 def test_login_nonce_authenticated(
@@ -76,8 +77,10 @@ def test_login_nonce_authenticated(
     assert r.status_code == 200
     assert "nonce" in result
 
+    crud.user.remove(db, id=current_user.id)  # type: ignore
 
-def test_get_access_token_inactive(client: TestClient) -> None:
+
+def test_get_access_token_inactive(client: TestClient, db: Session) -> None:
     public_address = random_lower_string()
     nonce_request_data = {
         "public_address": public_address,
@@ -105,8 +108,10 @@ def test_get_access_token_inactive(client: TestClient) -> None:
     assert r.status_code == 400
     assert "access_token" not in tokens
 
+    crud.user.remove(db, id=crud.user.get_by_username(db, username=public_address).id)  # type: ignore
 
-def test_get_access_token_web3(client: TestClient) -> None:
+
+def test_get_access_token_web3(client: TestClient, db: Session) -> None:
     eth_account = Account.create()
     public_address = eth_account.address
     nonce_request_data = {
@@ -128,3 +133,5 @@ def test_get_access_token_web3(client: TestClient) -> None:
     assert r.status_code == 200
     assert "access_token" in tokens
     assert tokens["access_token"]
+
+    crud.user.remove(db, id=crud.user.get_by_username(db, username=public_address).id)  # type: ignore

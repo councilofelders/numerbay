@@ -34,6 +34,7 @@ def test_create_product(
             owner_id=current_user["id"],
         ),
     )
+    model_id = model.id
     response = client.post(
         f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
     )
@@ -47,7 +48,8 @@ def test_create_product(
     assert "owner" in content
 
     crud.product.remove(db, id=content["id"])
-    crud.model.remove(db, id=model.id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
 
 
 def test_create_product_invalid_inputs(
@@ -74,6 +76,7 @@ def test_create_product_invalid_inputs(
             owner_id=current_user["id"],
         ),
     )
+    model_id = model.id
 
     # invalid name
     data = base_data.copy()
@@ -259,11 +262,14 @@ def test_create_product_invalid_inputs(
     )
     assert response.status_code == 400
 
-    crud.model.remove(db, id=model.id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
 
 
 def test_search_products(client: TestClient, db: Session) -> None:
     product = create_random_product(db)
+    model = product.model
+    model_id = model.id
     response = client.post(
         f"{settings.API_V1_STR}/products/search",
         json={"category_id": product.category_id, "term": product.name[:5]},
@@ -274,6 +280,9 @@ def test_search_products(client: TestClient, db: Session) -> None:
     assert product.name == content["data"][0]["name"]
 
     crud.product.remove(db, id=product.id)
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
+    crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
 def test_read_product(client: TestClient, db: Session) -> None:
@@ -287,7 +296,8 @@ def test_read_product(client: TestClient, db: Session) -> None:
     assert content["owner"]["id"] == product.owner_id
 
     crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=crud.model.get_by_name(db, name=product.name, tournament=8).id)  # type: ignore
+    crud.model.remove(db, id=product.model_id)  # type: ignore
+    crud.user.remove(db, id=product.owner_id)
 
 
 def test_update_product(
@@ -295,7 +305,6 @@ def test_update_product(
 ) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
-
     product = create_random_product(db, owner_id=current_user["id"])
     data = dict()
 
@@ -370,11 +379,13 @@ def test_update_product(
     content = response.json()
     assert content["category"]["id"] == 3
 
-    response = client.delete(
-        f"{settings.API_V1_STR}/products/{content['id']}",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 200
-    # crud.product.remove(db, id=content["id"])
+    # todo soft delete
+    # response = client.delete(
+    #     f"{settings.API_V1_STR}/products/{content['id']}",
+    #     headers=normal_user_token_headers,
+    #     json=data,
+    # )
+    # assert response.status_code == 200
+    crud.product.remove(db, id=content["id"])
     crud.model.remove(db, id=product.model_id)  # type: ignore
+    # crud.user.remove(db, id=product.owner_id)  # type: ignore
