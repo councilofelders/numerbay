@@ -5,6 +5,7 @@ import {
 } from '@vue-storefront/core';
 import { ProductVariant } from '@vue-storefront/numerbay-api/src/types';
 import { ProductGetters } from '../types';
+import { getReviewRating } from './reviewGetters';
 
 type ProductVariantFilters = any
 
@@ -85,10 +86,12 @@ export const getProductTournamentId = (product: ProductVariant): number => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getProductTotalReviews = (product: ProductVariant): number => 0;
+export const getProductTotalReviews = (product: ProductVariant): number => product?.reviews?.length || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getProductAverageRating = (product: ProductVariant): number => 0;
+export const getProductAverageRating = (product: ProductVariant): number => (product?.reviews?.reduce((
+  acc, curr
+) => Number.parseInt(`${acc}`, 10) + getReviewRating(curr), 0)) / (product?.reviews?.length || 1) || 0;
 
 export const getProductModelNmrStaked = (product: ProductVariant, decimals = 2): any => (product as any)?.model?.nmr_staked?.toFixed(decimals) || '-';
 

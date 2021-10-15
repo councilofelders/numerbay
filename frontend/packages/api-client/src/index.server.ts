@@ -4,6 +4,8 @@ import createProduct from './api/createProduct';
 import updateProduct from './api/updateProduct';
 import deleteProduct from './api/deleteProduct';
 import getCategory from './api/getCategory';
+import getReview from './api/getReview';
+import createReview from './api/createReview';
 import signUpUser from './api/signUpUser';
 import logInGetToken from './api/logInGetToken';
 import logInGetTokenWeb3 from './api/logInGetTokenWeb3';
@@ -106,6 +108,8 @@ const { createApiClient } = apiClientFactory<any, any>({
     updateProduct,
     deleteProduct,
     getCategory,
+    getReview,
+    createReview,
     signUpUser,
     logInGetToken,
     logInGetTokenWeb3,

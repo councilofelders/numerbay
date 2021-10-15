@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .product import Product  # noqa: F401
     from .model import Model  # noqa: F401
     from .order import Order  # noqa: F401
+    from .review import Review  # noqa: F401
 
 
 class User(Base):
@@ -32,3 +33,4 @@ class User(Base):
     products = relationship("Product", back_populates="owner")
     models = relationship("Model", back_populates="owner")
     orders = relationship("Order", back_populates="buyer")
+    reviews = relationship("Review", back_populates="reviewer")

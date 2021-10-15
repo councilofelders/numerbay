@@ -1,10 +1,11 @@
 from decimal import Decimal
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, HttpUrl
 
 from app.schemas.category import Category
 from app.schemas.model import ModelSummary
+from app.schemas.review import Review
 from app.schemas.user import ProductOwner
 
 
@@ -62,6 +63,7 @@ class ProductInDBBase(ProductBase):
 class Product(ProductInDBBase):
     owner: Optional[ProductOwner] = None
     model: Optional[ModelSummary] = None
+    reviews: Optional[List[Review]] = None
 
 
 # Properties properties stored in DB

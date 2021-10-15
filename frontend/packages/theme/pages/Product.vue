@@ -97,33 +97,34 @@
                 </template>
               </SfProperty>-->
             </SfTab>
-            <SfTab title="Read reviews">
-              {{reviews}}
-              <div v-show="reviewsLoading">
-                <SfLoader />
-              </div>
-              <SfReview
-                v-for="review in reviews"
-                v-show="!reviewsLoading"
-                :key="reviewGetters.getReviewId(review)"
-                :author="reviewGetters.getReviewAuthor(review)"
-                :date="reviewGetters.getReviewDate(review)"
-                :message="reviewGetters.getReviewMessage(review)"
-                :max-rating="5"
-                :rating="reviewGetters.getReviewRating(review)"
-                :char-limit="250"
-                read-more-text="Read more"
-                hide-full-text="Read less"
-                class="product__review"
-              />
-              <div
-                v-show="!reviewsLoading"
-                id="addReview"
-              >
-                <ProductAddReviewForm
-                  @add-review="successAddReview"
-                />
-              </div>
+            <SfTab title="Reviews">
+              <SfLoader :class="{ loader: reviewsLoading }" :loading="reviewsLoading">
+                <div>
+                  <SfReview
+                    v-for="review in reviews"
+                    :key="reviewGetters.getReviewId(review)"
+                    :author="reviewGetters.getReviewAuthor(review).toUpperCase()"
+                    :date="reviewGetters.getReviewDate(review)"
+                    :message="reviewGetters.getReviewMessage(review)"
+                    :max-rating="5"
+                    :rating="reviewGetters.getReviewRating(review)"
+                    :char-limit="250"
+                    read-more-text="Read more"
+                    hide-full-text="Read less"
+                    class="product__review"
+                  >
+                    <template #icon v-if="!Boolean(reviewGetters.getReviewIsVerifiedOrder(review))"><span></span></template>
+                  </SfReview>
+                  <div
+                    id="addReview"
+                    v-if="productGetters.getIsActive(product)"
+                  >
+                    <ProductAddReviewForm
+                      @add-review="successAddReview"
+                    />
+                  </div>
+                </div>
+              </SfLoader>
             </SfTab>
           </SfTabs>
         </LazyHydrate>
@@ -147,7 +148,6 @@ import {
   SfBanner,
   SfAlert,
   SfSticky,
-  SfReview,
   SfBreadcrumbs,
   SfButton,
   SfColor,
@@ -165,7 +165,8 @@ import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
 import BuyButton from '../components/Molecules/BuyButton';
-import ProductAddReviewForm from '~/components/ProductAddReviewForm.vue';
+import SfReview from '~/components/Molecules/SfReview';
+import ProductAddReviewForm from '~/components/ProductAddReviewForm';
 // import Web3 from 'web3';
 
 export default {
@@ -177,7 +178,7 @@ export default {
     const { products, search, loading: productLoading } = useProduct(String(id));
     // const { products: relatedProducts, search: searchRelatedProducts, loading: relatedLoading } = useProduct('relatedProducts');
     // const { addItem, loading } = useCart();
-    const { reviews: productReviews, search: searchReviews, loading: reviewsLoading, addReview } = useReview('productReviews');
+    const { reviews: productReviews, search: searchReviews, loading: reviewsLoading, addReview, error: reviewError } = useReview(`productReviews-${id}`);
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
     const { user, isAuthenticated } = useUser();
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
@@ -302,10 +303,24 @@ export default {
     // };
 
     const successAddReview = async (reviewData) => {
-      await addReview(reviewData);
-      document
-        .querySelector('#tabs')
-        .scrollIntoView({ behavior: 'smooth', block: 'end' });
+      await addReview(reviewData).then(async ()=>{
+        if (reviewError.value.addReview) {
+          send({
+            message: reviewError.value.addReview.message,
+            type: 'danger'
+          });
+        } else {
+          await searchReviews({ productId: id }).then(()=>{
+            document
+              .querySelector('#tabs')
+              .scrollIntoView({ behavior: 'smooth', block: 'end' });
+          });
+          send({
+            message: 'Your review was submitted!',
+            type: 'success'
+          });
+        }
+      });
     };
 
     return {
@@ -321,8 +336,8 @@ export default {
       reviewsLoading,
       successAddReview,
       reviewGetters,
-      averageRating: computed(() => productGetters.getAverageRating(product.value)),
-      totalReviews: computed(() => productGetters.getTotalReviews(product.value)),
+      averageRating: computed(() => reviewGetters.getAverageRating(productReviews.value)),
+      totalReviews: computed(() => reviewGetters.getTotalReviews(productReviews.value)),
       // relatedProducts: computed(() => productGetters.getFiltered(relatedProducts.value, { master: true })),
       numerai: computed(() => numerai.value ? numerai.value : null),
       numeraiChartData: computed(() => numerai.value.modelInfo ? getNumeraiChartData(numerai.value) : {}),

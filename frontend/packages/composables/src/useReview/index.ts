@@ -7,14 +7,18 @@ import { Review } from '../types';
 const params: UseReviewFactoryParams<any, any, any, any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   searchReviews: async (context: Context, params) => {
-    Logger.debug('Mocked: searchReviews');
-    return {};
+    Logger.debug('getReviews');
+    return await context.$numerbay.api.getReview(params);
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addReview: async (context: Context, params) => {
-    Logger.debug('Mocked: addReview');
-    return {};
+    Logger.debug('addReview');
+    const response = await context.$numerbay.api.createReview(params);
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

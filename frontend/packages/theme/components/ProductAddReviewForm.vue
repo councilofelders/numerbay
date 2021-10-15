@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div
+    <!--<div
       v-if="reviewSent && !error.addReview"
     >
       <p>Your review was submitted!</p>
@@ -9,9 +9,8 @@
       v-else-if="error.addReview"
     >
       <p>{{ error.addReview }}</p>
-    </div>
+    </div>-->
     <ValidationObserver
-      v-else
       v-slot="{ handleSubmit, reset }"
     >
       <form
@@ -37,7 +36,7 @@
             />
           </ValidationProvider>
         </div>-->
-        <div class="form__horizontal">
+        <!--<div class="form__horizontal">
           <ValidationProvider
             v-slot="{ errors }"
             rules="required|min:2"
@@ -53,8 +52,7 @@
               :error-message="errors[0]"
             />
           </ValidationProvider>
-        </div>
-        {{form}}
+        </div>-->
         <div class="form__horizontal">
           <star-rating name="rating" active-color="#5ece7b" :star-size="25" v-model="form.ratings[0]"/>
         </div>
@@ -88,16 +86,14 @@
           </ValidationProvider>
         </div>-->
         <div class="form__horizontal">
-          <client-only>
-            <div class="editor">
-              <quill-editor
-                ref="reviewEditor"
-                name="review"
-                v-model="form.text"
-                :options="editorOption"
-              />
-            </div>
-          </client-only>
+          <div class="editor">
+            <quill-editor
+              ref="reviewEditor"
+              name="review"
+              v-model="form.text"
+              :options="editorOption"
+            />
+          </div>
           <!--<ValidationProvider
             v-slot="{ errors }"
             rules="required|min:2"
@@ -116,7 +112,7 @@
             />
           </ValidationProvider>-->
         </div>
-        <SfButton class="form__button" :disabled="!form.summary || !form.ratings[0]">
+        <SfButton class="form__button" :disabled="!form.ratings[0]">
           Add review
         </SfButton>
       </form>
@@ -160,7 +156,7 @@ const BASE_FORM = (id) => ({
   // nickname: '',
   ratings: {},
   productId: id,
-  summary: '',
+  // summary: '',
   text: ''
 });
 
@@ -192,7 +188,7 @@ export default defineComponent({
             ]
           }
         },
-        placeholder: 'Review for your most recent order'
+        placeholder: 'Review your most recent order'
       }
     };
   },
@@ -230,7 +226,7 @@ export default defineComponent({
         formSubmitValue.value.ratings[0].value_id ||
         formSubmitValue.value.ratings[0].id ||
         // formSubmitValue.value.nickname ||
-        formSubmitValue.value.summary ||
+        // formSubmitValue.value.summary ||
         formSubmitValue.value.productId ||
         formSubmitValue.value.text
       )) return;

@@ -201,6 +201,7 @@ export interface ProductArtifactGetters<ARTIFACT> {
 }
 
 export interface NumerBayReviewGetters extends ReviewGetters<any, any> {
+  getReviewIsVerifiedOrder(item: any): boolean;
   getReviewMetadata(reviewData: any[]): any[];
   getProductName(reviewData: any): string;
 }

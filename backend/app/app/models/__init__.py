@@ -5,4 +5,5 @@ from .item import Item
 from .model import Model
 from .order import Order
 from .product import Product
+from .review import Review
 from .user import User
