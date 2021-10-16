@@ -6,7 +6,6 @@ from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_decimal, random_lower_string
 
 
-# todo fix tests for stricter validation rules or allow creation of test products
 def test_create_product(db: Session) -> None:
     name = random_lower_string()
     price = random_decimal()

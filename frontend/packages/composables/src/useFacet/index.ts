@@ -41,8 +41,6 @@ const factoryParams = {
         ...inputFilters
       })
     };
-    // todo facet filters
-    // const filters = null;
     const productResponse = await context.$numerbay.api.getProduct({
       catId: categories[0].id,
       limit: itemsPerPage,
@@ -55,7 +53,6 @@ const factoryParams = {
     const availableFilters = productResponse?.aggregations;
     // const facets = getFiltersFromProductsAttributes(products);
     // const facets = null;
-    // todo facets
 
     return {
       products,

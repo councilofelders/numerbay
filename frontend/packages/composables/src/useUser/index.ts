@@ -6,8 +6,6 @@ import { User } from '../types';
 import Web3Modal from 'web3modal';
 import { setChainData, setEthersProvider, disconnectWallet } from './utils';
 
-// @todo useUser
-
 const params: UseUserFactoryParams<User, any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   load: async (context: Context) => {

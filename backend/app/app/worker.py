@@ -159,7 +159,7 @@ def batch_update_model_scores_task() -> None:
             )
 
 
-@celery_app.task  # (acks_late=True) # todo deprecate old global update to new rollover
+@celery_app.task  # (acks_late=True)
 def update_globals_task() -> None:
     db = SessionLocal()
     try:

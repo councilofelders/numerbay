@@ -9,9 +9,6 @@ import { getReviewRating } from './reviewGetters';
 
 type ProductVariantFilters = any
 
-// TODO: Add interfaces for some of the methods in core
-// Product
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductName = (product: ProductVariant): string => product?.name || '-';
 

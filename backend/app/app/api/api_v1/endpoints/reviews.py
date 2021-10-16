@@ -53,7 +53,7 @@ def create_review(
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Product active
-    if not product.is_active:  # todo handle expired api keys
+    if not product.is_active:
         raise HTTPException(status_code=400, detail="This product is not active")
 
     # Not own product

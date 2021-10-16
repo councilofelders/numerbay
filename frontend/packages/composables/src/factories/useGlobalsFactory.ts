@@ -24,7 +24,6 @@ export function useGlobalsFactory(
     const _factoryParams = configureFactoryParams(factoryParams);
 
     const getGlobals = async (identifer: string) => {
-      // todo more debug logs
       Logger.debug(`useGlobals/${ssrKey}/getGlobals`);
 
       loading.value = true;

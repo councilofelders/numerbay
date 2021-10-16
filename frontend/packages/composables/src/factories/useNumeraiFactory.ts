@@ -36,7 +36,6 @@ export function useNumeraiFactory(
     };
 
     const getModels = async (identifer: string) => {
-      // todo more debug logs
       Logger.debug(`useNumerai/${ssrKey}/getModels`);
       resetErrorValue();
 

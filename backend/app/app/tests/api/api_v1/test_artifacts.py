@@ -18,7 +18,7 @@ def test_generate_upload_url(
     product_id = product.id
     model_id = product.model.id  # type: ignore
     artifact_data = {
-        "filename": "test.txt",  # todo file format requirements
+        "filename": "test.txt",
         "action": "PUT",
     }
 
@@ -96,7 +96,7 @@ def test_create_product_artifact(
     product_id = product.id
     model_id = product.model.id  # type: ignore
 
-    url = "http://exmaple.com"  # todo validate input
+    url = "http://exmaple.com"
     data = {"url": url}
 
     r = client.post(
@@ -127,7 +127,7 @@ def test_create_product_invalid_artifact(
     crud.product.update(db, db_obj=product, obj_in={"mode": "stake"})
     model_id = product.model.id  # type: ignore
 
-    url = "http://exmaple.com"  # todo validate input
+    url = "http://exmaple.com"
     data = {"url": url}
 
     r = client.post(
@@ -152,7 +152,7 @@ def test_read_product_artifact(
     product_id = product.id
 
     url = "http://exmaple.com"
-    data = {"url": url}  # todo validate input
+    data = {"url": url}
 
     r = client.post(
         f"{settings.API_V1_STR}/products/{product_id}/artifacts",
@@ -192,7 +192,7 @@ def test_update_product_artifact(
     model_id = product.model.id  # type: ignore
 
     url = "http://exmaple.com"
-    data = {"url": url}  # todo validate input
+    data = {"url": url}
 
     r = client.post(
         f"{settings.API_V1_STR}/products/{product_id}/artifacts",
