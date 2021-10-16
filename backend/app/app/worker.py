@@ -344,31 +344,99 @@ def upload_numerai_artifact_task(
         version="v4",
     )
 
-    # Upload URL
-    auth_query = """
-                        query($filename: String!
-                              $tournament: Int!
-                              $modelId: String) {
-                            submission_upload_auth(filename: $filename
-                                                   tournament: $tournament
-                                                   modelId: $modelId) {
-                                filename
-                                url
-                            }
-                        }
-                        """
-
-    arguments = {
-        "filename": object_name,
-        "tournament": tournament,
-        "modelId": model_id,
-    }
     api = NumerAPI(
         public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
     )
-    submission_auth = api.raw_query(auth_query, arguments, authorization=True)["data"][
-        "submission_upload_auth"
-    ]
+
+    # Upload URL
+    if tournament == 8:
+        auth_query = """
+                            query($filename: String!
+                                  $tournament: Int!
+                                  $modelId: String) {
+                                submission_upload_auth(filename: $filename
+                                                       tournament: $tournament
+                                                       modelId: $modelId) {
+                                    filename
+                                    url
+                                }
+                            }
+                            """
+
+        arguments = {
+            "filename": object_name,
+            "tournament": tournament,
+            "modelId": model_id,
+        }
+
+        submission_auth = api.raw_query(auth_query, arguments, authorization=True)[
+            "data"
+        ]["submission_upload_auth"]
+
+        # Create submission
+        create_query = """
+                                    mutation($filename: String!
+                                             $tournament: Int!
+                                             $version: Int!
+                                             $modelId: String
+                                             $triggerId: String) {
+                                        create_submission(filename: $filename
+                                                          tournament: $tournament
+                                                          version: $version
+                                                          modelId: $modelId
+                                                          triggerId: $triggerId
+                                                          source: "numerapi") {
+                                            id
+                                        }
+                                    }
+                                    """
+
+        arguments = {
+            "filename": submission_auth["filename"],
+            "tournament": tournament,
+            "version": version,
+            "modelId": model_id,
+            "triggerId": None,
+        }  # os.getenv('TRIGGER_ID', None)}
+    else:
+        auth_query = """
+                    query($filename: String!
+                          $modelId: String) {
+                      submissionUploadSignalsAuth(filename: $filename
+                                                modelId: $modelId) {
+                            filename
+                            url
+                        }
+                    }
+                    """
+
+        arguments = {"filename": object_name, "modelId": model_id}
+
+        submission_auth = api.raw_query(auth_query, arguments, authorization=True)[
+            "data"
+        ]["submissionUploadSignalsAuth"]
+
+        # Create submission
+        create_query = """
+                    mutation($filename: String!
+                             $modelId: String
+                             $triggerId: String) {
+                        createSignalsSubmission(filename: $filename
+                                                modelId: $modelId
+                                                triggerId: $triggerId
+                                                source: "numerapi") {
+                            id
+                            firstEffectiveDate
+                        }
+                    }
+                    """
+
+        arguments = {
+            "filename": submission_auth["filename"],
+            "modelId": model_id,
+            "triggerId": None,
+        }
+
     # print(f"Upload url: {submission_auth['url']}")
 
     # Bridge Upload file
@@ -378,30 +446,6 @@ def upload_numerai_artifact_task(
         submission_auth["url"], data=io.BytesIO(file_stream.content), stream=True
     )
 
-    # Create submission
-    create_query = """
-                            mutation($filename: String!
-                                     $tournament: Int!
-                                     $version: Int!
-                                     $modelId: String
-                                     $triggerId: String) {
-                                create_submission(filename: $filename
-                                                  tournament: $tournament
-                                                  version: $version
-                                                  modelId: $modelId
-                                                  triggerId: $triggerId
-                                                  source: "numerapi") {
-                                    id
-                                }
-                            }
-                            """
-    arguments = {
-        "filename": submission_auth["filename"],
-        "tournament": tournament,
-        "version": version,
-        "modelId": model_id,
-        "triggerId": None,
-    }  # os.getenv('TRIGGER_ID', None)}
     create = None
     try:
         create = api.raw_query(create_query, arguments, authorization=True)
@@ -431,7 +475,11 @@ def upload_numerai_artifact_task(
             db.close()
             raise e
     if create:
-        submission_id = create["data"]["create_submission"]["id"]
+        submission_id = (
+            create["data"]["create_submission"]["id"]
+            if tournament == 8
+            else create["data"]["createSignalsSubmission"]["id"]
+        )
         print(f"submission_id: {submission_id}")
         if submission_id:
             # submision successful, mark order submit_state to completed
