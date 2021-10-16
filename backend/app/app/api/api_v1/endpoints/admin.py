@@ -28,6 +28,19 @@ router = APIRouter()
 #     return {"msg": "success!"}
 
 
+@router.post("/refresh-globals-stats")
+def refresh_globals_stats(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Calculate global stats for all products (for db migration only).
+    """
+    crud.globals.update_stats(db)
+    return {"msg": "success!"}
+
+
 @router.post("/refresh-sales-stats")
 def refresh_sales_stats(
     *,

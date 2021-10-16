@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer
+from sqlalchemy import Boolean, Column, Integer, Numeric
 
 from app.db.base_class import Base
 
@@ -10,3 +10,6 @@ class Globals(Base):
     is_doing_round_rollover = Column(
         Boolean, nullable=False, default=False, server_default="f"
     )
+    total_num_products = Column(Integer)
+    total_num_sales = Column(Integer)
+    total_sales_nmr = Column(Numeric)

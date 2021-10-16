@@ -3,8 +3,10 @@ from typing import Dict, Optional
 
 import pandas as pd
 from numerapi import NumerAPI
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app import models
 from app.crud.base import CRUDBase
 from app.models.globals import Globals
 from app.schemas.globals import GlobalsCreate, GlobalsUpdate
@@ -75,6 +77,33 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
             obj_in={
                 "active_round": active_round["number"],
                 "selling_round": selling_round_number,
+            },
+        )
+
+    def update_stats(self, db: Session) -> Globals:
+        instance = self.get_singleton(db)
+        total_num_products = (
+            db.query(func.count(models.Product.id))
+            .filter(models.Product.is_active)
+            .scalar()
+        )
+        total_num_sales = (
+            db.query(func.count(models.Order.id))
+            .filter(models.Order.state == "confirmed")
+            .scalar()
+        )
+        total_sales_nmr = (
+            db.query(func.sum(models.Order.price))
+            .filter(models.Order.state == "confirmed")
+            .scalar()
+        )
+        return super().update(
+            db,
+            db_obj=instance,  # type: ignore
+            obj_in={
+                "total_num_products": total_num_products,
+                "total_num_sales": total_num_sales,
+                "total_sales_nmr": total_sales_nmr,
             },
         )
 

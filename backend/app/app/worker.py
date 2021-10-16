@@ -170,6 +170,15 @@ def update_globals_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
+def update_globals_stats_task() -> None:
+    db = SessionLocal()
+    try:
+        crud.globals.update_stats(db)
+    finally:
+        db.close()
+
+
+@celery_app.task  # (acks_late=True)
 def update_active_round() -> None:
     db = SessionLocal()
     try:
@@ -703,6 +712,10 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         #     "task": "app.worker.update_globals_task",
         #     "schedule": crontab(day_of_week="sat", hour=18, minute=5),
         # },
+        "update_globals_stats_task": {
+            "task": "app.worker.update_globals_stats_task",
+            "schedule": crontab(hour=0, minute=0),
+        },
         "update_active_round": {
             "task": "app.worker.update_active_round",
             "schedule": crontab(day_of_week="sat", hour=18, minute=00),

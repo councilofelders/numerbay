@@ -16,6 +16,38 @@
       </SfHero>
     </LazyHydrate>
 
+    <LazyHydrate when-idle>
+      <div class="sales-stats">
+        <SfCard
+          image=""
+          :title="`${globals.total_num_products}`"
+          :titleLevel="3"
+          description="Products Available"
+          link=""
+        >
+          <template #action><span></span></template>
+        </SfCard>
+        <SfCard
+          image=""
+          :title="`${globals.total_num_sales}`"
+          :titleLevel="3"
+          description="Products Sold"
+          link=""
+        >
+          <template #action><span></span></template>
+        </SfCard>
+        <SfCard
+          image=""
+          :title="`${globals.total_sales_nmr} NMR`"
+          :titleLevel="3"
+          description="Sales Value"
+          link=""
+        >
+          <template #action><span></span></template>
+        </SfCard>
+      </div>
+    </LazyHydrate>
+
     <!--<LazyHydrate when-visible>
       <SfBannerGrid :banner-grid="1" class="banner-grid">
         <template v-for="item in banners" v-slot:[item.slot]>
@@ -88,6 +120,7 @@ import {
   SfHero,
   SfBanner,
   SfCallToAction,
+  SfCard,
   SfSection,
   SfCarousel,
   SfProductCard,
@@ -100,8 +133,10 @@ import {
 } from '@storefront-ui/vue';
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
+import { useGlobals } from '@vue-storefront/numerbay';
 import LazyHydrate from 'vue-lazy-hydration';
 import axios from 'axios';
+import { onSSR } from '@vue-storefront/core';
 
 export default {
   name: 'Home',
@@ -110,6 +145,7 @@ export default {
     SfHero,
     SfBanner,
     SfCallToAction,
+    SfCard,
     SfSection,
     SfCarousel,
     SfProductCard,
@@ -162,6 +198,18 @@ export default {
       this.iframe.src = response.data;
       this.iframe.loaded = true;
     });
+  },
+  setup() {
+    const { globals, getGlobals, loading: globalsLoading } = useGlobals();
+
+    onSSR(async () => {
+      await getGlobals();
+    });
+
+    return {
+      globals,
+      globalsLoading
+    };
   }
 };
 </script>
@@ -184,7 +232,7 @@ export default {
     color: var(--c-white);
   }
   @include for-desktop {
-    margin: var(--spacer-xl) auto var(--spacer-2xl);
+    margin: var(--spacer-xl) auto var(--spacer-xl);
   }
   .sf-hero-item {
     &:nth-child(even) {
@@ -280,4 +328,9 @@ export default {
   }
 }
 
+.sales-stats {
+  margin: var(--spacer-xl) auto var(--spacer-lg);
+  display: flex;
+  justify-content: space-between;
+}
 </style>
