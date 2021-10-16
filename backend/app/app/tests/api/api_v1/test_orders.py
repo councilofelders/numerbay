@@ -107,8 +107,6 @@ def test_create_order_invalid_self(
     crud.user.remove(db, id=owner_id)  # type: ignore
 
 
-# todo turnkey rollout
-# @pytest.mark.skip
 def test_create_order_invalid_api_permissions(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:

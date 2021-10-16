@@ -220,7 +220,6 @@
                         v-model="form.mode"
                         class="form__radio"
                       />
-                      <!--todo turnkey rollout-->
                       <SfRadio
                         name="mode"
                         value="stake"

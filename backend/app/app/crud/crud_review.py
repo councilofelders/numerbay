@@ -12,7 +12,7 @@ from app.schemas.review import ReviewCreate, ReviewUpdate
 
 def parse_sort_option(sort: Optional[str]) -> Any:
     if sort == "latest":
-        return desc(Review.id)  # todo add review date info
+        return desc(Review.id)
     else:
         return desc(Review.id)
 

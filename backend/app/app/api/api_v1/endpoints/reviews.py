@@ -47,12 +47,6 @@ def create_review(
     """
     Create new review.
     """
-    # todo turnkey rollout
-    # if submit_model_id is not None:
-    #     raise HTTPException(
-    #         status_code=400, detail="Automated submission not yet supported"
-    #     )
-
     # Product exists
     product = crud.product.get(db=db, id=product_id)
     if not product:

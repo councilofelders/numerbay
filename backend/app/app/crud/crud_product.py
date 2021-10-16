@@ -15,7 +15,7 @@ from app.schemas.product import ProductCreate, ProductUpdate
 
 def parse_sort_option(sort: Optional[str]) -> Any:
     if sort == "latest":
-        return desc(Product.id)  # todo add product date info
+        return desc(Product.id)
     # elif sort == 'price-up':
     #     return Product.price
     # elif sort == 'price-down':
