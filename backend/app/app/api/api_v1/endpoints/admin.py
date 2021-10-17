@@ -1,13 +1,16 @@
 import functools
 from typing import Any
 
+from app.core.config import settings
 from fastapi import APIRouter, Depends
+from numerapi import NumerAPI
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
 from app import crud, models
 from app.api import deps
 from app.models import Artifact, Order, Product
+from app.utils import send_new_confirmed_sale_email
 
 router = APIRouter()
 
@@ -26,6 +29,80 @@ router = APIRouter()
 #     )
 #     db.commit()
 #     return {"msg": "success!"}
+
+
+@router.post("/resend-seller-order-emails")
+def resend_seller_order_emails(
+    *,
+    db: Session = Depends(deps.get_db),
+    seller_id: int,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    globals = crud.globals.update_singleton(db)
+    selling_round = globals.selling_round  # type: ignore
+
+    existing_orders = crud.order.search(
+        db,
+        role="seller",
+        current_user_id=seller_id,
+        filters={
+            "round_order": {"in": [selling_round]},
+            "state": {"in": ["pending", "confirmed"]},
+        },
+    )["data"]
+
+    for order_obj in existing_orders:
+        if settings.EMAILS_ENABLED:
+            product = order_obj.product
+            # Send seller email
+            if product.owner.email:
+                send_new_confirmed_sale_email(
+                    email_to=product.owner.email,
+                    username=product.owner.username,
+                    round_order=order_obj.round_order,
+                    date_order=order_obj.date_order,
+                    product=product.sku,
+                    buyer=order_obj.buyer.username,
+                    from_address=order_obj.from_address,  # type: ignore
+                    to_address=order_obj.to_address,  # type: ignore
+                    transaction_hash=order_obj.transaction_hash,  # type: ignore
+                    amount=order_obj.price,
+                    currency=order_obj.currency,  # type: ignore
+                )
+    return {"msg": "success!"}
+
+
+@router.post("/fill-numerai-emails")
+def fill_numerai_emails(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Fill Numerai emails (for migration only).
+    """
+    users = db.query(models.User).filter(and_(models.User.email.is_(None), models.User.numerai_api_key_public_id.is_not(None))).all()
+    for user in users:
+        try:
+            query = """
+                              query {
+                                account {
+                                  username
+                                  email
+                                  id
+                                  status
+                                  insertedAt
+                                }
+                              }
+                            """
+
+            api = NumerAPI(public_id=user.numerai_api_key_public_id, secret_key=user.numerai_api_key_secret)
+            account = api.raw_query(query, authorization=True)["data"]["account"]
+            user.email = account["email"]
+        except Exception as e:
+            continue
+    db.commit()
+    return {"msg": "success!"}
 
 
 @router.post("/refresh-globals-stats")
