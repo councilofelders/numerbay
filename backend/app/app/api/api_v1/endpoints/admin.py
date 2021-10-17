@@ -1,7 +1,6 @@
 import functools
 from typing import Any
 
-from app.core.config import settings
 from fastapi import APIRouter, Depends
 from numerapi import NumerAPI
 from sqlalchemy import and_, desc
@@ -9,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models
 from app.api import deps
+from app.core.config import settings
 from app.models import Artifact, Order, Product
 from app.utils import send_new_confirmed_sale_email
 
@@ -81,7 +81,16 @@ def fill_numerai_emails(
     """
     Fill Numerai emails (for migration only).
     """
-    users = db.query(models.User).filter(and_(models.User.email.is_(None), models.User.numerai_api_key_public_id.is_not(None))).all()
+    users = (
+        db.query(models.User)
+        .filter(
+            and_(
+                models.User.email.is_(None),
+                models.User.numerai_api_key_public_id.is_not(None),  # type: ignore
+            )
+        )
+        .all()
+    )
     for user in users:
         try:
             query = """
@@ -96,10 +105,13 @@ def fill_numerai_emails(
                               }
                             """
 
-            api = NumerAPI(public_id=user.numerai_api_key_public_id, secret_key=user.numerai_api_key_secret)
+            api = NumerAPI(
+                public_id=user.numerai_api_key_public_id,
+                secret_key=user.numerai_api_key_secret,
+            )
             account = api.raw_query(query, authorization=True)["data"]["account"]
             user.email = account["email"]
-        except Exception as e:
+        except Exception:
             continue
     db.commit()
     return {"msg": "success!"}
