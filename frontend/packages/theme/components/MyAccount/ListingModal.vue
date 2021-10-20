@@ -215,7 +215,7 @@
                         name="mode"
                         value="file"
                         label="Distribute File"
-                        details="Buyers can download artifact files"
+                        details="Buyers can download artifact files and optionally designate a model slot for submission"
                         description="You can upload artifacts to NumerBay or add external file URLs"
                         v-model="form.mode"
                         class="form__radio"
