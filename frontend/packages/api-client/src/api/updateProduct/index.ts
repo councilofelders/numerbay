@@ -26,7 +26,8 @@ export default async function updateProduct(context, params, customQuery?: Custo
     is_active: params.isActive,
     // eslint-disable-next-line camelcase
     expiration_round: params.expirationRound,
-    description: params.description
+    description: params.description,
+    options: params.options
   };
 
   // Use axios to send a PUT request

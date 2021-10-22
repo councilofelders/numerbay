@@ -58,12 +58,50 @@
               <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${product.currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
             </div>
           </div>
-          <BuyButton
+          <div>
+            <SfSelect
+              v-e2e="'size-select'"
+              value="10"
+              label="Option"
+              class="sf-select--underlined product__select-size"
+              required
+            >
+  <!--                        @input="size => updateFilter({ size })"-->
+              <SfSelectOption value=""></SfSelectOption>
+              <SfSelectOption value="10"
+              >
+                10
+              </SfSelectOption>
+              <SfSelectOption value="20"
+              >
+                20
+              </SfSelectOption>
+            </SfSelect>
+            <SfAddToCart
+              v-e2e="'product_add-to-cart'"
+              :stock="stock"
+              v-model="qty"
+              :disabled="productLoading"
+              :canAddToCart="stock > 0"
+              class="product__add-to-cart"
+            >
+  <!--            @click="addItem({ product, quantity: parseInt(qty) })"-->
+              <template #add-to-cart-btn>
+                <SfButton
+                  class="sf-add-to-cart__button"
+                  :disabled="productLoading"
+                >
+                  Buy @ {{`${productGetters.getFormattedPrice(product, withCurrency=!product.is_on_platform, decimals=product.is_on_platform?4:2)} ${product.is_on_platform ? 'NMR' : 'Ref Price'}`}}
+                </SfButton>
+              </template>
+            </SfAddToCart>
+          </div>
+          <!--<BuyButton
             :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"
             :price="productGetters.getFormattedPrice(product, withCurrency=!product.is_on_platform, decimals=product.is_on_platform?4:2)"
             :label="product.is_on_platform ? 'NMR' : 'Ref Price'"
             @click="handleBuyButtonClick(product)"
-          />
+          />-->
         </div>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
           <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!product.category.tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
@@ -551,9 +589,6 @@ export default {
   }
   &__select-size {
     margin: 0 var(--spacer-sm);
-    @include for-desktop {
-      margin: 0;
-    }
   }
   &__colors {
     @include font(
@@ -574,10 +609,7 @@ export default {
     margin: 0 var(--spacer-2xs);
   }
   &__add-to-cart {
-    margin: var(--spacer-base) var(--spacer-sm) 0;
-    @include for-desktop {
-      margin-top: var(--spacer-2xl);
-    }
+    margin: 0 var(--spacer-sm) 0;
   }
   &__guide,
   &__compare,
@@ -648,7 +680,7 @@ export default {
 }
 .last-sale {
   display: flex;
-  align-items: center;
+  //align-items: center;
   justify-content: center;
 }
 .last-sale h3 {

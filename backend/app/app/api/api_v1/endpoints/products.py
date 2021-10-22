@@ -114,63 +114,65 @@ def validate_product_input(
 
     if product_in.is_on_platform is not None:
         if product_in.is_on_platform:
-            # On-platform currency type
-            if product_in.currency is not None and product_in.currency not in ["NMR"]:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"{product_in.currency} is not supported for on-platform listing",
-                )
-
-            # On-platform decimal check
-            if product_in.price is not None:
-                precision = Decimal(product_in.price).as_tuple().exponent
-                if precision < -4:
+            # On-platform pricing options
+            for product_option in product_in.options:
+                # On-platform currency type
+                if product_option.currency is not None and product_option.currency not in ["NMR"]:
                     raise HTTPException(
                         status_code=400,
-                        detail=f"On-platform listing price must not exceed {4} decimal places",
+                        detail=f"{product_option.currency} is not supported for on-platform listing",
                     )
 
-                # On-platform amount check
-                if product_in.currency == "NMR" and product_in.price < 1:
+                # On-platform decimal check
+                if product_option.price is not None:
+                    precision = Decimal(product_option.price).as_tuple().exponent
+                    if precision < -4:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"On-platform listing price must not exceed {4} decimal places",
+                        )
+
+                    # On-platform amount check
+                    if product_option.currency == "NMR" and product_option.price < 1:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="On-platform listing price must be greater than 1 NMR",
+                        )
+
+                # On-platform Mode check
+                if product_option.mode not in ["file", "stake", "stake_with_limit"]:
                     raise HTTPException(
                         status_code=400,
-                        detail="On-platform listing price must be greater than 1 NMR",
+                        detail="Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']",
                     )
 
-            # On-platform Mode check
-            if product_in.mode not in ["file", "stake", "stake_with_limit"]:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']",
-                )
+                # On-platform Stake limit check
+                if product_option.mode == "stake_with_limit":
+                    if product_option.stake_limit is None:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Stake limit is required for 'stake_with_limit' mode",
+                        )
+                    # Stake limit decimal check
+                    precision = Decimal(product_option.stake_limit).as_tuple().exponent
+                    if precision < -4:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Stake limit must not exceed {4} decimal places",
+                        )
+                    # Stake limit amount check
+                    if product_option.stake_limit < 1:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Stake limit must be greater than 1 NMR",
+                        )
 
-            # On-platform Stake limit check
-            if product_in.mode == "stake_with_limit":
-                if product_in.stake_limit is None:
+                # On-platform chain type
+                if product_option.chain is not None:
                     raise HTTPException(
                         status_code=400,
-                        detail="Stake limit is required for 'stake_with_limit' mode",
+                        detail="Specifying chain is not yet supported for on-platform listing",
                     )
-                # Stake limit decimal check
-                precision = Decimal(product_in.stake_limit).as_tuple().exponent
-                if precision < -4:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Stake limit must not exceed {4} decimal places",
-                    )
-                # Stake limit amount check
-                if product_in.stake_limit < 1:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Stake limit must be greater than 1 NMR",
-                    )
-
-            # On-platform chain type
-            if product_in.chain is not None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Specifying chain is not yet supported for on-platform listing",
-                )
         else:
             # Off-platform currency type
             if product_in.currency is not None and product_in.currency not in ["USD"]:
@@ -185,7 +187,7 @@ def validate_product_input(
                 if precision < -2:
                     raise HTTPException(
                         status_code=400,
-                        detail=f"On-platform listing price must not exceed {2} decimal places",
+                        detail=f"Off-platform listing price must not exceed {2} decimal places",
                     )
 
             # Off-platform chain type
@@ -322,6 +324,8 @@ def update_product(
     )
 
     product_in = validate_product_input(db, product_in)  # type: ignore
+
+    print(product_in.options)
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)

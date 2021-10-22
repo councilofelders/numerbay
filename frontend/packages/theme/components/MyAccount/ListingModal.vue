@@ -18,7 +18,7 @@
         <SfTab :title="currentListing?`Editing ${currentListing.name.toUpperCase()}`:'New Listing'">
           <div>
             <ValidationObserver v-slot="{ handleSubmit }" key="log-in">
-              <form class="form" @submit.prevent="handleSubmit(handleProductForm)">
+              <div class="form">
                 <ValidationProvider rules="required" v-slot="{ errors }">
                   <SfSelect label="Category" v-model="form.category" v-e2e="'listing-modal-category'"
                     :valid="!errors[0]"
@@ -132,175 +132,25 @@
                     />
                   </ValidationProvider>
                 </div>
-                <div class="form__radio-group">
-                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
-                    <SfRadio
-                      name="isOnPlatform"
-                      value="true"
-                      label="On-Platform"
-                      details="Sell natively on NumerBay for cryptocurrency"
-                      description="Payments are directly sent to you from buyers. You can manage buyers and automate file distribution."
-                      v-model="form.isOnPlatform"
-                      @change="onPlatformChange(form.isOnPlatform)"
-                      :disabled="!!form.category && !isTournamentCategory(form.category)"
-                      class="form__radio"
-                    />
-                    <SfRadio
-                      name="isOnPlatform"
-                      value="false"
-                      label="Off-Platform"
-                      details="Link to 3rd-party platforms"
-                      description="Off-Platform reference only. Self-managed."
-                      v-model="form.isOnPlatform"
-                      @change="onPlatformChange(form.isOnPlatform)"
-                      class="form__radio"
-                    />
-                  </ValidationProvider>
-                </div>
-                <div v-if="form.isOnPlatform === 'true'">
-                  <div class="form__radio-group">
-                    <ValidationProvider v-slot="{ errors }" class="form__horizontal">
-                      <SfRadio
-                        name="currency"
-                        value="NMR"
-                        label="NMR"
-                        :details="`Payments go to your Numerai wallet ${user.numerai_wallet_address} by default`"
-                        description="Alternatively, specify a compatible wallet below"
-                        v-model="form.currency"
-                        class="form__radio"
-                      >
-                        <template #label>
-                          NMR  <SfBadge class="color-primary sf-badge flag">Gas-Free</SfBadge>
-                        </template>
-                      </SfRadio>
-                      <SfRadio
-                        name="currency"
-                        value="DAI"
-                        label="DAI"
-                        details="On Polygon"
-                        description="[Coming Soon]"
-                        disabled
-                        class="form__radio"
-                      />
-                      <!--<SfRadio
-                        name="isOnPlatform"
-                        value="USDC"
-                        label="USDC"
-                        v-model="form.currency"
-                        class="form__radio"
-                      />
-                      <SfRadio
-                        name="isOnPlatform"
-                        value="ETH"
-                        label="ETH"
-                        v-model="form.currency"
-                        class="form__radio"
-                      />-->
-                    </ValidationProvider>
-                  </div>
-                  <ValidationProvider v-slot="{ errors }">
-                    <SfInput
-                      v-e2e="'listing-modal-price'"
-                      v-model="form.wallet"
-                      :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                      name="price"
-                      :label="`(Optional) Alternative Wallet for Receiving Payments`"
-                      class="form__element"
-                    />
-                  </ValidationProvider>
-                  <div class="form__radio-group">
-                    <ValidationProvider v-slot="{ errors }" class="form__horizontal">
-                      <SfRadio
-                        name="mode"
-                        value="file"
-                        label="Distribute File"
-                        details="Buyers can download artifact files and optionally designate a model slot for submission"
-                        description="You can upload artifacts to NumerBay or add external file URLs"
-                        v-model="form.mode"
-                        class="form__radio"
-                      />
-                      <SfRadio
-                        name="mode"
-                        value="stake"
-                        label="Stake Only"
-                        details="Submit for buyers automatically without distributing artifact files, without stake limit"
-                        description="You must upload artifacts to NumerBay"
-                        v-model="form.mode"
-                        class="form__radio"
-                        :disabled="!isSubmissionCategory(form.category)"
-                      />
-                      <SfRadio
-                        name="mode"
-                        value="stake_with_limit"
-                        label="Stake Only with Limit"
-                        details="Submit for buyers automatically without distributing artifact files, with a stake limit (in NMR)"
-                        description="You must upload artifacts to NumerBay"
-                        v-model="form.mode"
-                        class="form__radio"
-                        :disabled="!isSubmissionCategory(form.category)"
-                      />
-                    </ValidationProvider>
-                  </div>
-                  <div v-if="form.mode === 'stake_with_limit'">
-                    <ValidationProvider rules="required|decimal|min_value:1"  v-slot="{ errors }">
-                      <SfInput
-                        v-model="form.stakeLimit"
-                        :valid="!errors[0]"
-                        :errorMessage="errors[0]"
-                        name="price"
-                        label="Stake Limit for Buyers (in NMR)"
-                        type="number"
-                        step=0.0001
-                        min=1
-                        class="form__element"
-                      />
-                    </ValidationProvider>
-                  </div>
-                  <ValidationProvider rules="required|decimal|min_value:1" v-slot="{ errors }">
-                    <SfInput
-                      v-e2e="'listing-modal-price'"
-                      v-model="form.price"
-                      :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                      name="price"
-                      :label="`Price (per round equivalent, in ${form.currency})`"
-                      type="number"
-                      step=0.0001
-                      min=1
-                      class="form__element"
-                    />
-                  </ValidationProvider>
-                </div>
-                <div v-else>
-                  <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
-                    <SfInput
-                      v-e2e="'listing-modal-price'"
-                      v-model="form.price"
-                      :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                      name="price"
-                      label="Price (per round equivalent, in $USD)"
-                      type="number"
-                      step=0.01
-                      min=0
-                      class="form__element"
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider rules="url" v-slot="{ errors }">
-                    <SfInput
-                      v-e2e="'listing-modal-thirdPartyUrl'"
-                      v-model="form.thirdPartyUrl"
-                      :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                      name="thirdPartyUrl"
-                      label="Third Party Listing URL (e.g. Gumroad product link)"
-                      type="url"
-                      class="form__element"
-                      @change="encodeURL"
-                    />
-                  </ValidationProvider>
-                </div>
+                <ProductOptionsForm
+                  ref="optionsForm"
+                  optionsTabTitle="Pricing options"
+                  changeOptionTabTitle="Update option"
+                  :options="form.options"
+                  transition="sf-fade"
+                  changeOptionDescription="Update pricing option."
+                  changeButtonText="Change"
+                  deleteButtonText="Delete"
+                  addNewOptionButtonText="Add new option"
+                  updateOptionButtonText="Update option"
+                  selectLabel="Country"
+                  optionsTabDescription="Manage all the pricing options, the first one will be the default for buyers. Please save the overall form after modifying options."
+                  :user="user"
+                  :category="form.category"
+                  :isTournamentCategory="isTournamentCategory(form.category)"
+                  :isSubmissionCategory="isSubmissionCategory(form.category)"
+                  :isPerRoundCategory="isPerRoundCategory(form.category)"
+                ></ProductOptionsForm>
                 <client-only>
                   <div class="editor">
                     <quill-editor
@@ -332,6 +182,7 @@
                   class="sf-button--full-width"
                   :disabled="loading || !!numeraiError.getModels"
                   v-if="!currentListing"
+                  @click="handleSubmit(handleProductForm)"
                 >
                   <SfLoader :class="{ loader: loading }" :loading="loading">
                     <div>{{ $t('Save') }}</div>
@@ -342,6 +193,7 @@
                     type="submit"
                     class="sf-button form__button"
                     :disabled="loading || !!numeraiError.getModels"
+                    @click="handleSubmit(handleProductForm)"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">
                       <div>{{ $t('Save') }}</div>
@@ -358,7 +210,7 @@
                     </SfLoader>
                   </SfButton>
                 </div>
-              </form>
+              </div>
             </ValidationObserver>
             <div class="bottom">
             </div>
@@ -385,6 +237,7 @@ import {
 } from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
+import ProductOptionsForm from '~/components/ProductOptionsForm';
 
 extend('required', {
   ...required,
@@ -474,6 +327,7 @@ export default {
     SfBar,
     SfRadio,
     SfBadge,
+    ProductOptionsForm,
     ValidationProvider,
     ValidationObserver
   },
@@ -495,7 +349,7 @@ export default {
             ]
           }
         },
-        placeholder: 'Description'
+        placeholder: 'Product Description'
       }
     };
   },
@@ -507,15 +361,12 @@ export default {
       }
       return false;
     },
-    onCategoryChange(categoryId) {
-      const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
-      if (!category.tournament) {
-        this.form.isOnPlatform = 'false';
-        this.onPlatformChange(this.form.isOnPlatform);
+    isPerRoundCategory(categoryId) {
+      if (categoryId) {
+        const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
+        return category?.is_per_round;
       }
-      if (this.form.isOnPlatform === 'true' && !category.is_submission) {
-        this.form.mode = 'file';
-      }
+      return false;
     },
     isTournamentCategory(categoryId) {
       if (categoryId) {
@@ -525,6 +376,23 @@ export default {
         }
       }
       return false;
+    },
+    onCategoryChange(categoryId) {
+      const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
+
+      if (category) {
+        this.form.options = (this.currentListing?.options ? this.currentListing?.options : (this.form?.options || [])).filter((option) => {
+          if (!category.tournament) {
+            this.$refs.optionsForm.isOnPlatform = 'false';
+            return !option.is_on_platform;
+          }
+          if (option.is_on_platform && !category.is_submission) {
+            this.$refs.optionsForm.mode = 'file';
+            return option.mode === 'file';
+          }
+          return true;
+        });
+      }
     },
     getFilteredModels(categoryId) {
       if (categoryId) {
@@ -592,7 +460,8 @@ export default {
       wallet: product ? product.wallet : null,
       mode: product ? product.mode : 'file',
       stakeLimit: product ? product.stake_limit : null,
-      thirdPartyUrl: product ? product.third_party_url : null
+      thirdPartyUrl: product ? product.third_party_url : null,
+      options: product ? product.options : []
     });
     const form = ref(resetForm(currentListing));
 

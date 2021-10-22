@@ -61,7 +61,7 @@ export const getBuyer = (item: any): string => item?.buyer?.username || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getFormattedPrice = (item: any, withCurrency = true, decimals = 2): string => {
-  const price = (item?.price || 0).toFixed(decimals);
+  const price = Number(item?.price || 0).toFixed(decimals);
   if (withCurrency) {
     const currency = item?.currency || 'USD';
     if (currency === 'USD') return `$${price}`;

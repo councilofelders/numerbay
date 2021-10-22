@@ -7,6 +7,7 @@ from app.schemas.category import Category
 from app.schemas.model import ModelSummary
 from app.schemas.review import Review
 from app.schemas.user import ProductOwner
+from app.schemas.product_option import ProductOption, ProductOptionCreate, ProductOptionUpdate
 
 
 # Shared properties
@@ -37,11 +38,12 @@ class ProductCreate(ProductBase):
     currency: str
     chain: Optional[str]
     category_id: int
+    options: Optional[List[ProductOptionCreate]]
 
 
 # Properties to receive on product update
 class ProductUpdate(ProductBase):
-    pass
+    options: Optional[List[ProductOptionUpdate]]
 
 
 # Properties shared by models stored in DB
@@ -64,6 +66,7 @@ class Product(ProductInDBBase):
     owner: Optional[ProductOwner] = None
     model: Optional[ModelSummary] = None
     reviews: Optional[List[Review]] = None
+    options: Optional[List[ProductOption]] = None
 
 
 # Properties properties stored in DB
