@@ -235,12 +235,45 @@
               </template>
 <!--              <template #reviews><span></span></template>-->
               <template #add-to-cart>
-                <BuyButton
-                  :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"
-                  :price="productGetters.getFormattedPrice(product, withCurrency=!product.is_on_platform, decimals=product.is_on_platform?4:2)"
-                  :label="product.is_on_platform ? 'NMR' : 'Ref Price'"
-                  @click="handleBuyButtonClick(product)"
-                />
+                <SfSelect
+                  v-e2e="'size-select'"
+                  v-if="product.options && product.options.length > 1"
+                  v-model="product.optionIdx"
+                  :init="!product.optionIdx ? product.optionIdx = '0' : true"
+                  label="Option"
+                  class="sf-select--underlined product__select-size"
+                  required
+                >
+      <!--                        @input="size => updateFilter({ size })"-->
+                  <SfSelectOption v-for="(option, key) in (product.options || [])" :key="key" :value="key">{{ `${productGetters.getOptionFormattedPrice(option, withCurrency=true, decimals=option.is_on_platform?4:2)}` }}</SfSelectOption>
+                </SfSelect>
+                <SfAddToCart
+                  v-e2e="'product_add-to-cart'"
+                  v-model="product.qty"
+                  :disabled="!productGetters.getIsActive(product) || !(product.options[0] || []).third_party_url && !(product.options[0] || []).is_on_platform"
+                  class="sf-product-card-horizontal__add-to-cart desktop-only"
+                >
+                  <template #add-to-cart-btn>
+<!--                    <SfDropdown title="Buy" class="sf-add-to-cart__button" :is-open="product.isOpen" style="position: relative; display: inline-block;" @click:open="product.isOpen = true">
+                      <SfList>
+                        <SfListItem>
+                          <SfButton class="sf-button&#45;&#45;full-width sf-button&#45;&#45;underlined color-primary">123</SfButton>
+                        </SfListItem>
+                      </SfList>
+                      <SfList>
+                        <SfListItem>
+                          <SfButton class="sf-button&#45;&#45;full-width sf-button&#45;&#45;underlined color-primary">123</SfButton>
+                        </SfListItem>
+                      </SfList>
+                    </SfDropdown>-->
+                    <SfButton
+                      class="sf-add-to-cart__button"
+                      :disabled="!productGetters.getIsActive(product) || !(product.options[0] || []).third_party_url && !(product.options[0] || []).is_on_platform"
+                    >
+                      Buy @ {{`${productGetters.getFormattedPrice(product)} ${productGetters.getIsOnPlatform(product) ? '' : 'Ref Price'}`}}
+                    </SfButton>
+                  </template>
+                </SfAddToCart>
               </template>
               <!--<template #actions>
                 <SfButton
@@ -399,7 +432,9 @@ import {
   SfRange,
   SfProperty,
   SfLink,
-  SfBadge
+  SfBadge,
+  SfAddToCart,
+  SfDropdown
 } from '@storefront-ui/vue';
 import { ref, computed, onMounted } from '@vue/composition-api';
 import { useCart, useWishlist, productGetters, useFacet, useUser, facetGetters } from '@vue-storefront/numerbay';
@@ -589,6 +624,8 @@ export default {
     SfProperty,
     SfLink,
     SfBadge,
+    SfAddToCart,
+    SfDropdown,
     BuyButton,
     LazyHydrate
   }

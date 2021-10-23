@@ -61,21 +61,14 @@
           <div>
             <SfSelect
               v-e2e="'size-select'"
-              value="10"
+              v-if="product.options && product.options.length > 1"
+              v-model="optionIdx"
               label="Option"
               class="sf-select--underlined product__select-size"
               required
             >
   <!--                        @input="size => updateFilter({ size })"-->
-              <SfSelectOption value=""></SfSelectOption>
-              <SfSelectOption value="10"
-              >
-                10
-              </SfSelectOption>
-              <SfSelectOption value="20"
-              >
-                20
-              </SfSelectOption>
+              <SfSelectOption v-for="(option, key) in (product.options || [])" :key="key" :value="key">{{ `${productGetters.getOptionFormattedPrice(option, withCurrency=true, decimals=option.is_on_platform?4:2)}` }}</SfSelectOption>
             </SfSelect>
             <SfAddToCart
               v-e2e="'product_add-to-cart'"
@@ -91,7 +84,7 @@
                   class="sf-add-to-cart__button"
                   :disabled="productLoading"
                 >
-                  Buy @ {{`${productGetters.getFormattedPrice(product, withCurrency=!product.is_on_platform, decimals=product.is_on_platform?4:2)} ${product.is_on_platform ? 'NMR' : 'Ref Price'}`}}
+                  Buy @ {{`${productGetters.getFormattedPrice(product)} ${productGetters.getIsOnPlatform(product) ? '' : 'Ref Price'}`}}
                 </SfButton>
               </template>
             </SfAddToCart>
@@ -212,6 +205,7 @@ export default {
   transition: 'fade',
   setup(props, context) {
     const qty = ref(1);
+    const optionIdx = ref('0');
     const { id } = context.root.$route.params;
     const { products, search, loading: productLoading } = useProduct(String(id));
     // const { products: relatedProducts, search: searchRelatedProducts, loading: relatedLoading } = useProduct('relatedProducts');
@@ -387,6 +381,7 @@ export default {
       // relatedLoading,
       options,
       qty,
+      optionIdx,
       // addItem,
       // loading,
       productGetters,

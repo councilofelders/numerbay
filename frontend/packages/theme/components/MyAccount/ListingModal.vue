@@ -180,7 +180,7 @@
                 <SfButton v-e2e="'listing-modal-submit'"
                   type="submit"
                   class="sf-button--full-width"
-                  :disabled="loading || !!numeraiError.getModels"
+                  :disabled="loading || !!numeraiError.getModels || !(form.options && form.options.length > 0)"
                   v-if="!currentListing"
                   @click="handleSubmit(handleProductForm)"
                 >
@@ -192,7 +192,7 @@
                   <SfButton v-e2e="'listing-modal-submit'"
                     type="submit"
                     class="sf-button form__button"
-                    :disabled="loading || !!numeraiError.getModels"
+                    :disabled="loading || !!numeraiError.getModels || !(form.options && form.options.length > 0)"
                     @click="handleSubmit(handleProductForm)"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">

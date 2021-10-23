@@ -8,6 +8,7 @@ from app import schemas
 
 # Shared properties
 class ProductOptionBase(BaseModel):
+    id: Optional[int] = None
     is_on_platform: Optional[bool] = None
     third_party_url: Optional[HttpUrl] = None
     description: Optional[str] = None
@@ -25,8 +26,8 @@ class ProductOptionCreate(ProductOptionBase):
     is_on_platform: bool
     price: Decimal
     currency: str
-    chain: Optional[str]
-    product_id: int
+    chain: Optional[str] = None
+    product_id: Optional[int] = None
 
 
 # Properties to receive on product_option update
@@ -40,7 +41,7 @@ class ProductOptionInDBBase(ProductOptionBase):
     is_on_platform: bool
     price: Decimal
     currency: str
-    chain: Optional[str]
+    chain: Optional[str] = None
 
     class Config:
         orm_mode = True

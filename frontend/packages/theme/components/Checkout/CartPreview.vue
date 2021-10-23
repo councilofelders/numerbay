@@ -23,7 +23,7 @@
       />-->
       <SfProperty
         name="Total"
-        :value="productGetters.getFormattedPrice(products[0], withCurrency=true, decimals=4)"
+        :value="productGetters.getFormattedPrice(products[0], withCurrency=true)"
         class="sf-property--full-width sf-property--large property-total"
       />
     </div>

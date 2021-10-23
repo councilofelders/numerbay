@@ -18,6 +18,7 @@ export type ProductVariant = {
   // eslint-disable-next-line camelcase
   third_party_url: string;
   reviews: any[];
+  options: any[]
 };
 export type Category = {
   id: number;

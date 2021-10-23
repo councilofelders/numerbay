@@ -37,7 +37,7 @@
               </SfLink>
             </SfTableData>
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</span></SfTableData>
-            <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getFormattedPrice(product, withCurrency=true, decimals=product.is_on_platform?4:2) }}</span></SfTableData>
+            <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getFormattedPrice(product, withCurrency=true) }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <div class="listing-actions">
                 <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="product.is_on_platform" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
@@ -128,7 +128,7 @@ export default {
     const tableHeaders = [
       'Product Name',
       'Category',
-      'Price',
+      'Default Price',
       'Action'
     ];
 

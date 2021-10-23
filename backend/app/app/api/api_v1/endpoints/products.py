@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from google.api_core.exceptions import NotFound
 from google.cloud.storage import Bucket
 from sqlalchemy.orm import Session
@@ -89,13 +90,6 @@ def validate_product_input(
             detail="Invalid product name (should only contain alphabetic characters, numbers, dashes or underscores)",
         )
 
-    # Positive price
-    if product_in.price is not None:
-        if product_in.price <= 0:
-            raise HTTPException(
-                status_code=400, detail="Price must be positive",
-            )
-
     # Positive expiration round
     if product_in.expiration_round is not None:
         if product_in.expiration_round <= 0:
@@ -108,14 +102,49 @@ def validate_product_input(
         if product_in.expiration_round < selling_round:
             product_in.is_active = False
 
-    # Make currency upper case
-    if product_in.currency is not None:
-        product_in.currency = product_in.currency.upper()
+    # Avatar url scheme
+    if product_in.avatar and not product_in.avatar.startswith("https"):
+        raise HTTPException(
+            status_code=400, detail="Avatar image must be a HTTPS URL",
+        )
 
-    if product_in.is_on_platform is not None:
-        if product_in.is_on_platform:
-            # On-platform pricing options
-            for product_option in product_in.options:
+    # todo options validation
+
+    # At least one option
+    if (isinstance(product_in, schemas.ProductCreate) and (
+            product_in.options is None or len(product_in.options) == 0)) or (
+            isinstance(product_in, schemas.ProductUpdate) and product_in.options is not None and len(
+            product_in.options) == 0):
+        raise HTTPException(
+            status_code=400, detail="At least one pricing option is required",
+        )
+
+    # On-platform pricing options
+    if product_in.options is not None and len(product_in.options) > 0:
+        options_set = set()
+        for product_option in product_in.options:
+            option_tuple = (product_option.is_on_platform, product_option.price, product_option.currency)
+            option_exists = option_tuple in options_set
+            options_set.add(option_tuple)
+
+            if option_exists:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Duplicated pricing not allowed",
+                )
+
+            if product_option.is_on_platform:
+                # Positive price
+                if product_option.price is not None:
+                    if product_option.price <= 0:
+                        raise HTTPException(
+                            status_code=400, detail="Price must be positive",
+                        )
+
+                # Make currency upper case
+                if product_option.currency is not None:
+                    product_option.currency = product_option.currency.upper()
+
                 # On-platform currency type
                 if product_option.currency is not None and product_option.currency not in ["NMR"]:
                     raise HTTPException(
@@ -173,35 +202,29 @@ def validate_product_input(
                         status_code=400,
                         detail="Specifying chain is not yet supported for on-platform listing",
                     )
-        else:
-            # Off-platform currency type
-            if product_in.currency is not None and product_in.currency not in ["USD"]:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"{product_in.currency} is not supported for off-platform listing",
-                )
-
-            # Off-platform decimal check
-            if product_in.price is not None:
-                precision = Decimal(product_in.price).as_tuple().exponent
-                if precision < -2:
+            else:
+                # Off-platform currency type
+                if product_option.currency is not None and product_option.currency not in ["USD"]:
                     raise HTTPException(
                         status_code=400,
-                        detail=f"Off-platform listing price must not exceed {2} decimal places",
+                        detail=f"{product_option.currency} is not supported for off-platform listing",
                     )
 
-            # Off-platform chain type
-            if product_in.chain is not None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Specifying chain is not supported for off-platform listing",
-                )
+                # Off-platform decimal check
+                if product_option.price is not None:
+                    precision = Decimal(product_option.price).as_tuple().exponent
+                    if precision < -2:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Off-platform listing price must not exceed {2} decimal places",
+                        )
 
-    # Avatar url scheme
-    if product_in.avatar and not product_in.avatar.startswith("https"):
-        raise HTTPException(
-            status_code=400, detail="Avatar image must be a HTTPS URL",
-        )
+                # Off-platform chain type
+                if product_option.chain is not None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Specifying chain is not supported for off-platform listing",
+                    )
 
     return product_in
 
@@ -296,6 +319,9 @@ def create_product(
             )
         model_id = model.id
 
+    product_options_in = product_in.options
+    product_in.options = []
+
     # Create product
     product = crud.product.create_with_owner(
         db=db,
@@ -305,6 +331,13 @@ def create_product(
         model_id=model_id,
         tournament=tournament,
     )
+
+    # Create options
+    for product_option_in in product_options_in:
+        product_option_in.product_id = product.id
+        crud.product_option.create(db, obj_in=product_option_in)
+
+    product = crud.product.get(db, id=product.id)
     return product
 
 
@@ -325,8 +358,6 @@ def update_product(
 
     product_in = validate_product_input(db, product_in)  # type: ignore
 
-    print(product_in.options)
-
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)
     if globals.is_doing_round_rollover:  # type: ignore
@@ -344,6 +375,37 @@ def update_product(
     #     raise HTTPException(
     #         status_code=400, detail="Product category cannot be changed after creation",
     #     )
+
+    if product_in.options is not None:
+        product_option_ids = []
+        for product_option_in in product_in.options:
+            if product_option_in.id is not None and product_option_in.id != -1:
+                product_option_ids.append(product_option_in.id)
+
+        for option in product.options:
+            if option.id not in product_option_ids:
+                # deleted option
+                crud.product_option.remove(db, id=option.id)
+
+        for product_option_in in product_in.options:
+            if product_option_in.id is not None and product_option_in.id != -1:
+                # update option
+                db_product_option = crud.product_option.get(db, id=product_option_in.id)
+                if db_product_option is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Product Option {product_option_in.id} not found",
+                    )
+                json_product_option_in = jsonable_encoder(product_option_in)
+                json_product_option_in.pop('id', None)
+                json_product_option_in.pop('product_id', None)
+                crud.product_option.update(db, db_obj=db_product_option, obj_in=json_product_option_in)
+            else:
+                # create option
+                json_product_option_in = jsonable_encoder(product_option_in)
+                json_product_option_in.pop('id', None)
+                json_product_option_in['product_id'] = product.id
+                crud.product_option.create(db, obj_in=json_product_option_in)
 
     product = crud.product.update(db=db, db_obj=product, obj_in=product_in)
     return product

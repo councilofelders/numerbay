@@ -239,18 +239,13 @@
           <transition-group tag="div" :name="transition" class="pricing-list">
             <slot name="pricing-list">
               <div
-                v-for="(option, key) in options"
+                v-for="(option, key) in orderedOptions"
                 :key="key"
                 class="pricing"
                 data-testid="pricing-option-list-item"
               >
                 <div class="pricing__content" v-if="option.is_on_platform">
                   <b>On-Platform</b>
-                  <SfProperty
-                    name="Description"
-                    :value="option.description"
-                    class="sf-property property"
-                  />
                   <SfProperty
                     name="Price"
                     :value="orderGetters.getFormattedPrice(option, withCurrency=true, decimals=4)"
@@ -272,14 +267,19 @@
                     class="sf-property property"
                     v-if="option.mode === 'stake_with_limit'"
                   />
-                </div>
-                <div class="pricing__content" v-else>
-                  <b>Off-Platform</b>
+                  <SfProperty
+                    name="Wallet"
+                    :value="option.wallet || 'Numerai wallet'"
+                    class="sf-property property"
+                  />
                   <SfProperty
                     name="Description"
                     :value="option.description"
                     class="sf-property property"
                   />
+                </div>
+                <div class="pricing__content" v-else>
+                  <b>Off-Platform</b>
                   <SfProperty
                     name="Price"
                     :value="orderGetters.getFormattedPrice(option, withCurrency=true, decimals=2)"
@@ -295,12 +295,11 @@
                     :value="option.third_party_url"
                     class="sf-property property"
                   />
-                  <!--<SfProperty
-                    name="Stake Limit"
-                    :value="orderGetters.getStakeLimit(option)"
+                  <SfProperty
+                    name="Description"
+                    :value="option.description"
                     class="sf-property property"
-                    v-if="option.mode === 'stake_with_limit'"
-                  />-->
+                  />
                 </div>
                 <div class="pricing__actions">
                   <SfIcon
@@ -359,6 +358,7 @@ import {
 } from '@storefront-ui/vue';
 import SfQuantitySelector from '~/components/Molecules/SfQuantitySelector';
 import { orderGetters } from '@vue-storefront/numerbay';
+import _ from 'lodash';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, min_value, integer } from 'vee-validate/dist/rules';
@@ -514,6 +514,11 @@ export default {
       description: null
     };
   },
+  computed: {
+    orderedOptions() {
+      return _.orderBy(this.options, 'id');
+    }
+  },
   methods: {
     onPlatformChange(isOnPlatform) {
       const index = this.editedOption;
@@ -578,6 +583,8 @@ export default {
       } else {
         options.push(pricing);
       }
+      this._computedWatchers.orderedOptions.run();
+      this.$forceUpdate();
       this.editOption = false;
       this.$emit('update:pricing', options);
     },

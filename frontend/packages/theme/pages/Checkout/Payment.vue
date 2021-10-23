@@ -35,7 +35,7 @@
         <SfTableData class="table__data">{{ 1 }}</SfTableData>
         <SfTableData class="table__data price">
           <SfPrice
-            :regular="productGetters.getFormattedPrice(product, withCurrency=true, decimals=4)"
+            :regular="productGetters.getFormattedPrice(product, withCurrency=true)"
             class="product-price"
           />
         </SfTableData>
@@ -55,7 +55,7 @@
 
         <SfProperty
           name="Total price"
-          :value="productGetters.getFormattedPrice(products[0], withCurrency=true, decimals=4)"
+          :value="productGetters.getFormattedPrice(products[0], withCurrency=true)"
           class="sf-property--full-width sf-property--large summary__property-total"
         />
 

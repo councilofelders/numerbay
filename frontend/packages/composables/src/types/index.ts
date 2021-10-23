@@ -137,7 +137,8 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getDescription: (product: PRODUCT) => string;
     getCategoryIds: (product: PRODUCT) => string[];
     getId: (product: PRODUCT) => string;
-    getFormattedPrice: (price: PRODUCT, withCurrency: boolean, decimals: number) => string;
+    getOptionFormattedPrice: (option: any, withCurrency: boolean, decimals: number) => string;
+    getFormattedPrice: (price: PRODUCT, withCurrency: boolean, optionIdx: number, decimals: number) => string;
     getMode: (product: PRODUCT) => string;
     getStakeLimit: (product: PRODUCT) => string;
     getTournamentId: (product: PRODUCT) => number;
@@ -149,6 +150,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
     getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
     getIsActive: (product: PRODUCT) => boolean;
+    getIsOnPlatform: (product: PRODUCT) => boolean;
     getExpirationRound: (product: PRODUCT) => number;
     getOwner: (product: PRODUCT) => string;
     [getterName: string]: any;

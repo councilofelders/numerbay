@@ -56,10 +56,28 @@ export const getProductCategoryIds = (product: ProductVariant): string[] => (pro
 
 export const getProductId = (product: ProductVariant): string => (product as any)?.id || '';
 
-export const getFormattedPrice = (product: ProductVariant, withCurrency = true, decimals = 2): string => {
-  const price = (product?.price || 0).toFixed(decimals);
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const getOptionFormattedPrice = (option: any, withCurrency = true, decimals = 2): string => {
+  const price = (option?.price || 0).toFixed(decimals);
   if (withCurrency) {
-    const currency = product?.currency || 'USD';
+    const currency = option?.currency || 'USD';
+    if (currency === 'USD') return `$${price}`;
+    return `${price} ${currency}`;
+  }
+  return `${price}`;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getFormattedPrice = (product: ProductVariant, withCurrency = true, optionIdx = 0, decimals = 2): string => {
+  const options = product?.options || [];
+  if (optionIdx >= options.length) {
+    return '-';
+  }
+  const option = options[optionIdx];
+  const isOnPlatform = option.is_on_platform;
+  const price = (option?.price || 0).toFixed(isOnPlatform ? 4 : 2);
+  if (withCurrency) {
+    const currency = option?.currency || 'USD';
     if (currency === 'USD') return `$${price}`;
     return `${price} ${currency}`;
   }
@@ -100,6 +118,8 @@ export const getProductModelReturn = (product: ProductVariant, key: string, deci
 
 export const getProductIsActive = (product: ProductVariant): boolean => (product as any)?.is_active;
 
+export const getProductIsOnPlatform = (product: ProductVariant): boolean => ((product as any)?.options || [])[0]?.is_on_platform; // todo allow specifying option index
+
 export const getProductExpirationRound = (product: ProductVariant): number => (product as any)?.expiration_round || null;
 
 export const getProductOwner = (product: ProductVariant): string => (product as any)?.owner?.username || '-';
@@ -115,6 +135,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getDescription: getProductDescription,
   getCategoryIds: getProductCategoryIds,
   getId: getProductId,
+  getOptionFormattedPrice: getOptionFormattedPrice,
   getFormattedPrice: getFormattedPrice,
   getMode: getProductMode,
   getStakeLimit: getProductStakeLimit,
@@ -126,6 +147,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getModelRep: getProductModelRep,
   getModelReturn: getProductModelReturn,
   getIsActive: getProductIsActive,
+  getIsOnPlatform: getProductIsOnPlatform,
   getExpirationRound: getProductExpirationRound,
   getOwner: getProductOwner
 };
