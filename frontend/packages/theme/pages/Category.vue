@@ -189,7 +189,7 @@
               :style="{ '--index': i }"
               :title="productGetters.getName(product).toUpperCase()"
               :image="productGetters.getCoverImage(product)"
-              :regular-price="productGetters.getFormattedPrice(product)"
+              :regular-price="productGetters.getOptionFormattedPrice(orderBy(product.options, 'id')[Number(product.optionIdx) || 0])"
               :max-rating="5"
               :score-rating="productGetters.getAverageRating(product)"
               :reviewsCount="productGetters.getTotalReviews(product)"
@@ -217,8 +217,8 @@
                   <SfBadge class="sf-badge ready-badge" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Ready</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(product)==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(product) }}</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(product.optionIdx) || 0])==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(product.optionIdx) || 0])==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(orderBy(product.options, 'id')[Number(product.optionIdx) || 0]) }}</SfBadge>
                 </div>
               </template>
               <template #configuration>
@@ -239,38 +239,40 @@
                   v-e2e="'size-select'"
                   v-if="product.options && product.options.length > 1"
                   v-model="product.optionIdx"
-                  :init="!product.optionIdx ? product.optionIdx = '0' : true"
                   label="Option"
                   class="sf-select--underlined product__select-size"
                   required
                 >
       <!--                        @input="size => updateFilter({ size })"-->
-                  <SfSelectOption v-for="(option, key) in (product.options || [])" :key="key" :value="key">{{ `${productGetters.getOptionFormattedPrice(option, withCurrency=true, decimals=option.is_on_platform?4:2)}` }}</SfSelectOption>
+                  <SfSelectOption v-for="(option, key) in orderBy(product.options, 'id')" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
                 </SfSelect>
                 <SfAddToCart
                   v-e2e="'product_add-to-cart'"
                   v-model="product.qty"
-                  :disabled="!productGetters.getIsActive(product) || !(product.options[0] || []).third_party_url && !(product.options[0] || []).is_on_platform"
+                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(orderBy(product.options, 'id')[Number(product.optionIdx) || 0])"
                   class="sf-product-card-horizontal__add-to-cart desktop-only"
                 >
                   <template #add-to-cart-btn>
 <!--                    <SfDropdown title="Buy" class="sf-add-to-cart__button" :is-open="product.isOpen" style="position: relative; display: inline-block;" @click:open="product.isOpen = true">
                       <SfList>
                         <SfListItem>
-                          <SfButton class="sf-button&#45;&#45;full-width sf-button&#45;&#45;underlined color-primary">123</SfButton>
+                          <SfButton class="sf-button--full-width sf-button--underlined color-primary">123</SfButton>
                         </SfListItem>
                       </SfList>
                       <SfList>
                         <SfListItem>
-                          <SfButton class="sf-button&#45;&#45;full-width sf-button&#45;&#45;underlined color-primary">123</SfButton>
+                          <SfButton class="sf-button--full-width sf-button--underlined color-primary">123</SfButton>
                         </SfListItem>
                       </SfList>
                     </SfDropdown>-->
+                    <!--{{product.optionIdx}}
+                    {{orderBy(product.options, 'id')[Number(product.optionIdx) || 0]}}-->
                     <SfButton
                       class="sf-add-to-cart__button"
-                      :disabled="!productGetters.getIsActive(product) || !(product.options[0] || []).third_party_url && !(product.options[0] || []).is_on_platform"
+                      :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionUrl(orderBy(product.options, 'id')[Number(product.optionIdx) || 0]) && !productGetters.getOptionIsOnPlatform(orderBy(product.options, 'id')[Number(product.optionIdx) || 0])"
+                      @click="handleBuyButtonClick(product, product.optionIdx, product.qty || 1)"
                     >
-                      Buy @ {{`${productGetters.getFormattedPrice(product)} ${productGetters.getIsOnPlatform(product) ? '' : 'Ref Price'}`}}
+                      Buy @ {{`${productGetters.getOptionFormattedPrice(orderBy(product.options, 'id')[Number(product.optionIdx) || 0])} ${productGetters.getOptionIsOnPlatform(orderBy(product.options, 'id')[Number(product.optionIdx) || 0]) ? '' : 'Ref Price'}`}}
                     </SfButton>
                   </template>
                 </SfAddToCart>
@@ -444,6 +446,7 @@ import { onSSR } from '@vue-storefront/core';
 import LazyHydrate from 'vue-lazy-hydration';
 import BuyButton from '../components/Molecules/BuyButton';
 import Vue from 'vue';
+import _ from 'lodash';
 
 export default {
   transition: 'fade',
@@ -553,8 +556,9 @@ export default {
       selectedFilters.value[facet.id] = [values];
     };
 
-    const handleBuyButtonClick = (product) => {
-      if (product?.is_on_platform && !isAuthenticated.value) {
+    const handleBuyButtonClick = (product, optionIdx, qty) => {
+      const option = _.orderBy(product.options, 'id')[Number(optionIdx) || 0];
+      if (option.is_on_platform && !isAuthenticated.value) {
         send({
           message: 'You need to log in to buy this product',
           type: 'info'
@@ -562,7 +566,7 @@ export default {
         toggleLoginModal();
         return;
       }
-      if (product?.is_on_platform && product?.currency === 'NMR' && !user.value.numerai_api_key_public_id) { // if not setup numerai api key and product is in NMR
+      if (option.is_on_platform && option.currency === 'NMR' && !user.value.numerai_api_key_public_id) { // if not setup numerai api key and product is in NMR
         send({
           message: 'This product requires your Numerai wallet address',
           type: 'info',
@@ -571,10 +575,10 @@ export default {
         });
         return;
       }
-      if (!product?.is_on_platform && product?.third_party_url) { // if third party listing
-        window.open(product?.third_party_url, '_blank');
+      if (!option.is_on_platform && option.third_party_url) { // if third party listing
+        window.open(option.third_party_url, '_blank');
       } else {
-        context.root.$router.push(`/checkout/payment?product=${product.id}`);
+        context.root.$router.push(`/checkout/payment?product=${product.id}&option=${option.id}&qty=${qty}`);
       }
     };
 
@@ -602,7 +606,8 @@ export default {
       getRangeFilterOption,
       getSelectedRangeFilterValue,
       updateRangeFilter,
-      handleBuyButtonClick
+      handleBuyButtonClick,
+      orderBy: _.orderBy
     };
   },
   components: {

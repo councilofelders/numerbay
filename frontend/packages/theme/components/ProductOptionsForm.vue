@@ -51,7 +51,7 @@
                           value="NMR"
                           label="NMR"
                           :details="`Payments go to your Numerai wallet ${user.numerai_wallet_address} by default`"
-                          description="Alternatively, specify a compatible wallet above"
+                          description="Alternatively, specify a compatible wallet below"
                           v-model="currency"
                           class="form__radio"
                         >
@@ -167,6 +167,14 @@
                     </ValidationProvider>
                   </div>
                   <div v-else>
+                    <div v-if="isPerRoundCategory">
+                      Quantity (Number of Rounds)
+                      <SfQuantitySelector
+                        v-model="quantity"
+                        aria-label="Quantity (Number of Rounds)"
+                        class="sf-add-to-cart__select-quantity"
+                      />
+                    </div>
                     <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }">
                       <SfInput
                         v-e2e="'listing-modal-price'"
@@ -239,8 +247,8 @@
           <transition-group tag="div" :name="transition" class="pricing-list">
             <slot name="pricing-list">
               <div
-                v-for="(option, key) in orderedOptions"
-                :key="key"
+                v-for="option in orderedOptions"
+                :key="option.key"
                 class="pricing"
                 data-testid="pricing-option-list-item"
               >
@@ -308,13 +316,13 @@
                     size="14px"
                     role="button"
                     class="smartphone-only"
-                    @click="deleteOption(key)"
+                    @click="deleteOption(option.key)"
                     type="button"
                   />
                   <SfButton
                     v-if="changeButtonText"
                     data-testid="change-option"
-                    @click="changeOption(key)"
+                    @click="changeOption(option.key)"
                     type="button"
                   >
                     {{ changeButtonText }}
@@ -323,7 +331,7 @@
                     v-if="deleteButtonText"
                     class="pricing__button-delete desktop-only"
                     data-testid="delete-option"
-                    @click="deleteOption(key)"
+                    @click="deleteOption(option.key)"
                     type="button"
                   >
                     {{ deleteButtonText }}
@@ -516,6 +524,11 @@ export default {
   },
   computed: {
     orderedOptions() {
+      if (this.options && this.options.length > 0) {
+        for (let i = 0; i < this.options.length; i++) {
+          this.options[i].key = i;
+        }
+      }
       return _.orderBy(this.options, 'id');
     }
   },

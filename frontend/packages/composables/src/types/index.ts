@@ -137,7 +137,12 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getDescription: (product: PRODUCT) => string;
     getCategoryIds: (product: PRODUCT) => string[];
     getId: (product: PRODUCT) => string;
+    getOrderedOptions: (product: PRODUCT) => any[];
+    getOptionUrl: (option: any) => string;
+    getOptionIsOnPlatform: (option: any) => boolean;
+    getOptionPlatform: (option: any) => string;
     getOptionFormattedPrice: (option: any, withCurrency: boolean, decimals: number) => string;
+    getFormattedOption: (option: any) => string;
     getFormattedPrice: (price: PRODUCT, withCurrency: boolean, optionIdx: number, decimals: number) => string;
     getMode: (product: PRODUCT) => string;
     getStakeLimit: (product: PRODUCT) => string;

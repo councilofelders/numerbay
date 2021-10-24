@@ -28,14 +28,15 @@
         <SfTableData class="table__data table__description table__data">
           <div class="product-title">{{ productGetters.getName(product).toUpperCase() }}</div>
           <div class="product-sku">{{ productGetters.getSlug(product).toUpperCase() }}</div>
+          <div class="product-sku">{{ productGetters.getFormattedOption(product.options.filter((o)=>o.id===optionId)[0]) }}</div>
         </SfTableData>
         <SfTableData class="table__data">
           {{ productGetters.getOwner(product).toUpperCase() }}
         </SfTableData>
-        <SfTableData class="table__data">{{ 1 }}</SfTableData>
+        <SfTableData class="table__data">{{ qty }}</SfTableData>
         <SfTableData class="table__data price">
           <SfPrice
-            :regular="productGetters.getFormattedPrice(product, withCurrency=true)"
+            :regular="productGetters.getOptionFormattedPrice(product.options.filter((o)=>o.id===optionId)[0], true, 4)"
             class="product-price"
           />
         </SfTableData>
@@ -52,13 +53,14 @@
         </div>
 
         <SfDivider />-->
-
-        <SfProperty
-          name="Total price"
-          :value="productGetters.getFormattedPrice(products[0], withCurrency=true)"
-          class="sf-property--full-width sf-property--large summary__property-total"
-        />
-
+        <SfLoader :class="{ loader: loading || productLoading }" :loading="loading || productLoading">
+          <SfProperty
+            name="Total price"
+            v-if="!loading && !productLoading && !!products[0]"
+            :value="`${(products[0].options.filter((o)=>o.id===optionId)[0].price * qty).toFixed(4)} ${products[0].options.filter((o)=>o.id===optionId)[0].currency}`"
+            class="sf-property--full-width sf-property--large summary__property-total"
+          />
+        </SfLoader>
 <!--        <VsfPaymentProvider @status="isPaymentReady = true"/>-->
 
         <SfCheckbox v-e2e="'terms'" v-model="terms" name="terms" class="summary__terms">
@@ -168,6 +170,8 @@ export default {
   },
   setup(props, context) {
     const id = context.root.$route.query.product;
+    const optionId = parseInt(context.root.$route.query.option);
+    const qty = parseInt(context.root.$route.query.qty) || 1;
     const { load, setCart } = useCart();
     const { order, make, loading, error: makeOrderError } = useMakeOrder();
     const { orders, search: orderSearch } = useUserOrder('order-history');
@@ -249,7 +253,9 @@ export default {
       productGetters,
       processOrder,
       orderSearch,
-      send
+      send,
+      optionId,
+      qty
     };
   }
 };

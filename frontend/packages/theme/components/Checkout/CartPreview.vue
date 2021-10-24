@@ -10,7 +10,7 @@
     <div class="highlighted">
       <SfProperty
         name="Products"
-        :value="1"
+        :value="qty"
         class="sf-property--full-width sf-property--large property"
       />
       <!--<SfProperty
@@ -21,11 +21,14 @@
           'sf-property&#45;&#45;large',
         ]"
       />-->
-      <SfProperty
-        name="Total"
-        :value="productGetters.getFormattedPrice(products[0], withCurrency=true)"
-        class="sf-property--full-width sf-property--large property-total"
-      />
+      <SfLoader :class="{ loader: loading }" :loading="loading">
+        <SfProperty
+          name="Total"
+          v-if="!loading && !!products[0]"
+          :value="`${(products[0].options.filter((o)=>o.id===optionId)[0].price * qty).toFixed(4)} ${products[0].options.filter((o)=>o.id===optionId)[0].currency}`"
+          class="sf-property--full-width sf-property--large property-total"
+        />
+      </SfLoader>
     </div>
     <!--<div class="highlighted promo-code">
       <SfInput
@@ -62,7 +65,8 @@ import {
   SfProperty,
   SfCharacteristic,
   SfInput,
-  SfCircleIcon
+  SfCircleIcon,
+  SfLoader
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import {useCart, useProduct, checkoutGetters, cartGetters, productGetters} from '@vue-storefront/numerbay';
@@ -75,10 +79,13 @@ export default {
     SfProperty,
     SfCharacteristic,
     SfInput,
-    SfCircleIcon
+    SfCircleIcon,
+    SfLoader
   },
   setup (props, context) {
     const id = context.root.$route.query.product;
+    const optionId = parseInt(context.root.$route.query.option);
+    const qty = parseInt(context.root.$route.query.qty) || 1;
     const { cart, removeItem, updateItemQty, applyCoupon } = useCart();
     const { products, loading } = useProduct(String(id));
     const listIsHidden = ref(false);
@@ -114,7 +121,9 @@ export default {
             'You’ll be able to download/submit artifacts when seller uploads the item',
           icon: 'shipping'
         }
-      ]
+      ],
+      optionId,
+      qty
     };
   }
 };

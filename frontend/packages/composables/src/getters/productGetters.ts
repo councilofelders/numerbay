@@ -56,6 +56,26 @@ export const getProductCategoryIds = (product: ProductVariant): string[] => (pro
 
 export const getProductId = (product: ProductVariant): string => (product as any)?.id || '';
 
+// todo causes loop warning, fallback to lodash
+export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.sort((a, b) => parseFloat(a.id) - parseFloat(b.id)) : [];
+
+export const getOptionUrl = (option: any): string => option?.third_party_url;
+
+export const getOptionIsOnPlatform = (option: any): boolean => option?.is_on_platform;
+
+export const getOptionPlatform = (option: any) => {
+  if (typeof option?.is_on_platform === 'boolean' && option?.is_on_platform === false && option?.third_party_url) {
+    const domain = (new URL(option?.third_party_url));
+    const urlParts = domain.hostname.split('.').slice(0);
+    const baseUrl = urlParts.slice(-(urlParts.length === 4 ? 3 : 2)).join('.');
+    return baseUrl;
+  }
+  if (option?.is_on_platform) {
+    return 'NumerBay';
+  }
+  return '-';
+};
+
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const getOptionFormattedPrice = (option: any, withCurrency = true, decimals = 2): string => {
   const price = (option?.price || 0).toFixed(decimals);
@@ -65,6 +85,13 @@ export const getOptionFormattedPrice = (option: any, withCurrency = true, decima
     return `${price} ${currency}`;
   }
   return `${price}`;
+};
+
+export const getFormattedOption = (option: any): string => {
+  if (option.is_on_platform) {
+    return `${option.quantity} x ${option.mode === 'stake_with_limit' ? 'up to ' + option.stake_limit.toFixed(0) + ' NMR stake' : option.mode} @ ${getOptionFormattedPrice(option, true, 4)}${option.description ? ' [' + option.description + ']' : ''}`;
+  }
+  return `${option.quantity} x ${getOptionPlatform(option)} @ ${getOptionFormattedPrice(option, true, 2)} ref price${option.description ? ' [' + option.description + ']' : ''}`;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -135,7 +162,12 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getDescription: getProductDescription,
   getCategoryIds: getProductCategoryIds,
   getId: getProductId,
+  getOrderedOptions: getProductOrderedOptions,
+  getOptionUrl: getOptionUrl,
+  getOptionIsOnPlatform: getOptionIsOnPlatform,
+  getOptionPlatform: getOptionPlatform,
   getOptionFormattedPrice: getOptionFormattedPrice,
+  getFormattedOption: getFormattedOption,
   getFormattedPrice: getFormattedPrice,
   getMode: getProductMode,
   getStakeLimit: getProductStakeLimit,

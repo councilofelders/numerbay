@@ -27,11 +27,11 @@
             Seller: <span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span>
             <span class='divider-pipe'>|</span>
             Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
-            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!product.is_on_platform">3rd Party</SfBadge>
-            <span class="product__subheader__highlight">{{ resolveProductPlatform(product) }}</span>
-            <div v-if="productGetters.getMode(product)">
-              Mode: <span class="product__subheader__highlight">{{ productGetters.getMode(product).toUpperCase() }}</span>
-              <span class='divider-pipe' v-if="productGetters.getMode(product)==='stake_with_limit'">|</span> <span v-if="productGetters.getMode(product)==='stake_with_limit'">Stake Limit:</span> <span class="product__subheader__highlight" v-if="productGetters.getMode(product)==='stake_with_limit'">{{ productGetters.getStakeLimit(product) }}</span>
+            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform">3rd Party</SfBadge>
+            <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(orderBy(product.options, 'id')[Number(optionIdx)]) }}</span>
+            <div v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])">
+              Mode: <span class="product__subheader__highlight">{{ productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)]).toUpperCase() }}</span>
+              <span class='divider-pipe' v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])==='stake_with_limit'">|</span> <span v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])==='stake_with_limit'">Stake Limit:</span> <span class="product__subheader__highlight" v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])==='stake_with_limit'">{{ productGetters.getStakeLimit(orderBy(product.options, 'id')[Number(optionIdx)]) }}</span>
             </div>
           </div>
         </div>
@@ -48,14 +48,14 @@
                 </a>
               </div>
             </div>
-            <div class="last-sale" v-if="product.is_on_platform">
+            <div class="last-sale" v-if="orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform">
               <span class='divider-pipe'>|</span>
               <h3>Total # Sales</h3>
               <div class="sale-value">{{ product.total_num_sales }}</div>
               <span class='divider-pipe'>|</span>
               <h3>Last Sale</h3>
-              <div class="sale-value">{{ product.last_sale_price ? `${product.last_sale_price} ${product.currency}` : '-' }}</div>
-              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${product.currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
+              <div class="sale-value">{{ product.last_sale_price ? `${product.last_sale_price} ${orderBy(product.options, 'id')[Number(optionIdx)].currency}` : '-' }}</div>
+              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${orderBy(product.options, 'id')[Number(optionIdx)].currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
             </div>
           </div>
           <div>
@@ -68,23 +68,22 @@
               required
             >
   <!--                        @input="size => updateFilter({ size })"-->
-              <SfSelectOption v-for="(option, key) in (product.options || [])" :key="key" :value="key">{{ `${productGetters.getOptionFormattedPrice(option, withCurrency=true, decimals=option.is_on_platform?4:2)}` }}</SfSelectOption>
+              <SfSelectOption v-for="(option, key) in orderBy(product.options, 'id')" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
             </SfSelect>
             <SfAddToCart
               v-e2e="'product_add-to-cart'"
-              :stock="stock"
               v-model="qty"
-              :disabled="productLoading"
-              :canAddToCart="stock > 0"
+              :disabled="productLoading || !productGetters.getIsActive(product) || !orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform"
               class="product__add-to-cart"
             >
   <!--            @click="addItem({ product, quantity: parseInt(qty) })"-->
               <template #add-to-cart-btn>
                 <SfButton
                   class="sf-add-to-cart__button"
-                  :disabled="productLoading"
+                  :disabled="productLoading || !productGetters.getIsActive(product) || !orderBy(product.options, 'id')[Number(optionIdx)].third_party_url && !orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform"
+                  @click="handleBuyButtonClick(product, optionIdx, qty)"
                 >
-                  Buy @ {{`${productGetters.getFormattedPrice(product)} ${productGetters.getIsOnPlatform(product) ? '' : 'Ref Price'}`}}
+                  Buy @ {{`${productGetters.getOptionFormattedPrice(orderBy(product.options, 'id')[Number(optionIdx)])} ${orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform ? '' : 'Ref Price'}`}}
                 </SfButton>
               </template>
             </SfAddToCart>
@@ -198,6 +197,7 @@ import NumeraiChart from '../components/Molecules/NumeraiChart';
 import BuyButton from '../components/Molecules/BuyButton';
 import SfReview from '~/components/Molecules/SfReview';
 import ProductAddReviewForm from '~/components/ProductAddReviewForm';
+import _ from 'lodash';
 // import Web3 from 'web3';
 
 export default {
@@ -278,21 +278,22 @@ export default {
       };
     };
 
-    const resolveProductPlatform = (product) => {
-      if (typeof product?.is_on_platform === 'boolean' && product?.is_on_platform === false && product?.third_party_url) {
-        const domain = (new URL(product?.third_party_url));
-        const urlParts = domain.hostname.split('.').slice(0);
-        const baseUrl = urlParts.slice(-(urlParts.length === 4 ? 3 : 2)).join('.');
-        return baseUrl;
-      }
-      if (product?.is_on_platform) {
-        return 'NumerBay';
-      }
-      return '-';
-    };
+    // const resolveProductPlatform = (product) => {
+    //   if (typeof product?.is_on_platform === 'boolean' && product?.is_on_platform === false && product?.third_party_url) {
+    //     const domain = (new URL(product?.third_party_url));
+    //     const urlParts = domain.hostname.split('.').slice(0);
+    //     const baseUrl = urlParts.slice(-(urlParts.length === 4 ? 3 : 2)).join('.');
+    //     return baseUrl;
+    //   }
+    //   if (product?.is_on_platform) {
+    //     return 'NumerBay';
+    //   }
+    //   return '-';
+    // };
 
-    const handleBuyButtonClick = (product) => {
-      if (product?.is_on_platform && !isAuthenticated.value) {
+    const handleBuyButtonClick = (product, optionIdx, qty) => {
+      const option = _.orderBy(product.options, 'id')[Number(optionIdx)] || {};
+      if (option.is_on_platform && !isAuthenticated.value) {
         send({
           message: 'You need to log in to buy this product',
           type: 'info'
@@ -300,7 +301,7 @@ export default {
         toggleLoginModal();
         return;
       }
-      if (product?.is_on_platform && product?.currency === 'NMR' && !user.value.numerai_api_key_public_id) { // if not setup numerai api key and product is in NMR
+      if (option.is_on_platform && option.currency === 'NMR' && !user.value.numerai_api_key_public_id) { // if not setup numerai api key and product is in NMR
         send({
           message: 'This product requires your Numerai wallet address',
           type: 'info',
@@ -309,10 +310,10 @@ export default {
         });
         return;
       }
-      if (!product?.is_on_platform && product?.third_party_url) { // if third party listing
-        window.open(product?.third_party_url, '_blank');
+      if (!option.is_on_platform && option.third_party_url) { // if third party listing
+        window.open(option.third_party_url, '_blank');
       } else {
-        context.root.$router.push(`/checkout/payment?product=${product.id}`);
+        context.root.$router.push(`/checkout/payment?product=${product.id}&option=${option.id}&qty=${qty}`);
       }
     };
 
@@ -359,7 +360,7 @@ export default {
       updateFilter,
       getModelInfo,
       getNumeraiChartData,
-      resolveProductPlatform,
+      // resolveProductPlatform,
       handleBuyButtonClick,
       // handleCryptoBuyButtonClick,
       configuration,
@@ -385,7 +386,8 @@ export default {
       // addItem,
       // loading,
       productGetters,
-      productGallery
+      productGallery,
+      orderBy: _.orderBy
     };
   },
   components: {
