@@ -27,11 +27,11 @@
             Seller: <span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span>
             <span class='divider-pipe'>|</span>
             Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
-            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform">3rd Party</SfBadge>
-            <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(orderBy(product.options, 'id')[Number(optionIdx)]) }}</span>
-            <div v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])">
-              Mode: <span class="product__subheader__highlight">{{ productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)]).toUpperCase() }}</span>
-              <span class='divider-pipe' v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])==='stake_with_limit'">|</span> <span v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])==='stake_with_limit'">Stake Limit:</span> <span class="product__subheader__highlight" v-if="productGetters.getMode(orderBy(product.options, 'id')[Number(optionIdx)])==='stake_with_limit'">{{ productGetters.getStakeLimit(orderBy(product.options, 'id')[Number(optionIdx)]) }}</span>
+            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
+            <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(productGetters.getOrderedOption(product, optionIdx)) }}</span>
+            <div v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))">
+              Mode: <span class="product__subheader__highlight">{{ productGetters.getMode(productGetters.getOrderedOption(product, optionIdx)).toUpperCase() }}</span>
+              <span class='divider-pipe' v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">|</span> <span v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">Stake Limit:</span> <span class="product__subheader__highlight" v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">{{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, optionIdx)) }}</span>
             </div>
           </div>
         </div>
@@ -48,14 +48,14 @@
                 </a>
               </div>
             </div>
-            <div class="last-sale" v-if="orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform">
+            <div class="last-sale" v-if="productGetters.getOrderedOption(product, optionIdx).is_on_platform">
               <span class='divider-pipe'>|</span>
               <h3>Total # Sales</h3>
               <div class="sale-value">{{ product.total_num_sales }}</div>
               <span class='divider-pipe'>|</span>
               <h3>Last Sale</h3>
-              <div class="sale-value">{{ product.last_sale_price ? `${product.last_sale_price} ${orderBy(product.options, 'id')[Number(optionIdx)].currency}` : '-' }}</div>
-              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${orderBy(product.options, 'id')[Number(optionIdx)].currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
+              <div class="sale-value">{{ product.last_sale_price ? `${product.last_sale_price} ${productGetters.getOrderedOption(product, optionIdx).currency}` : '-' }}</div>
+              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${productGetters.getOrderedOption(product, optionIdx).currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
             </div>
           </div>
           <div>
@@ -68,22 +68,22 @@
               required
             >
   <!--                        @input="size => updateFilter({ size })"-->
-              <SfSelectOption v-for="(option, key) in orderBy(product.options, 'id')" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
+              <SfSelectOption v-for="(option, key) in productGetters.getOrderedOptions(product)" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
             </SfSelect>
             <SfAddToCart
               v-e2e="'product_add-to-cart'"
               v-model="qty"
-              :disabled="productLoading || !productGetters.getIsActive(product) || !orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform"
+              :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).is_on_platform"
               class="product__add-to-cart"
             >
   <!--            @click="addItem({ product, quantity: parseInt(qty) })"-->
               <template #add-to-cart-btn>
                 <SfButton
                   class="sf-add-to-cart__button"
-                  :disabled="productLoading || !productGetters.getIsActive(product) || !orderBy(product.options, 'id')[Number(optionIdx)].third_party_url && !orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform"
+                  :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).third_party_url && !productGetters.getOrderedOption(product, optionIdx).is_on_platform"
                   @click="handleBuyButtonClick(product, optionIdx, qty)"
                 >
-                  Buy @ {{`${productGetters.getOptionFormattedPrice(orderBy(product.options, 'id')[Number(optionIdx)])} ${orderBy(product.options, 'id')[Number(optionIdx)].is_on_platform ? '' : 'Ref Price'}`}}
+                  Buy @ {{`${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, optionIdx))} ${productGetters.getOrderedOption(product, optionIdx).is_on_platform ? '' : 'Ref Price'}`}}
                 </SfButton>
               </template>
             </SfAddToCart>
@@ -197,7 +197,6 @@ import NumeraiChart from '../components/Molecules/NumeraiChart';
 import BuyButton from '../components/Molecules/BuyButton';
 import SfReview from '~/components/Molecules/SfReview';
 import ProductAddReviewForm from '~/components/ProductAddReviewForm';
-import _ from 'lodash';
 // import Web3 from 'web3';
 
 export default {
@@ -292,7 +291,7 @@ export default {
     // };
 
     const handleBuyButtonClick = (product, optionIdx, qty) => {
-      const option = _.orderBy(product.options, 'id')[Number(optionIdx)] || {};
+      const option = productGetters.getOrderedOption(product, optionIdx);
       if (option.is_on_platform && !isAuthenticated.value) {
         send({
           message: 'You need to log in to buy this product',
@@ -386,8 +385,7 @@ export default {
       // addItem,
       // loading,
       productGetters,
-      productGallery,
-      orderBy: _.orderBy
+      productGallery
     };
   },
   components: {

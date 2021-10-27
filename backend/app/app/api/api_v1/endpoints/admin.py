@@ -6,13 +6,42 @@ from numerapi import NumerAPI
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
-from app.models import Artifact, Order, Product
+from app.models import Artifact, Order, Product, ProductOption
 from app.utils import send_new_confirmed_sale_email
 
 router = APIRouter()
+
+
+@router.post("/create-product-options")
+def create_product_options(
+    *,
+    db: Session = Depends(deps.get_db),
+    # current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Create product options for all products (for db migration only).
+    """
+    products = db.query(Product).filter(~Product.options.any())
+    product_sku_list = [p.sku for p in products]
+    for product in products:
+        product_option_in = schemas.ProductOptionCreate(
+            is_on_platform=product.is_on_platform,
+            third_party_url=product.third_party_url,
+            quantity=1,
+            price=product.price,
+            currency=product.currency,
+            wallet=product.wallet,
+            chain=product.chain,
+            stake_limit=product.stake_limit,
+            mode=product.mode,
+            product_id=product.id
+        )
+        crud.product_option.create(db, obj_in=product_option_in)
+    db.commit()
+    return product_sku_list
 
 
 # @router.post("/fill-product-mode")

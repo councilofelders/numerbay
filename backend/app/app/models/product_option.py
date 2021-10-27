@@ -18,6 +18,7 @@ class ProductOption(Base):
     quantity = Column(Integer, nullable=False, default=1)
     price = Column(Numeric, index=True, nullable=False)
     currency = Column(String, nullable=False, default="USD", server_default="USD")
+    wallet = Column(String, nullable=True)
     chain = Column(String)
     stake_limit = Column(Numeric, nullable=True)
     mode = Column(String, nullable=True)

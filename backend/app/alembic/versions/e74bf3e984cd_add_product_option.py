@@ -1,8 +1,8 @@
 """Add Product Option
 
-Revision ID: 2d9bc65f10c5
+Revision ID: e74bf3e984cd
 Revises: ee346caf6181
-Create Date: 2021-10-23 06:40:15.969590
+Create Date: 2021-10-27 07:02:17.339338
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2d9bc65f10c5'
+revision = 'e74bf3e984cd'
 down_revision = 'ee346caf6181'
 branch_labels = None
 depends_on = None
@@ -26,12 +26,13 @@ def upgrade():
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('price', sa.Numeric(), nullable=False),
     sa.Column('currency', sa.String(), server_default='USD', nullable=False),
+    sa.Column('wallet', sa.String(), nullable=True),
     sa.Column('chain', sa.String(), nullable=True),
     sa.Column('stake_limit', sa.Numeric(), nullable=True),
     sa.Column('mode', sa.String(), nullable=True),
     sa.Column('is_active', sa.Boolean(), server_default='t', nullable=True),
     sa.Column('product_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['product_id'], ['product.id'], ondelete="CASCADE"),
+    sa.ForeignKeyConstraint(['product_id'], ['product.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_product_option_id'), 'product_option', ['id'], unique=False)

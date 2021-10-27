@@ -12,15 +12,15 @@ from app.schemas.product_option import ProductOption, ProductOptionCreate, Produ
 
 # Shared properties
 class ProductBase(BaseModel):
-    is_on_platform: Optional[bool] = None
-    price: Optional[Decimal] = None
-    currency: Optional[str] = None
-    wallet: Optional[str] = None
-    mode: Optional[str] = None
-    stake_limit: Optional[Decimal] = None
-    chain: Optional[str] = None
+    # is_on_platform: Optional[bool] = None
+    # price: Optional[Decimal] = None
+    # currency: Optional[str] = None
+    # wallet: Optional[str] = None
+    # mode: Optional[str] = None
+    # stake_limit: Optional[Decimal] = None
+    # chain: Optional[str] = None
     avatar: Optional[HttpUrl] = None
-    third_party_url: Optional[HttpUrl] = None
+    # third_party_url: Optional[HttpUrl] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
     is_ready: Optional[bool] = None
@@ -34,10 +34,10 @@ class ProductBase(BaseModel):
 # Properties to receive on product creation
 class ProductCreate(ProductBase):
     name: str
-    is_on_platform: bool
-    price: Decimal
-    currency: str
-    chain: Optional[str]
+    # is_on_platform: bool
+    # price: Decimal
+    # currency: str
+    # chain: Optional[str]
     category_id: int
     options: Optional[List[ProductOptionCreate]]
 
@@ -52,10 +52,10 @@ class ProductInDBBase(ProductBase):
     id: int
     name: str
     sku: str
-    is_on_platform: bool
-    price: Decimal
-    currency: str
-    chain: Optional[str]
+    # is_on_platform: bool
+    # price: Decimal
+    # currency: str
+    # chain: Optional[str]
     category: Optional[Category]
 
     class Config:

@@ -448,19 +448,19 @@ export default {
 
     const resetForm = (product) => ({
       name: product ? productGetters.getName(product) : null,
-      price: product ? productGetters.getPrice(product).regular : null,
+      // price: product ? productGetters.getPrice(product).regular : null,
       category: product ? productGetters.getCategoryIds(product)[0] : null,
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      isOnPlatform: product ? String(product.is_on_platform) : 'true',
-      currency: product ? product.currency : 'NMR',
-      wallet: product ? product.wallet : null,
-      mode: product ? product.mode : 'file',
-      stakeLimit: product ? product.stake_limit : null,
-      thirdPartyUrl: product ? product.third_party_url : null,
+      // isOnPlatform: product ? String(product.is_on_platform) : 'true',
+      // currency: product ? product.currency : 'NMR',
+      // wallet: product ? product.wallet : null,
+      // mode: product ? product.mode : 'file',
+      // stakeLimit: product ? product.stake_limit : null,
+      // thirdPartyUrl: product ? product.third_party_url : null,
       options: product ? product.options : []
     });
     const form = ref(resetForm(currentListing));

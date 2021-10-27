@@ -15,6 +15,7 @@ class ProductOptionBase(BaseModel):
     quantity: Optional[int] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None
+    wallet: Optional[str] = None
     chain: Optional[str] = None
     stake_limit: Optional[Decimal] = None
     mode: Optional[str] = None

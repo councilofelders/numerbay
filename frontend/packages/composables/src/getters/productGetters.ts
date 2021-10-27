@@ -56,8 +56,12 @@ export const getProductCategoryIds = (product: ProductVariant): string[] => (pro
 
 export const getProductId = (product: ProductVariant): string => (product as any)?.id || '';
 
-// todo causes loop warning, fallback to lodash
-export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.sort((a, b) => parseFloat(a.id) - parseFloat(b.id)) : [];
+export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.slice().sort((a, b) => parseFloat(a.id) - parseFloat(b.id)) : [];
+
+export const getProductOrderedOption = (product: ProductVariant, optionIdx = 0): any => {
+  const orderedOptions = getProductOrderedOptions(product);
+  return orderedOptions[parseInt(String(optionIdx))] || {};
+};
 
 export const getOptionUrl = (option: any): string => option?.third_party_url;
 
@@ -162,6 +166,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getDescription: getProductDescription,
   getCategoryIds: getProductCategoryIds,
   getId: getProductId,
+  getOrderedOption: getProductOrderedOption,
   getOrderedOptions: getProductOrderedOptions,
   getOptionUrl: getOptionUrl,
   getOptionIsOnPlatform: getOptionIsOnPlatform,
