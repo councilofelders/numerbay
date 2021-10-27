@@ -568,6 +568,12 @@ export default {
         this.thirdPartyUrl = option.third_party_url;
         this.description = option.description;
         this.editedOption = index;
+      } else if (!this.isTournamentCategory) {
+        this.isOnPlatform = 'false';
+        this.currency = 'USD';
+        this.wallet = null;
+        this.mode = null;
+        this.stakeLimit = null;
       }
       this.editOption = true;
       this.$emit('change-option', index);

@@ -694,7 +694,7 @@ def validate_artifact_upload_task(
             # mark product as ready
             product = crud.product.get(db, id=artifact.product_id)
             if product:
-                if product.is_on_platform and not product.is_ready:
+                if not product.is_ready:
                     crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
     finally:
         db.close()

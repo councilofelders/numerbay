@@ -28,7 +28,7 @@
         <SfTableData class="table__data table__description table__data">
           <div class="product-title">{{ productGetters.getName(product).toUpperCase() }}</div>
           <div class="product-sku">{{ productGetters.getSlug(product).toUpperCase() }}</div>
-          <div class="product-sku">{{ productGetters.getFormattedOption(product.options.filter((o)=>o.id===optionId)[0]) }}</div>
+          <div class="product-sku">{{ productGetters.getFormattedOption(productGetters.getOptionById(product, optionId)) }}</div>
         </SfTableData>
         <SfTableData class="table__data">
           {{ productGetters.getOwner(product).toUpperCase() }}
@@ -36,7 +36,7 @@
         <SfTableData class="table__data">{{ qty }}</SfTableData>
         <SfTableData class="table__data price">
           <SfPrice
-            :regular="productGetters.getOptionFormattedPrice(product.options.filter((o)=>o.id===optionId)[0], true, 4)"
+            :regular="productGetters.getOptionFormattedPrice(productGetters.getOptionById(product, optionId), true, 4)"
             class="product-price"
           />
         </SfTableData>
@@ -57,7 +57,7 @@
           <SfProperty
             name="Total price"
             v-if="!loading && !productLoading && !!products[0]"
-            :value="`${(products[0].options.filter((o)=>o.id===optionId)[0].price * qty).toFixed(4)} ${products[0].options.filter((o)=>o.id===optionId)[0].currency}`"
+            :value="`${(productGetters.getOptionById(products[0], optionId).price * qty).toFixed(4)} ${productGetters.getOptionById(products[0], optionId).currency}`"
             class="sf-property--full-width sf-property--large summary__property-total"
           />
         </SfLoader>
@@ -70,7 +70,7 @@
             </div>
           </template>
         </SfCheckbox>
-        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(products[0])==='file'">
+        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(productGetters.getOptionById(products[0], optionId))==='file'">
           <template #label>
             <div class="sf-checkbox__label">
               (Optional) Submit this model to Numerai for me automatically if seller submits to NumerBay. [This will not happen if seller provides self-managed file URL]
@@ -85,7 +85,7 @@
           </template>
         </SfCheckbox>
         <SfLoader :class="{ loader: loading || productLoading || numeraiLoading }" :loading="loading || productLoading || numeraiLoading">
-          <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(products[0])!=='file')">
+          <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(productGetters.getOptionById(products[0], optionId))!=='file')">
             <SfSelectOption value=""></SfSelectOption>
             <SfSelectOption v-for="model in models" :key="`${model.id}`" :value="`${model.id}`">{{model.name}}</SfSelectOption>
           </SfSelect>
@@ -94,7 +94,7 @@
         <div class="summary__action">
           <SfButton
             v-e2e="'make-an-order'"
-            :disabled="loading || productLoading || numeraiLoading || !terms || ((submitModel || productGetters.getMode(products[0])!=='file') && !submitModelId)"
+            :disabled="loading || productLoading || numeraiLoading || !terms || ((submitModel || productGetters.getMode(productGetters.getOptionById(products[0], optionId))!=='file') && !submitModelId)"
             class="summary__action-button"
             @click="processOrder"
           >

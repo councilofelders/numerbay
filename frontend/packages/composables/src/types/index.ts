@@ -137,6 +137,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getDescription: (product: PRODUCT) => string;
     getCategoryIds: (product: PRODUCT) => string[];
     getId: (product: PRODUCT) => string;
+    getOptionById: (product: PRODUCT, optionId: number) => any;
     getOrderedOption: (product: PRODUCT, optionIdx?: number) => any;
     getOrderedOptions: (product: PRODUCT) => any[];
     getOptionUrl: (option: any) => string;

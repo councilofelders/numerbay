@@ -44,22 +44,33 @@ def search_orders(
 def create_order(
     *,
     db: Session = Depends(deps.get_db),
-    id: int = Body(..., embed=True),
+    id: int = Body(...),
+    option_id: int = Body(...),
     submit_model_id: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new order.
     """
+    # record time immediately to prevent timing issue
+    date_order = datetime.utcnow()
+
     # Product exists
     product = crud.product.get(db=db, id=id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Product on-platform
-    if not product.is_on_platform:
+    product_option = crud.product_option.get(db=db, id=option_id)
+    if not product_option:
+        raise HTTPException(status_code=404, detail="Product option not found")
+
+    if product_option.product_id != product.id:
+        raise HTTPException(status_code=400, detail="Invalid product option")
+
+    # Product Option on-platform
+    if not product_option.is_on_platform:
         raise HTTPException(
-            status_code=400, detail="This product is not available for sale on-platform"
+            status_code=400, detail="This product option is not on-platform"
         )
 
     # Product active
@@ -75,7 +86,7 @@ def create_order(
     # Addresses
     from_address = current_user.numerai_wallet_address
     to_address = (
-        product.wallet if product.wallet else product.owner.numerai_wallet_address
+        product_option.wallet if product_option.wallet else product.owner.numerai_wallet_address
     )
 
     if not to_address or not from_address:
@@ -112,19 +123,19 @@ def create_order(
 
     # todo test
     # Compulsory submit model for non-file modes
-    if product.mode != "file" and submit_model_id is None:
+    if product_option.mode != "file" and submit_model_id is None:
         raise HTTPException(
             status_code=400,
-            detail="Specifying Numerai model ID for submission is required for this product",
+            detail="Specifying Numerai model ID for submission is required for this product option",
         )
 
     # Numerai api permissions
-    if product.mode != "file" or (
+    if product_option.mode != "file" or (
         submit_model_id is not None
     ):  # if stake modes or file mode with submit_model_id
         # check buyer api permissions
         if (
-            product.mode == "stake_with_limit"
+            product_option.mode == "stake_with_limit"
             and not current_user.numerai_api_key_can_stake
         ):
             raise HTTPException(
@@ -150,19 +161,19 @@ def create_order(
 
     if product:
         order_in = schemas.OrderCreate(
-            price=product.price,
-            currency=product.currency,
-            mode=product.mode,
-            stake_limit=product.stake_limit,
+            price=product_option.price,
+            currency=product_option.currency,
+            mode=product_option.mode,
+            stake_limit=product_option.stake_limit,
             submit_model_id=submit_model_id,
             submit_model_name=submit_models[0].name
             if (submit_model_id and len(submit_models) > 0)
             else None,
-            chain=product.chain,
+            chain=product_option.chain,
             from_address=from_address,
             to_address=to_address,
             product_id=id,
-            date_order=datetime.utcnow(),
+            date_order=date_order,
             round_order=selling_round,
             state="pending",
         )

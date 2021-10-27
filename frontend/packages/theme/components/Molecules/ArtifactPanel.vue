@@ -15,7 +15,7 @@
   <!--    </SfLoader>-->
   <!--    v-on:vdropzone-sending="onSending"-->
     </div>
-    <div class="top-buttons" v-if="product.mode==='file'">
+    <div class="top-buttons">
       <SfButton class="sf-button color-secondary" @click="isManualFormOpen = !isManualFormOpen" :disabled="loading">
         {{ $t('Manually Add URL') }}
       </SfButton>

@@ -18,12 +18,14 @@ def test_create_product(
     product_name = random_lower_string()
     data = {
         "name": product_name,
-        "price": 10,
         "category_id": 3,
         "description": "Description",
-        "is_on_platform": False,
-        "currency": "USD",
         "expiration_round": 283,
+        "options": [{
+            "price": 10,
+            "is_on_platform": False,
+            "currency": "USD",
+        }]
     }
     model = crud.model.create(
         db,
@@ -61,11 +63,13 @@ def test_create_product_invalid_inputs(
     product_name = random_lower_string()
     base_data = {
         "name": product_name,
-        "price": 10,
         "category_id": 3,
         "description": "Description",
-        "is_on_platform": False,
-        "currency": "USD",
+        "options": [{
+            "price": 10,
+            "is_on_platform": False,
+            "currency": "USD",
+        }]
     }
     model = crud.model.create(
         db,
@@ -90,7 +94,7 @@ def test_create_product_invalid_inputs(
 
     # nagative price
     data = base_data.copy()
-    data["price"] = -10
+    data["options"][0]["price"] = -10
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -110,8 +114,8 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform no mode
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["currency"] = "NMR"
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["currency"] = "NMR"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -121,9 +125,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform invalid category mode
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["currency"] = "NMR"
-    data["mode"] = "stake"
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["mode"] = "stake"
     data["category_id"] = 4
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -134,9 +138,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform non-existent mode
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["currency"] = "NMR"
-    data["mode"] = "wrong_mode"
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["mode"] = "wrong_mode"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -146,8 +150,8 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform currency
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["mode"] = "file"
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["mode"] = "file"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -157,10 +161,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform price precision
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["mode"] = "file"
-    data["currency"] = "NMR"
-    data["price"] = 0.00001
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["mode"] = "file"
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["price"] = 0.00001
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -170,10 +174,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform too low price
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["mode"] = "file"
-    data["currency"] = "NMR"
-    data["price"] = 0.9
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["mode"] = "file"
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["price"] = 0.9
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -183,9 +187,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform stake_with_limit mode without stake limit
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["currency"] = "NMR"
-    data["mode"] = "stake_with_limit"
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["mode"] = "stake_with_limit"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -195,10 +199,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform stake_with_limit mode stake limit precision
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["currency"] = "NMR"
-    data["mode"] = "stake_with_limit"
-    data["stake_limit"] = 1.00001
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["mode"] = "stake_with_limit"
+    data["options"][0]["stake_limit"] = 1.00001
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -208,10 +212,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform stake_with_limit mode stake limit too low
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["currency"] = "NMR"
-    data["mode"] = "stake_with_limit"
-    data["stake_limit"] = 0.9
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["mode"] = "stake_with_limit"
+    data["options"][0]["stake_limit"] = 0.9
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -221,10 +225,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform chain
     data = base_data.copy()
-    data["is_on_platform"] = True
-    data["mode"] = "file"
-    data["currency"] = "NMR"
-    data["chain"] = "ethereum"
+    data["options"][0]["is_on_platform"] = True
+    data["options"][0]["mode"] = "file"
+    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["chain"] = "ethereum"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -234,7 +238,7 @@ def test_create_product_invalid_inputs(
 
     # invalid off-platform currency
     data = base_data.copy()
-    data["currency"] = "NMR"
+    data["options"][0]["currency"] = "NMR"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -244,7 +248,7 @@ def test_create_product_invalid_inputs(
 
     # invalid off-platform precision
     data = base_data.copy()
-    data["price"] = 0.001
+    data["options"][0]["price"] = 0.001
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -291,7 +295,7 @@ def test_read_product(client: TestClient, db: Session) -> None:
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == product.name
-    assert Decimal(str(content["price"])) == product.price
+    assert Decimal(str(content["options"][0]["price"])) == product.options[0].price
     assert content["id"] == product.id
     assert content["owner"]["id"] == product.owner_id
 
@@ -336,7 +340,7 @@ def test_update_product(
     # assert content["name"] == data["name"]
 
     # update price
-    data["price"] = 20.5
+    data["options"][0]["price"] = 20.5
     response = client.put(
         f"{settings.API_V1_STR}/products/{product.id}",
         headers=normal_user_token_headers,
@@ -345,7 +349,7 @@ def test_update_product(
     assert response.status_code == 200
     content = response.json()
 
-    assert content["price"] == data["price"]
+    assert content["options"][0]["price"] == data["options"][0]["price"]
     assert "id" in content
     assert "owner" in content
 

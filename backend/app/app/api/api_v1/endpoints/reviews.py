@@ -62,20 +62,20 @@ def create_review(
             status_code=400, detail="You cannot review your own product"
         )
 
-    if product.is_on_platform:
-        # Bought product
-        orders = crud.order.search(
-            db,
-            role="buyer",
-            current_user_id=current_user.id,
-            filters={
-                "product": {"in": [product.id]},
-                "state": {"in": ["pending", "confirmed"]},
-            },
-        )
-        if orders["total"] < 1:
-            raise HTTPException(status_code=400, detail="You did not buy this product")
+    # Mark review verified if bought product
+    orders = crud.order.search(
+        db,
+        role="buyer",
+        current_user_id=current_user.id,
+        filters={
+            "product": {"in": [product.id]},
+            "state": {"in": ["pending", "confirmed"]},
+        },
+    )
 
+    is_verified_order = orders["total"] > 0
+
+    if is_verified_order:
         # Not duplicated review
         existing_reviews = crud.review.search(
             db, product_id=product.id, filters={"user": {"in": [current_user.id]}}
@@ -101,7 +101,7 @@ def create_review(
         latest_order = max(orders.get("data", []), key=lambda d: d.round_order)
         round_review = latest_order.round_order
     else:
-        # Not reviewed for previous round
+        # Not bought product before
         globals = crud.globals.get_singleton(db=db)
         selling_round = globals.selling_round  # type: ignore
         round_review = selling_round - 1
@@ -124,7 +124,7 @@ def create_review(
             round_tournament=round_review,
             rating=rating,
             text=text,
-            is_verified_order=product.is_on_platform,
+            is_verified_order=is_verified_order,
             reviewer_id=current_user.id,
             product_id=product_id,
         )

@@ -683,7 +683,7 @@ def validate_upload(
 
     # mark product as ready
     if product:
-        if product.is_on_platform and not product.is_ready:
+        if not product.is_ready:
             crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
 
     # validate and fulfill orders immediately
@@ -712,7 +712,9 @@ async def create_product_artifact(
         product=product, current_user=current_user, url=url, filename=None
     )
 
-    if product.mode in ["stake", "stake_with_limit"]:  # type: ignore
+    all_modes = [option.mode for option in product.options]  # type: ignore
+
+    if "stake" in all_modes or "stake_with_limit" in all_modes:
         raise HTTPException(
             status_code=400,
             detail="Stake modes require native artifact uploads for automated submissions",
@@ -741,7 +743,7 @@ async def create_product_artifact(
 
     # mark product as ready
     if product:
-        if product.is_on_platform and not product.is_ready:
+        if not product.is_ready:
             crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
 
     # Send notification emails

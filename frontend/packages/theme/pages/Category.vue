@@ -172,7 +172,7 @@
             >
               <template #price="{regularPrice}">{{ regularPrice }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
                                      data-emoji="glitch_black" title="Gas-free NMR payment"
-                                     v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
+                                     v-if="productGetters.getOrderedOption(product, 0).currency === 'NMR'"> Gas-free NMR payment</span>
               </template>
             </SfProductCard>
           </transition-group>
@@ -205,7 +205,7 @@
                   <h3 class="sf-product-card-horizontal__title">
                     {{ title }} <span class="emoji" style="background-image:url(/icons/glitch_black.gif);"
                                      data-emoji="glitch_black" title="Gas-free NMR payment"
-                                     v-if="product.currency === 'NMR'"> Gas-free NMR payment</span>
+                                     v-if="productGetters.getOrderedOption(product, product.optionIdx).currency === 'NMR'"> Gas-free NMR payment</span>
                   </h3>
                 </SfLink>
               </template>

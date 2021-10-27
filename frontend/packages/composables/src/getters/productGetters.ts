@@ -58,6 +58,11 @@ export const getProductId = (product: ProductVariant): string => (product as any
 
 export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.slice().sort((a, b) => parseFloat(a.id) - parseFloat(b.id)) : [];
 
+export const getProductOptionById = (product: ProductVariant, optionId: number): any => {
+  const options = (product as any)?.options?.filter((o)=>parseInt(o.id) === parseInt(String(optionId))) || [];
+  return options[0] || {};
+};
+
 export const getProductOrderedOption = (product: ProductVariant, optionIdx = 0): any => {
   const orderedOptions = getProductOrderedOptions(product);
   return orderedOptions[parseInt(String(optionIdx))] || {};
@@ -100,7 +105,7 @@ export const getFormattedOption = (option: any): string => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getFormattedPrice = (product: ProductVariant, withCurrency = true, optionIdx = 0, decimals = 2): string => {
-  const options = product?.options || [];
+  const options = getProductOrderedOptions(product);
   if (optionIdx >= options.length) {
     return '-';
   }
@@ -166,6 +171,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getDescription: getProductDescription,
   getCategoryIds: getProductCategoryIds,
   getId: getProductId,
+  getOptionById: getProductOptionById,
   getOrderedOption: getProductOrderedOption,
   getOrderedOptions: getProductOrderedOptions,
   getOptionUrl: getOptionUrl,

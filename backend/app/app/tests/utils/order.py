@@ -39,8 +39,8 @@ def create_random_order(
     new_order = OrderCreate(
         date_order=datetime.now(),
         round_order=crud.globals.get_singleton(db).selling_round,  # type: ignore
-        price=product.price,
-        currency=product.currency,
+        price=product.options[0].price,
+        currency=product.options[0].currency,
         mode=mode,
         from_address=buyer.numerai_wallet_address,  # type: ignore
         to_address=product_owner.numerai_wallet_address,  # type: ignore
