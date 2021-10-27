@@ -83,7 +83,7 @@ def search_products(
 def validate_product_input(
     db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
-    # product name
+    # Product name
     if isinstance(product_in, schemas.ProductCreate) and re.match(r"^[\w-]+$", product_in.name) is None:  # type: ignore
         raise HTTPException(
             status_code=400,
@@ -111,10 +111,14 @@ def validate_product_input(
     # todo options validation
 
     # At least one option
-    if (isinstance(product_in, schemas.ProductCreate) and (
-            product_in.options is None or len(product_in.options) == 0)) or (
-            isinstance(product_in, schemas.ProductUpdate) and product_in.options is not None and len(
-            product_in.options) == 0):
+    if (
+        isinstance(product_in, schemas.ProductCreate)
+        and (product_in.options is None or len(product_in.options) == 0)
+    ) or (
+        isinstance(product_in, schemas.ProductUpdate)
+        and product_in.options is not None
+        and len(product_in.options) == 0
+    ):
         raise HTTPException(
             status_code=400, detail="At least one pricing option is required",
         )
@@ -123,14 +127,17 @@ def validate_product_input(
     if product_in.options is not None and len(product_in.options) > 0:
         options_set = set()
         for product_option in product_in.options:
-            option_tuple = (product_option.is_on_platform, product_option.price, product_option.currency)
+            option_tuple = (
+                product_option.is_on_platform,
+                product_option.price,
+                product_option.currency,
+            )
             option_exists = option_tuple in options_set
             options_set.add(option_tuple)
 
             if option_exists:
                 raise HTTPException(
-                    status_code=400,
-                    detail=f"Duplicated pricing not allowed",
+                    status_code=400, detail="Duplicated pricing not allowed",
                 )
 
             if product_option.is_on_platform:
@@ -146,7 +153,10 @@ def validate_product_input(
                     product_option.currency = product_option.currency.upper()
 
                 # On-platform currency type
-                if product_option.currency is not None and product_option.currency not in ["NMR"]:
+                if (
+                    product_option.currency is not None
+                    and product_option.currency not in ["NMR"]
+                ):
                     raise HTTPException(
                         status_code=400,
                         detail=f"{product_option.currency} is not supported for on-platform listing",
@@ -204,7 +214,10 @@ def validate_product_input(
                     )
             else:
                 # Off-platform currency type
-                if product_option.currency is not None and product_option.currency not in ["USD"]:
+                if (
+                    product_option.currency is not None
+                    and product_option.currency not in ["USD"]
+                ):
                     raise HTTPException(
                         status_code=400,
                         detail=f"{product_option.currency} is not supported for off-platform listing",
@@ -257,16 +270,17 @@ def create_product(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    # On-platform Category Mode check
-    if (
-        product_in.is_on_platform
-        and product_in.mode in ["stake", "stake_with_limit"]
-        and not category.is_submission
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Stake modes are not allowed for non-submission categories",
-        )
+    for product_option_in in product_in.options:  # type: ignore
+        # On-platform Category Mode check
+        if (
+            product_option_in.is_on_platform
+            and product_option_in.mode in ["stake", "stake_with_limit"]
+            and not category.is_submission
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Stake modes are not allowed for non-submission categories",
+            )
 
     # Leaf category
     child_categories_count = (
@@ -333,11 +347,11 @@ def create_product(
     )
 
     # Create options
-    for product_option_in in product_options_in:
+    for product_option_in in product_options_in:  # type: ignore
         product_option_in.product_id = product.id
         crud.product_option.create(db, obj_in=product_option_in)
 
-    product = crud.product.get(db, id=product.id)
+    product = crud.product.get(db, id=product.id)  # type: ignore
     return product
 
 
@@ -382,7 +396,7 @@ def update_product(
             if product_option_in.id is not None and product_option_in.id != -1:
                 product_option_ids.append(product_option_in.id)
 
-        for option in product.options:
+        for option in product.options:  # type: ignore
             if option.id not in product_option_ids:
                 # deleted option
                 crud.product_option.remove(db, id=option.id)
@@ -397,14 +411,26 @@ def update_product(
                         detail=f"Product Option {product_option_in.id} not found",
                     )
                 json_product_option_in = jsonable_encoder(product_option_in)
-                json_product_option_in.pop('id', None)
-                json_product_option_in.pop('product_id', None)
-                crud.product_option.update(db, db_obj=db_product_option, obj_in=json_product_option_in)
+                json_product_option_in.pop("id", None)
+                json_product_option_in.pop("product_id", None)
+                if (
+                    json_product_option_in.get("is_on_platform", None) is None
+                ):  # todo better null handling
+                    json_product_option_in.pop("is_on_platform", None)
+                if json_product_option_in.get("quantity", None) is None:
+                    json_product_option_in.pop("quantity", None)
+                if json_product_option_in.get("price", None) is None:
+                    json_product_option_in.pop("price", None)
+                if json_product_option_in.get("currency", None) is None:
+                    json_product_option_in.pop("currency", None)
+                crud.product_option.update(
+                    db, db_obj=db_product_option, obj_in=json_product_option_in
+                )
             else:
                 # create option
                 json_product_option_in = jsonable_encoder(product_option_in)
-                json_product_option_in.pop('id', None)
-                json_product_option_in['product_id'] = product.id
+                json_product_option_in.pop("id", None)
+                json_product_option_in["product_id"] = product.id
                 crud.product_option.create(db, obj_in=json_product_option_in)
 
     product = crud.product.update(db=db, db_obj=product, obj_in=product_in)

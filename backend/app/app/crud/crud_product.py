@@ -177,7 +177,11 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                         platform_list.append(False)
                     if len(platform_list) == 0:
                         platform_list = [True, False]
-                    query_filters.append(Product.options.any(ProductOption.is_on_platform.in_(platform_list)))
+                    query_filters.append(
+                        Product.options.any(
+                            ProductOption.is_on_platform.in_(platform_list)
+                        )
+                    )
                 if filter_key == "status":
                     with_active = "active" in filter_item["in"]
                     with_inactive = "inactive" in filter_item["in"]

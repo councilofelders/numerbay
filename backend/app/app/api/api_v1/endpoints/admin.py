@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
-from app.models import Artifact, Order, Product, ProductOption
+from app.models import Artifact, Order, Product
 from app.utils import send_new_confirmed_sale_email
 
 router = APIRouter()
@@ -37,7 +37,7 @@ def create_product_options(
             chain=product.chain,
             stake_limit=product.stake_limit,
             mode=product.mode,
-            product_id=product.id
+            product_id=product.id,
         )
         crud.product_option.create(db, obj_in=product_option_in)
     db.commit()

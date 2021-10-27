@@ -177,8 +177,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
             user = self.get(db, user_json["id"])
 
-            if not user.email:
-                user_update_json['email'] = account["email"]
+            if not user.email:  # type: ignore
+                user_update_json["email"] = account["email"]
 
             self.update(db, db_obj=user, obj_in=user_update_json)  # type: ignore
             return True

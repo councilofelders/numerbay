@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .category import Category  # noqa: F401
     from .model import Model  # noqa: F401
     from .artifact import Artifact  # noqa: F401
+    from .product_option import ProductOption  # noqa: F401
     from .review import Review  # noqa: F401
 
 
@@ -17,9 +18,9 @@ class Product(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     sku = Column(String, index=True, nullable=False, unique=True)
-    is_on_platform = Column(Boolean, nullable=False, default=True, server_default="f")
-    price = Column(Numeric, index=True, nullable=False)
-    currency = Column(String, nullable=False, default="USD", server_default="USD")
+    is_on_platform = Column(Boolean, nullable=True, default=True, server_default="f")
+    price = Column(Numeric, index=True, nullable=True)
+    currency = Column(String, nullable=True, default="USD", server_default="USD")
     wallet = Column(String, nullable=True)
     mode = Column(String, nullable=True)
     stake_limit = Column(Numeric, nullable=True)
@@ -41,4 +42,6 @@ class Product(Base):
     model = relationship("Model", lazy="select", back_populates="products")
     artifacts = relationship("Artifact", back_populates="product")
     reviews = relationship("Review", back_populates="product")
-    options = relationship("ProductOption", back_populates="product", cascade="all, delete-orphan")
+    options = relationship(
+        "ProductOption", back_populates="product", cascade="all, delete-orphan"
+    )

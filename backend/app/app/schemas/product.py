@@ -5,9 +5,13 @@ from pydantic import BaseModel, HttpUrl
 
 from app.schemas.category import Category
 from app.schemas.model import ModelSummary
+from app.schemas.product_option import (
+    ProductOption,
+    ProductOptionCreate,
+    ProductOptionUpdate,
+)
 from app.schemas.review import Review
 from app.schemas.user import ProductOwner
-from app.schemas.product_option import ProductOption, ProductOptionCreate, ProductOptionUpdate
 
 
 # Shared properties
@@ -28,7 +32,6 @@ class ProductBase(BaseModel):
     total_num_sales: Optional[int] = None
     last_sale_price: Optional[Decimal] = None
     last_sale_price_delta: Optional[Decimal] = None
-    optionIdx: Optional[str] = '0'
 
 
 # Properties to receive on product creation
@@ -68,6 +71,7 @@ class Product(ProductInDBBase):
     model: Optional[ModelSummary] = None
     reviews: Optional[List[Review]] = None
     options: Optional[List[ProductOption]] = None
+    optionIdx: Optional[str] = "0"
 
 
 # Properties properties stored in DB

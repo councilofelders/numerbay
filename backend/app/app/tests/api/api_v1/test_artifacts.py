@@ -124,7 +124,7 @@ def test_create_product_invalid_artifact(
 
     product = create_random_product(db, owner_id=current_user["id"], mode="file")
     product_id = product.id
-    crud.product.update(db, db_obj=product, obj_in={"mode": "stake"})
+    crud.product_option.update(db, db_obj=product.options[0], obj_in={"mode": "stake"})  # type: ignore
     model_id = product.model.id  # type: ignore
 
     url = "http://exmaple.com"

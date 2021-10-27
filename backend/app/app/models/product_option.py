@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class ProductOption(Base):
-    __tablename__ = 'product_option'
+    __tablename__ = "product_option"  # type: ignore
     id = Column(Integer, primary_key=True, index=True)
     is_on_platform = Column(Boolean, nullable=False, default=True, server_default="f")
     third_party_url = Column(String)

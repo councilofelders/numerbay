@@ -86,7 +86,9 @@ def create_order(
     # Addresses
     from_address = current_user.numerai_wallet_address
     to_address = (
-        product_option.wallet if product_option.wallet else product.owner.numerai_wallet_address
+        product_option.wallet
+        if product_option.wallet
+        else product.owner.numerai_wallet_address
     )
 
     if not to_address or not from_address:

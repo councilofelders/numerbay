@@ -21,11 +21,7 @@ def test_create_product(
         "category_id": 3,
         "description": "Description",
         "expiration_round": 283,
-        "options": [{
-            "price": 10,
-            "is_on_platform": False,
-            "currency": "USD",
-        }]
+        "options": [{"price": 10, "is_on_platform": False, "currency": "USD"}],
     }
     model = crud.model.create(
         db,
@@ -43,7 +39,7 @@ def test_create_product(
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == data["name"]
-    assert content["price"] == data["price"]
+    assert content["options"][0]["price"] == data["options"][0]["price"]  # type: ignore
     assert "model" in content
     assert content["model"]["name"] == model.name
     assert "id" in content
@@ -65,11 +61,7 @@ def test_create_product_invalid_inputs(
         "name": product_name,
         "category_id": 3,
         "description": "Description",
-        "options": [{
-            "price": 10,
-            "is_on_platform": False,
-            "currency": "USD",
-        }]
+        "options": [{"price": 10, "is_on_platform": False, "currency": "USD"}],  # type: ignore
     }
     model = crud.model.create(
         db,
@@ -94,7 +86,7 @@ def test_create_product_invalid_inputs(
 
     # nagative price
     data = base_data.copy()
-    data["options"][0]["price"] = -10
+    data["options"][0]["price"] = -10  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -114,8 +106,8 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform no mode
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -125,9 +117,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform invalid category mode
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["mode"] = "stake"
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["mode"] = "stake"  # type: ignore
     data["category_id"] = 4
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -138,9 +130,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform non-existent mode
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["mode"] = "wrong_mode"
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["mode"] = "wrong_mode"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -150,8 +142,8 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform currency
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["mode"] = "file"
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["mode"] = "file"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -161,10 +153,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform price precision
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["mode"] = "file"
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["price"] = 0.00001
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["mode"] = "file"  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["price"] = 0.00001  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -174,10 +166,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform too low price
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["mode"] = "file"
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["price"] = 0.9
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["mode"] = "file"  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["price"] = 0.9  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -187,9 +179,9 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform stake_with_limit mode without stake limit
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["mode"] = "stake_with_limit"
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["mode"] = "stake_with_limit"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -199,10 +191,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform stake_with_limit mode stake limit precision
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["mode"] = "stake_with_limit"
-    data["options"][0]["stake_limit"] = 1.00001
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["mode"] = "stake_with_limit"  # type: ignore
+    data["options"][0]["stake_limit"] = 1.00001  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -212,10 +204,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform stake_with_limit mode stake limit too low
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["mode"] = "stake_with_limit"
-    data["options"][0]["stake_limit"] = 0.9
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["mode"] = "stake_with_limit"  # type: ignore
+    data["options"][0]["stake_limit"] = 0.9  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -225,10 +217,10 @@ def test_create_product_invalid_inputs(
 
     # invalid on-platform chain
     data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True
-    data["options"][0]["mode"] = "file"
-    data["options"][0]["currency"] = "NMR"
-    data["options"][0]["chain"] = "ethereum"
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["mode"] = "file"  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["chain"] = "ethereum"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -238,7 +230,7 @@ def test_create_product_invalid_inputs(
 
     # invalid off-platform currency
     data = base_data.copy()
-    data["options"][0]["currency"] = "NMR"
+    data["options"][0]["currency"] = "NMR"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -248,7 +240,7 @@ def test_create_product_invalid_inputs(
 
     # invalid off-platform precision
     data = base_data.copy()
-    data["options"][0]["price"] = 0.001
+    data["options"][0]["price"] = 0.001  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
@@ -276,7 +268,7 @@ def test_search_products(client: TestClient, db: Session) -> None:
     model_id = model.id
     response = client.post(
         f"{settings.API_V1_STR}/products/search",
-        json={"category_id": product.category_id, "term": product.name[:5]},
+        json={"category_id": product.category_id, "term": product.name},
     )
     assert response.status_code == 200
     content = response.json()
@@ -295,7 +287,7 @@ def test_read_product(client: TestClient, db: Session) -> None:
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == product.name
-    assert Decimal(str(content["options"][0]["price"])) == product.options[0].price
+    assert Decimal(str(content["options"][0]["price"])) == product.options[0].price  # type: ignore
     assert content["id"] == product.id
     assert content["owner"]["id"] == product.owner_id
 
@@ -310,7 +302,7 @@ def test_update_product(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
     product = create_random_product(db, owner_id=current_user["id"])
-    data = dict()
+    data = dict()  # type: ignore
 
     # product_name = random_lower_string()
     # data = {
@@ -340,7 +332,12 @@ def test_update_product(
     # assert content["name"] == data["name"]
 
     # update price
-    data["options"][0]["price"] = 20.5
+    data["options"] = [
+        {
+            "id": product.options[0].id,  # type: ignore
+            "price": 20.5,
+        }
+    ]
     response = client.put(
         f"{settings.API_V1_STR}/products/{product.id}",
         headers=normal_user_token_headers,
@@ -374,7 +371,7 @@ def test_update_product(
     assert content["name"] == product.name
 
     # invalid attempt to change category id
-    data["category_id"] = 2
+    data["category_id"] = 2  # type: ignore
     response = client.put(
         f"{settings.API_V1_STR}/products/{content['id']}",
         headers=normal_user_token_headers,

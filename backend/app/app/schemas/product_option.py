@@ -1,9 +1,7 @@
 from decimal import Decimal
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, HttpUrl
-
-from app import schemas
 
 
 # Shared properties
@@ -51,6 +49,7 @@ class ProductOptionInDBBase(ProductOptionBase):
 # Properties to return to client
 class ProductOption(ProductOptionInDBBase):
     pass
+
 
 # Properties properties stored in DB
 class ProductOptionInDB(ProductOptionInDBBase):

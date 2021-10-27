@@ -30,10 +30,7 @@ def create_random_product(
     description = random_lower_string()
 
     product_in = ProductCreate(
-        name=name,
-        category_id=3,
-        description=description,
-        id=id,
+        name=name, category_id=3, description=description, options=[], id=id,
     )
     product = crud.product.create_with_owner(
         db=db,
@@ -50,9 +47,9 @@ def create_random_product(
         price=price,
         currency="NMR" if is_on_platform else "USD",
         mode=mode,
-        product_id=product.id
+        product_id=product.id,
     )
 
     crud.product_option.create(db, obj_in=product_option_in)
 
-    return crud.product.get(db, id=product.id)
+    return crud.product.get(db, id=product.id)  # type: ignore
