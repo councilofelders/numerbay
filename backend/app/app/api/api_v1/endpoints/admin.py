@@ -19,7 +19,7 @@ router = APIRouter()
 def create_product_options(
     *,
     db: Session = Depends(deps.get_db),
-    # current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create product options for all products (for db migration only).

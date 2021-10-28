@@ -51,7 +51,7 @@ export const getItemSku = (item: any): string => item?.sku || 0;
 export const getItemName = (item: any): string => item?.name || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getItemQty = (item: any): number => item?.qty || 0;
+export const getItemQty = (item: any): number => item?.quantity || 0;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getItemPrice = (item: any): number => item?.price?.current || 0;

@@ -55,7 +55,8 @@
                 {{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}
               </SfLink>
             </SfTableData>
-            <SfTableData>{{ orderGetters.getRound(order) }}</SfTableData>
+            <SfTableData v-if="orderGetters.getProduct(order).category.is_per_round && parseInt(orderGetters.getItemQty(order)) > 1">{{ `${orderGetters.getRound(order)}-${parseInt(orderGetters.getRound(order))+parseInt(orderGetters.getItemQty(order))-1}` }}</SfTableData>
+            <SfTableData v-else>{{ orderGetters.getRound(order) }}</SfTableData>
             <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
             <SfTableData>{{ orderGetters.getFormattedPrice(order, withCurrency=true, decimals=4) }}</SfTableData>
             <SfTableData>
@@ -137,7 +138,7 @@ export default {
     const tableHeaders = [
       'Order ID',
       'Product',
-      'Round',
+      'Round(s)',
       'Buyer',
       'Amount',
       'Status',

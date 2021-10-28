@@ -19,6 +19,7 @@ export default async function createOrder(context, params, customQuery?: CustomQ
     id: parseInt(params.id),
     // eslint-disable-next-line camelcase
     option_id: parseInt(params.optionId),
+    quantity: parseInt(params.quantity),
     // eslint-disable-next-line camelcase
     submit_model_id: params.submitModelId
   };

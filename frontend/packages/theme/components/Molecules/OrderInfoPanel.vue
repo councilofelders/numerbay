@@ -12,9 +12,16 @@
         class="sf-property--full-width property"
       />
       <SfProperty
+        name="Rounds"
+        :value="`${orderGetters.getRound(order)}-${parseInt(orderGetters.getRound(order))+parseInt(orderGetters.getItemQty(order))-1}`"
+        class="sf-property--full-width property"
+        v-if="orderGetters.getProduct(order).category.is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
+      />
+      <SfProperty
         name="Round"
         :value="orderGetters.getRound(order)"
         class="sf-property--full-width property"
+        v-else
       />
       <SfProperty
         name="Date"

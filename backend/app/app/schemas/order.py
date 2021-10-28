@@ -12,6 +12,7 @@ from app.schemas.user import OrderBuyer
 class OrderBase(BaseModel):
     date_order: Optional[datetime] = None
     round_order: Optional[int] = None
+    quantity: Optional[int] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None
     mode: Optional[str] = None
@@ -28,6 +29,7 @@ class OrderBase(BaseModel):
 
 # Properties to receive on order creation
 class OrderCreate(OrderBase):
+    quantity: Optional[int] = 1
     price: Decimal
     currency: str
     mode: str

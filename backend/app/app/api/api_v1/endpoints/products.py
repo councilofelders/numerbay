@@ -282,6 +282,17 @@ def create_product(
                 detail="Stake modes are not allowed for non-submission categories",
             )
 
+        # On-platform Category Quantity check
+        if (
+            not category.is_per_round
+            and product_option_in.quantity is not None
+            and product_option_in.quantity > 1
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="This product is not per-round, quantity must be 1",
+            )
+
     # Leaf category
     child_categories_count = (
         db.query(models.Category)
@@ -371,6 +382,31 @@ def update_product(
     )
 
     product_in = validate_product_input(db, product_in)  # type: ignore
+
+    # Category
+    category = product.category
+    for product_option_in in product_in.options:  # type: ignore
+        # On-platform Category Mode check
+        if (
+            product_option_in.is_on_platform
+            and product_option_in.mode in ["stake", "stake_with_limit"]
+            and not category.is_submission
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Stake modes are not allowed for non-submission categories",
+            )
+
+        # On-platform Category Quantity check
+        if (
+            not category.is_per_round
+            and product_option_in.quantity is not None
+            and product_option_in.quantity > 1
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="This product is not per-round, quantity must be 1",
+            )
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)
@@ -544,6 +580,20 @@ def validate_new_artifact(
     # todo filename suffix / desc validation
 
     # todo duplicate artifact
+
+    # todo test
+
+    # At least one on-platform option
+    has_on_platform = False
+    for option in product.options:  # type: ignore
+        if option.is_on_platform:
+            has_on_platform = True
+            break
+    if not has_on_platform:
+        raise HTTPException(
+            status_code=400,
+            detail="At least one on-platform pricing option is required",
+        )
 
 
 def validate_existing_artifact(
@@ -774,9 +824,10 @@ async def create_product_artifact(
 
     # Send notification emails
     if settings.EMAILS_ENABLED:
-        orders = crud.order.get_multi_by_state(
-            db, state="confirmed", round_order=globals.selling_round  # type: ignore
-        )
+        # orders = crud.order.get_multi_by_state(
+        #     db, state="confirmed", round_order=globals.selling_round  # type: ignore
+        # )
+        orders = crud.order.get_active_orders(db, round_order=globals.selling_round)  # type: ignore
         for order in orders:
             if order.product_id == artifact.product_id:
                 # Send new artifact email notifications to buyers
@@ -860,7 +911,7 @@ def validate_buyer(
 ) -> Optional[models.Order]:
     for order in current_user.orders:  # type: ignore
         if (
-            order.round_order == selling_round
+            order.round_order > selling_round - order.quantity
             and order.product_id == product.id
             and order.state == "confirmed"
         ):

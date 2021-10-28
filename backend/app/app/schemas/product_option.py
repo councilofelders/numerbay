@@ -23,6 +23,7 @@ class ProductOptionBase(BaseModel):
 # Properties to receive on product_option creation
 class ProductOptionCreate(ProductOptionBase):
     is_on_platform: bool
+    quantity: Optional[int] = 1
     price: Decimal
     currency: str
     chain: Optional[str] = None

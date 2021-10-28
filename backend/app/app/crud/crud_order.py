@@ -42,6 +42,15 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         db.refresh(db_obj)
         return db_obj
 
+    def get_active_orders(self, db: Session, *, round_order: int) -> List[Order]:
+        query_filters = [
+            self.model.round_order > round_order - self.model.quantity,  # type: ignore
+            self.model.state == "confirmed",
+        ]
+        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        orders = db.query(self.model).filter(query_filter).all()
+        return orders
+
     def get_multi_by_state(
         self, db: Session, *, state: str, round_order: Optional[int] = None
     ) -> List[Order]:
@@ -60,7 +69,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         self, db: Session, *, round_order: int
     ) -> List[Order]:
         query_filters = [
-            self.model.round_order == round_order,  # type: ignore
+            self.model.round_order > round_order - self.model.quantity,  # type: ignore
             self.model.state == "confirmed",
             or_(
                 self.model.submit_state.is_(None),
@@ -115,9 +124,11 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 if filter_key == "product":
                     product_id_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Order.product_id.in_(product_id_list))
-                if filter_key == "round_order":
+                if filter_key == "round_order":  # todo multiple rounds
                     round_order_list = [int(i) for i in filter_item["in"]]
-                    query_filters.append(Order.round_order.in_(round_order_list))
+                    query_filters.append(
+                        Order.round_order > round_order_list[0] - Order.quantity
+                    )
                 if filter_key == "state":
                     state_list = [str(i) for i in filter_item["in"]]
                     query_filters.append(Order.state.in_(state_list))

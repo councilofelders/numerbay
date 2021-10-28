@@ -73,7 +73,7 @@
             <SfAddToCart
               v-e2e="'product_add-to-cart'"
               v-model="qty"
-              :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).is_on_platform"
+              :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).is_on_platform || !product.category.is_per_round"
               class="product__add-to-cart"
             >
   <!--            @click="addItem({ product, quantity: parseInt(qty) })"-->

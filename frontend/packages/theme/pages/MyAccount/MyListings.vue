@@ -40,7 +40,7 @@
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, 0), true, 4) }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <div class="listing-actions">
-                <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="productGetters.getOrderedOption(product, 0).is_on_platform" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
+                <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="!!productGetters.getOrderedOptions(product) && productGetters.getOrderedOptions(product).filter((p)=>p.is_on_platform).length > 0" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Artifacts') }}
                 </SfButton>
                 <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">

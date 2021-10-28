@@ -14,6 +14,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     date_order = Column(DateTime, index=True, nullable=False)
     round_order = Column(Integer, nullable=False)
+    quantity = Column(Integer, nullable=False, default=1, server_default="1")
     price = Column(Numeric, nullable=False)
     currency = Column(String, nullable=False, default="USD")
     mode = Column(String, nullable=False, default="file", server_default="file")

@@ -43,6 +43,7 @@ def test_create_order(
     content = response.json()
     assert content["buyer"]["id"] == current_user["id"]
     assert content["product"]["id"] == product.id
+    assert content["quantity"] == 1
 
     # Inactive product: reject
     crud.product.update(db, db_obj=product, obj_in={"is_active": False})

@@ -72,9 +72,10 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
             globals = crud.globals.update_singleton(db)
             selling_round = globals.selling_round  # type: ignore
 
-            orders = crud.order.get_multi_by_state(
-                db, state="confirmed", round_order=selling_round
-            )
+            # orders = crud.order.get_multi_by_state(
+            #     db, state="confirmed", round_order=selling_round
+            # )
+            orders = crud.order.get_active_orders(db, round_order=selling_round)
             for order in orders:
                 if order.product_id == artifact.product_id:
                     # Send new artifact email notifications to buyers
@@ -652,9 +653,10 @@ def validate_artifact_upload_task(
             selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
             # Submit for all confirmed orders with submit_model_id regardless if submitted or not
-            orders = crud.order.get_multi_by_state(
-                db, state="confirmed", round_order=selling_round  # type: ignore
-            )
+            # orders = crud.order.get_multi_by_state(
+            #     db, state="confirmed", round_order=selling_round  # type: ignore
+            # )
+            orders = crud.order.get_active_orders(db, round_order=selling_round)
             for order in orders:
                 if not order.submit_model_id:
                     continue
@@ -705,9 +707,10 @@ def batch_validate_numerai_models_stake_task() -> None:
     db = SessionLocal()
     try:
         globals = crud.globals.update_singleton(db)
-        orders = crud.order.get_multi_by_state(
-            db, state="confirmed", round_order=globals.selling_round
-        )
+        # orders = crud.order.get_multi_by_state(
+        #     db, state="confirmed", round_order=globals.selling_round
+        # )
+        orders = crud.order.get_active_orders(db, round_order=globals.selling_round)
 
         print(f"total orders to check for stake limit: {len(orders)}")
 

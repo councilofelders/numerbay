@@ -249,7 +249,7 @@
                 <SfAddToCart
                   v-e2e="'product_add-to-cart'"
                   v-model="product.qty"
-                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx))"
+                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) || !product.category.is_per_round"
                   class="sf-product-card-horizontal__add-to-cart desktop-only"
                 >
                   <template #add-to-cart-btn>

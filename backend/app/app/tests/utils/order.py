@@ -39,6 +39,7 @@ def create_random_order(
     new_order = OrderCreate(
         date_order=datetime.now(),
         round_order=crud.globals.get_singleton(db).selling_round,  # type: ignore
+        quantity=product.options[0].quantity,  # type: ignore
         price=product.options[0].price,  # type: ignore
         currency=product.options[0].currency,  # type: ignore
         mode=mode,

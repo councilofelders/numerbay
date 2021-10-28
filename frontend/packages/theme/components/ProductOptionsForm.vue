@@ -575,6 +575,9 @@ export default {
         this.mode = null;
         this.stakeLimit = null;
       }
+      if (!this.isPerRoundCategory) {
+        this.quantity = 1;
+      }
       this.editOption = true;
       this.$emit('change-option', index);
     },

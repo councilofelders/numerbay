@@ -221,7 +221,7 @@ export default {
     };
 
     const processOrder = async () => {
-      await make({id, optionId, submitModelId: submitModelId.value});
+      await make({id, optionId, quantity: qty, submitModelId: submitModelId.value});
       if (makeOrderError.value.make) {
         const isNumeraiApiError = makeOrderError.value.make.message.includes('Numerai API');
         send({

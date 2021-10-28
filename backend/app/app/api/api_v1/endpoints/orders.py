@@ -46,6 +46,7 @@ def create_order(
     db: Session = Depends(deps.get_db),
     id: int = Body(...),
     option_id: int = Body(...),
+    quantity: int = Body(...),
     submit_model_id: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -71,6 +72,18 @@ def create_order(
     if not product_option.is_on_platform:
         raise HTTPException(
             status_code=400, detail="This product option is not on-platform"
+        )
+
+    # Quantity
+    total_quantity = (
+        product_option.quantity * quantity
+        if product_option.quantity is not None
+        else quantity
+    )
+    if not product.category.is_per_round and total_quantity > 1:
+        raise HTTPException(
+            status_code=400,
+            detail="This product is not per-round, order quantity must be 1",
         )
 
     # Product active
@@ -163,6 +176,7 @@ def create_order(
 
     if product:
         order_in = schemas.OrderCreate(
+            quantity=total_quantity,
             price=product_option.price,
             currency=product_option.currency,
             mode=product_option.mode,
