@@ -13,7 +13,7 @@ def test_generate_upload_url(
     current_user = r.json()
 
     product = create_random_product(
-        db, owner_id=current_user["id"], mode="file"
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
     )  # todo check on-platform
     product_id = product.id
     model_id = product.model.id  # type: ignore
@@ -52,7 +52,9 @@ def test_generate_download_url(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"], mode="file")
+    product = create_random_product(
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+    )
     product_id = product.id
     model_id = product.model.id  # type: ignore
     artifact_data = {
@@ -92,7 +94,9 @@ def test_create_product_artifact(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"], mode="file")
+    product = create_random_product(
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+    )
     product_id = product.id
     model_id = product.model.id  # type: ignore
 
@@ -122,7 +126,9 @@ def test_create_product_invalid_artifact(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"], mode="file")
+    product = create_random_product(
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+    )
     product_id = product.id
     crud.product_option.update(db, db_obj=product.options[0], obj_in={"mode": "stake"})  # type: ignore
     model_id = product.model.id  # type: ignore
@@ -148,7 +154,9 @@ def test_read_product_artifact(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"], mode="file")
+    product = create_random_product(
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+    )
     product_id = product.id
 
     url = "http://exmaple.com"
@@ -187,7 +195,9 @@ def test_update_product_artifact(
     assert r.status_code == 200
     current_user = r.json()
 
-    product = create_random_product(db, owner_id=current_user["id"], mode="file")
+    product = create_random_product(
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+    )
     product_id = product.id
     model_id = product.model.id  # type: ignore
 

@@ -33,6 +33,7 @@ def test_create_order(
     order_data = {
         "id": product.id,
         "option_id": product.options[0].id,  # type: ignore
+        "quantity": 1,
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
@@ -80,6 +81,7 @@ def test_create_order_invalid_self(
     order_data = {
         "id": product.id,
         "option_id": product.options[0].id,  # type: ignore
+        "quantity": 1,
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
@@ -98,6 +100,7 @@ def test_create_order_invalid_self(
     order_data = {
         "id": product.id,
         "option_id": product.options[0].id,  # type: ignore
+        "quantity": 1,
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
@@ -136,6 +139,7 @@ def test_create_order_invalid_api_permissions(
     order_data = {
         "id": product.id,
         "option_id": product.options[0].id,  # type: ignore
+        "quantity": 1,
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
@@ -145,7 +149,7 @@ def test_create_order_invalid_api_permissions(
     assert response.status_code == 400
 
     # No permission to upload: reject
-    order_data = {"id": product.id, "option_id": product.options[0].id, "submit_model_id": "test_model_id"}  # type: ignore
+    order_data = {"id": product.id, "option_id": product.options[0].id, "quantity": 1, "submit_model_id": "test_model_id"}  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
         headers=normal_user_token_headers,
@@ -164,7 +168,7 @@ def test_create_order_invalid_api_permissions(
         db, db_obj=product, obj_in={"mode": "stake_with_limit", "stake_limit": 1}
     )
 
-    order_data = {"id": product.id, "option_id": product.options[0].id, "submit_model_id": "test_model_id"}  # type: ignore
+    order_data = {"id": product.id, "option_id": product.options[0].id, "quantity": 1, "submit_model_id": "test_model_id"}  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
         headers=normal_user_token_headers,
@@ -220,6 +224,7 @@ def test_order_artifact(
     order_data = {
         "id": product.id,
         "option_id": product.options[0].id,  # type: ignore
+        "quantity": 1,
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
