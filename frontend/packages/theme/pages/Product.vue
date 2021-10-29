@@ -61,7 +61,7 @@
           <div>
             <SfSelect
               v-e2e="'size-select'"
-              v-if="product.options && product.options.length > 1"
+              :disabled="!(product.options && product.options.length > 1)"
               v-model="optionIdx"
               label="Option"
               class="sf-select--underlined product__select-size"
@@ -83,7 +83,7 @@
                   :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).third_party_url && !productGetters.getOrderedOption(product, optionIdx).is_on_platform"
                   @click="handleBuyButtonClick(product, optionIdx, qty)"
                 >
-                  Buy @ {{`${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, optionIdx))} ${productGetters.getOrderedOption(product, optionIdx).is_on_platform ? '' : 'Ref Price'}`}}
+                  {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, optionIdx)) ? 'Buy @' : 'Ref Price @'} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, optionIdx), true)}`}}
                 </SfButton>
               </template>
             </SfAddToCart>

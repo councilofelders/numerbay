@@ -86,7 +86,8 @@ export const getOptionPlatform = (option: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const getOptionFormattedPrice = (option: any, withCurrency = true, decimals = 2): string => {
+export const getOptionFormattedPrice = (option: any, withCurrency = true): string => {
+  const decimals = option?.is_on_platform ? 4 : 2;
   const price = (option?.price || 0).toFixed(decimals);
   if (withCurrency) {
     const currency = option?.currency || 'USD';
@@ -98,9 +99,9 @@ export const getOptionFormattedPrice = (option: any, withCurrency = true, decima
 
 export const getFormattedOption = (option: any): string => {
   if (option.is_on_platform) {
-    return `${option.quantity} x ${option.mode === 'stake_with_limit' ? 'up to ' + option.stake_limit.toFixed(0) + ' NMR stake' : option.mode} @ ${getOptionFormattedPrice(option, true, 4)}${option.description ? ' [' + option.description + ']' : ''}`;
+    return `${option.quantity} x ${option.mode === 'stake_with_limit' ? 'up to ' + option.stake_limit.toFixed(0) + ' NMR stake' : option.mode} @ ${getOptionFormattedPrice(option, true)}${option.description ? ' [' + option.description + ']' : ''}`;
   }
-  return `${option.quantity} x ${getOptionPlatform(option)} @ ${getOptionFormattedPrice(option, true, 2)} ref price${option.description ? ' [' + option.description + ']' : ''}`;
+  return `${option.quantity} x ${getOptionPlatform(option)} @ ${getOptionFormattedPrice(option, true)} ref price${option.description ? ' [' + option.description + ']' : ''}`;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

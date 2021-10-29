@@ -36,7 +36,7 @@
         <SfTableData class="table__data">{{ qty }}</SfTableData>
         <SfTableData class="table__data price">
           <SfPrice
-            :regular="productGetters.getOptionFormattedPrice(productGetters.getOptionById(product, optionId), true, 4)"
+            :regular="productGetters.getOptionFormattedPrice(productGetters.getOptionById(product, optionId), true)"
             class="product-price"
           />
         </SfTableData>

@@ -143,7 +143,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getOptionUrl: (option: any) => string;
     getOptionIsOnPlatform: (option: any) => boolean;
     getOptionPlatform: (option: any) => string;
-    getOptionFormattedPrice: (option: any, withCurrency: boolean, decimals: number) => string;
+    getOptionFormattedPrice: (option: any, withCurrency: boolean) => string;
     getFormattedOption: (option: any) => string;
     getFormattedPrice: (price: PRODUCT, withCurrency: boolean, optionIdx: number, decimals: number) => string;
     getMode: (product: PRODUCT) => string;
