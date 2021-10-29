@@ -89,6 +89,47 @@ def test_create_order(
     crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
+def test_create_order_invalid_duplicated(
+    client: TestClient, normal_user_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    order = create_random_order(db, buyer_id=current_user["id"])
+    model_id = order.product.model.id  # type: ignore
+
+    crud.order.update(
+        db,
+        db_obj=order,
+        obj_in={
+            "round_order": order.round_order - 1,
+            "quantity": 2,
+            "state": "confirmed",
+        },
+    )
+
+    product = order.product
+    order_data = {
+        "id": product.id,
+        "option_id": product.options[0].id,  # type: ignore
+        "quantity": 1,
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/orders/",
+        headers=normal_user_token_headers,
+        json=order_data,
+    )
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"] == "Order for this product this round already exists"
+    )
+
+    crud.order.remove(db, id=order.id)
+    crud.product.remove(db, id=order.product_id)  # type: ignore
+    model = crud.model.remove(db, id=model_id)  # type: ignore
+    assert model.id == model_id
+    crud.user.remove(db, id=order.product.owner_id)  # type: ignore
+
+
 def test_create_order_invalid_self(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
