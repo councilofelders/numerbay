@@ -177,7 +177,6 @@
                 <div v-if="error.listingModal">
                   {{ error.listingModal }}
                 </div>
-                {{form}}
                 <SfButton v-e2e="'listing-modal-submit'"
                   type="submit"
                   class="sf-button--full-width"
