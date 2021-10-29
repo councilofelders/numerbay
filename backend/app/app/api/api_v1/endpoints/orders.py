@@ -182,7 +182,7 @@ def create_order(
     if product:
         order_in = schemas.OrderCreate(
             quantity=total_quantity,
-            price=product_option.price,
+            price=product_option.price * quantity,
             currency=product_option.currency,
             mode=product_option.mode,
             stake_limit=product_option.stake_limit,

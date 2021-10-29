@@ -52,10 +52,11 @@
               <span class='divider-pipe'>|</span>
               <h3>Total # Sales</h3>
               <div class="sale-value">{{ product.total_num_sales }}</div>
-              <span class='divider-pipe'>|</span>
+              <!--todo show total sales value instead-->
+              <!--<span class='divider-pipe'>|</span>
               <h3>Last Sale</h3>
               <div class="sale-value">{{ product.last_sale_price ? `${product.last_sale_price} ${productGetters.getOrderedOption(product, optionIdx).currency}` : '-' }}</div>
-              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${productGetters.getOrderedOption(product, optionIdx).currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>
+              <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${productGetters.getOrderedOption(product, optionIdx).currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>-->
             </div>
           </div>
           <div>
