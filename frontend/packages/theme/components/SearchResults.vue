@@ -46,6 +46,8 @@
                   :alt="productGetters.getName(product)"
                   :title="productGetters.getName(product)"
                   :link="`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`"
+                  :badgeLabel="`${product.category.slug.includes('-models') ? 'Model Files ':''}${product.category.slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
+                  :wishlistIcon="false"
                 />
               </div>
             </SfScrollable>
@@ -61,6 +63,7 @@
                 :alt="productGetters.getName(product)"
                 :title="productGetters.getName(product)"
                 :link="`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`"
+                :badgeLabel="`${product.category.slug.includes('-models') ? 'Model Files ':''}${product.category.slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
               />
             </div>
           </SfMegaMenuColumn>

@@ -162,6 +162,13 @@
       </div>
     </div>
     </SfLoader>
+    <LazyHydrate v-if="!!relatedProducts && relatedProducts.length > 0" when-visible>
+      <RelatedProducts
+        :products="relatedProducts"
+        :loading="relatedLoading"
+        title="From the same seller"
+      />
+    </LazyHydrate>
   </div>
 </template>
 <script>
@@ -187,7 +194,7 @@ import {
 } from '@storefront-ui/vue';
 
 import InstagramFeed from '~/components/InstagramFeed.vue';
-import RelatedProducts from '~/components/RelatedProducts.vue';
+import RelatedProducts from '~/components/Molecules/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
 import {useProduct, productGetters, useReview, reviewGetters, useNumerai, useUser, useGlobals} from '@vue-storefront/numerbay';
 import { useUiState, useUiNotification } from '~/composables';
@@ -208,7 +215,7 @@ export default {
     const optionIdx = ref('0');
     const { id } = context.root.$route.params;
     const { products, search, loading: productLoading } = useProduct(String(id));
-    // const { products: relatedProducts, search: searchRelatedProducts, loading: relatedLoading } = useProduct('relatedProducts');
+    const { products: relatedProducts, search: searchRelatedProducts, loading: relatedLoading } = useProduct(`relatedProducts-${id}`);
     // const { addItem, loading } = useCart();
     const { reviews: productReviews, search: searchReviews, loading: reviewsLoading, addReview, error: reviewError } = useReview(`productReviews-${id}`);
     const { numerai, getModelInfo, loading: numeraiLoading } = useNumerai(String(id));
@@ -234,7 +241,7 @@ export default {
 
     onSSR(async () => {
       await search({ id });
-      // await searchRelatedProducts({ catId: [categories.value[0]], limit: 8 });
+      await searchRelatedProducts({ filters: {user: {in: [product.value.owner.id]}}}); // catId: product.value.category.id,
       await searchReviews({ productId: id });
       if (product?.value?.category?.tournament) {
         await getModelInfo({tournament: product?.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value.name});
@@ -371,7 +378,7 @@ export default {
       reviewGetters,
       averageRating: computed(() => reviewGetters.getAverageRating(productReviews.value)),
       totalReviews: computed(() => reviewGetters.getTotalReviews(productReviews.value)),
-      // relatedProducts: computed(() => productGetters.getFiltered(relatedProducts.value, { master: true })),
+      relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p)=>parseInt(p.id) !== parseInt(id))),
       numerai: computed(() => numerai.value ? numerai.value : null),
       numeraiChartData: computed(() => numerai.value.modelInfo ? getNumeraiChartData(numerai.value) : {}),
       modelInfo: computed(() => numerai.value?.modelInfo ? numerai.value?.modelInfo : null),
@@ -379,7 +386,7 @@ export default {
       globalsLoading,
       numeraiLoading,
       productLoading,
-      // relatedLoading,
+      relatedLoading,
       options,
       qty,
       optionIdx,
