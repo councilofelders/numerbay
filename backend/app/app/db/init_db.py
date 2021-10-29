@@ -9,6 +9,7 @@ from app.db import base  # noqa: F401
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
 # otherwise, SQL Alchemy might fail to initialize relationships properly
 # for more details: https://github.com/tiangolo/full-stack-fastapi-postgresql/issues/28
+from app.schemas import ProductOptionCreate
 
 
 def init_db(db: Session) -> None:
@@ -87,10 +88,8 @@ def init_db(db: Session) -> None:
 
             product_in = schemas.ProductCreate(
                 name="integration_test",
-                price=Decimal("10.34"),
                 category_id=sub_sub_category_numerai_1.id,
-                currency="USD",
-                is_on_platform=False,
+                options=[],
             )
             product = crud.product.create_with_owner(  # noqa: F841
                 db,
@@ -99,3 +98,13 @@ def init_db(db: Session) -> None:
                 sku="numerai-predictions-integration_test",
                 model_id=name,
             )
+
+            product_option_in = ProductOptionCreate(
+                is_on_platform=False,
+                quantity=1,
+                price=Decimal("10.34"),
+                currency="USD",
+                product_id=product.id,
+            )
+
+            crud.product_option.create(db, obj_in=product_option_in)
