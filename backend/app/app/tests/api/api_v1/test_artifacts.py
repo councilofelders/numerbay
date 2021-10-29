@@ -142,6 +142,10 @@ def test_create_product_invalid_artifact(
         json=data,
     )
     assert r.status_code == 400
+    assert (
+        r.json()["detail"]
+        == "Stake modes require native artifact uploads for automated submissions"
+    )
 
     product = crud.product.remove(db, id=product_id)
     assert product.id == product_id

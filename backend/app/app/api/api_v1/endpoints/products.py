@@ -140,18 +140,25 @@ def validate_product_input(
                     status_code=400, detail="Duplicated pricing not allowed",
                 )
 
+            # Positive price
+            if product_option.price is not None:
+                if product_option.price <= 0:
+                    raise HTTPException(
+                        status_code=400, detail="Price must be positive",
+                    )
+
+            # Positive quantity
+            if product_option.quantity is not None:
+                if product_option.quantity <= 0:
+                    raise HTTPException(
+                        status_code=400, detail="Quantity must be positive",
+                    )
+
+            # Make currency upper case
+            if product_option.currency is not None:
+                product_option.currency = product_option.currency.upper()
+
             if product_option.is_on_platform:
-                # Positive price
-                if product_option.price is not None:
-                    if product_option.price <= 0:
-                        raise HTTPException(
-                            status_code=400, detail="Price must be positive",
-                        )
-
-                # Make currency upper case
-                if product_option.currency is not None:
-                    product_option.currency = product_option.currency.upper()
-
                 # On-platform currency type
                 if (
                     product_option.currency is not None

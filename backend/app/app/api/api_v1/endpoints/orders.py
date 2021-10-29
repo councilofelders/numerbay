@@ -75,6 +75,11 @@ def create_order(
         )
 
     # Quantity
+    if quantity < 1:
+        raise HTTPException(
+            status_code=400, detail="Order quantity must be positive",
+        )
+
     total_quantity = (
         product_option.quantity * quantity
         if product_option.quantity is not None

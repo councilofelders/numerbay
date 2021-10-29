@@ -46,14 +46,41 @@ def test_create_order(
     assert content["product"]["id"] == product.id
     assert content["quantity"] == 1
 
-    # Inactive product: reject
-    crud.product.update(db, db_obj=product, obj_in={"is_active": False})
+    # Negative or 0 quantity: reject
+    order_data["quantity"] = 0
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
         headers=normal_user_token_headers,
         json=order_data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "Order quantity must be positive"
+
+    # Wrong quantity for category: reject
+    crud.product.update(db, db_obj=product, obj_in={"category_id": 4})
+    order_data["quantity"] = 2
+    response = client.post(
+        f"{settings.API_V1_STR}/orders/",
+        headers=normal_user_token_headers,
+        json=order_data,
+    )
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "This product is not per-round, order quantity must be 1"
+    )
+
+    # Inactive product: reject
+    crud.product.update(
+        db, db_obj=product, obj_in={"category_id": 3, "is_active": False}
+    )
+    response = client.post(
+        f"{settings.API_V1_STR}/orders/",
+        headers=normal_user_token_headers,
+        json=order_data,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "This product is not available for sale"
 
     crud.order.remove(db, id=content["id"])
     crud.product.remove(db, id=product.id)

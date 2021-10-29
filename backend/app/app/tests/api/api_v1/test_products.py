@@ -83,8 +83,12 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Invalid product name (should only contain alphabetic characters, numbers, dashes or underscores)"
+    )
 
-    # nagative price
+    # negative price
     data = base_data.copy()
     data["options"][0]["price"] = -10  # type: ignore
     response = client.post(
@@ -93,8 +97,38 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "Price must be positive"
 
-    # nagative expiration_round
+    # negative quantity
+    data = base_data.copy()
+    data["options"][0]["price"] = 10  # type: ignore
+    data["options"][0]["quantity"] = -1  # type: ignore
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Quantity must be positive"
+
+    # invalid category quantity
+    data = base_data.copy()
+    data["category_id"] = 4  # type: ignore
+    data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["quantity"] = 2  # type: ignore
+    data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["mode"] = "file"  # type: ignore
+    response = client.post(
+        f"{settings.API_V1_STR}/products/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"] == "This product is not per-round, quantity must be 1"
+    )
+
+    # negative expiration_round
     data = base_data.copy()
     data["expiration_round"] = -10
     response = client.post(
@@ -103,17 +137,23 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "Expiration round must be a positive integer"
 
     # invalid on-platform no mode
     data = base_data.copy()
     data["options"][0]["is_on_platform"] = True  # type: ignore
     data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0].pop("mode", None)  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']"
+    )
 
     # invalid on-platform invalid category mode
     data = base_data.copy()
@@ -127,6 +167,10 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Stake modes are not allowed for non-submission categories"
+    )
 
     # invalid on-platform non-existent mode
     data = base_data.copy()
@@ -139,10 +183,15 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']"
+    )
 
     # invalid on-platform currency
     data = base_data.copy()
     data["options"][0]["is_on_platform"] = True  # type: ignore
+    data["options"][0]["currency"] = "USD"  # type: ignore
     data["options"][0]["mode"] = "file"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -150,6 +199,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "USD is not supported for on-platform listing"
 
     # invalid on-platform price precision
     data = base_data.copy()
@@ -163,6 +213,10 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "On-platform listing price must not exceed 4 decimal places"
+    )
 
     # invalid on-platform too low price
     data = base_data.copy()
@@ -176,11 +230,16 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "On-platform listing price must be greater than 1 NMR"
+    )
 
     # invalid on-platform stake_with_limit mode without stake limit
     data = base_data.copy()
     data["options"][0]["is_on_platform"] = True  # type: ignore
     data["options"][0]["currency"] = "NMR"  # type: ignore
+    data["options"][0]["price"] = 1  # type: ignore
     data["options"][0]["mode"] = "stake_with_limit"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -188,6 +247,10 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Stake limit is required for 'stake_with_limit' mode"
+    )
 
     # invalid on-platform stake_with_limit mode stake limit precision
     data = base_data.copy()
@@ -201,6 +264,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "Stake limit must not exceed 4 decimal places"
 
     # invalid on-platform stake_with_limit mode stake limit too low
     data = base_data.copy()
@@ -214,6 +278,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "Stake limit must be greater than 1 NMR"
 
     # invalid on-platform chain
     data = base_data.copy()
@@ -227,9 +292,14 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Specifying chain is not yet supported for on-platform listing"
+    )
 
     # invalid off-platform currency
     data = base_data.copy()
+    data["options"][0]["is_on_platform"] = False  # type: ignore
     data["options"][0]["currency"] = "NMR"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -237,9 +307,11 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "NMR is not supported for off-platform listing"
 
     # invalid off-platform precision
     data = base_data.copy()
+    data["options"][0]["currency"] = "USD"  # type: ignore
     data["options"][0]["price"] = 0.001  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -247,9 +319,14 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Off-platform listing price must not exceed 2 decimal places"
+    )
 
     # invalid avatar scheme
     data = base_data.copy()
+    data["options"][0]["price"] = 1  # type: ignore
     data["avatar"] = "http://example.com"
     response = client.post(
         f"{settings.API_V1_STR}/products/",
@@ -257,6 +334,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
+    assert response.json()["detail"] == "Avatar image must be a HTTPS URL"
 
     model = crud.model.remove(db, id=model_id)  # type: ignore
     assert model.id == model_id
