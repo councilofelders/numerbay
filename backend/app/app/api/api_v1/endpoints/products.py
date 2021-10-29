@@ -476,6 +476,7 @@ def update_product(
                 json_product_option_in["product_id"] = product.id
                 crud.product_option.create(db, obj_in=json_product_option_in)
 
+    product = crud.product.get(db, id=product.id)  # type: ignore
     product = crud.product.update(db=db, db_obj=product, obj_in=product_in)
     return product
 

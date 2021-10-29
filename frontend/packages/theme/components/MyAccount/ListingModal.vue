@@ -177,6 +177,7 @@
                 <div v-if="error.listingModal">
                   {{ error.listingModal }}
                 </div>
+                {{form}}
                 <SfButton v-e2e="'listing-modal-submit'"
                   type="submit"
                   class="sf-button--full-width"
@@ -492,7 +493,7 @@ export default {
 
       toggleListingModal();
 
-      await productSearch({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}});
+      await productSearch({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
     };
 
     const populateModelInfo = async (name) => {

@@ -121,7 +121,7 @@ export default {
     };
 
     onSSR(async () => {
-      await search({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}});
+      await search({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
       await getGlobals();
     });
 
