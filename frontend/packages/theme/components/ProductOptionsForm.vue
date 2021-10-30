@@ -90,7 +90,7 @@
                         v-model="wallet"
                         :valid="!errors[0]"
                         :errorMessage="errors[0]"
-                        name="price"
+                        name="wallet"
                         :label="`(Optional) Alternative Wallet for Receiving Payments`"
                         class="form__element"
                       />
@@ -134,7 +134,7 @@
                           v-model="stakeLimit"
                           :valid="!errors[0]"
                           :errorMessage="errors[0]"
-                          name="price"
+                          name="stakeLimit"
                           label="Stake Limit for Buyers (in NMR)"
                           type="number"
                           step=0.0001
@@ -208,8 +208,8 @@
                       v-model="description"
                       :valid="!errors[0]"
                       :errorMessage="errors[0]"
-                      name="price"
-                      label="Pricing Option Description"
+                      name="optionDescription"
+                      label="Option Description"
                       class="form__element"
                     />
                   </ValidationProvider>

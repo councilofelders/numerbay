@@ -55,7 +55,7 @@
         <SfDivider />-->
         <SfLoader :class="{ loader: loading || productLoading }" :loading="loading || productLoading">
           <SfProperty
-            name="Total price"
+            name="Total"
             v-if="!loading && !productLoading && !!products[0]"
             :value="`${(productGetters.getOptionById(products[0], optionId).price * qty).toFixed(4)} ${productGetters.getOptionById(products[0], optionId).currency}`"
             class="sf-property--full-width sf-property--large summary__property-total"
@@ -249,7 +249,7 @@ export default {
       productLoading,
       models: computed(() => products?.value?.data ? userGetters.getModels(numerai.value, productGetters.getTournamentId(products?.value?.data[0]), false) : []),
       numeraiLoading,
-      tableHeaders: ['Description', 'Seller', 'Quantity', 'Amount'],
+      tableHeaders: ['Description', 'Seller', 'Order Quantity', 'Price'],
       productGetters,
       processOrder,
       orderSearch,

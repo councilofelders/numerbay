@@ -9,10 +9,18 @@
     </div>
     <div class="highlighted">
       <SfProperty
-        name="Products"
+        name="Order Quantity"
         :value="qty"
         class="sf-property--full-width sf-property--large property"
       />
+      <SfLoader :class="{ loader: loading }" :loading="loading">
+        <SfProperty
+          name="Number of Rounds"
+          v-if="!loading && !!products[0] && products[0].category.is_per_round"
+          :value="parseInt(products[0].options.filter((o)=>o.id===optionId)[0].quantity) * parseInt(qty)"
+          class="sf-property--full-width sf-property--large property"
+        />
+      </SfLoader>
       <!--<SfProperty
         name="Subtotal"
         :value="productGetters.getFormattedPrice(products[0])"
