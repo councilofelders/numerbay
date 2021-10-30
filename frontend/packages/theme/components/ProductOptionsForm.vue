@@ -158,7 +158,7 @@
                         :valid="!errors[0]"
                         :errorMessage="errors[0]"
                         name="price"
-                        :label="`Price (per round equivalent, in ${currency})`"
+                        :label="`Price (Total, in ${currency})`"
                         type="number"
                         step=0.0001
                         min=1
@@ -182,7 +182,7 @@
                         :valid="!errors[0]"
                         :errorMessage="errors[0]"
                         name="price"
-                        label="Price (per round equivalent, in $USD)"
+                        label="Price (Total, in $USD)"
                         type="number"
                         step=0.01
                         min=0
