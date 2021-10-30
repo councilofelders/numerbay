@@ -42,14 +42,23 @@
         name="From Address"
         :value="orderGetters.getFromAddress(order)"
         class="sf-property--full-width property"
-      />
+      >
+        <template #value="{props}">
+          <span class="sf-property__value">
+            <span class="desktop-only">{{props.value}}</span>
+            <span class="smartphone-only">{{`${props.value.slice(0, 2)}...${props.value.slice(-10, -1)}`}}</span>
+          </span>
+        </template>
+      </SfProperty>
       <SfProperty
         name="To Address"
+        :value="orderGetters.getToAddress(order)"
         class="sf-property--full-width property"
       >
-        <template #value>
+        <template #value="{props}">
           <span class="sf-property__value">
-            {{orderGetters.getToAddress(order)}}
+            <span class="desktop-only">{{props.value}}</span>
+            <span class="smartphone-only">{{`${props.value.slice(0, 2)}...${props.value.slice(-10, -1)}`}}</span>
           <SfButton
               v-if="withCopyButtons"
               class="sf-button--text"

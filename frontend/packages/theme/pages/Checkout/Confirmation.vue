@@ -229,5 +229,8 @@ export default {
 .order-info-panel {
   width: 75%;
   margin:0 auto;
+  @include for-mobile {
+    width: 100%
+  }
 }
 </style>

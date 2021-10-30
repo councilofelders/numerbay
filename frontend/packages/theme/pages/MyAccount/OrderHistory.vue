@@ -65,10 +65,10 @@
               <span :class="getSubmissionStatusTextClass(order)">{{ orderGetters.getSubmissionStatus(order) }}</span>
             </SfTableData>
             <SfTableData class="orders__view orders__element--right">
-              <SfButton class="sf-button--text smartphone-only" @click="downloadOrder(order)">
+              <!--<SfButton class="sf-button&#45;&#45;text smartphone-only" @click="downloadOrder(order)">
                 {{ $t('Download') }}
-              </SfButton>
-              <SfButton class="sf-button--text desktop-only" @click="currentOrder = order">
+              </SfButton>-->
+              <SfButton class="sf-button--text" @click="currentOrder = order">
                 {{ $t('View details') }}
               </SfButton>
             </SfTableData>

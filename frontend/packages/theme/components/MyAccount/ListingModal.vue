@@ -549,6 +549,9 @@ export default {
   --modal-index: 3;
   --overlay-z-index: 3;
   --modal-width: 70%;
+  @include for-mobile {
+    --modal-width: 100%;
+  }
 }
 .form {
   margin-top: var(--spacer-sm);
@@ -581,6 +584,9 @@ export default {
   }
   &__radio {
     width: 50%;
+    @include for-mobile {
+      width: 100%
+    }
   }
   &__radio-group {
     flex: 0 0 100%;

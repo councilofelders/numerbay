@@ -303,5 +303,8 @@ export default defineComponent({
   .quill-editor {
     height: 250px;
   }
+  @include for-mobile {
+    margin: 0 0 var(--spacer-2xl) 0;
+  }
 }
 </style>

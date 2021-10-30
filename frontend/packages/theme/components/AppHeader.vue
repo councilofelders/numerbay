@@ -3,6 +3,7 @@
     <SfHeader
       class="sf-header--has-mobile-search"
       :class="{'header-on-top': isSearchOpen}"
+      :isNavVisible="isMobileMenuOpen"
     >
       <template #logo>
         <nuxt-link :to="localePath('/')" class="sf-header__logo">
@@ -10,12 +11,13 @@
         </nuxt-link>
       </template>
       <template #navigation>
-        <SfHeaderNavigationItem class="nav-item" v-e2e="'app-header-url_numerai'" label="Numerai" :link="localePath('/c/numerai')"/>
+        <HeaderNavigation :isMobile="isMobile" />
+        <!--<SfHeaderNavigationItem class="nav-item" v-e2e="'app-header-url_numerai'" label="Numerai" :link="localePath('/c/numerai')"/>
         <SfHeaderNavigationItem class="nav-item"  v-e2e="'app-header-url_signals'" label="Signals" :link="localePath('/c/signals')" />
-        <SfHeaderNavigationItem class="nav-item"  v-e2e="'app-header-url_onlyfams'" label="OnlyFams" :link="localePath('/c/onlyfams')" />
+        <SfHeaderNavigationItem class="nav-item"  v-e2e="'app-header-url_onlyfams'" label="OnlyFams" :link="localePath('/c/onlyfams')" />-->
       </template>
       <template #aside>
-        <LocaleSelector class="smartphone-only" />
+<!--        <LocaleSelector class="smartphone-only" />--><span></span>
       </template>
       <template #header-icons>
         <div class="sf-header__icons">
@@ -104,6 +106,7 @@ import { onSSR } from '@vue-storefront/core';
 import { useUiHelpers } from '~/composables';
 import LocaleSelector from './LocaleSelector';
 import SearchResults from '~/components/SearchResults';
+import HeaderNavigation from './HeaderNavigation';
 import { clickOutside } from '@storefront-ui/vue/src/utilities/directives/click-outside/click-outside-directive.js';
 import {
   mapMobileObserver,
@@ -123,11 +126,12 @@ export default {
     SearchResults,
     SfOverlay,
     SfMenuItem,
-    SfLink
+    SfLink,
+    HeaderNavigation
   },
   directives: { clickOutside },
   setup(props, { root }) {
-    const { toggleCartSidebar, toggleWishlistSidebar, toggleLoginModal } = useUiState();
+    const { toggleCartSidebar, toggleWishlistSidebar, toggleLoginModal, isMobileMenuOpen } = useUiState();
     const { setTermForUrl, getFacetsFromURL } = useUiHelpers();
     const { isAuthenticated, load: loadUser } = useUser();
     const { cart, load: loadCart } = useCart();
@@ -194,7 +198,7 @@ export default {
       };
     }, 1000);
 
-    const isMobile = computed(() => mapMobileObserver().isMobile.get());
+    const isMobile = ref(mapMobileObserver().isMobile.get());
 
     const closeOrFocusSearchBar = () => {
       if (isMobile.value) {
@@ -235,6 +239,7 @@ export default {
       closeOrFocusSearchBar,
       searchBarRef,
       isMobile,
+      isMobileMenuOpen,
       removeSearchResults
     };
   }
@@ -258,6 +263,9 @@ export default {
   --header-navigation-item-margin: 0 var(--spacer-base);
   .sf-header-navigation-item__item--mobile {
     display: none;
+  }
+  @include for-mobile {
+    //--header-navigation-item-menu-item-margin: 0;
   }
 }
 

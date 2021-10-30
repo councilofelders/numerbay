@@ -51,13 +51,17 @@
 </template>
 <script>
 import { SfBreadcrumbs, SfContentPages } from '@storefront-ui/vue';
-import { computed } from '@vue/composition-api';
+import { computed, onBeforeUnmount } from '@vue/composition-api';
 import { useUser } from '@vue-storefront/numerbay';
 import MyProfile from './MyAccount/MyProfile';
 import NumeraiApi from './MyAccount/NumeraiApi';
 import MyListings from './MyAccount/MyListings';
 import SalesHistory from './MyAccount/SalesHistory';
 import OrderHistory from './MyAccount/OrderHistory';
+import {
+  mapMobileObserver,
+  unMapMobileObserver
+} from '@storefront-ui/vue/src/utilities/mobile-observer.js';
 import {Logger} from '@vue-storefront/core';
 
 export default {
@@ -82,15 +86,18 @@ export default {
   setup(props, context) {
     const { $router, $route } = context.root;
     const { user, logout, disconnectWeb3Modal } = useUser();
+    const isMobile = computed(() => mapMobileObserver().isMobile.get());
     const activePage = computed(() => {
       const { pageName } = $route.params;
 
       if (pageName) {
         if (pageName === 'numerai-api') return 'Numerai API';
         return (pageName.charAt(0).toUpperCase() + pageName.slice(1)).replace('-', ' ');
+      } else if (!isMobile.value) {
+        return 'My profile';
+      } else {
+        return '';
       }
-
-      return 'My profile';
     });
 
     const changeActivePage = async (title) => {
@@ -108,6 +115,10 @@ export default {
 
       $router.push(`/my-account/${(title || '').toLowerCase().replace(' ', '-')}`);
     };
+
+    onBeforeUnmount(() => {
+      unMapMobileObserver();
+    });
 
     return { changeActivePage, activePage, user };
   },

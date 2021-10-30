@@ -81,7 +81,14 @@ export default {
 
 .related-card {
   ::v-deep .sf-image {
+    --image-width: 200px;
     --image-height: 200px;
+  }
+  @include for-mobile {
+    ::v-deep .sf-image {
+      --image-width: 100%;
+      --image-height: 150px;
+    }
   }
 }
 </style>

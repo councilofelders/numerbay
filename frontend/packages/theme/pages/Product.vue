@@ -22,16 +22,19 @@
         </div>
         <div class="product__subheader">
           <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
-            <span v-if="!!product.category.tournament">Round: </span><span class="product__subheader__highlight" v-if="!globalsLoading && !!product.category.tournament">{{ globals.selling_round }}</span>
-            <span class='divider-pipe' v-if="!!product.category.tournament">|</span>
-            Seller: <span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span>
-            <span class='divider-pipe'>|</span>
-            Type: <span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span>
-            <span class='divider-pipe'>|</span> Platform: <SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
-            <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(productGetters.getOrderedOption(product, optionIdx)) }}</span>
-            <div v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))">
-              Mode: <span class="product__subheader__highlight">{{ productGetters.getMode(productGetters.getOrderedOption(product, optionIdx)).toUpperCase() }}</span>
-              <span class='divider-pipe' v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">|</span> <span v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">Stake Limit:</span> <span class="product__subheader__highlight" v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">{{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, optionIdx)) }}</span>
+            <div class="product__meta">
+              <span class="product__meta__item"><span v-if="!!product.category.tournament">Round:&nbsp;</span><span class="product__subheader__highlight" v-if="!globalsLoading && !!product.category.tournament">{{ globals.selling_round }}</span></span>
+              <span class='divider-pipe desktop-only' v-if="!!product.category.tournament">|</span>
+              <span class="product__meta__item">Seller:&nbsp;<span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span></span>
+              <span class='divider-pipe desktop-only'>|</span>
+              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span></span>
+              <span class='divider-pipe desktop-only'>|</span> <span class="product__meta__item">Platform:&nbsp;<SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
+              <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(productGetters.getOrderedOption(product, optionIdx)) }}</span></span>
+            </div>
+            <div class="product__meta" v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))">
+              <span class="product__meta__item">Mode:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getMode(productGetters.getOrderedOption(product, optionIdx)).toUpperCase() }}</span></span>
+              <span class='divider-pipe desktop-only' v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">|</span>
+              <span class="product__meta__item"><span v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">Stake Limit:&nbsp;</span><span class="product__subheader__highlight" v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))==='stake_with_limit'">{{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, optionIdx)) }}</span></span>
             </div>
           </div>
         </div>
@@ -49,9 +52,11 @@
               </div>
             </div>
             <div class="last-sale" v-if="productGetters.getOrderedOption(product, optionIdx).is_on_platform">
-              <span class='divider-pipe'>|</span>
-              <h3>Total # Sales</h3>
-              <div class="sale-value">{{ product.total_num_sales }}</div>
+              <span class='divider-pipe desktop-only'>|</span>
+              <span class="product__meta__item">
+                <h3>Total # Sales</h3>
+                <div class="sale-value">{{ product.total_num_sales }}</div>
+              </span>
               <!--todo show total sales value instead-->
               <!--<span class='divider-pipe'>|</span>
               <h3>Last Sale</h3>
@@ -100,14 +105,48 @@
           <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!product.category.tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
         </SfLoader>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
-        <div class="product__details" v-if="!!numerai.modelInfo">
-          <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
-          <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
-          <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
-          <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
-            {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%</p></span>
-          <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
-        </div>
+          <div>
+            <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
+              <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
+              <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
+              <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
+              <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
+                {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%</p></span>
+              <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
+            </div>
+            <div class="product__details__mobile smartphone-only" v-if="!!numerai.modelInfo">
+              <SfProperty
+                  name="Owner Stake"
+                  :value="`${Number(numerai.modelInfo.nmrStaked).toFixed(2)} NMR`"
+                  class="product__property"
+              />
+              <SfProperty
+                  name="Rank"
+                  :value="`${numerai.modelInfo.modelPerformance.latestRanks.corr}`"
+                  class="product__property"
+              />
+              <SfProperty
+                  name="Reputation"
+                  :value="`${Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4)}`"
+                  class="product__property"
+              />
+              <SfProperty
+                  name="3 Mth. Return"
+                  class="product__property"
+              >
+                <template #value>
+                  <span :class="`sf-property__value delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
+                {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%
+                  </span>
+                </template>
+              </SfProperty>
+              <SfProperty
+                  name="Woke"
+                  :value="`${numerai.modelInfo.startDate.split('T')[0]}`"
+                  class="product__property"
+              />
+            </div>
+          </div>
         </SfLoader>
         <LazyHydrate when-idle>
           <SfTabs id="tabs" :open-tab="1" class="product__tabs">
@@ -531,9 +570,22 @@ export default {
       --heading-title-font-weight: var(--font-weight--semibold);
       margin: 0 auto;
     }
+    @include for-mobile {
+      display: block;
+    }
     &__highlight {
       color: var(--c-primary);
     }
+  }
+  &__meta {
+    display: flex;
+    @include for-mobile {
+      flex-direction: column;
+      //flow: block;
+    }
+  }
+  &__meta__item {
+    display: flex;
   }
   &__pricing {
     margin: 0 var(--spacer-sm);
@@ -541,6 +593,10 @@ export default {
     justify-content: space-between;
     @include for-desktop {
       margin: var(--spacer-sm) 0 var(--spacer-lg) 0;
+    }
+    @include for-mobile {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
   &__details {
@@ -550,6 +606,9 @@ export default {
     @include for-desktop {
       margin: var(--spacer-lg) var(--spacer-2xl);
     }
+  }
+  &__details__mobile {
+    margin: var(--spacer-sm) var(--spacer-sm);
   }
   &__drag-icon {
     animation: moveicon 1s ease-in-out infinite;
@@ -685,6 +744,10 @@ export default {
   display: flex;
   //align-items: center;
   justify-content: center;
+  @include for-mobile {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 .last-sale h3 {
   color: var(--c-text-muted);

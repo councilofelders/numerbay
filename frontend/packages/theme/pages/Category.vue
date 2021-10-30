@@ -196,6 +196,7 @@
               :reviewsCount="productGetters.getTotalReviews(product)"
               :show-add-to-cart-button="false"
               :is-on-wishlist="false"
+              :wishlistIcon="false"
               class="products__product-card-horizontal"
               @click:wishlist="addItemToWishlist({ product })"
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
@@ -293,7 +294,7 @@
           <LazyHydrate on-interaction>
             <SfPagination
               v-if="!loading"
-              class="products__pagination desktop-only"
+              class="products__pagination"
               v-show="pagination.totalPages > 1"
               :current="pagination.currentPage"
               :total="pagination.totalPages"
@@ -342,61 +343,85 @@
               class="filters__title sf-heading--left"
               :key="`filter-title-${facet.id}`"
             />
-              <div
-                v-if="isFacetCheckbox(facet)"
-                class="filters__colors"
-                :key="`${facet.id}-colors`"
+            <div
+              v-if="isFacetCheckbox(facet)"
+              class="filters__colors"
+              :key="`${facet.id}-colors`"
+            >
+              <SfFilter
+                v-for="option in facet.options"
+                :key="`${facet.id}-${option.value}`"
+                :label="option.id + `${option.count ? ` (${option.count})` : ''}`"
+                :selected="isFilterSelected(facet, option)"
+                class="filters__item"
+                @change="() => selectFilter(facet, option)"
+              />
+            </div>
+            <div v-else>
+              <SfRange
+                :id="facet.id"
+                :disabled="false"
+                :value="getSelectedRangeFilterValue(facet)"
+                :config='{
+                  "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
+                  "range":{
+                    "min":getRangeFilterOption(facet.options, "from"),
+                    "max":getRangeFilterOption(facet.options, "to")
+                  },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
+                  "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
+                  format: {
+                    to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
+                    from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
+                  }
+                }'
+                class="filters__item"
+                @change="(values) => updateRangeFilter(facet, values)"
+              />
+            </div>
+          </div>
+        </div>
+        <SfAccordion class="filters smartphone-only">
+          <div v-for="(facet, i) in facets" :key="i">
+            <div v-if="isFacetCheckbox(facet)">
+              <SfAccordionItem
+                :key="`filter-title-${facet.id}`"
+                :header="facet.label"
+                class="filters__accordion-item"
               >
                 <SfFilter
                   v-for="option in facet.options"
-                  :key="`${facet.id}-${option.value}`"
-                  :label="option.id + `${option.count ? ` (${option.count})` : ''}`"
+                  :key="`${facet.id}-${option.id}`"
+                  :label="option.id"
                   :selected="isFilterSelected(facet, option)"
                   class="filters__item"
                   @change="() => selectFilter(facet, option)"
                 />
-              </div>
-              <div v-else>
-                <SfRange
-                  :id="facet.id"
-                  :disabled="false"
-                  :value="getSelectedRangeFilterValue(facet)"
-                  :config='{
-                    "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
-                    "range":{
-                      "min":getRangeFilterOption(facet.options, "from"),
-                      "max":getRangeFilterOption(facet.options, "to")
-                    },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
-                    "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
-                    format: {
-                      to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
-                      from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
-                    }
-                  }'
-                  class="filters__item"
-                  @change="(values) => updateRangeFilter(facet, values)"
-                />
-              </div>
-          </div>
+              </SfAccordionItem>
+            </div>
+            <div v-else>
+              <SfRange
+                :id="facet.id"
+                :disabled="false"
+                :value="getSelectedRangeFilterValue(facet)"
+                :config='{
+                  "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
+                  "range":{
+                    "min":getRangeFilterOption(facet.options, "from"),
+                    "max":getRangeFilterOption(facet.options, "to")
+                  },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
+                  "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
+                  format: {
+                    to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
+                    from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
+                  }
+                }'
+                class="filters__item"
+                style="width: 75%"
+                @change="(values) => updateRangeFilter(facet, values)"
+              />
+            </div>
         </div>
-<!--        <SfAccordion class="filters smartphone-only">
-          <div v-for="(facet, i) in facets" :key="i">
-            <SfAccordionItem
-              :key="`filter-title-${facet.id}`"
-              :header="facet.label"
-              class="filters__accordion-item"
-            >
-            <SfFilter
-              v-for="option in facet.options"
-              :key="`${facet.id}-${option.id}`"
-              :label="option.id"
-              :selected="isFilterSelected(facet, option)"
-              class="filters__item"
-              @change="() => selectFilter(facet, option)"
-            />
-          </SfAccordionItem>
-        </div>
-        </SfAccordion>-->
+        </SfAccordion>
         <template #content-bottom>
           <div class="filters__buttons">
             <SfButton
@@ -449,6 +474,7 @@ import BuyButton from '../components/Molecules/BuyButton';
 import Vue from 'vue';
 
 export default {
+  name: 'Category',
   transition: 'fade',
   setup(props, context) {
     const {
@@ -461,7 +487,7 @@ export default {
     const { addItem: addItemToWishlist } = useWishlist();
     const { result, search, loading } = useFacet(`facetId:${path}`);
     const { user, isAuthenticated } = useUser();
-    const { toggleLoginModal } = useUiState();
+    const { toggleLoginModal, isCategoryGridView } = useUiState();
     const { send } = useUiNotification();
 
     const products = computed(() => facetGetters.getProducts(result.value));
@@ -597,6 +623,7 @@ export default {
       addItemToWishlist,
       addItemToCart,
       isInCart,
+      isCategoryGridView,
       isFacetCheckbox,
       selectFilter,
       isFilterSelected,
@@ -848,6 +875,12 @@ export default {
         --image-height: 200px;
       }
     }
+    @include for-mobile {
+      ::v-deep .sf-image {
+      --image-width: 100%;
+      --image-height: auto;
+      }
+    }
   }
   &__product-card-horizontal {
     flex: 0 0 100%;
@@ -859,7 +892,7 @@ export default {
     }
     @include for-mobile {
       ::v-deep .sf-image {
-      --image-width: 5.3125rem;
+      --image-width: 7.0625rem;
       --image-height: 7.0625rem;
       }
     }
@@ -965,6 +998,9 @@ export default {
   }
   &__buttons {
     margin: var(--spacer-sm) 0;
+    @include for-mobile {
+      margin-bottom: var(--spacer-2xl);
+    }
   }
   &__button-clear {
     --button-background: var(--c-light);

@@ -98,8 +98,8 @@
     </LazyHydrate>-->
 
     <LazyHydrate when-visible>
-      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded">
-        <iframe width="100%" height="747" :src="iframe.src" frameborder="0" allowFullScreen="true" v-if="iframe.loaded"></iframe>
+      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded"  class="desktop-only">
+        <iframe width="100%" height="747" :src="iframe.src" frameborder="0" allowFullScreen="true" v-if="iframe.loaded" class="desktop-only"></iframe>
       </SfLoader>
     </LazyHydrate>
 

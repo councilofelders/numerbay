@@ -724,6 +724,9 @@ export default {
     }
     &__radio {
       width: 50%;
+      @include for-mobile {
+        width: 100%
+      }
     }
     &__radio-group {
       flex: 0 0 100%;
