@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -26,7 +25,9 @@ class CRUDFavorite(CRUDBase[Favorite, FavoriteCreate, FavoriteUpdate]):
     ) -> Optional[Favorite]:
         return (
             db.query(self.model)
-            .filter(and_(Favorite.user_id == user_id, Favorite.product_id == product_id))
+            .filter(
+                and_(Favorite.user_id == user_id, Favorite.product_id == product_id)
+            )
             .first()
         )
 

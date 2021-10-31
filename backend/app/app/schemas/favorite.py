@@ -1,9 +1,6 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 from app.schemas.product import Product
-from app.schemas.user import User
 
 
 # Shared properties

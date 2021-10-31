@@ -37,11 +37,17 @@ def create_favorite(
     """
     Create new favorite.
     """
-    favorite = crud.favorite.get_by_product(db, user_id=current_user.id, product_id=favorite_in.product_id)
+    favorite = crud.favorite.get_by_product(
+        db, user_id=current_user.id, product_id=favorite_in.product_id
+    )
     if favorite is not None:
-        raise HTTPException(status_code=400, detail="You already added this product to wishlist")
+        raise HTTPException(
+            status_code=400, detail="You already added this product to wishlist"
+        )
 
-    favorite = crud.favorite.create(db=db, obj_in={"user_id": current_user.id, "product_id": favorite_in.product_id})
+    favorite = crud.favorite.create(
+        db=db, obj_in={"user_id": current_user.id, "product_id": favorite_in.product_id}  # type: ignore
+    )
     return favorite
 
 
@@ -93,7 +99,9 @@ def delete_favorite(
     """
     Delete an favorite.
     """
-    favorite = crud.favorite.get_by_product(db=db, user_id=current_user.id, product_id=favorite_in.product_id)
+    favorite = crud.favorite.get_by_product(
+        db=db, user_id=current_user.id, product_id=favorite_in.product_id
+    )
     if not favorite:
         raise HTTPException(status_code=404, detail="Favorite not found")
     favorite = crud.favorite.remove(db=db, id=favorite.id)
