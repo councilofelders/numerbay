@@ -26,6 +26,7 @@
                 :image="wishlistGetters.getItemImage(product)"
                 :title="wishlistGetters.getItemName(product)"
                 :regular-price="wishlistGetters.getItemPrice(product)"
+                :link="localePath(`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`)"
                 image-width="150"
                 image-height="150"
                 @click:remove="removeItem({ product })"

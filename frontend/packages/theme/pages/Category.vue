@@ -217,8 +217,8 @@
               <template #description>
                 <div class="sf-product-card-horizontal__description desktop-only">
                   <SfBadge class="sf-badge ready-badge" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Ready</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="product.category && product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="product.category && product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, product.optionIdx)) }}</SfBadge>
                 </div>
