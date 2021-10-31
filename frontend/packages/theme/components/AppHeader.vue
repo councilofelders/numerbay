@@ -32,8 +32,8 @@
               size="1.25rem"
             />
           </SfButton>
-          <!--<SfButton
-            class="sf-button&#45;&#45;pure sf-header__action"
+          <SfButton
+            class="sf-button--pure sf-header__action"
             @click="toggleWishlistSidebar"
           >
             <SfIcon
@@ -41,7 +41,7 @@
               icon="heart"
               size="1.25rem"
             />
-          </SfButton>-->
+          </SfButton>
           <!--<SfButton
             v-e2e="'app-header-cart'"
             class="sf-button&#45;&#45;pure sf-header__action"

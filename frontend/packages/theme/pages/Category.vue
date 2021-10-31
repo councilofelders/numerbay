@@ -164,7 +164,7 @@
               :reviewsCount="productGetters.getTotalReviews(product)"
               :show-add-to-cart-button="false"
               :isOnWishlist="false"
-              :wishlistIcon="false"
+              :wishlist-icon="isAuthenticated ? 'heart' : false"
               :isAddedToCart="isInCart({ product })"
               :link="localePath(`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`)"
               class="products__product-card"
@@ -196,7 +196,7 @@
               :reviewsCount="productGetters.getTotalReviews(product)"
               :show-add-to-cart-button="false"
               :is-on-wishlist="false"
-              :wishlistIcon="false"
+              :wishlist-icon="isAuthenticated ? 'heart' : false"
               class="products__product-card-horizontal"
               @click:wishlist="addItemToWishlist({ product })"
               @click:add-to-cart="addItemToCart({ product, quantity: 1 })"
@@ -279,15 +279,16 @@
                   </template>
                 </SfAddToCart>
               </template>
-              <!--<template #actions>
+              <template #actions>
                 <SfButton
-                  class="sf-button&#45;&#45;text desktop-only"
-                  style="margin: 0 0 1rem auto; display: block;"
-                  @click="() => {}"
+                  class="sf-button--text desktop-only"
+                  style="margin: -1rem 0 0 auto; display: block;"
+                  @click="addItemToWishlist({ product })"
+                  v-if="isAuthenticated"
                 >
                   {{ $t('Save for later') }}
                 </SfButton>
-              </template>-->
+              </template>
             </SfProductCardHorizontal>
           </transition-group>
 
@@ -622,6 +623,7 @@ export default {
       breadcrumbs,
       addItemToWishlist,
       addItemToCart,
+      isAuthenticated,
       isInCart,
       isCategoryGridView,
       isFacetCheckbox,

@@ -47,7 +47,9 @@
                   :title="productGetters.getName(product)"
                   :link="`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`"
                   :badgeLabel="`${product.category.slug.includes('-models') ? 'Model Files ':''}${product.category.slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
-                  :wishlistIcon="false"
+                  :wishlist-icon="isAuthenticated ? 'heart' : false"
+                  :is-on-wishlist="false"
+                  @click:wishlist="addItemToWishlist(product)"
                 />
               </div>
             </SfScrollable>
@@ -64,6 +66,9 @@
                 :title="productGetters.getName(product)"
                 :link="`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`"
                 :badgeLabel="`${product.category.slug.includes('-models') ? 'Model Files ':''}${product.category.slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
+                :wishlist-icon="isAuthenticated ? 'heart' : false"
+                :is-on-wishlist="false"
+                @click:wishlist="addItemToWishlist(product)"
               />
             </div>
           </SfMegaMenuColumn>
@@ -93,7 +98,7 @@ import {
   SfImage
 } from '@storefront-ui/vue';
 import { ref, watch, computed } from '@vue/composition-api';
-import { productGetters } from '@vue-storefront/numerbay';
+import { productGetters, useUser, useWishlist } from '@vue-storefront/numerbay';
 
 export default {
   name: 'SearchResults',
@@ -117,6 +122,9 @@ export default {
     }
   },
   setup(props, { emit }) {
+    const { isAuthenticated } = useUser();
+    const { isInWishlist, addItem, removeItem } = useWishlist();
+
     const isSearchOpen = ref(props.visible);
     const products = computed(() => props.result?.products);
     const categories = computed(() => props.result?.categories);
@@ -131,11 +139,22 @@ export default {
       }
     });
 
+    const addItemToWishlist = async (product) => {
+      await (
+        isInWishlist({ product })
+          ? removeItem({ product })
+          : addItem({ product })
+      );
+    };
+
     return {
       isSearchOpen,
       productGetters,
       products,
-      categories
+      categories,
+      addItemToWishlist,
+      isInWishlist,
+      isAuthenticated
     };
   }
 };
