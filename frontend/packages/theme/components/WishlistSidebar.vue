@@ -25,7 +25,7 @@
                 :key="wishlistGetters.getItemSku(product)"
                 :image="wishlistGetters.getItemImage(product)"
                 :title="wishlistGetters.getItemName(product)"
-                :regular-price="$n(wishlistGetters.getItemPrice(product).regular, 'currency')"
+                :regular-price="wishlistGetters.getItemPrice(product)"
                 image-width="150"
                 image-height="150"
                 @click:remove="removeItem({ product })"
@@ -33,7 +33,16 @@
               >
                <template #configuration>
                   <div class="collected-product__properties">
-                    <SfProperty v-for="(attribute, key) in wishlistGetters.getItemAttributes(product, ['color', 'size'])" :key="key" :name="key" :value="attribute"/>
+                    <div v-show="!!product.category.tournament">
+                      <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`"/>
+                      <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)"/>
+                      <SfProperty class="desktop-only" name="MMC Rep" :value="productGetters.getModelRep(product, 'mmc', 4)"/>
+                      <SfProperty class="desktop-only" name="3M Return">
+                        <template #value>
+                          <span :class="`delta-${Number(productGetters.getModelReturn(product, 'threeMonths', 2))>0?'positive':'negative'}`">{{ productGetters.getModelReturn(product, 'threeMonths', 2) }}%</span>
+                        </template>
+                      </SfProperty>
+                    </div>
                   </div>
                 </template>
                 <template #input="{}">&nbsp;</template>
@@ -83,7 +92,7 @@ import {
   SfImage
 } from '@storefront-ui/vue';
 import { computed } from '@vue/composition-api';
-import { useWishlist, useUser, wishlistGetters } from '@vue-storefront/numerbay';
+import { useWishlist, useUser, wishlistGetters, productGetters } from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
 
@@ -119,7 +128,8 @@ export default {
       toggleWishlistSidebar,
       totals,
       totalItems,
-      wishlistGetters
+      wishlistGetters,
+      productGetters
     };
   }
 };
@@ -198,8 +208,14 @@ export default {
 .collected-product {
   margin: var(--spacer-base) 0;
   &__properties {
-    margin: var(--spacer-sm) 0 0 0;
+    margin: 0 0 0 0;
   }
 }
 
+.delta-positive {
+  color: #00a800;
+}
+.delta-negative {
+  color: #d24141;
+}
 </style>

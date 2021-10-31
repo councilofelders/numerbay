@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
+    from .favorite import Favorite  # noqa: F401
     from .user import User  # noqa: F401
     from .category import Category  # noqa: F401
     from .model import Model  # noqa: F401
@@ -42,6 +43,7 @@ class Product(Base):
     model = relationship("Model", lazy="select", back_populates="products")
     artifacts = relationship("Artifact", back_populates="product")
     reviews = relationship("Review", back_populates="product")
+    favorites = relationship("Favorite", back_populates="product", cascade="all, delete-orphan")
     options = relationship(
         "ProductOption", back_populates="product", cascade="all, delete-orphan"
     )

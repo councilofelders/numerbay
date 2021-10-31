@@ -1,5 +1,6 @@
 from .artifact import Artifact
 from .category import Category
+from .favorite import Favorite
 from .globals import Globals
 from .item import Item
 from .model import Model
