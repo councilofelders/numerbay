@@ -212,19 +212,19 @@
                 </SfLink>
               </template>
               <template #price>
-                <span title="Corr Rank" v-show="!!product.category.tournament"># {{ productGetters.getModelRank(product, 'corr')}}</span>
+                <span title="Corr Rank" v-show="!!(product.category || {}).tournament"># {{ productGetters.getModelRank(product, 'corr')}}</span>
               </template>
               <template #description>
                 <div class="sf-product-card-horizontal__description desktop-only">
                   <SfBadge class="sf-badge ready-badge" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Ready</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="product.category && product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="product.category && product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="!!product.category && product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="!!product.category && product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, product.optionIdx)) }}</SfBadge>
                 </div>
               </template>
               <template #configuration>
-                <div v-show="!!product.category.tournament">
+                <div v-show="!!(product.category || {}).tournament">
                   <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`"/>
                   <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)"/>
                   <SfProperty class="desktop-only" name="MMC Rep" :value="productGetters.getModelRep(product, 'mmc', 4)"/>
@@ -251,7 +251,7 @@
                 <SfAddToCart
                   v-e2e="'product_add-to-cart'"
                   v-model="product.qty"
-                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) || !product.category.is_per_round"
+                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) || !(product.category || {}).is_per_round"
                   class="sf-product-card-horizontal__add-to-cart desktop-only"
                 >
                   <template #add-to-cart-btn>
