@@ -50,13 +50,20 @@
                           name="currency"
                           value="NMR"
                           label="NMR"
-                          :details="`Payments go to your Numerai wallet ${user.numerai_wallet_address} by default`"
                           description="Alternatively, specify a compatible wallet below"
                           v-model="currency"
                           class="form__radio"
                         >
                           <template #label>
                             NMR  <SfBadge class="color-primary sf-badge flag">Gas-Free</SfBadge>
+                          </template>
+                          <template #details>
+                            <p class="sf-radio__details desktop-only">
+                              {{ `Payments go to your Numerai wallet ${user.numerai_wallet_address} by default` }}
+                            </p>
+                            <p class="sf-radio__details smartphone-only">
+                              {{ `Payments go to your Numerai wallet ${user.numerai_wallet_address.slice(0, 2)}...${user.numerai_wallet_address.slice(-10, -1)} by default` }}
+                            </p>
                           </template>
                         </SfRadio>
                         <SfRadio

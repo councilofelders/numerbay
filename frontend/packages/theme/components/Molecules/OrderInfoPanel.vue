@@ -92,7 +92,8 @@
       >
         <template #value>
           <span class="sf-property__value" v-if="orderGetters.getTransactionHash(order)" >
-            <SfLink :href="`https://etherscan.io/tx/${orderGetters.getTransactionHash(order)}`" target="_blank">{{orderGetters.getTransactionHash(order)}}</SfLink>
+            <SfLink :href="`https://etherscan.io/tx/${orderGetters.getTransactionHash(order)}`" target="_blank" class="desktop-only">{{orderGetters.getTransactionHash(order)}}</SfLink>
+            <SfLink :href="`https://etherscan.io/tx/${orderGetters.getTransactionHash(order)}`" target="_blank" class="smartphone-only">{{`${orderGetters.getTransactionHash(order).slice(0, 2)}...${orderGetters.getTransactionHash(order).slice(-12, -1)}`}}</SfLink>
           </span>
           <span class="sf-property__value" v-else>
             waiting

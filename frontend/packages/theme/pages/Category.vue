@@ -892,8 +892,8 @@ export default {
     }
     @include for-mobile {
       ::v-deep .sf-image {
-      --image-width: 7.0625rem;
-      --image-height: 7.0625rem;
+      --image-width: 5.3125rem;
+      --image-height: 5.3125rem;
       }
     }
   }
