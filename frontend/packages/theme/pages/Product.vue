@@ -23,11 +23,11 @@
         <div class="product__subheader">
           <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
             <div class="product__meta">
-              <span class="product__meta__item"><span v-if="!!product.category.tournament">Round:&nbsp;</span><span class="product__subheader__highlight" v-if="!globalsLoading && !!product.category.tournament">{{ globals.selling_round }}</span></span>
-              <span class='divider-pipe desktop-only' v-if="!!product.category.tournament">|</span>
+              <span class="product__meta__item"><span v-if="!!productGetters.getCategory(product).tournament">Round:&nbsp;</span><span class="product__subheader__highlight" v-if="!globalsLoading && !!productGetters.getCategory(product).tournament">{{ globals.selling_round }}</span></span>
+              <span class='divider-pipe desktop-only' v-if="!!productGetters.getCategory(product).tournament">|</span>
               <span class="product__meta__item">Seller:&nbsp;<span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span></span>
               <span class='divider-pipe desktop-only'>|</span>
-              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ product.category.slug.toUpperCase() }}</span></span>
+              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getCategory(product).slug.toUpperCase() }}</span></span>
               <span class='divider-pipe desktop-only'>|</span> <span class="product__meta__item">Platform:&nbsp;<SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
               <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(productGetters.getOrderedOption(product, optionIdx)) }}</span></span>
             </div>
@@ -67,22 +67,20 @@
           <div>
             <SfSelect
               v-e2e="'size-select'"
-              :disabled="!(product.options && product.options.length > 1)"
+              :disabled="!(productGetters.getOptions(product).length > 1)"
               v-model="optionIdx"
               label="Option"
               class="sf-select--underlined product__select-size"
               required
             >
-  <!--                        @input="size => updateFilter({ size })"-->
               <SfSelectOption v-for="(option, key) in productGetters.getOrderedOptions(product)" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
             </SfSelect>
             <SfAddToCart
               v-e2e="'product_add-to-cart'"
               v-model="qty"
-              :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).is_on_platform || !product.category.is_per_round"
+              :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).is_on_platform || !productGetters.getCategory(product).is_per_round"
               class="product__add-to-cart"
             >
-  <!--            @click="addItem({ product, quantity: parseInt(qty) })"-->
               <template #add-to-cart-btn>
                 <SfButton
                   class="sf-add-to-cart__button"
@@ -102,7 +100,7 @@
           />-->
         </div>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
-          <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!product.category.tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
+          <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!productGetters.getCategory(product).tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
         </SfLoader>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
           <div>
@@ -244,7 +242,6 @@ import NumeraiChart from '../components/Molecules/NumeraiChart';
 import BuyButton from '../components/Molecules/BuyButton';
 import SfReview from '~/components/Molecules/SfReview';
 import ProductAddReviewForm from '~/components/ProductAddReviewForm';
-// import Web3 from 'web3';
 
 export default {
   name: 'Product',

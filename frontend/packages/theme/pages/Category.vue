@@ -157,7 +157,7 @@
               :style="{ '--index': i }"
               :title="productGetters.getName(product).toUpperCase()"
               :image="productGetters.getCoverImage(product)"
-              :badgeLabel="`${product.category.slug.includes('-models') ? 'Model Files ':''}${product.category.slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
+              :badgeLabel="`${productGetters.getCategory(product).slug.includes('-models') ? 'Model Files ':''}${productGetters.getCategory(product).slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
               :regular-price="productGetters.getFormattedPrice(product)"
               :max-rating="5"
               :score-rating="productGetters.getAverageRating(product)"
@@ -212,19 +212,19 @@
                 </SfLink>
               </template>
               <template #price>
-                <span title="Corr Rank" v-show="!!(product.category || {}).tournament"># {{ productGetters.getModelRank(product, 'corr')}}</span>
+                <span title="Corr Rank" v-show="!!productGetters.getCategory(product).tournament"># {{ productGetters.getModelRank(product, 'corr')}}</span>
               </template>
               <template #description>
                 <div class="sf-product-card-horizontal__description desktop-only">
                   <SfBadge class="sf-badge ready-badge" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Ready</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="!!product.category && product.category.slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
-                  <SfBadge class="sf-badge mode-badge" v-if="!!product.category && product.category.slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="!!productGetters.getCategory(product) && productGetters.getCategory(product).slug.includes('-models')" title="Model artifacts such as Jupyter Notebooks and pickle files">Model Files</SfBadge>
+                  <SfBadge class="sf-badge mode-badge" v-if="!!productGetters.getCategory(product) && productGetters.getCategory(product).slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, product.optionIdx)) }}</SfBadge>
                 </div>
               </template>
               <template #configuration>
-                <div v-show="!!(product.category || {}).tournament">
+                <div v-show="!!productGetters.getCategory(product).tournament">
                   <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`"/>
                   <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)"/>
                   <SfProperty class="desktop-only" name="MMC Rep" :value="productGetters.getModelRep(product, 'mmc', 4)"/>
@@ -235,40 +235,24 @@
                   </SfProperty>
                 </div>
               </template>
-<!--              <template #reviews><span></span></template>-->
               <template #add-to-cart>
                 <SfSelect
                   v-e2e="'size-select'"
-                  :disabled="!(product.options && product.options.length > 1)"
+                  :disabled="!(productGetters.getOptions(product).length > 1)"
                   v-model="product.optionIdx"
                   label="Option"
                   class="sf-select--underlined product__select-size"
                   required
                 >
-      <!--                        @input="size => updateFilter({ size })"-->
                   <SfSelectOption v-for="(option, key) in productGetters.getOrderedOptions(product)" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
                 </SfSelect>
                 <SfAddToCart
                   v-e2e="'product_add-to-cart'"
                   v-model="product.qty"
-                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) || !(product.category || {}).is_per_round"
+                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) || !productGetters.getCategory(product).is_per_round"
                   class="sf-product-card-horizontal__add-to-cart desktop-only"
                 >
                   <template #add-to-cart-btn>
-<!--                    <SfDropdown title="Buy" class="sf-add-to-cart__button" :is-open="product.isOpen" style="position: relative; display: inline-block;" @click:open="product.isOpen = true">
-                      <SfList>
-                        <SfListItem>
-                          <SfButton class="sf-button--full-width sf-button--underlined color-primary">123</SfButton>
-                        </SfListItem>
-                      </SfList>
-                      <SfList>
-                        <SfListItem>
-                          <SfButton class="sf-button--full-width sf-button--underlined color-primary">123</SfButton>
-                        </SfListItem>
-                      </SfList>
-                    </SfDropdown>-->
-                    <!--{{product.optionIdx}}
-                    {{productGetters.getOrderedOption(product, product.optionIdx)}}-->
                     <SfButton
                       class="sf-add-to-cart__button"
                       :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionUrl(productGetters.getOrderedOption(product, product.optionIdx)) && !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx))"
@@ -488,7 +472,7 @@ export default {
     const { addItem: addItemToWishlist } = useWishlist();
     const { result, search, loading } = useFacet(`facetId:${path}`);
     const { user, isAuthenticated } = useUser();
-    const { toggleLoginModal, isCategoryGridView } = useUiState();
+    const { changeToCategoryListView, changeToCategoryGridView, toggleLoginModal, isCategoryGridView } = useUiState();
     const { send } = useUiNotification();
 
     const products = computed(() => facetGetters.getProducts(result.value));
@@ -626,7 +610,10 @@ export default {
       isAuthenticated,
       isInCart,
       isCategoryGridView,
+      changeToCategoryListView,
+      changeToCategoryGridView,
       isFacetCheckbox,
+      toggleFilterSidebar,
       selectFilter,
       isFilterSelected,
       selectedFilters,

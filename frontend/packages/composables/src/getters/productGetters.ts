@@ -54,7 +54,11 @@ export const getProductDescription = (product: ProductVariant): any => (product 
 
 export const getProductCategoryIds = (product: ProductVariant): string[] => (product as any)?.category ? [(product as any)?.category.id.toString()] : [];
 
+export const getProductCategory = (product: ProductVariant): any => (product as any)?.category || {};
+
 export const getProductId = (product: ProductVariant): string => (product as any)?.id || '';
+
+export const getProductOptions = (product: ProductVariant): any[] => (product as any)?.options || [];
 
 export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.slice().sort((a, b) => parseFloat(a.id) - parseFloat(b.id)) : [];
 
@@ -155,7 +159,7 @@ export const getProductModelReturn = (product: ProductVariant, key: string, deci
 
 export const getProductIsActive = (product: ProductVariant): boolean => (product as any)?.is_active;
 
-export const getProductIsOnPlatform = (product: ProductVariant): boolean => ((product as any)?.options || [])[0]?.is_on_platform; // todo allow specifying option index
+export const getProductIsOnPlatform = (product: ProductVariant): boolean => ((product as any)?.options || [])[0]?.is_on_platform;
 
 export const getProductExpirationRound = (product: ProductVariant): number => (product as any)?.expiration_round || null;
 
@@ -170,10 +174,12 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getFiltered: getProductFiltered,
   getAttributes: getProductAttributes,
   getDescription: getProductDescription,
+  getCategory: getProductCategory,
   getCategoryIds: getProductCategoryIds,
   getId: getProductId,
   getOptionById: getProductOptionById,
   getOrderedOption: getProductOrderedOption,
+  getOptions: getProductOptions,
   getOrderedOptions: getProductOrderedOptions,
   getOptionUrl: getOptionUrl,
   getOptionIsOnPlatform: getOptionIsOnPlatform,

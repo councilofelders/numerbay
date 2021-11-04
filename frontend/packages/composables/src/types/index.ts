@@ -135,10 +135,12 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getFiltered: (products: PRODUCT[], filters?: PRODUCT_FILTER) => PRODUCT[];
     getAttributes: (products: PRODUCT[] | PRODUCT, filters?: Array<string>) => Record<string, AgnosticAttribute | string>;
     getDescription: (product: PRODUCT) => string;
+    getCategory: (product: PRODUCT) => any;
     getCategoryIds: (product: PRODUCT) => string[];
     getId: (product: PRODUCT) => string;
     getOptionById: (product: PRODUCT, optionId: number) => any;
     getOrderedOption: (product: PRODUCT, optionIdx?: number) => any;
+    getOptions: (product: PRODUCT) => any[];
     getOrderedOptions: (product: PRODUCT) => any[];
     getOptionUrl: (option: any) => string;
     getOptionIsOnPlatform: (option: any) => boolean;

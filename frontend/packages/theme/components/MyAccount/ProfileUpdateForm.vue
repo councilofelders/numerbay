@@ -137,6 +137,11 @@ export default {
       } else {
         await this.updateUser({ user: { publicAddress: ''}});
         this.form = this.resetForm();
+        await this.send({
+          message: 'Please connect a wallet or set a password before logging out, or you might lose access to this account',
+          type: 'warning',
+          persist: true
+        });
       }
     }
   },
@@ -206,7 +211,8 @@ export default {
       getNonceAuthenticated,
       updateUser,
       resetForm,
-      submitForm
+      submitForm,
+      send
     };
   }
 };

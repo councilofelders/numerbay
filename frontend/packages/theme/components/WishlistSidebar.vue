@@ -34,7 +34,7 @@
               >
                <template #configuration>
                   <div class="collected-product__properties">
-                    <div v-show="!!product.category.tournament">
+                    <div v-show="!!productGetters.getCategory(product).tournament">
                       <SfProperty class="desktop-only" name="Stake" :value="`${productGetters.getModelNmrStaked(product, 2)} NMR`"/>
                       <SfProperty class="desktop-only" name="Corr Rep" :value="productGetters.getModelRep(product, 'corr', 4)"/>
                       <SfProperty class="desktop-only" name="MMC Rep" :value="productGetters.getModelRep(product, 'mmc', 4)"/>

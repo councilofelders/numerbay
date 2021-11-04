@@ -23,7 +23,7 @@
             :alt="productGetters.getName(product)"
             :title="productGetters.getName(product)"
             :link="`/p/${productGetters.getId(product)}/${productGetters.getSlug(product)}`"
-            :badgeLabel="`${product.category.slug.includes('-models') ? 'Model Files ':''}${product.category.slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
+            :badgeLabel="`${productGetters.getCategory(product).slug.includes('-models') ? 'Model Files ':''}${productGetters.getCategory(product).slug.includes('-data') ? 'Data Files ':''}${product.is_ready ? 'Ready' : ''}`"
             :show-add-to-cart-button="false"
             :isOnWishlist="false"
             :wishlistIcon="false"
