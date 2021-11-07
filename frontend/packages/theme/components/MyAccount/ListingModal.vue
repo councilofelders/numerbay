@@ -501,7 +501,7 @@ export default {
         if (models) {
           const model = models[0];
           if (model.profileUrl) {
-            form.value.avatar = model.profileUrl;
+            form.value.avatar = encodeURI(decodeURI(model.profileUrl));
           }
         }
       }
