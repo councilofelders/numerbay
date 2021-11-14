@@ -17,6 +17,7 @@
       <WishlistSidebar />
       <LoginModal />
       <ListingModal />
+      <PollModal />
       <Notification />
     </div>
     <LazyHydrate when-visible>
@@ -34,6 +35,7 @@ import CartSidebar from '~/components/CartSidebar.vue';
 import WishlistSidebar from '~/components/WishlistSidebar.vue';
 import LoginModal from '~/components/LoginModal.vue';
 import ListingModal from '../components/MyAccount/ListingModal.vue';
+import PollModal from '../components/MyAccount/PollModal.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import Notification from '~/components/Notification';
 
@@ -50,6 +52,7 @@ export default {
     WishlistSidebar,
     LoginModal,
     ListingModal,
+    PollModal,
     Notification
   }
 };

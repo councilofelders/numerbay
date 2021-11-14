@@ -30,6 +30,7 @@ import createArtifact from './api/createArtifact';
 import submitArtifact from './api/submitArtifact';
 import updateArtifact from './api/updateArtifact';
 import deleteArtifact from './api/deleteArtifact';
+import getPoll from './api/getPoll';
 import axios from 'axios';
 
 // const defaultSettings = {};
@@ -136,7 +137,8 @@ const { createApiClient } = apiClientFactory<any, any>({
     createArtifact,
     submitArtifact,
     updateArtifact,
-    deleteArtifact
+    deleteArtifact,
+    getPoll
   },
   extensions: [tokenExtension]
 });

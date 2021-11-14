@@ -1,6 +1,6 @@
 import webpack from 'webpack';
 // import { Integrations } from '@sentry/tracing';
-// import { getRoutes } from './routes';
+import { getRoutes } from './routes';
 
 export default {
   mode: 'universal',
@@ -41,6 +41,7 @@ export default {
   },
   loading: { color: '#fff' },
   plugins: [
+    { src: 'plugins/nuxt-poll-plugin', ssr: false },
     { src: 'plugins/nuxt-star-rating-plugin', ssr: false },
     { src: 'plugins/nuxt-quill-plugin', ssr: false },
     { src: 'plugins/nuxt-clipboard2', ssr: false }
@@ -209,10 +210,10 @@ export default {
       } else {
         return { x: 0, y: 0 };
       }
+    },
+    extendRoutes(routes) {
+      // getRoutes(moduleOptions.generate ? projectLocalThemeDir : this.options.rootDir).forEach(route => routes.unshift(route));
+      getRoutes(`${__dirname}`).forEach((route) => routes.unshift(route));
     }
-    // extendRoutes(routes) {
-    //   getRoutes(moduleOptions.generate ? projectLocalThemeDir : this.options.rootDir).forEach(route => routes.unshift(route));
-    //   getRoutes(`${__dirname}`).forEach((route) => routes.unshift(route));
-    // }
   }
 };

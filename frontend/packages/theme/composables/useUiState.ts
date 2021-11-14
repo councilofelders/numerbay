@@ -10,6 +10,8 @@ const state = reactive({
   isLoginModalOpen: false,
   isListingModalOpen: false,
   currentListing: null,
+  isPollModalOpen: false,
+  currentPoll: null,
   isCategoryGridView: false,
   isFilterSidebarOpen: false,
   isMobileMenuOpen: false
@@ -51,6 +53,18 @@ const useUiState = () => {
     }
   };
 
+  const isPollModalOpen = computed(() => state.isPollModalOpen);
+  const currentPoll = computed(() => state.currentPoll);
+  const togglePollModal = (product) => {
+    if (state.isMobileMenuOpen) toggleMobileMenu();
+    state.isPollModalOpen = !state.isPollModalOpen;
+    if (!state.isPollModalOpen) {
+      state.currentPoll = null;
+    } else {
+      state.currentPoll = product;
+    }
+  };
+
   const isCategoryGridView = computed(() => state.isCategoryGridView);
   const changeToCategoryGridView = () => {
     state.isCategoryGridView = true;
@@ -70,6 +84,8 @@ const useUiState = () => {
     isLoginModalOpen,
     isListingModalOpen,
     currentListing,
+    isPollModalOpen,
+    currentPoll,
     isCategoryGridView,
     isFilterSidebarOpen,
     isMobileMenuOpen,
@@ -77,6 +93,7 @@ const useUiState = () => {
     toggleWishlistSidebar,
     toggleLoginModal,
     toggleListingModal,
+    togglePollModal,
     changeToCategoryGridView,
     changeToCategoryListView,
     toggleFilterSidebar,

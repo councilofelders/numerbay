@@ -17,5 +17,6 @@ export { default as useProductArtifact } from './useProductArtifact';
 export { default as useUserShipping } from './useUserShipping';
 export { default as useWishlist } from './useWishlist';
 export { default as useNumerai } from './useNumerai';
+export { default as usePoll } from './usePoll';
 export { default as useGlobals } from './useGlobals';
 export * from './getters';

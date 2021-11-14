@@ -46,6 +46,12 @@
         </SfContentPage>
       </SfContentCategory>
 
+      <SfContentCategory title="Apps">
+        <SfContentPage title="My polls">
+          <MyPolls />
+        </SfContentPage>
+      </SfContentCategory>
+
     </SfContentPages>
   </div>
 </template>
@@ -56,6 +62,7 @@ import { useUser } from '@vue-storefront/numerbay';
 import MyProfile from './MyAccount/MyProfile';
 import NumeraiApi from './MyAccount/NumeraiApi';
 import MyListings from './MyAccount/MyListings';
+import MyPolls from './MyAccount/MyPolls';
 import SalesHistory from './MyAccount/SalesHistory';
 import OrderHistory from './MyAccount/OrderHistory';
 import {
@@ -72,6 +79,7 @@ export default {
     MyProfile,
     NumeraiApi,
     MyListings,
+    MyPolls,
     SalesHistory,
     OrderHistory
   },

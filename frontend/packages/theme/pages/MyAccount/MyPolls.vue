@@ -1,14 +1,13 @@
 <template>
   <SfTabs :open-tab="1">
-    <SfTab title="My listings">
-      <div v-if="currentListing">
-        <SfButton class="sf-button--text all-orders" @click="currentListing = null">All Listings</SfButton>
-        <ArtifactPanel :product="currentListing"></ArtifactPanel>
+    <SfTab title="My polls">
+      <div v-if="currentPoll">
+        <SfButton class="sf-button--text all-orders" @click="currentPoll = null">All Listings</SfButton>
       </div>
       <div v-else>
         <div class="top-buttons">
-          <SfButton class="sf-button--primary" @click="handleListingClick()" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
-            {{ $t('New Listing') }}
+          <SfButton class="sf-button--primary" @click="handlePollClick()" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
+            {{ $t('New Poll') }}
           </SfButton>
           <SfButton class="sf-button" v-if="!userGetters.getNumeraiApiKeyPublicId(user)" :class="!userGetters.getNumeraiApiKeyPublicId(user)?'color-primary':'color-secondary'" @click="$router.push('/my-account/numerai-api')" :disabled="numeraiLoading || userLoading">
             {{ !userGetters.getNumeraiApiKeyPublicId(user)?$t('Set Numerai API Key'):$t('Change Numerai API Key') }}
@@ -17,8 +16,9 @@
         <p class="message" v-if="numeraiError.getModels">
           {{ numeraiError.getModels }}
         </p>
-        <div v-if="products.length === 0" class="no-orders">
-          <p class="no-orders__title">{{ $t('You currently have no listings') }}</p>
+        {{polls}}
+        <div v-if="polls.length === 0" class="no-orders">
+          <p class="no-orders__title">{{ $t('You currently have no polls') }}</p>
         </div>
         <SfTable v-else class="orders">
           <SfTableHeading>
@@ -27,21 +27,21 @@
               :key="tableHeader"
               >{{ tableHeader }}</SfTableHeader>
           </SfTableHeading>
-          <SfTableRow v-for="product in products" :key="productGetters.getId(product)">
+          <SfTableRow v-for="poll in polls" :key="pollGetters.getId(poll)">
             <SfTableData>
-              <SfLink :link="'/p/'+productGetters.getId(product)+'/'+productGetters.getSlug(product)" :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">
-                {{ productGetters.getName(product).toUpperCase() }}
+              <SfLink :link="'/v/'+pollGetters.getId(poll)" :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">
+                {{ pollGetters.getTopic(poll).toUpperCase() }}
               </SfLink>
             </SfTableData>
-            <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</span></SfTableData>
-            <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, 0), true) }}</span></SfTableData>
+            <SfTableData><span :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">{{ pollGetters.getEndDate(poll) }}</span></SfTableData>
+            <SfTableData><span :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">{{ `${poll.is_multiple?'multiple':'single'}, ${poll.is_blind?'blind':'observable'}, ${poll.is_anonymous?'anonymous':'named'}, ${poll.is_numerai_only?'numerai':'open'}, ${poll.is_stake_predetermined?'pre-determined':'post-determined'}, ${poll.weight_mode}` }}</span></SfTableData>
             <SfTableData class="orders__view orders__element--right">
               <div class="listing-actions">
-                <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="!!productGetters.getOrderedOptions(product) && productGetters.getOrderedOptions(product).filter((p)=>p.is_on_platform).length > 0" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
-                  {{ $t('Artifacts') }}
-                </SfButton>
-                <SfButton class="sf-button--text action__element" @click="handleListingClick(product)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
+                <SfButton class="sf-button--text action__element" @click="handlePollClick(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Edit') }}
+                </SfButton>
+                <SfButton class="sf-button--text action__element" @click="handlePollClick(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
+                  {{ $t('Delete') }}
                 </SfButton>
               </div>
             </SfTableData>
@@ -64,11 +64,11 @@ import {
 import { computed, ref } from '@vue/composition-api';
 import { useUiState } from '~/composables';
 import {
-  orderGetters,
+  pollGetters,
   useProduct,
+  usePoll,
   useUser,
   userGetters,
-  productGetters,
   useCategory,
   useNumerai,
   useGlobals
@@ -79,7 +79,7 @@ import NumeraiApiForm from '../../components/MyAccount/NumeraiApiForm';
 import ArtifactPanel from '../../components/Molecules/ArtifactPanel';
 
 export default {
-  name: 'MyListings',
+  name: 'MyPolls',
   components: {
     SfTabs,
     SfTable,
@@ -97,19 +97,17 @@ export default {
   },
   setup() {
     const { user, loading: userLoading } = useUser();
-    const { categories, search: categorySearch } = useCategory();
     const { getModels: getNumeraiModels, loading: numeraiLoading, error: numeraiError } = useNumerai('my-listings');
     const { getGlobals } = useGlobals();
 
     onSSR(async () => {
-      await categorySearch(); // {slug: 'all'}
     });
-    const { products, search } = useProduct('products');
-    const { toggleListingModal } = useUiState();
-    const currentListing = ref(null);
+    const { polls, search } = usePoll('polls');
+    const { togglePollModal } = useUiState();
+    const currentPoll = ref(null);
 
-    const handleListingClick = async (product) => {
-      toggleListingModal(product);
+    const handlePollClick = async (product) => {
+      togglePollModal(product);
     };
 
     onSSR(async () => {
@@ -118,9 +116,9 @@ export default {
     });
 
     const tableHeaders = [
-      'Product Name',
-      'Category',
-      'Default Price',
+      'Poll Topic',
+      'End Date',
+      'Config',
       'Action'
     ];
 
@@ -142,14 +140,12 @@ export default {
       userLoading,
       getNumeraiModels,
       user: computed(() => user?.value ? user.value : null),
-      categories: computed(() => categories?.value ? categories.value : []),
-      products: computed(() => products?.value?.data ? products.value.data : []),
+      polls: computed(() => polls?.value?.data ? polls.value.data : []),
       getStatusTextClass,
-      handleListingClick,
+      handlePollClick,
       userGetters,
-      productGetters,
-      orderGetters,
-      currentListing,
+      pollGetters,
+      currentPoll,
       numeraiError
     };
   }

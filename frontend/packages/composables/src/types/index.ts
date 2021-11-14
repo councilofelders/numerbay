@@ -216,3 +216,20 @@ export interface NumerBayReviewGetters extends ReviewGetters<any, any> {
   getReviewMetadata(reviewData: any[]): any[];
   getProductName(reviewData: any): string;
 }
+
+export interface PollGetters<POLL> {
+    getTopic: (product: POLL) => string;
+    getDescription: (product: POLL) => string;
+    getEndDate: (product: POLL) => string;
+    getId: (product: POLL) => string;
+    getOptionById: (product: POLL, optionId: number) => any;
+    getOrderedOption: (product: POLL, optionIdx?: number) => any;
+    getOptions: (product: POLL) => any[];
+    getOrderedOptions: (product: POLL) => any[];
+    getMode: (product: POLL) => string;
+    getStakeLimit: (product: POLL) => string;
+    getIsActive: (product: POLL) => boolean;
+    getExpirationRound: (product: POLL) => number;
+    getOwner: (product: POLL) => string;
+    [getterName: string]: any;
+}

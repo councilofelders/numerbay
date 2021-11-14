@@ -147,3 +147,19 @@ export interface UseReview<REVIEW,
 
   [x: string]: any;
 }
+
+export interface UsePollErrors {
+    search: Error;
+    listingModal: Error;
+}
+
+export interface UsePoll<POLLS, POLL_SEARCH_PARAMS> {
+  polls: ComputedProperty<POLLS>;
+  loading: ComputedProperty<boolean>;
+  error: ComputedProperty<UsePollErrors>;
+  search(params: ComposableFunctionArgs<POLL_SEARCH_PARAMS>): Promise<any>;
+  createPoll(params: { poll: any }): Promise<void>;
+  updatePoll(params: { id: string, poll: any }): Promise<void>;
+  deletePoll(params: { id: string }): Promise<void>;
+  [x: string]: any;
+}

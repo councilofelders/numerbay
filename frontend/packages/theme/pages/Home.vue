@@ -31,7 +31,7 @@
           image=""
           :title="`${globals.total_num_sales}`"
           :titleLevel="3"
-          description="Products Sold"
+          description="Product Sales"
           link=""
         >
           <template #action><span></span></template>

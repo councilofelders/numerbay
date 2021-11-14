@@ -11,7 +11,8 @@ if TYPE_CHECKING:
     from .product import Product  # noqa: F401
     from .model import Model  # noqa: F401
     from .order import Order  # noqa: F401
-    from .review import Review  # noqa: F401
+    from .poll import Poll  # noqa: F401
+    from .vote import Vote  # noqa: F401
 
 
 class User(Base):
@@ -36,3 +37,4 @@ class User(Base):
     orders = relationship("Order", back_populates="buyer")
     reviews = relationship("Review", back_populates="reviewer")
     favorites = relationship("Favorite", back_populates="user")
+    polls = relationship("Poll", back_populates="owner")

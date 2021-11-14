@@ -8,6 +8,7 @@
       <CartSidebar />
       <LoginModal />
       <ListingModal />
+      <PollModal />
     </div>
   </div>
 </template>
@@ -19,6 +20,7 @@ import TopBar from '~/components/TopBar.vue';
 import CartSidebar from '~/components/CartSidebar.vue';
 import LoginModal from '~/components/LoginModal.vue';
 import ListingModal from '../components/MyAccount/ListingModal.vue';
+import PollModal from '../components/MyAccount/PollModal.vue';
 
 export default {
   name: 'AccountLayout',
@@ -29,7 +31,8 @@ export default {
     BottomNavigation,
     CartSidebar,
     LoginModal,
-    ListingModal
+    ListingModal,
+    PollModal
   }
 };
 </script>
