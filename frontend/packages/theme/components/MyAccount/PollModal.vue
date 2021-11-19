@@ -9,13 +9,13 @@
       <SfBar
         class="sf-modal__bar smartphone-only"
         :close="true"
-        :title="currentPoll?`Editing ${currentPoll.name.toUpperCase()}`:'New Poll'"
+        :title="currentPoll?`Editing Poll`:'New Poll'"
         @click:close="togglePollModal"
       />
     </template>
     <transition name="sf-fade" mode="out-in">
       <SfTabs :open-tab="1">
-        <SfTab :title="currentPoll?`Editing ${currentPoll.name.toUpperCase()}`:'New Poll'">
+        <SfTab :title="currentPoll?`Editing Poll`:'New Poll'">
           <div>
             <ValidationObserver v-slot="{ handleSubmit }" key="log-in">
               <div class="form">
@@ -66,9 +66,8 @@
                     :errorMessage="errors[0]"
                     name="name"
                     type="date"
-                    label="End Date"
+                    label="End Date (UTC)"
                     class="form__element"
-                    :disabled="!!currentPoll"
                   />
                 </ValidationProvider>
                 <div class="form__radio-group">
@@ -161,26 +160,46 @@
                       details="Equal weights for all voters"
                       v-model="form.weightMode"
                       class="form__radio"
+                      :disabled="!!currentPoll"
                     />
                     <SfRadio
                       name="weightMode"
-                      value="log"
-                      label="Log Weighted"
-                      details="Log-transformed weights by NMR stake or balance"
+                      value="log_numerai_stake"
+                      label="Log Staked NMR"
+                      details="Log-transformed weights by NMR staked on models"
                       v-model="form.weightMode"
                       class="form__radio"
+                      :disabled="!!currentPoll"
                     />
                     <SfRadio
+                      name="weightMode"
+                      value="log_numerai_balance"
+                      label="Log Numerai Balance"
+                      details="Log-transformed weights by NMR balance in Numerai wallet"
+                      v-model="form.weightMode"
+                      class="form__radio"
+                      :disabled="!!currentPoll"
+                    />
+                    <SfRadio
+                      name="weightMode"
+                      value="log_balance"
+                      label="Log Balance"
+                      details="Log-transformed weights by NMR balance in any wallet"
+                      v-model="form.weightMode"
+                      class="form__radio"
+                      :disabled="!!currentPoll"
+                    />
+<!--                    <SfRadio
                       name="weightMode"
                       value="log_clip"
                       label="Log Weighted with Clipping"
                       details="Log-transformed weights by NMR stake or balance, clipped by min or max weight"
                       v-model="form.weightMode"
                       class="form__radio"
-                    />
+                    />-->
                   </ValidationProvider>
                 </div>
-                <div class="form__radio-group">
+<!--                <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
                       name="isNumeraiOnly"
@@ -208,7 +227,7 @@
                       disabled
                     />
                   </ValidationProvider>
-                </div>
+                </div>-->
                 <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
@@ -231,20 +250,107 @@
                     />
                   </ValidationProvider>
                 </div>
-                <ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
+                <ValidationProvider rules="decimal|min_value:0"  v-slot="{ errors }">
                   <SfInput
-                    v-model="form.maxOptions"
+                    v-model="form.minStake"
                     :valid="!errors[0]"
                     :errorMessage="errors[0]"
-                    name="maxOptions"
-                    label="Minimum Staked & Resolved Rounds Required for Voter"
+                    name="minStake"
+                    label="(Optional) Minimum Staked NMR Required for Voter"
                     type="number"
-                    step=1.0
+                    step=0.0001
+                    min=0
                     class="form__element"
                     :disabled="!!currentPoll"
                   />
                 </ValidationProvider>
-                <ProductOptionsForm
+                <ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
+                  <SfInput
+                    v-model="form.minRounds"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="minRounds"
+                    label="(Optional) Minimum Staked & Resolved Rounds Required for Voter"
+                    type="number"
+                    step=1.0
+                    min=0
+                    class="form__element"
+                    :disabled="!!currentPoll"
+                  />
+                </ValidationProvider>
+                <ValidationProvider rules="decimal|min_value:0"  v-slot="{ errors }">
+                  <SfInput
+                    v-model="form.clipLow"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="clipLow"
+                    label="(Optional) Clip lower NMR values to this value"
+                    type="number"
+                    step=0.0001
+                    min=0
+                    class="form__element"
+                    :disabled="!!currentPoll"
+                  />
+                </ValidationProvider>
+                <ValidationProvider rules="decimal|min_value:0"  v-slot="{ errors }">
+                  <SfInput
+                    v-model="form.clipHigh"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="clipHigh"
+                    label="(Optional) Clip higher NMR values to this value"
+                    type="number"
+                    step=0.0001
+                    min=0
+                    class="form__element"
+                    :disabled="!!currentPoll"
+                  />
+                </ValidationProvider>
+                <SfTable class="orders">
+                  <SfTableHeading>
+                    <SfTableHeader>Option</SfTableHeader>
+                    <SfTableHeader>Action</SfTableHeader>
+                  </SfTableHeading>
+                  <SfTableRow v-for="(option, index) in form.options" :key="index">
+                    <SfTableData>
+                      <ValidationProvider rules="required"  v-slot="{ errors }">
+                        <SfInput
+                          v-model="option.text"
+                          :valid="!errors[0]"
+                          :errorMessage="errors[0]"
+                          name="option"
+                          label="Option"
+                          class="form__element"
+                        />
+                      </ValidationProvider>
+                    </SfTableData>
+                    <SfTableData class="orders__view orders__element--right">
+                      <div class="listing-actions">
+                        <SfButton class="sf-button--text action__element" @click="deleteOption(index)">
+                          {{ $t('Delete') }}
+                        </SfButton>
+                      </div>
+                    </SfTableData>
+                  </SfTableRow>
+                  <SfTableRow>
+                    <SfTableData>
+                      <SfButton
+                        class="action-button color-secondary"
+                        data-testid="add-new-option"
+                        @click="addOption"
+                        type="button"
+                      >Add Option</SfButton>
+                    </SfTableData>
+<!--                    <SfTableData class="orders__view orders__element&#45;&#45;right">
+                      <div class="listing-actions">
+                        <SfButton class="sf-button&#45;&#45;text action__element" @click="deleteOption(option.value)">
+                          {{ $t('Delete') }}
+                        </SfButton>
+                      </div>
+                    </SfTableData>-->
+                  </SfTableRow>
+                </SfTable>
+<!--                <ProductOptionsForm
                   ref="optionsForm"
                   optionsTabTitle="Poll options"
                   changeOptionTabTitle="Update option"
@@ -262,7 +368,7 @@
                   :isTournamentCategory="isTournamentCategory(form.category)"
                   :isSubmissionCategory="isSubmissionCategory(form.category)"
                   :isPerRoundCategory="isPerRoundCategory(form.category)"
-                ></ProductOptionsForm>
+                ></ProductOptionsForm>-->
                 <!--<ValidationProvider v-slot="{ errors }">
                   <SfTextarea
                     v-e2e="'listing-modal-description'"
@@ -284,7 +390,7 @@
                   class="sf-button--full-width"
                   :disabled="loading || !!numeraiError.getModels || !(form.options && form.options.length > 0)"
                   v-if="!currentPoll"
-                  @click="handleSubmit(handleProductForm)"
+                  @click="handleSubmit(handlePollForm)"
                 >
                   <SfLoader :class="{ loader: loading }" :loading="loading">
                     <div>{{ $t('Save') }}</div>
@@ -295,7 +401,7 @@
                     type="submit"
                     class="sf-button form__button"
                     :disabled="loading || !!numeraiError.getModels || !(form.options && form.options.length > 0)"
-                    @click="handleSubmit(handleProductForm)"
+                    @click="handleSubmit(handlePollForm)"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">
                       <div>{{ $t('Save') }}</div>
@@ -305,10 +411,10 @@
                     type="button"
                     class="sf-button color-danger"
                     :disabled="loading || !!numeraiError.getModels"
-                    @click="handleDeleteProduct"
+                    @click="handleDeletePoll"
                   >
                     <SfLoader :class="{ loader: loading }" :loading="loading">
-                      <div>{{ $t('Deactivate') }}</div>
+                      <div>{{ $t('Delete') }}</div>
                     </SfLoader>
                   </SfButton>
                 </div>
@@ -324,15 +430,17 @@
 </template>
 <script>
 import { ref, watch, reactive, computed } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge, SfTable } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist/rules';
 import {
   userGetters,
-  useUser,
+  pollGetters,
   productGetters,
+  useUser,
   useCategory,
+  usePoll,
   useProduct,
   useNumerai,
   useGlobals
@@ -429,31 +537,10 @@ export default {
     SfBar,
     SfRadio,
     SfBadge,
+    SfTable,
     ProductOptionsForm,
     ValidationProvider,
     ValidationObserver
-  },
-  data () {
-    return {
-      editorOption: {
-        theme: 'snow',
-        modules: {
-          toolbar: {
-            container: [
-              ['bold', 'italic', 'underline', 'strike'],
-              ['blockquote', 'code-block'],
-              [{ list: 'ordered' }, { list: 'bullet' }],
-              [{ indent: '-1' }, { indent: '+1' }],
-              [{ header: [1, 2, 3, 4, 5, 6, false] }],
-              [{ color: [] }, { background: [] }],
-              [{ font: [] }],
-              ['link']
-            ]
-          }
-        },
-        placeholder: 'Product Description'
-      }
-    };
   },
   methods: {
     isSubmissionCategory(categoryId) {
@@ -535,12 +622,18 @@ export default {
       if (this.form.thirdPartyUrl) {
         this.form.thirdPartyUrl = encodeURI(decodeURI(this.form.thirdPartyUrl));
       }
+    },
+    deleteOption(index) {
+      this.form.options.splice(index, 1);
+    },
+    addOption() {
+      this.form.options.push({'text': ''})
     }
   },
   setup() {
     const { isPollModalOpen, currentPoll, togglePollModal } = useUiState();
     const { categories, search: categorySearch } = useCategory();
-    const { search: productSearch, createProduct, updateProduct, deleteProduct, loading, error: productError } = useProduct('products');
+    const { search: pollSearch, createPoll, updatePoll, deletePoll, loading, error: pollError } = usePoll('polls');
     const { numerai, error: numeraiError } = useNumerai('my-listings');
     const { user } = useUser();
     const { globals } = useGlobals();
@@ -548,22 +641,23 @@ export default {
       await categorySearch();
     });
 
-    const resetForm = (product) => ({
-      name: product ? productGetters.getName(product) : null,
-      // price: product ? productGetters.getPrice(product).regular : null,
-      category: product ? productGetters.getCategoryIds(product)[0] : null,
-      description: product ? productGetters.getDescription(product) : null,
-      avatar: product ? productGetters.getCoverImage(product) : null,
-      isMultiple: product ? String(productGetters.getIsActive(product)) : 'true',
-      isAnonymous: String(productGetters.getExpirationRound(product) === null),
-      expirationRound: productGetters.getExpirationRound(product),
-      // isOnPlatform: product ? String(product.is_on_platform) : 'true',
-      // currency: product ? product.currency : 'NMR',
-      // wallet: product ? product.wallet : null,
-      // mode: product ? product.mode : 'file',
-      // stakeLimit: product ? product.stake_limit : null,
-      // thirdPartyUrl: product ? product.third_party_url : null,
-      options: product ? product.options : []
+    const resetForm = (poll) => ({
+      topic: poll ? pollGetters.getTopic(poll) : null,
+      id: poll ? pollGetters.getId(poll) : null,
+      description: poll ? pollGetters.getDescription(poll) : null,
+      dateFinish: poll?.date_finish ? (new Date(Date.parse(poll.date_finish))).toISOString().split('T')[0] : null,
+      isMultiple: poll ? String(poll.is_multiple) : 'false',
+      maxOptions: poll ? poll.max_options : null,
+      isAnonymous: poll ? String(poll.is_anonymous) : 'true',
+      isBlind: poll ? String(poll.is_blind) : 'true',
+      weightMode: poll ? pollGetters.getWeightMode(poll) : 'equal',
+      isStakePredetermined: poll ? String(poll.is_stake_predetermined) : 'true',
+      minStake: poll ? poll.min_stake : null,
+      minRounds: poll ? poll.min_rounds : null,
+      clipLow: poll ? poll.clip_low : null,
+      clipHigh: poll ? poll.clip_high : null,
+      // expirationRound: pollGetters.getExpirationRound(poll),
+      options: poll ? poll.options : [{"text":""}, {"text":""}]
     });
     const form = ref(resetForm(currentPoll));
 
@@ -575,55 +669,45 @@ export default {
       error.listingModal = null;
     };
 
-    watch(currentPoll, (product) => {
+    watch(currentPoll, (poll) => {
       if (currentPoll) {
-        form.value = resetForm(product);
+        form.value = resetForm(poll);
         resetErrorValues();
       }
     });
 
     const handleForm = (fn) => async () => {
       resetErrorValues();
-      await fn({ id: currentPoll.value ? currentPoll.value.id : null, product: form.value });
+      await fn({ id: currentPoll.value ? currentPoll.value.id : null, poll: form.value });
 
-      const hasProductErrors = productError.value.listingModal;
-      if (hasProductErrors) {
-        error.listingModal = productError.value.listingModal?.message;
+      const hasPollErrors = pollError.value.listingModal;
+      if (hasPollErrors) {
+        error.listingModal = pollError.value.listingModal?.message;
         return;
       }
 
       togglePollModal();
 
-      await productSearch({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
+      await pollSearch({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
     };
 
-    const populateModelInfo = async (name) => {
-      if (name) {
-        const models = numerai.value.models.filter((m)=>m.name === name);
-        if (models) {
-          const model = models[0];
-          if (model.profileUrl) {
-            form.value.avatar = encodeURI(decodeURI(model.profileUrl));
-          }
-        }
-      }
-    };
+    const handlePollForm = async () => {
+      form.value.options.map((o, i)=>o.value=i);
 
-    const handleProductForm = async () => {
       if (!currentPoll.value) {
-        return handleForm(createProduct)();
+        return handleForm(createPoll)();
       } else {
-        return handleForm(updateProduct)();
+        return handleForm(updatePoll)();
       }
     };
 
-    const handleDeleteProduct = async () => handleForm(deleteProduct)();
+    const handleDeletePoll = async () => handleForm(deletePoll)();
 
     return {
       form,
       error,
       user,
-      productError,
+      pollError,
       loading,
       isPollModalOpen,
       currentPoll,
@@ -636,10 +720,9 @@ export default {
         return category.items.length === 0;
       }).sort((a, b) => -a.slug.localeCompare(b.slug)) : []),
       resetForm,
-      populateModelInfo,
-      handleProductForm,
-      deleteProduct,
-      handleDeleteProduct
+      handlePollForm,
+      deletePoll,
+      handleDeletePoll
     };
   }
 };

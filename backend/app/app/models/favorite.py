@@ -14,5 +14,5 @@ class Favorite(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
     user = relationship("User", back_populates="favorites")
-    product_id = Column(Integer, ForeignKey("product.id"))
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"))
     product = relationship("Product", back_populates="favorites", lazy="subquery")

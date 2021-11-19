@@ -9,5 +9,6 @@ from .poll import Poll
 from .product import Product
 from .product_option import ProductOption
 from .review import Review
+from .stake_snapshot import StakeSnapshot
 from .user import User
 from .vote import Vote

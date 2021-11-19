@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Optional
 
 from pydantic import BaseModel
@@ -7,14 +8,17 @@ from pydantic import BaseModel
 # Shared properties
 class VoteBase(BaseModel):
     date_vote: Optional[datetime] = None
-    weight: Optional[float] = None
+    option: Optional[int] = None
+    weight_basis: Optional[Decimal] = None
+    final_weight: Optional[Decimal] = None
     voter_id: Optional[str] = None
+    voter_address: Optional[str] = None
     poll_id: Optional[str] = None
 
 # Properties to receive on vote creation
 class VoteCreate(VoteBase):
     date_vote: datetime
-    weight: float
+    option: int
     voter_id: str
     poll_id: str
 

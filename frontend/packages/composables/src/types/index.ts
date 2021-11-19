@@ -226,7 +226,7 @@ export interface PollGetters<POLL> {
     getOrderedOption: (product: POLL, optionIdx?: number) => any;
     getOptions: (product: POLL) => any[];
     getOrderedOptions: (product: POLL) => any[];
-    getMode: (product: POLL) => string;
+    getWeightMode: (product: POLL) => string;
     getStakeLimit: (product: POLL) => string;
     getIsActive: (product: POLL) => boolean;
     getExpirationRound: (product: POLL) => number;

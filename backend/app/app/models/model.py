@@ -9,6 +9,7 @@ from app.db.base_class import Base
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
     from .product import Product  # noqa: F401
+    from .stake_snapshot import StakeSnapshot  # noqa: F401
 
 
 class Model(Base):
@@ -27,3 +28,4 @@ class Model(Base):
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="models")
     products = relationship("Product", back_populates="model")
+    snapshot = relationship("StakeSnapshot", back_populates="model", cascade="all, delete-orphan")

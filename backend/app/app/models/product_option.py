@@ -23,5 +23,5 @@ class ProductOption(Base):
     stake_limit = Column(Numeric, nullable=True)
     mode = Column(String, nullable=True)
     is_active = Column(Boolean, server_default="t")
-    product_id = Column(Integer, ForeignKey("product.id"))
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"))
     product = relationship("Product", back_populates="options")

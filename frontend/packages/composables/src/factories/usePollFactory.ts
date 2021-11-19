@@ -8,6 +8,7 @@ export interface UsePollFactoryParams<POLLS, POLL_SEARCH_PARAMS extends any> ext
   createPoll: (context: Context, params: any) => Promise<any>;
   updatePoll: (context: Context, params: any) => Promise<any>;
   deletePoll: (context: Context, params: any) => Promise<any>;
+  vote: (context: Context, params: any) => Promise<any>;
 }
 
 export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
@@ -92,11 +93,28 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
       }
     };
 
+    const vote = async ({id, options}) => {
+      Logger.debug('usePollFactory.vote', options);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        polls.value = await _factoryParams.vote({id, options});
+        error.value.listingModal = null;
+      } catch (err) {
+        error.value.listingModal = err;
+        Logger.error('usePoll/vote', JSON.stringify(err));
+      } finally {
+        loading.value = false;
+      }
+    };
+
     return {
       search,
       createPoll,
       updatePoll,
       deletePoll,
+      vote,
       polls: computed(() => polls.value),
       loading: computed(() => loading.value),
       error: computed(() => error.value)

@@ -23,7 +23,7 @@ export const getPollOrderedOption = (poll: any, optionIdx = 0): any => {
   return orderedOptions[parseInt(String(optionIdx))] || {};
 };
 
-export const getPollMode = (poll: any): string => (poll as any)?.mode;
+export const getPollWeightMode = (poll: any): string => (poll as any)?.weight_mode;
 
 export const getPollStakeLimit = (poll: any): string => (poll as any)?.stake_limit ? `${(poll as any)?.stake_limit} NMR` : '-';
 
@@ -42,7 +42,7 @@ const pollGetters: PollGetters<any> = {
   getOrderedOption: getPollOrderedOption,
   getOptions: getPollOptions,
   getOrderedOptions: getPollOrderedOptions,
-  getMode: getPollMode,
+  getWeightMode: getPollWeightMode,
   getStakeLimit: getPollStakeLimit,
   getIsActive: getPollIsActive,
   getExpirationRound: getPollExpirationRound,

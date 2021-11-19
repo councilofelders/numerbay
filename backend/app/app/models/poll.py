@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import ARRAY, JSON, Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -17,13 +17,17 @@ class Poll(Base):
     topic = Column(String, index=True)
     description = Column(String, index=True)
     options = Column(ARRAY(JSON))
+    is_finished = Column(Boolean, default=False)
     is_multiple = Column(Boolean, default=False)
     max_options = Column(Integer, default=1)
     is_anonymous = Column(Boolean, default=True)
     is_blind = Column(Boolean, default=True)
-    is_numerai_only = Column(Boolean, default=True)
+    weight_mode = Column(String, default="equal")
     is_stake_predetermined = Column(Boolean, default=True)
-    weight_mode = Column(String, default="stake")
+    min_stake = Column(Numeric, nullable=True)
+    min_rounds = Column(Integer, nullable=True)
+    clip_low = Column(Numeric, nullable=True)
+    clip_high = Column(Numeric, nullable=True)
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="polls")
-    votes = relationship("Vote", back_populates="poll")
+    votes = relationship("Vote", back_populates="poll", cascade="all, delete-orphan")

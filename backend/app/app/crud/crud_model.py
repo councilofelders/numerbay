@@ -479,5 +479,35 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             return True
             # db.close()
 
+    def get_leaderboard(self, tournament: int) -> Any:
+        numerai_query = """
+                query {
+                  v2Leaderboard {
+                    nmrStaked
+                    username
+                  }
+                }
+        """
+
+        signals_query = """
+                query {
+                  signalsLeaderboard {
+                    nmrStaked
+                    username
+                  }
+                }
+        """
+
+        api = NumerAPI()
+
+        if tournament == 8:
+            query = numerai_query
+            data = api.raw_query(query)["data"]["v2Leaderboard"]
+        elif tournament == 11:
+            query = signals_query
+            data = api.raw_query(query)["data"]["signalsLeaderboard"]
+
+        return data
+
 
 model = CRUDModel(Model)

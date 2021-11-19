@@ -31,6 +31,10 @@ import submitArtifact from './api/submitArtifact';
 import updateArtifact from './api/updateArtifact';
 import deleteArtifact from './api/deleteArtifact';
 import getPoll from './api/getPoll';
+import createPoll from './api/createPoll';
+import updatePoll from './api/updatePoll';
+import deletePoll from "./api/deletePoll";
+import votePoll from "./api/votePoll";
 import axios from 'axios';
 
 // const defaultSettings = {};
@@ -138,7 +142,11 @@ const { createApiClient } = apiClientFactory<any, any>({
     submitArtifact,
     updateArtifact,
     deleteArtifact,
-    getPoll
+    getPoll,
+    createPoll,
+    updatePoll,
+    deletePoll,
+    votePoll
   },
   extensions: [tokenExtension]
 });

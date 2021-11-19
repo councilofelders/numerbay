@@ -92,3 +92,12 @@ def add_job_validate_numerai_models_stake(
     celery_app.send_task("app.worker.batch_validate_numerai_models_stake_task")
 
     return {"msg": "success!"}
+
+
+@router.post("/stake-snapshot")
+def update_stake_snapshots(
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.batch_update_stake_snapshots")
+
+    return {"msg": "success!"}

@@ -9,7 +9,9 @@ from .crud_poll import poll
 from .crud_product import product
 from .crud_product_option import product_option
 from .crud_review import review
+from .crud_stake_snapshot import stake_snapshot
 from .crud_user import user
+from .crud_vote import vote
 
 # For a new basic set of CRUD operations you could just do
 

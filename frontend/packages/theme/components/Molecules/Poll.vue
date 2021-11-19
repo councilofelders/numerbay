@@ -27,7 +27,7 @@
 
       </div>
     </div>
-    <div class="votes" v-if="showTotalVotes && (visibleResults || finalResults)">{{ canShowResults ? (totalVotesFormatted + ' votes') : 'Results will be visible after poll ends'}}</div>
+    <div class="votes" v-if="showTotalVotes && (visibleResults || finalResults)">{{ canShowResults ? (totalVotesFormatted + ' votes (total weights)') : 'Results will be visible after poll ends'}}</div>
 
     <template v-if="!finalResults && !visibleResults && multiple && totalSelections > 0">
        <SfButton @click.prevent="handleMultiple" class="submit">{{ submitButtonText }}</SfButton>
@@ -98,12 +98,12 @@ export default {
       let totalVotes = 0
       this.answers.filter(a => {
         if (!isNaN(a.votes) && a.votes > 0)
-          totalVotes += parseInt(a.votes)
+          totalVotes += Number(a.votes)
       })
       return totalVotes
     },
     totalVotesFormatted() {
-      return this.totalVotes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return this.totalVotes.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     mostVotes() {
       let max = 0
@@ -125,7 +125,7 @@ export default {
       //Calculate percent
       return this.answers.filter(a => {
         if (!isNaN(a.votes) && a.votes > 0)
-          a.percent = (Math.round((parseInt(a.votes) / this.totalVotes) * 100)) + '%'
+          a.percent = (Math.round((Number(a.votes) / this.totalVotes) * 100)) + '%'
         else
           a.percent = '0%'
 

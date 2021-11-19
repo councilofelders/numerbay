@@ -34,9 +34,9 @@
         <LazyHydrate when-idle>
           <SfTabs id="tabs" :open-tab="1" class="product__tabs">
             <SfTab title="Poll">
-<!--              {{poll}}-->
+              {{poll}}
               {{ poll.description }}
-              <vue-poll :can-show-results="!poll.is_blind" :multiple="poll.is_multiple" :maxOptions="poll.max_options" :answers="poll.options" @addvote="addVote"/>
+              <vue-poll :can-show-results="!poll.is_blind || poll.is_finished" :multiple="poll.is_multiple" :maxOptions="poll.max_options" :answers="poll.options" @addvote="addVote" :showResults="poll.has_voted || poll.is_finished"/>
             </SfTab>
           </SfTabs>
         </LazyHydrate>
@@ -85,7 +85,7 @@ export default {
   transition: 'fade',
   setup(props, context) {
     const { id } = context.root.$route.params;
-    const { polls, search, loading: pollLoading } = usePoll(String(id));
+    const { polls, search, vote, loading: pollLoading } = usePoll(String(id));
     const { user, isAuthenticated } = useUser();
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { toggleLoginModal } = useUiState();
@@ -101,6 +101,7 @@ export default {
     return {
       pollGetters,
       poll,
+      vote,
       globals,
       globalsLoading,
       pollLoading
@@ -138,6 +139,11 @@ export default {
   methods: {
       addVote(obj){
           console.log('You voted ' + JSON.stringify(obj) + '!');
+          if (this.poll.is_multiple) {
+            this.vote({id: this.poll.id, options: obj['arSelected']})
+          } else {
+            this.vote({id: this.poll.id, options: [obj]})
+          }
       }
   },
   data() {

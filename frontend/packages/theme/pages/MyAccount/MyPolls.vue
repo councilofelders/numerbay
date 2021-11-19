@@ -30,7 +30,7 @@
           <SfTableRow v-for="poll in polls" :key="pollGetters.getId(poll)">
             <SfTableData>
               <SfLink :link="'/v/'+pollGetters.getId(poll)" :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">
-                {{ pollGetters.getTopic(poll).toUpperCase() }}
+                {{ pollGetters.getTopic(poll) }}
               </SfLink>
             </SfTableData>
             <SfTableData><span :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">{{ pollGetters.getEndDate(poll) }}</span></SfTableData>
@@ -40,9 +40,9 @@
                 <SfButton class="sf-button--text action__element" @click="handlePollClick(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Edit') }}
                 </SfButton>
-                <SfButton class="sf-button--text action__element" @click="handlePollClick(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
+<!--                <SfButton class="sf-button&#45;&#45;text action__element" @click="handlePollDelete(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Delete') }}
-                </SfButton>
+                </SfButton>-->
               </div>
             </SfTableData>
           </SfTableRow>
@@ -106,8 +106,8 @@ export default {
     const { togglePollModal } = useUiState();
     const currentPoll = ref(null);
 
-    const handlePollClick = async (product) => {
-      togglePollModal(product);
+    const handlePollClick = async (poll) => {
+      togglePollModal(poll);
     };
 
     onSSR(async () => {
