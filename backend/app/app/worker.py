@@ -760,7 +760,7 @@ def batch_update_stake_snapshots() -> None:
         db_stake_snapshots_dict = {}
         for model in numerai_models:
             new_snapshot = StakeSnapshot(date_creation=date_creation, name=model['username'], tournament=8,
-                          nmr_staked=model['nmrStaked'])
+                          nmr_staked=model['nmrStaked'], return_13_weeks=model['return13Weeks'], return_52_weeks=model['return52Weeks'])
             if model['username'] in db_models_dict.keys():
                 new_snapshot.model_id = db_models_dict[model['username']].id
             db_stake_snapshots_dict[model['username']] = new_snapshot
@@ -788,7 +788,7 @@ def batch_update_stake_snapshots() -> None:
         db_stake_snapshots_dict = {}
         for model in signals_models:
             new_snapshot = StakeSnapshot(date_creation=date_creation, name=model['username'],
-                          tournament=11, nmr_staked=model['nmrStaked'])
+                          tournament=11, nmr_staked=model['nmrStaked'], return_13_weeks=model['return13Weeks'], return_52_weeks=model['return52Weeks'])
             if model['username'] in db_models_dict.keys():
                 new_snapshot.model_id = db_models_dict[model['username']].id
             db_stake_snapshots_dict[model['username']] = new_snapshot

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from decimal import Decimal
 import numpy as np
@@ -101,10 +102,71 @@ def create_poll(
     """
     Create new poll.
     """
+    # id
+    if poll_in.id is not None and re.match(r"^[\w-]+$", poll_in.id) is None:  # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid id (should only contain alphabetic characters, numbers, dashes or underscores)",
+        )
+
     if poll_in.id is None or poll_in.id == "":
         poll_in.id = secrets.token_urlsafe(nbytes=8)
 
-    # todo validate inputs
+    # duplicate ID
+    poll = crud.poll.get(db=db, id=poll_in.id)
+    if poll:
+        raise HTTPException(status_code=400, detail="Poll with this id already exists")
+
+    # blind post determination
+    if poll_in.is_blind is False and poll_in.is_stake_predetermined is False:
+        raise HTTPException(status_code=400, detail="Post stake determination is only available for blind polls")
+
+    # valid max_option
+    if poll_in.max_options is not None and poll_in.max_options < 1:
+        raise HTTPException(status_code=400, detail="Max options setting must be at least 1")
+
+    # no max_options for single selection poll
+    if poll_in.is_multiple is False and poll_in.max_options is not None:
+        raise HTTPException(status_code=400, detail="Max options setting is not available for single selection polls")
+
+    # valid weight mode
+    if poll_in.weight_mode not in ["equal", "log_numerai_stake", "log_numerai_balance", "log_balance"]:
+        raise HTTPException(status_code=400, detail="Invalid weight mode")
+
+    # todo support numerai balance mode
+    if poll_in.weight_mode == "log_numerai_balance":
+        raise HTTPException(status_code=400, detail="log_numerai_balance weight mode is not yet supported")
+
+    # todo support arbitrary balance mode
+    if poll_in.weight_mode == "log_balance":
+        raise HTTPException(status_code=400, detail="log_balance weight mode is not yet supported")
+
+    # todo support post stake determination
+    if poll_in.is_stake_predetermined is False:
+        raise HTTPException(status_code=400, detail="Post stake determination is not yet supported")
+
+    # valid min stake
+    if poll_in.min_stake is not None and poll_in.min_stake <= 0:
+        raise HTTPException(status_code=400,
+                            detail="Min stake threshold must be positive")
+
+    # valid min rounds
+    if poll_in.min_rounds is not None and poll_in.min_rounds not in [0, 13, 52]:
+        raise HTTPException(status_code=400, detail="Min rounds threshold must be one of 0, 13 or 52")
+
+    # valid clipping range
+    if poll_in.clip_low is not None and poll_in.clip_low <= 0:
+        raise HTTPException(status_code=400, detail="Low-side clipping threshold must be positive")
+
+    if poll_in.clip_high is not None and poll_in.clip_high <= 0:
+        raise HTTPException(status_code=400, detail="High-side clipping threshold must be positive")
+
+    if poll_in.min_stake is not None and poll_in.clip_low is not None and poll_in.clip_low <= poll_in.min_stake:
+        raise HTTPException(status_code=400, detail="Low-side clipping threshold must be greater than min stake threshold")
+
+    if poll_in.clip_low is not None and poll_in.clip_high is not None and poll_in.clip_high <= poll_in.clip_low:
+        raise HTTPException(status_code=400,
+                            detail="High-side clipping threshold must be greater than low-side clipping threshold")
 
     poll_in.date_creation = datetime.utcnow()
     poll_in.owner_id = current_user.id
@@ -168,6 +230,7 @@ def delete_poll(
     poll = crud.poll.remove(db=db, id=id)
     return poll
 
+
 def generate_voter_id(poll, user) -> str:
     if poll.is_anonymous:
         # todo other wallet support
@@ -179,14 +242,48 @@ def generate_voter_id(poll, user) -> str:
 
 
 def get_voter_weight(db: Session, poll, user) -> Decimal:
+    min_stake = poll.min_stake if poll.min_stake is not None else 0
+
     if poll.weight_mode == "equal":
         weight = 1
     elif poll.weight_mode == "log_numerai_stake":
-        user_models_snapshots = db.query(models.Model).join(models.StakeSnapshot,
+        user_models_snapshots = db.query(models.StakeSnapshot).join(models.Model,
                                                             models.Model.id == models.StakeSnapshot.model_id).filter(
             models.Model.owner_id == user.id).all()
         user_nmr_staked = sum([model_snapshot.nmr_staked for model_snapshot in user_models_snapshots])
-        weight = Decimal(user_nmr_staked).ln()
+
+        # min stake requirement
+        if user_nmr_staked <= min_stake:
+            raise HTTPException(status_code=400, detail="You are not eligible for this poll")
+
+        # min rounds requirement
+        if poll.min_rounds == 13:
+            is_valid = False
+            for model_snapshot in user_models_snapshots:
+                if model_snapshot.return_13_weeks is not None:
+                    is_valid = True
+                    break
+            if not is_valid:
+                raise HTTPException(status_code=400, detail="You are not eligible for this poll")
+
+        if poll.min_rounds == 52:
+            is_valid = False
+            for model_snapshot in user_models_snapshots:
+                if model_snapshot.return_52_weeks is not None:
+                    is_valid = True
+                    break
+            if not is_valid:
+                raise HTTPException(status_code=400, detail="You are not eligible for this poll")
+
+        # clip stake
+        if poll.clip_low and min_stake < user_nmr_staked < poll.clip_low:
+            user_nmr_staked = poll.clip_low
+
+        if poll.clip_high and user_nmr_staked > poll.clip_high:
+            user_nmr_staked = poll.clip_high
+
+        # calculate weight
+        weight = (Decimal(user_nmr_staked)+Decimal('1')).ln()
     elif poll.weight_mode == "log_numerai_balance":
         raise HTTPException(status_code=400, detail="Weight mode not yet supported")
     elif poll.weight_mode == "log_balance":
@@ -195,6 +292,7 @@ def get_voter_weight(db: Session, poll, user) -> Decimal:
         raise HTTPException(status_code=400, detail="Invalid weight mode")
 
     return weight
+
 
 @router.post("/{id}")
 def vote(
@@ -207,27 +305,41 @@ def vote(
     """
     Vote for poll.
     """
+    date_vote = datetime.utcnow()
+
     poll = crud.poll.get(db=db, id=id)
+
+    # Poll exists
     if not poll:
         raise HTTPException(status_code=404, detail="Poll not found")
 
-    # todo validate input
+    # Poll not finished
+    if poll.is_finished or poll.date_finish <= date_vote:
+        raise HTTPException(status_code=400, detail="Poll already closed")
 
-    date_vote = datetime.utcnow()
+    # Valid number of options
+    n_options = len(options)
+    if n_options < 1 or (not poll.is_multiple and n_options != 1) or (poll.is_multiple and n_options > len(poll.options)) or (poll.is_multiple and (poll.max_options is not None) and n_options > poll.max_options):
+        raise HTTPException(status_code=400, detail="Invalid number of options")
+
+    # Valid weight
+    weight = get_voter_weight(db, poll, current_user)
+
+    voter_id = generate_voter_id(poll, current_user)
 
     for option in options:
+        # Valid options
+        if not isinstance(option["value"], int):
+            raise HTTPException(status_code=400, detail="Invalid options")
+
         new_vote_dict = {
             "date_vote": date_vote,
             "option": option["value"],
-            "voter_id": generate_voter_id(poll, current_user),
+            "voter_id": voter_id,
             "poll_id": id
         }
 
-        new_vote_dict['weight_basis'] = get_voter_weight(db, poll, current_user)
-
-
-
-
+        new_vote_dict['weight_basis'] = weight
         new_vote = schemas.VoteCreate(**new_vote_dict)
         crud.vote.create(db, obj_in=new_vote)
     return search_polls_authenticated(db, id=id, skip=None,

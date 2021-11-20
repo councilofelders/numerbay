@@ -409,6 +409,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             db.add_all(db_models.values())
             db.commit()
 
+            # Connect stake snapshots
+
+
             print(f"Updated user: {user_json['username']}")
             return user_json["username"]
         except Exception as e:
@@ -483,8 +486,10 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         numerai_query = """
                 query {
                   v2Leaderboard {
-                    nmrStaked
                     username
+                    nmrStaked
+                    return13Weeks
+                    return52Weeks
                   }
                 }
         """
@@ -492,8 +497,10 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         signals_query = """
                 query {
                   signalsLeaderboard {
-                    nmrStaked
                     username
+                    nmrStaked
+                    return13Weeks
+                    return52Weeks
                   }
                 }
         """

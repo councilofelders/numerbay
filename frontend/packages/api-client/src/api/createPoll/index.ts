@@ -9,6 +9,7 @@ export default async function createPoll(context, params, customQuery?: CustomQu
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
+    id: params.id,
     topic: params.topic,
     description: params.description,
     date_finish: params.dateFinish,

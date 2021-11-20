@@ -11,6 +11,8 @@ class StakeSnapshotBase(BaseModel):
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None
+    return_13_weeks: Optional[Decimal] = None
+    return_52_weeks: Optional[Decimal] = None
     payout_pending: Optional[Decimal] = None
     model_id: Optional[str] = None
 

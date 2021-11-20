@@ -27,7 +27,7 @@
                     <SfSelectOption v-for="category in leafCategories" :key="category.id" :value="category.id">{{category.slug}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>-->
-                <ValidationProvider rules="required|min:2|alpha_dash" v-slot="{ errors }">
+                <ValidationProvider rules="required|min:2" v-slot="{ errors }">
                   <SfInput
                     v-model="form.topic"
                     :valid="!errors[0]"
@@ -49,7 +49,7 @@
                     :disabled="!!currentPoll"
                   />
                 </ValidationProvider>
-                <ValidationProvider rules="min:2|alpha_dash" v-slot="{ errors }">
+                <ValidationProvider rules="min:2" v-slot="{ errors }">
                   <SfInput
                     v-model="form.description"
                     :valid="!errors[0]"
@@ -78,6 +78,7 @@
                       label="Single Choice"
                       details="Voter can only choose one option, this cannot be changed later"
                       v-model="form.isMultiple"
+                      @change="onIsMultipleChange(form.isMultiple)"
                       class="form__radio"
                       :disabled="!!currentPoll"
                     />
@@ -87,13 +88,14 @@
                       label="Multiple Choice"
                       details="Voter can choose options up to the limit below, this cannot be changed later"
                       v-model="form.isMultiple"
+                      @change="onIsMultipleChange(form.isMultiple)"
                       class="form__radio"
                       :disabled="!!currentPoll"
                     />
                   </ValidationProvider>
                 </div>
                 <div v-if="form.isMultiple === 'true'">
-                  <ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
+                  <ValidationProvider rules="integer|required|min_value:0"  v-slot="{ errors }">
                     <SfInput
                       v-model="form.maxOptions"
                       :valid="!errors[0]"
@@ -115,7 +117,6 @@
                       label="Anonymous Votes"
                       details="Voter IDs will be anonymized"
                       v-model="form.isAnonymous"
-                      @change="onIsPerpetualChange(form.isAnonymous)"
                       class="form__radio"
                       :disabled="!!currentPoll"
                     />
@@ -125,7 +126,6 @@
                       label="Named Votes"
                       details="Voter IDs will be plain Numerai usernames"
                       v-model="form.isAnonymous"
-                      @change="onIsPerpetualChange(form.isAnonymous)"
                       class="form__radio"
                       :disabled="!!currentPoll"
                     />
@@ -139,6 +139,7 @@
                       label="Blind Results"
                       details="Results will be kept blind until poll ends"
                       v-model="form.isBlind"
+                      @change="onIsBlindChange(form.isBlind)"
                       class="form__radio"
                     />
                     <SfRadio
@@ -147,6 +148,7 @@
                       label="Observable Results"
                       details="Results will be visible to voters anytime"
                       v-model="form.isBlind"
+                      @change="onIsBlindChange(form.isBlind)"
                       class="form__radio"
                     />
                   </ValidationProvider>
@@ -175,19 +177,19 @@
                       name="weightMode"
                       value="log_numerai_balance"
                       label="Log Numerai Balance"
-                      details="Log-transformed weights by NMR balance in Numerai wallet"
+                      details="Log-transformed weights by NMR balance in Numerai wallet [Coming Soon]"
                       v-model="form.weightMode"
                       class="form__radio"
-                      :disabled="!!currentPoll"
+                      disabled
                     />
                     <SfRadio
                       name="weightMode"
                       value="log_balance"
                       label="Log Balance"
-                      details="Log-transformed weights by NMR balance in any wallet"
+                      details="Log-transformed weights by NMR balance in any wallet [Coming Soon]"
                       v-model="form.weightMode"
                       class="form__radio"
-                      :disabled="!!currentPoll"
+                      disabled
                     />
 <!--                    <SfRadio
                       name="weightMode"
@@ -243,13 +245,58 @@
                       name="isStakePredetermined"
                       value="false"
                       label="Post-determine Stake"
-                      details="NMR stake and balance will be snapshotted after poll ends, this cannot be changed later"
+                      details="NMR stake and balance will be snapshotted after poll ends, this cannot be changed later [Coming Soon]"
                       v-model="form.isStakePredetermined"
+                      class="form__radio"
+                      :disabled="!!currentPoll || form.isBlind === 'false' || true"
+                    />
+                  </ValidationProvider>
+                </div>
+                <div class="form__radio-group">
+                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="minRounds"
+                      value="0"
+                      label="All Active Participants"
+                      details="No minimum staked rounds requirement"
+                      v-model="form.minRounds"
+                      class="form__radio"
+                      :disabled="!!currentPoll"
+                    />
+                    <SfRadio
+                      name="minRounds"
+                      value="13"
+                      label="Min 3 Month Participation"
+                      details="Requires staked participation for the past 13 weeks"
+                      v-model="form.minRounds"
+                      class="form__radio"
+                      :disabled="!!currentPoll"
+                    />
+                    <SfRadio
+                      name="minRounds"
+                      value="52"
+                      label="Min 1 Year Participation"
+                      details="Requires staked participation for the past 52 weeks"
+                      v-model="form.minRounds"
                       class="form__radio"
                       :disabled="!!currentPoll"
                     />
                   </ValidationProvider>
                 </div>
+                <!--<ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
+                  <SfInput
+                    v-model="form.minRounds"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="minRounds"
+                    label="(Optional) Minimum Staked & Resolved Rounds Required for Voter"
+                    type="number"
+                    step=1.0
+                    min=0
+                    class="form__element"
+                    :disabled="!!currentPoll"
+                  />
+                </ValidationProvider>-->
                 <ValidationProvider rules="decimal|min_value:0"  v-slot="{ errors }">
                   <SfInput
                     v-model="form.minStake"
@@ -259,20 +306,6 @@
                     label="(Optional) Minimum Staked NMR Required for Voter"
                     type="number"
                     step=0.0001
-                    min=0
-                    class="form__element"
-                    :disabled="!!currentPoll"
-                  />
-                </ValidationProvider>
-                <ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
-                  <SfInput
-                    v-model="form.minRounds"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]"
-                    name="minRounds"
-                    label="(Optional) Minimum Staked & Resolved Rounds Required for Voter"
-                    type="number"
-                    step=1.0
                     min=0
                     class="form__element"
                     :disabled="!!currentPoll"
@@ -608,11 +641,14 @@ export default {
         this.form.stakeLimit = null;
       }
     },
-    onIsPerpetualChange(isAnonymous) {
-      if (isAnonymous === 'true') {
-        this.form.expirationRound = null;
-      } else {
-        this.form.expirationRound = productGetters.getExpirationRound(this.currentPoll) || this.globals.selling_round;
+    onIsMultipleChange(isMultiple) {
+      if (isMultiple === 'false') {
+        this.form.maxOptions = null;
+      }
+    },
+    onIsBlindChange(isBlind) {
+      if (isBlind === 'false') {
+        this.form.isStakePredetermined = 'true';
       }
     },
     encodeURL() {
@@ -653,7 +689,7 @@ export default {
       weightMode: poll ? pollGetters.getWeightMode(poll) : 'equal',
       isStakePredetermined: poll ? String(poll.is_stake_predetermined) : 'true',
       minStake: poll ? poll.min_stake : null,
-      minRounds: poll ? poll.min_rounds : null,
+      minRounds: poll ? String(poll.min_rounds) : '0',
       clipLow: poll ? poll.clip_low : null,
       clipHigh: poll ? poll.clip_high : null,
       // expirationRound: pollGetters.getExpirationRound(poll),

@@ -28,6 +28,7 @@ class PollCreate(PollBase):
     weight_mode: Optional[str] = None
     is_stake_predetermined: Optional[bool] = None
     min_stake: Optional[Decimal] = None
+    min_rounds: Optional[Decimal] = None
     clip_low: Optional[Decimal] = None
     clip_high: Optional[Decimal] = None
     options: List[Dict]
@@ -51,6 +52,7 @@ class PollInDBBase(PollBase):
     weight_mode: Optional[str] = None
     is_stake_predetermined: Optional[bool] = None
     min_stake: Optional[Decimal] = None
+    min_rounds: Optional[Decimal] = None
     clip_low: Optional[Decimal] = None
     clip_high: Optional[Decimal] = None
     options: List[Dict]

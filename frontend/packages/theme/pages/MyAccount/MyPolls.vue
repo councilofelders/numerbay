@@ -16,7 +16,6 @@
         <p class="message" v-if="numeraiError.getModels">
           {{ numeraiError.getModels }}
         </p>
-        {{polls}}
         <div v-if="polls.length === 0" class="no-orders">
           <p class="no-orders__title">{{ $t('You currently have no polls') }}</p>
         </div>
@@ -34,8 +33,8 @@
               </SfLink>
             </SfTableData>
             <SfTableData><span :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">{{ pollGetters.getEndDate(poll) }}</span></SfTableData>
-            <SfTableData><span :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">{{ `${poll.is_multiple?'multiple':'single'}, ${poll.is_blind?'blind':'observable'}, ${poll.is_anonymous?'anonymous':'named'}, ${poll.is_numerai_only?'numerai':'open'}, ${poll.is_stake_predetermined?'pre-determined':'post-determined'}, ${poll.weight_mode}` }}</span></SfTableData>
-            <SfTableData class="orders__view orders__element--right">
+            <SfTableData><span :style="pollGetters.getIsActive(poll) ? '' : 'color: var(--c-text-disabled)'">{{ `${poll.is_multiple?'multiple':'single'}, ${poll.is_blind?'blind':'observable'}, ${poll.is_anonymous?'anonymous':'named'}, ${poll.weight_mode}, ${poll.is_stake_predetermined?'pre-determined':'post-determined'}` }}</span></SfTableData>
+            <SfTableData>
               <div class="listing-actions">
                 <SfButton class="sf-button--text action__element" @click="handlePollClick(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Edit') }}

@@ -17,8 +17,6 @@ export default async function getPoll(context, params, customQuery?: CustomQuery
     sort: params.sort
   };
 
-  console.log('token: ', token)
-
   // Use axios to send a POST request
   const { data } = await context.client.post(url.href, payload, token ? authHeaders(token) : null);
 

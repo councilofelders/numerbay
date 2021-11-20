@@ -16,6 +16,8 @@ class StakeSnapshot(Base):
     name = Column(String, index=True, nullable=False)
     tournament = Column(Integer, index=True, nullable=False)
     nmr_staked = Column(Numeric, nullable=True)
+    return_13_weeks = Column(Numeric, nullable=True)
+    return_52_weeks = Column(Numeric, nullable=True)
     payout_pending = Column(Numeric, nullable=True)
     model_id = Column(String, ForeignKey("model.id", ondelete="CASCADE"))
     model = relationship("Model", back_populates="snapshot")
