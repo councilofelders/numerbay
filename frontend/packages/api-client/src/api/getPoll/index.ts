@@ -1,5 +1,5 @@
 import { CustomQuery } from '@vue-storefront/core';
-import {authHeaders} from "../utils";
+import { authHeaders } from '../utils';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/explicit-module-boundary-types
 export default async function getPoll(context, params, customQuery?: CustomQuery) {
@@ -18,7 +18,16 @@ export default async function getPoll(context, params, customQuery?: CustomQuery
   };
 
   // Use axios to send a POST request
-  const { data } = await context.client.post(url.href, payload, token ? authHeaders(token) : null);
+  const { data } = await context.client.post(url.href, payload, token ? authHeaders(token) : null).catch(async () => {
+    const url = new URL('polls/search', context.config.api.url);
+    const data = await context.client.post(url.href, payload).catch(async (error) => {
+      if (error.response) {
+        error.response.data.error = error.response.status;
+        return error.response;
+      }
+    });
+    return data;
+  });
 
   // Return data from the API
   return data;

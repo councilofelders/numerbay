@@ -5,44 +5,44 @@
       :breadcrumbs="breadcrumbs"
     />-->
     <SfLoader :class="{ pollLoading }" :loading="pollLoading">
-    <div class="product" v-if="!pollLoading">
-      <div class="product__info_full">
-        <div class="product__header">
-          <SfHeading
-            :title="poll.topic"
-            :level="1"
-            class="sf-heading--no-underline sf-heading--left"
-          />
-          <SfIcon
-            icon="drag"
-            size="xxl"
-            color="var(--c-text-disabled)"
-            class="product__drag-icon smartphone-only"
-          />
-        </div>
-        <div class="product__subheader">
-          <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
-            <div class="product__meta">
-              <span class="product__meta__item">Owner:&nbsp;<span class="product__subheader__highlight">{{ pollGetters.getOwner(poll).toUpperCase() }}</span></span>
-              <span class='divider-pipe desktop-only'>|</span>
-              <span class="product__meta__item">Weight Mode:&nbsp;<span class="product__subheader__highlight">{{ poll.weight_mode.toUpperCase() }}</span></span>
-              <span class='divider-pipe desktop-only'>|</span>
-              <span class="product__meta__item">End Date:&nbsp;<span class="product__subheader__highlight">{{ pollGetters.getEndDate(poll) }}</span></span>
-              <span class='divider-pipe desktop-only'>|</span>
-              <span class="product__meta__item">Anonymous Vote:&nbsp;<span class="product__subheader__highlight">{{ poll.is_anonymous ? 'YES':'NO' }}</span></span>
+      <div class="product" v-if="!pollLoading">
+        <div class="product__info_full">
+          <div class="product__header">
+            <SfHeading
+              :title="poll.topic"
+              :level="1"
+              class="sf-heading--no-underline sf-heading--left"
+            />
+            <SfIcon
+              icon="drag"
+              size="xxl"
+              color="var(--c-text-disabled)"
+              class="product__drag-icon smartphone-only"
+            />
+          </div>
+          <div class="product__subheader">
+            <div class="sf-heading__title h5 sf-heading--no-underline sf-heading--left">
+              <div class="product__meta">
+                <span class="product__meta__item">Owner:&nbsp;<span class="product__subheader__highlight">{{ pollGetters.getOwner(poll) ? pollGetters.getOwner(poll).toUpperCase() : '-' }}</span></span>
+                <span class='divider-pipe desktop-only'>|</span>
+                <span class="product__meta__item">Weight Mode:&nbsp;<span class="product__subheader__highlight">{{ poll.weight_mode ? poll.weight_mode.toUpperCase() : '-' }}</span></span>
+                <span class='divider-pipe desktop-only'>|</span>
+                <span class="product__meta__item">End Date:&nbsp;<span class="product__subheader__highlight">{{ pollGetters.getEndDate(poll) }}</span></span>
+                <span class='divider-pipe desktop-only'>|</span>
+                <span class="product__meta__item">Anonymous Vote:&nbsp;<span class="product__subheader__highlight">{{ poll.is_anonymous ? 'YES':'NO' }}</span></span>
+              </div>
             </div>
           </div>
+          <LazyHydrate when-idle>
+            <SfTabs id="tabs" :open-tab="1" class="product__tabs">
+              <SfTab title="Poll">
+                {{ poll.description }}
+                <vue-poll :can-show-results="!poll.is_blind || poll.is_finished" :multiple="poll.is_multiple" :maxOptions="poll.max_options" :answers="poll.options" @addvote="addVote" :showResults="poll.has_voted || poll.is_finished"/>
+              </SfTab>
+            </SfTabs>
+          </LazyHydrate>
         </div>
-        <LazyHydrate when-idle>
-          <SfTabs id="tabs" :open-tab="1" class="product__tabs">
-            <SfTab title="Poll">
-              {{ poll.description }}
-              <vue-poll :can-show-results="!poll.is_blind || poll.is_finished" :multiple="poll.is_multiple" :maxOptions="poll.max_options" :answers="poll.options" @addvote="addVote" :showResults="poll.has_voted || poll.is_finished"/>
-            </SfTab>
-          </SfTabs>
-        </LazyHydrate>
       </div>
-    </div>
     </SfLoader>
   </div>
 </template>
@@ -92,7 +92,9 @@ export default {
     const { toggleLoginModal } = useUiState();
     const { send } = useUiNotification();
 
-    const poll = computed(() => polls?.value?.data[0]);
+    const poll = computed(() => {
+      return polls?.value?.data ? polls?.value?.data[0] : {};
+    });
 
     onSSR(async () => {
       await search({ id });
