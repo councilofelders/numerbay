@@ -28,4 +28,6 @@ class Model(Base):
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="models")
     products = relationship("Product", back_populates="model")
-    snapshot = relationship("StakeSnapshot", back_populates="model", cascade="all, delete-orphan")
+    snapshot = relationship(
+        "StakeSnapshot", back_populates="model", cascade="all, delete-orphan"
+    )

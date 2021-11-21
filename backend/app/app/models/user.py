@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from .model import Model  # noqa: F401
     from .order import Order  # noqa: F401
     from .poll import Poll  # noqa: F401
+    from .review import Review  # noqa: F401
     from .vote import Vote  # noqa: F401
 
 

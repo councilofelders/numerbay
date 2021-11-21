@@ -15,7 +15,12 @@ from .product_option import (
     ProductOptionUpdate,
 )
 from .review import Review, ReviewCreate, ReviewInDB, ReviewUpdate
-from .stake_snapshot import StakeSnapshot, StakeSnapshotCreate, StakeSnapshotInDB, StakeSnapshotUpdate
+from .stake_snapshot import (
+    StakeSnapshot,
+    StakeSnapshotCreate,
+    StakeSnapshotInDB,
+    StakeSnapshotUpdate,
+)
 from .token import Nonce, Token, TokenPayload
 from .user import User, UserCreate, UserInDB, UserUpdate
 from .vote import Vote, VoteCreate, VoteInDB, VoteUpdate

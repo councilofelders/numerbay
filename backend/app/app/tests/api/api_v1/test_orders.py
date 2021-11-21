@@ -10,9 +10,9 @@ from app.tests.utils.utils import random_lower_string
 
 
 def test_create_order(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
     crud.user.update(
         db,
@@ -37,7 +37,7 @@ def test_create_order(
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 200
@@ -50,7 +50,7 @@ def test_create_order(
     order_data["quantity"] = 0
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 400
@@ -61,7 +61,7 @@ def test_create_order(
     order_data["quantity"] = 2
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 400
@@ -76,7 +76,7 @@ def test_create_order(
     )
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 400
@@ -183,9 +183,9 @@ def test_create_order_invalid_self(
 
 
 def test_create_order_invalid_api_permissions(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
     crud.user.update(
         db,
@@ -211,7 +211,7 @@ def test_create_order_invalid_api_permissions(
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 400
@@ -220,7 +220,7 @@ def test_create_order_invalid_api_permissions(
     order_data = {"id": product.id, "option_id": product.options[0].id, "quantity": 1, "submit_model_id": "test_model_id"}  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 403
@@ -239,7 +239,7 @@ def test_create_order_invalid_api_permissions(
     order_data = {"id": product.id, "option_id": product.options[0].id, "quantity": 1, "submit_model_id": "test_model_id"}  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 403
@@ -257,7 +257,7 @@ def test_order_artifact(
     db: Session,
 ) -> None:
     # Create product
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     seller_user = r.json()
     crud.user.update(
         db,
@@ -265,7 +265,7 @@ def test_order_artifact(
         obj_in={"numerai_wallet_address": f"0xtoaddress{random_lower_string()}"},
     )
 
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
     crud.user.update(
         db,
@@ -282,7 +282,7 @@ def test_order_artifact(
     # Create product artifact
     r = client.post(
         f"{settings.API_V1_STR}/products/{product.id}/artifacts",
-        headers=superuser_token_headers,
+        headers=normal_user_token_headers,
         json=data,
     )
     assert r.status_code == 200
@@ -296,7 +296,7 @@ def test_order_artifact(
     }
     response = client.post(
         f"{settings.API_V1_STR}/orders/",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=order_data,
     )
     assert response.status_code == 200
@@ -306,14 +306,14 @@ def test_order_artifact(
     # List artifacts: reject
     r = client.get(
         f"{settings.API_V1_STR}/products/{product.id}/artifacts",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=data,
     )
     assert r.status_code == 403
 
     r = client.get(
         f"{settings.API_V1_STR}/products/{product.id}/artifacts/{artifact_id}/generate-download-url",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=data,
     )
     assert r.status_code == 403
@@ -323,14 +323,14 @@ def test_order_artifact(
     # List artifacts: ok
     r = client.get(
         f"{settings.API_V1_STR}/products/{product.id}/artifacts",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=data,
     )
     assert r.status_code == 200
 
     r = client.get(
         f"{settings.API_V1_STR}/products/{product.id}/artifacts/{artifact_id}/generate-download-url",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         json=data,
     )
     assert r.status_code == 400

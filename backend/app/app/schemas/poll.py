@@ -5,7 +5,6 @@ from typing import Dict, List, Optional
 import pandas as pd
 from pydantic import BaseModel, root_validator
 
-
 # Shared properties
 from app.schemas.user import PollOwner
 
@@ -67,14 +66,19 @@ class Poll(PollInDBBase):
     has_voted: Optional[bool] = False
 
     @root_validator(pre=True)
-    def set_votes(cls, values):
-        if not values['is_blind']:
-            votes = values.get('votes', None)
+    def set_votes(cls, values):  # type: ignore
+        if not values["is_blind"]:
+            votes = values.get("votes", None)
             if votes:
-                votes_df = pd.DataFrame({'option': [v.option for v in votes], 'weight': [v.weight_basis for v in votes]})
-                vote_counts = votes_df.groupby('option').sum()['weight'].to_dict()
+                votes_df = pd.DataFrame(
+                    {
+                        "option": [v.option for v in votes],
+                        "weight": [v.weight_basis for v in votes],
+                    }
+                )
+                vote_counts = votes_df.groupby("option").sum()["weight"].to_dict()
                 for option, count in vote_counts.items():
-                    values['options'][option]['votes'] = count
+                    values["options"][option]["votes"] = count
         return values
 
     # @validator("options", always=True)

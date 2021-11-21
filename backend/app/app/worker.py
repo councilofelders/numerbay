@@ -18,8 +18,7 @@ from app.api import deps
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.models import StakeSnapshot, Model, Poll
-from app.schemas import StakeSnapshotCreate
+from app.models import Model, Poll, StakeSnapshot
 from app.utils import (
     send_email,
     send_failed_artifact_seller_email,
@@ -752,21 +751,34 @@ def batch_update_stake_snapshots() -> None:
         date_creation = datetime.utcnow()
         numerai_models = crud.model.get_leaderboard(tournament=8)
 
-        db_models = db.query(Model).filter(Model.tournament==8).all()
+        db_models = db.query(Model).filter(Model.tournament == 8).all()
         db_models_dict = {}
         for model in db_models:
             db_models_dict[model.name] = model
 
         db_stake_snapshots_dict = {}
         for model in numerai_models:
-            new_snapshot = StakeSnapshot(date_creation=date_creation, name=model['username'], tournament=8,
-                          nmr_staked=model['nmrStaked'], return_13_weeks=model['return13Weeks'], return_52_weeks=model['return52Weeks'])
-            if model['username'] in db_models_dict.keys():
-                new_snapshot.model_id = db_models_dict[model['username']].id
-            db_stake_snapshots_dict[model['username']] = new_snapshot
+            new_snapshot = StakeSnapshot(
+                date_creation=date_creation,
+                name=model["username"],
+                tournament=8,
+                nmr_staked=model["nmrStaked"],
+                return_13_weeks=model["return13Weeks"],
+                return_52_weeks=model["return52Weeks"],
+            )
+            if model["username"] in db_models_dict.keys():
+                new_snapshot.model_id = db_models_dict[model["username"]].id
+            db_stake_snapshots_dict[model["username"]] = new_snapshot
 
         for db_stake_snapshot in (
-            db.query(StakeSnapshot).filter(and_(StakeSnapshot.tournament==8, StakeSnapshot.name.in_(db_stake_snapshots_dict.keys()))).all()
+            db.query(StakeSnapshot)
+            .filter(
+                and_(
+                    StakeSnapshot.tournament == 8,
+                    StakeSnapshot.name.in_(db_stake_snapshots_dict.keys()),
+                )
+            )
+            .all()
         ):
             new_snapshot = db_stake_snapshots_dict.pop(db_stake_snapshot.name)
             new_snapshot.id = db_stake_snapshot.id
@@ -787,15 +799,27 @@ def batch_update_stake_snapshots() -> None:
 
         db_stake_snapshots_dict = {}
         for model in signals_models:
-            new_snapshot = StakeSnapshot(date_creation=date_creation, name=model['username'],
-                          tournament=11, nmr_staked=model['nmrStaked'], return_13_weeks=model['return13Weeks'], return_52_weeks=model['return52Weeks'])
-            if model['username'] in db_models_dict.keys():
-                new_snapshot.model_id = db_models_dict[model['username']].id
-            db_stake_snapshots_dict[model['username']] = new_snapshot
+            new_snapshot = StakeSnapshot(
+                date_creation=date_creation,
+                name=model["username"],
+                tournament=11,
+                nmr_staked=model["nmrStaked"],
+                return_13_weeks=model["return13Weeks"],
+                return_52_weeks=model["return52Weeks"],
+            )
+            if model["username"] in db_models_dict.keys():
+                new_snapshot.model_id = db_models_dict[model["username"]].id
+            db_stake_snapshots_dict[model["username"]] = new_snapshot
 
         for db_stake_snapshot in (
-                db.query(StakeSnapshot).filter(
-                    and_(StakeSnapshot.tournament == 11, StakeSnapshot.name.in_(db_stake_snapshots_dict.keys()))).all()
+            db.query(StakeSnapshot)
+            .filter(
+                and_(
+                    StakeSnapshot.tournament == 11,
+                    StakeSnapshot.name.in_(db_stake_snapshots_dict.keys()),
+                )
+            )
+            .all()
         ):
             new_snapshot = db_stake_snapshots_dict.pop(db_stake_snapshot.name)
             new_snapshot.id = db_stake_snapshot.id
@@ -811,7 +835,9 @@ def batch_update_polls() -> None:
     db = SessionLocal()
     try:
         date_now = datetime.utcnow()
-        expired_polls = db.query(Poll).filter(and_(Poll.date_finish <= date_now, Poll.is_finished.is_(False)))
+        expired_polls = db.query(Poll).filter(
+            and_(Poll.date_finish <= date_now, Poll.is_finished.is_(False))
+        )
         for poll in expired_polls:
             # todo if poll.weight_mode not poll.is_stake_predetermined
             poll.is_finished = True

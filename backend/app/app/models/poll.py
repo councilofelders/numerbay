@@ -1,6 +1,16 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, JSON, Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base

@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Optional
-
 import functools
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy import and_, desc, nulls_last
+from typing import Any, Dict, Optional
+
+from sqlalchemy import and_, desc, nulls_last  # type: ignore
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
@@ -16,15 +15,15 @@ def parse_sort_option(sort: Optional[str]) -> Any:
 
 class CRUDPoll(CRUDBase[Poll, PollCreate, PollUpdate]):
     def search(
-            self,
-            db: Session,
-            *,
-            id: str = None,
-            skip: int = 0,
-            limit: int = None,
-            filters: Dict = None,
-            term: str = None,
-            sort: str = None,
+        self,
+        db: Session,
+        *,
+        id: str = None,
+        skip: int = 0,
+        limit: int = None,
+        filters: Dict = None,
+        term: str = None,
+        sort: str = None,
     ) -> Any:
         query_filters = []
         if id is not None:

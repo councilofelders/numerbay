@@ -1,19 +1,16 @@
 import re
+import secrets
 from datetime import datetime
 from decimal import Decimal
-import numpy as np
 from typing import Any, Dict, List, Union
 
-import secrets
-
-from jose import jwt
-
-from app.core.config import settings
 from fastapi import APIRouter, Body, Depends, HTTPException
+from jose import jwt
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -34,19 +31,14 @@ def search_polls(
     Retrieve polls.
     """
     polls = crud.poll.search(
-        db,
-        id=id,
-        skip=skip,
-        limit=limit,
-        filters=filters,
-        term=term,
-        sort=sort,
+        db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
     )
     return polls
 
 
 @router.post(
-    "/search-authenticated", response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]]
+    "/search-authenticated",
+    response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]],
 )
 def search_polls_authenticated(
     db: Session = Depends(deps.get_db),
@@ -62,17 +54,11 @@ def search_polls_authenticated(
     Retrieve polls (authenticated).
     """
     polls = crud.poll.search(
-        db,
-        id=id,
-        skip=skip,
-        limit=limit,
-        filters=filters,
-        term=term,
-        sort=sort,
+        db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
     )
 
     polls_to_return = []
-    for poll in polls['data']:
+    for poll in polls["data"]:
         voter_id = generate_voter_id(poll, current_user)
         poll_to_return = schemas.Poll.from_orm(poll)
         user_votes = crud.vote.get_multi_by_poll(db, poll_id=poll.id, voter_id=voter_id)
@@ -80,15 +66,15 @@ def search_polls_authenticated(
             poll_to_return.has_voted = True
 
             for v in user_votes:
-                poll_to_return.options[v.option]['selected'] = True
+                poll_to_return.options[v.option]["selected"] = True
 
         for option in poll_to_return.options:
-            if not option.get('selected', False):
-                option['selected'] = False
+            if not option.get("selected", False):
+                option["selected"] = False
 
         polls_to_return.append(poll_to_return)
 
-    polls['data'] = polls_to_return
+    polls["data"] = polls_to_return
     return polls
 
 
@@ -106,8 +92,8 @@ def create_poll(
     if not current_user.is_superuser:
         try:
             if (
-                    not current_user.numerai_api_key_public_id
-                    or not current_user.numerai_api_key_secret
+                not current_user.numerai_api_key_public_id
+                or not current_user.numerai_api_key_secret
             ):
                 raise ValueError
             crud.user.get_numerai_api_user_info(
@@ -136,54 +122,94 @@ def create_poll(
 
     # blind post determination
     if poll_in.is_blind is False and poll_in.is_stake_predetermined is False:
-        raise HTTPException(status_code=400, detail="Post stake determination is only available for blind polls")
+        raise HTTPException(
+            status_code=400,
+            detail="Post stake determination is only available for blind polls",
+        )
 
     # valid max_option
     if poll_in.max_options is not None and poll_in.max_options < 1:
-        raise HTTPException(status_code=400, detail="Max options setting must be at least 1")
+        raise HTTPException(
+            status_code=400, detail="Max options setting must be at least 1"
+        )
 
     # no max_options for single selection poll
     if poll_in.is_multiple is False and poll_in.max_options is not None:
-        raise HTTPException(status_code=400, detail="Max options setting is not available for single selection polls")
+        raise HTTPException(
+            status_code=400,
+            detail="Max options setting is not available for single selection polls",
+        )
 
     # valid weight mode
-    if poll_in.weight_mode not in ["equal", "log_numerai_stake", "log_numerai_balance", "log_balance"]:
+    if poll_in.weight_mode not in [
+        "equal",
+        "log_numerai_stake",
+        "log_numerai_balance",
+        "log_balance",
+    ]:
         raise HTTPException(status_code=400, detail="Invalid weight mode")
 
     # todo support numerai balance mode
     if poll_in.weight_mode == "log_numerai_balance":
-        raise HTTPException(status_code=400, detail="log_numerai_balance weight mode is not yet supported")
+        raise HTTPException(
+            status_code=400,
+            detail="log_numerai_balance weight mode is not yet supported",
+        )
 
     # todo support arbitrary balance mode
     if poll_in.weight_mode == "log_balance":
-        raise HTTPException(status_code=400, detail="log_balance weight mode is not yet supported")
+        raise HTTPException(
+            status_code=400, detail="log_balance weight mode is not yet supported"
+        )
 
     # todo support post stake determination
     if poll_in.is_stake_predetermined is False:
-        raise HTTPException(status_code=400, detail="Post stake determination is not yet supported")
+        raise HTTPException(
+            status_code=400, detail="Post stake determination is not yet supported"
+        )
 
     # valid min stake
     if poll_in.min_stake is not None and poll_in.min_stake <= 0:
-        raise HTTPException(status_code=400,
-                            detail="Min stake threshold must be positive")
+        raise HTTPException(
+            status_code=400, detail="Min stake threshold must be positive"
+        )
 
     # valid min rounds
     if poll_in.min_rounds is not None and poll_in.min_rounds not in [0, 13, 52]:
-        raise HTTPException(status_code=400, detail="Min rounds threshold must be one of 0, 13 or 52")
+        raise HTTPException(
+            status_code=400, detail="Min rounds threshold must be one of 0, 13 or 52"
+        )
 
     # valid clipping range
     if poll_in.clip_low is not None and poll_in.clip_low <= 0:
-        raise HTTPException(status_code=400, detail="Low-side clipping threshold must be positive")
+        raise HTTPException(
+            status_code=400, detail="Low-side clipping threshold must be positive"
+        )
 
     if poll_in.clip_high is not None and poll_in.clip_high <= 0:
-        raise HTTPException(status_code=400, detail="High-side clipping threshold must be positive")
+        raise HTTPException(
+            status_code=400, detail="High-side clipping threshold must be positive"
+        )
 
-    if poll_in.min_stake is not None and poll_in.clip_low is not None and poll_in.clip_low <= poll_in.min_stake:
-        raise HTTPException(status_code=400, detail="Low-side clipping threshold must be greater than min stake threshold")
+    if (
+        poll_in.min_stake is not None
+        and poll_in.clip_low is not None
+        and poll_in.clip_low <= poll_in.min_stake
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Low-side clipping threshold must be greater than min stake threshold",
+        )
 
-    if poll_in.clip_low is not None and poll_in.clip_high is not None and poll_in.clip_high <= poll_in.clip_low:
-        raise HTTPException(status_code=400,
-                            detail="High-side clipping threshold must be greater than low-side clipping threshold")
+    if (
+        poll_in.clip_low is not None
+        and poll_in.clip_high is not None
+        and poll_in.clip_high <= poll_in.clip_low
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="High-side clipping threshold must be greater than low-side clipping threshold",
+        )
 
     poll_in.date_creation = datetime.utcnow()
     poll_in.owner_id = current_user.id
@@ -244,12 +270,12 @@ def delete_poll(
         raise HTTPException(status_code=404, detail="Poll not found")
     if poll.owner_id != current_user.id:
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    poll = crud.poll.remove(db=db, id=id)
+    poll = crud.poll.remove(db=db, id=id)  # type: ignore
     return poll
 
 
 @router.post("/{id}/close", response_model=schemas.Poll)
-def delete_poll(
+def close_poll(
     *,
     db: Session = Depends(deps.get_db),
     id: str,
@@ -267,7 +293,7 @@ def delete_poll(
     return poll
 
 
-def generate_voter_id(poll, user) -> str:
+def generate_voter_id(poll: models.Poll, user: models.User) -> str:
     if poll.is_anonymous:
         # todo other wallet support
         to_encode = {"poll_id": poll.id, "voter_address": user.numerai_wallet_address}
@@ -277,18 +303,18 @@ def generate_voter_id(poll, user) -> str:
         return str(user.id)
 
 
-def get_voter_weight(db: Session, poll, user) -> Decimal:
+def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decimal:
     min_stake = poll.min_stake if poll.min_stake is not None else 0
 
     if poll.weight_mode == "equal":
-        weight = 1
+        weight = Decimal("1")
     elif poll.weight_mode == "log_numerai_stake":
         # Numerai API
         if not user.is_superuser:
             try:
                 if (
-                        not user.numerai_api_key_public_id
-                        or not user.numerai_api_key_secret
+                    not user.numerai_api_key_public_id
+                    or not user.numerai_api_key_secret
                 ):
                     raise ValueError
                 crud.user.get_numerai_api_user_info(
@@ -297,17 +323,25 @@ def get_voter_weight(db: Session, poll, user) -> Decimal:
                 )
             except Exception:
                 raise HTTPException(
-                    status_code=400, detail="Numerai API Error: Insufficient Permission."
+                    status_code=400,
+                    detail="Numerai API Error: Insufficient Permission.",
                 )
 
-        user_models_snapshots = db.query(models.StakeSnapshot).join(models.Model,
-                                                            models.Model.id == models.StakeSnapshot.model_id).filter(
-            models.Model.owner_id == user.id).all()
-        user_nmr_staked = sum([model_snapshot.nmr_staked for model_snapshot in user_models_snapshots])
+        user_models_snapshots = (
+            db.query(models.StakeSnapshot)
+            .join(models.Model, models.Model.id == models.StakeSnapshot.model_id)
+            .filter(models.Model.owner_id == user.id)
+            .all()
+        )
+        user_nmr_staked = sum(
+            [model_snapshot.nmr_staked for model_snapshot in user_models_snapshots]
+        )
 
         # min stake requirement
         if user_nmr_staked <= min_stake:
-            raise HTTPException(status_code=400, detail="You are not eligible for this poll")
+            raise HTTPException(
+                status_code=400, detail="You are not eligible for this poll"
+            )
 
         # min rounds requirement
         if poll.min_rounds == 13:
@@ -317,7 +351,9 @@ def get_voter_weight(db: Session, poll, user) -> Decimal:
                     is_valid = True
                     break
             if not is_valid:
-                raise HTTPException(status_code=400, detail="You are not eligible for this poll")
+                raise HTTPException(
+                    status_code=400, detail="You are not eligible for this poll"
+                )
 
         if poll.min_rounds == 52:
             is_valid = False
@@ -326,7 +362,9 @@ def get_voter_weight(db: Session, poll, user) -> Decimal:
                     is_valid = True
                     break
             if not is_valid:
-                raise HTTPException(status_code=400, detail="You are not eligible for this poll")
+                raise HTTPException(
+                    status_code=400, detail="You are not eligible for this poll"
+                )
 
         # clip stake
         if poll.clip_low and min_stake < user_nmr_staked < poll.clip_low:
@@ -336,7 +374,7 @@ def get_voter_weight(db: Session, poll, user) -> Decimal:
             user_nmr_staked = poll.clip_high
 
         # calculate weight
-        weight = (Decimal(user_nmr_staked)+Decimal('1')).ln()
+        weight = (Decimal(user_nmr_staked) + Decimal("1")).ln()
     elif poll.weight_mode == "log_numerai_balance":
         raise HTTPException(status_code=400, detail="Weight mode not yet supported")
     elif poll.weight_mode == "log_balance":
@@ -372,7 +410,16 @@ def vote(
 
     # Valid number of options
     n_options = len(options)
-    if n_options < 1 or (not poll.is_multiple and n_options != 1) or (poll.is_multiple and n_options > len(poll.options)) or (poll.is_multiple and (poll.max_options is not None) and n_options > poll.max_options):
+    if (
+        n_options < 1
+        or (not poll.is_multiple and n_options != 1)
+        or (poll.is_multiple and n_options > len(poll.options))  # type: ignore
+        or (
+            poll.is_multiple
+            and (poll.max_options is not None)
+            and n_options > poll.max_options
+        )
+    ):
         raise HTTPException(status_code=400, detail="Invalid number of options")
 
     # Valid weight
@@ -393,17 +440,22 @@ def vote(
             "date_vote": date_vote,
             "option": option["value"],
             "voter_id": voter_id,
-            "poll_id": id
+            "poll_id": id,
         }
 
         if poll.is_anonymous is False and poll.weight_mode != "equal":
-            new_vote_dict['voter_address'] = current_user.numerai_wallet_address
+            new_vote_dict["voter_address"] = current_user.numerai_wallet_address
 
-        new_vote_dict['weight_basis'] = weight
+        new_vote_dict["weight_basis"] = weight
         new_vote = schemas.VoteCreate(**new_vote_dict)
         crud.vote.create(db, obj_in=new_vote)
-    return search_polls_authenticated(db, id=id, skip=None,
-    limit=None,
-    filters=None,
-    term=None,
-    sort=None, current_user=current_user)
+    return search_polls_authenticated(
+        db,
+        id=id,
+        skip=None,  # type: ignore
+        limit=None,  # type: ignore
+        filters=None,  # type: ignore
+        term=None,  # type: ignore
+        sort=None,  # type: ignore
+        current_user=current_user,
+    )

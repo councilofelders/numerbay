@@ -153,8 +153,8 @@ def create_order(
     if not current_user.is_superuser:
         try:
             if (
-                    not current_user.numerai_api_key_public_id
-                    or not current_user.numerai_api_key_secret
+                not current_user.numerai_api_key_public_id
+                or not current_user.numerai_api_key_secret
             ):
                 raise ValueError
             crud.user.get_numerai_api_user_info(

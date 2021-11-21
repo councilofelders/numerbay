@@ -14,12 +14,14 @@ class VoteBase(BaseModel):
     voter_address: Optional[str] = None
     poll_id: Optional[str] = None
 
+
 # Properties to receive on vote creation
 class VoteCreate(VoteBase):
     date_vote: datetime
     option: int
     voter_id: str
     poll_id: str
+
 
 # Properties to receive on vote update
 class VoteUpdate(VoteBase):
