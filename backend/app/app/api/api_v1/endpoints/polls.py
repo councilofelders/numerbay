@@ -33,6 +33,16 @@ def search_polls(
     polls = crud.poll.search(
         db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
     )
+
+    polls_to_return = []
+    for poll in polls["data"]:
+        poll_to_return = schemas.Poll.from_orm(poll)
+        for option in poll_to_return.options:
+            if not option.get("selected", False):
+                option["selected"] = False
+        polls_to_return.append(poll_to_return)
+
+    polls["data"] = polls_to_return
     return polls
 
 
