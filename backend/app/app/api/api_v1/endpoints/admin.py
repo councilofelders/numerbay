@@ -16,29 +16,6 @@ from app.utils import send_new_confirmed_sale_email
 router = APIRouter()
 
 
-@router.post("/create-voting")
-def create_voting(*, db: Session = Depends(deps.get_db),) -> Any:
-    poll = schemas.PollCreate(
-        id="a",
-        date_creation=datetime.datetime.utcnow(),
-        date_finish=datetime.datetime.utcnow(),
-        topic="What programming languages do you use for Numerai?",
-        options=[
-            {"value": 1, "text": "Python"},
-            {"value": 2, "text": "R"},
-            {"value": 3, "text": "Java"},
-            {"value": 4, "text": "C/C++"},
-            {"value": 5, "text": "Matlab"},
-            {"value": 6, "text": "Julia"},
-            {"value": 7, "text": "Others"},
-        ],
-        is_multiple=True,
-        owner_id=2,
-    )
-    crud.poll.create(db, obj_in=poll)
-    return None
-
-
 @router.post("/create-product-options")
 def create_product_options(
     *,

@@ -879,6 +879,14 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
             "task": "app.worker.update_round_rollover",
             "schedule": crontab(day_of_week="mon", hour=14, minute=00),
         },
+        "batch_update_stake_snapshots": {
+            "task": "app.worker.batch_update_stake_snapshots",
+            "schedule": crontab(hour=0, minute=0),
+        },
+        "batch_update_polls": {
+            "task": "app.worker.batch_update_polls",
+            "schedule": crontab(hour=0, minute=0),
+        },
     }
     sender.add_periodic_task(
         settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
