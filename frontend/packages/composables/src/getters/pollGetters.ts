@@ -27,7 +27,7 @@ export const getPollWeightMode = (poll: any): string => (poll as any)?.weight_mo
 
 export const getPollStakeLimit = (poll: any): string => (poll as any)?.stake_limit ? `${(poll as any)?.stake_limit} NMR` : '-';
 
-export const getPollIsActive = (poll: any): boolean => (poll as any)?.date_finish ? (Date.parse((poll as any)?.date_finish) > Date.now()) : false;
+export const getPollIsActive = (poll: any): boolean => (poll as any)?.date_finish ? ((Date.parse((poll as any)?.date_finish) > Date.now()) && !(poll as any)?.is_finished) : false;
 
 export const getPollExpirationRound = (poll: any): number => (poll as any)?.expiration_round || null;
 

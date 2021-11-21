@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
-from sqlalchemy import and_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -410,6 +410,11 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             db.commit()
 
             # Connect stake snapshots
+            db.query(models.StakeSnapshot).filter(
+                or_(and_(models.StakeSnapshot.name.in_([model["name"] for model in numerai_models if int(model["tournament"])==8]), models.StakeSnapshot.tournament == 8),
+                and_(models.StakeSnapshot.name.in_([model["name"] for model in numerai_models if int(model["tournament"])==11]), models.StakeSnapshot.tournament == 11))
+            ).update({models.StakeSnapshot.model_id: select(models.Model.id).where(and_(models.Model.name == models.StakeSnapshot.name, models.Model.tournament == models.StakeSnapshot.tournament)).scalar_subquery()}, synchronize_session=False)
+            db.commit()
 
 
             print(f"Updated user: {user_json['username']}")

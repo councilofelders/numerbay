@@ -415,8 +415,8 @@
                     :rows="10"
                   />
                 </ValidationProvider>-->
-                <div v-if="error.listingModal">
-                  {{ error.listingModal }}
+                <div v-if="error.pollModal">
+                  {{ error.pollModal }}
                 </div>
                 <SfButton v-e2e="'listing-modal-submit'"
                   type="submit"
@@ -470,11 +470,9 @@ import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist
 import {
   userGetters,
   pollGetters,
-  productGetters,
   useUser,
   useCategory,
   usePoll,
-  useProduct,
   useNumerai,
   useGlobals
 } from '@vue-storefront/numerbay';
@@ -663,7 +661,7 @@ export default {
       this.form.options.splice(index, 1);
     },
     addOption() {
-      this.form.options.push({'text': ''})
+      this.form.options.push({text: ''});
     }
   },
   setup() {
@@ -693,7 +691,7 @@ export default {
       clipLow: poll ? poll.clip_low : null,
       clipHigh: poll ? poll.clip_high : null,
       // expirationRound: pollGetters.getExpirationRound(poll),
-      options: poll ? poll.options : [{"text":""}, {"text":""}]
+      options: poll ? poll.options : [{text: ''}, {text: ''}]
     });
     const form = ref(resetForm(currentPoll));
 
@@ -702,7 +700,7 @@ export default {
     });
 
     const resetErrorValues = () => {
-      error.listingModal = null;
+      error.pollModal = null;
     };
 
     watch(currentPoll, (poll) => {
@@ -718,7 +716,7 @@ export default {
 
       const hasPollErrors = pollError.value.listingModal;
       if (hasPollErrors) {
-        error.listingModal = pollError.value.listingModal?.message;
+        error.pollModal = pollError.value.listingModal?.message;
         return;
       }
 
@@ -728,7 +726,7 @@ export default {
     };
 
     const handlePollForm = async () => {
-      form.value.options.map((o, i)=>o.value=i);
+      form.value.options.map((o, i)=>o.value = i);
 
       if (!currentPoll.value) {
         return handleForm(createPoll)();

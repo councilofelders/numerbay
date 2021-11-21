@@ -28,13 +28,14 @@
               <span class="product__meta__item">Weight Mode:&nbsp;<span class="product__subheader__highlight">{{ poll.weight_mode.toUpperCase() }}</span></span>
               <span class='divider-pipe desktop-only'>|</span>
               <span class="product__meta__item">End Date:&nbsp;<span class="product__subheader__highlight">{{ pollGetters.getEndDate(poll) }}</span></span>
+              <span class='divider-pipe desktop-only'>|</span>
+              <span class="product__meta__item">Anonymous Vote:&nbsp;<span class="product__subheader__highlight">{{ poll.is_anonymous ? 'YES':'NO' }}</span></span>
             </div>
           </div>
         </div>
         <LazyHydrate when-idle>
           <SfTabs id="tabs" :open-tab="1" class="product__tabs">
             <SfTab title="Poll">
-              {{poll}}
               {{ poll.description }}
               <vue-poll :can-show-results="!poll.is_blind || poll.is_finished" :multiple="poll.is_multiple" :maxOptions="poll.max_options" :answers="poll.options" @addvote="addVote" :showResults="poll.has_voted || poll.is_finished"/>
             </SfTab>
@@ -85,7 +86,7 @@ export default {
   transition: 'fade',
   setup(props, context) {
     const { id } = context.root.$route.params;
-    const { polls, search, vote, loading: pollLoading } = usePoll(String(id));
+    const { polls, search, vote, loading: pollLoading, error: pollError } = usePoll(String(id));
     const { user, isAuthenticated } = useUser();
     const { globals, getGlobals, loading: globalsLoading } = useGlobals();
     const { toggleLoginModal } = useUiState();
@@ -104,7 +105,14 @@ export default {
       vote,
       globals,
       globalsLoading,
-      pollLoading
+      pollLoading,
+      pollError,
+      user,
+      isAuthenticated,
+      send,
+      toggleLoginModal,
+      search,
+      id
     };
   },
   components: {
@@ -133,18 +141,48 @@ export default {
     LazyHydrate,
     NumeraiChart,
     BuyButton,
-    ProductAddReviewForm,
+    ProductAddReviewForm
   },
   // test
   methods: {
-      addVote(obj){
-          console.log('You voted ' + JSON.stringify(obj) + '!');
-          if (this.poll.is_multiple) {
-            this.vote({id: this.poll.id, options: obj['arSelected']})
-          } else {
-            this.vote({id: this.poll.id, options: [obj]})
-          }
+    async addVote(obj) {
+      if (!this.isAuthenticated) {
+        await this.search({ id: this.id });
+        this.send({
+          message: 'You need to log in to vote',
+          type: 'info'
+        });
+        this.toggleLoginModal();
+        return;
       }
+      // if (!this.user.numerai_api_key_public_id) {
+      //   this.search({ id: this.id });
+      //   this.send({
+      //     message: 'This action requires Numerai API Key',
+      //     type: 'info',
+      //     action: {text: 'Set Numerai API Key', onClick: ()=>this.$router.push('/my-account/numerai-api')},
+      //     persist: true
+      //   });
+      //   return;
+      // }
+      if (this.poll.is_multiple) {
+        await this.vote({id: this.poll.id, options: obj.arSelected});
+        if (this.pollError.voting) {
+          await this.send({
+            message: this.pollError.voting.message,
+            type: 'danger'
+          });
+        }
+      } else {
+        await this.vote({id: this.poll.id, options: [obj]});
+        if (this.pollError.voting) {
+          this.send({
+            message: this.pollError.voting.message,
+            type: 'danger'
+          });
+        }
+      }
+    }
   },
   data() {
     return {

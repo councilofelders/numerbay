@@ -35,6 +35,15 @@ const params: UsePollFactoryParams<any, any> = {
     return response;
   },
 
+  closePoll: async (context: Context, {id}) => {
+    Logger.debug('closePoll');
+    const response = await context.$numerbay.api.closePoll({id});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
+
   vote: async (context: Context, {id, options}) => {
     Logger.debug('vote');
     const response = await context.$numerbay.api.votePoll({id, options});

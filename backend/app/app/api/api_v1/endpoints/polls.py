@@ -102,6 +102,23 @@ def create_poll(
     """
     Create new poll.
     """
+    # Numerai API
+    if not current_user.is_superuser:
+        try:
+            if (
+                    not current_user.numerai_api_key_public_id
+                    or not current_user.numerai_api_key_secret
+            ):
+                raise ValueError
+            crud.user.get_numerai_api_user_info(
+                public_id=current_user.numerai_api_key_public_id,
+                secret_key=current_user.numerai_api_key_secret,
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=400, detail="Numerai API Error: Insufficient Permission."
+            )
+
     # id
     if poll_in.id is not None and re.match(r"^[\w-]+$", poll_in.id) is None:  # type: ignore
         raise HTTPException(
@@ -231,6 +248,25 @@ def delete_poll(
     return poll
 
 
+@router.post("/{id}/close", response_model=schemas.Poll)
+def delete_poll(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: str,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Delete an poll.
+    """
+    poll = crud.poll.get(db=db, id=id)
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    if poll.owner_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    poll = crud.poll.update(db=db, db_obj=poll, obj_in={"is_finished": True})
+    return poll
+
+
 def generate_voter_id(poll, user) -> str:
     if poll.is_anonymous:
         # todo other wallet support
@@ -247,6 +283,23 @@ def get_voter_weight(db: Session, poll, user) -> Decimal:
     if poll.weight_mode == "equal":
         weight = 1
     elif poll.weight_mode == "log_numerai_stake":
+        # Numerai API
+        if not user.is_superuser:
+            try:
+                if (
+                        not user.numerai_api_key_public_id
+                        or not user.numerai_api_key_secret
+                ):
+                    raise ValueError
+                crud.user.get_numerai_api_user_info(
+                    public_id=user.numerai_api_key_public_id,
+                    secret_key=user.numerai_api_key_secret,
+                )
+            except Exception:
+                raise HTTPException(
+                    status_code=400, detail="Numerai API Error: Insufficient Permission."
+                )
+
         user_models_snapshots = db.query(models.StakeSnapshot).join(models.Model,
                                                             models.Model.id == models.StakeSnapshot.model_id).filter(
             models.Model.owner_id == user.id).all()
@@ -325,7 +378,11 @@ def vote(
     # Valid weight
     weight = get_voter_weight(db, poll, current_user)
 
+    # Not voted already
     voter_id = generate_voter_id(poll, current_user)
+    existing_votes = crud.vote.get_multi_by_poll(db, poll_id=poll.id, voter_id=voter_id)
+    if len(existing_votes) > 0:
+        raise HTTPException(status_code=400, detail="You already voted")
 
     for option in options:
         # Valid options
@@ -338,6 +395,9 @@ def vote(
             "voter_id": voter_id,
             "poll_id": id
         }
+
+        if poll.is_anonymous is False and poll.weight_mode != "equal":
+            new_vote_dict['voter_address'] = current_user.numerai_wallet_address
 
         new_vote_dict['weight_basis'] = weight
         new_vote = schemas.VoteCreate(**new_vote_dict)

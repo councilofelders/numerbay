@@ -39,9 +39,9 @@
                 <SfButton class="sf-button--text action__element" @click="handlePollClick(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Edit') }}
                 </SfButton>
-<!--                <SfButton class="sf-button&#45;&#45;text action__element" @click="handlePollDelete(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
-                  {{ $t('Delete') }}
-                </SfButton>-->
+                <SfButton v-if="pollGetters.getIsActive(poll)" class="sf-button--text action__element" @click="handlePollClose(poll)" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
+                  {{ $t('Close') }}
+                </SfButton>
               </div>
             </SfTableData>
           </SfTableRow>
@@ -64,11 +64,9 @@ import { computed, ref } from '@vue/composition-api';
 import { useUiState } from '~/composables';
 import {
   pollGetters,
-  useProduct,
   usePoll,
   useUser,
   userGetters,
-  useCategory,
   useNumerai,
   useGlobals
 } from '@vue-storefront/numerbay';
@@ -101,12 +99,17 @@ export default {
 
     onSSR(async () => {
     });
-    const { polls, search } = usePoll('polls');
+    const { polls, search, closePoll } = usePoll('polls');
     const { togglePollModal } = useUiState();
     const currentPoll = ref(null);
 
     const handlePollClick = async (poll) => {
       togglePollModal(poll);
+    };
+
+    const handlePollClose = async (poll) => {
+      await closePoll({id: poll.id});
+      await search({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
     };
 
     onSSR(async () => {
@@ -121,18 +124,6 @@ export default {
       'Action'
     ];
 
-    const getStatusTextClass = (order) => {
-      const status = orderGetters.getStatus(order);
-      switch (status) {
-        case AgnosticOrderStatus.Open:
-          return 'text-warning';
-        case AgnosticOrderStatus.Complete:
-          return 'text-success';
-        default:
-          return '';
-      }
-    };
-
     return {
       tableHeaders,
       numeraiLoading,
@@ -140,8 +131,8 @@ export default {
       getNumeraiModels,
       user: computed(() => user?.value ? user.value : null),
       polls: computed(() => polls?.value?.data ? polls.value.data : []),
-      getStatusTextClass,
       handlePollClick,
+      handlePollClose,
       userGetters,
       pollGetters,
       currentPoll,

@@ -19,7 +19,6 @@ class Vote(Base):
     date_vote = Column(DateTime, index=True, nullable=False)
     option = Column(Integer, index=True, nullable=False)
     weight_basis = Column(Numeric)
-    final_weight = Column(Numeric)
     voter_id = Column(String, index=True, nullable=False)
     voter_address = Column(String)
     poll_id = Column(String, ForeignKey("poll.id", ondelete="CASCADE"))

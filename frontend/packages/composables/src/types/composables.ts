@@ -150,7 +150,8 @@ export interface UseReview<REVIEW,
 
 export interface UsePollErrors {
     search: Error;
-    listingModal: Error;
+    pollModal: Error;
+    voting: Error;
 }
 
 export interface UsePoll<POLLS, POLL_SEARCH_PARAMS> {
@@ -161,6 +162,7 @@ export interface UsePoll<POLLS, POLL_SEARCH_PARAMS> {
   createPoll(params: { poll: any }): Promise<void>;
   updatePoll(params: { id: string, poll: any }): Promise<void>;
   deletePoll(params: { id: string }): Promise<void>;
+  closePoll(params: { id: string }): Promise<void>;
   vote(params: { id: string, options: any[] }): Promise<void>;
   [x: string]: any;
 }

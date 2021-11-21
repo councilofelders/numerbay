@@ -10,7 +10,6 @@ class VoteBase(BaseModel):
     date_vote: Optional[datetime] = None
     option: Optional[int] = None
     weight_basis: Optional[Decimal] = None
-    final_weight: Optional[Decimal] = None
     voter_id: Optional[str] = None
     voter_address: Optional[str] = None
     poll_id: Optional[str] = None

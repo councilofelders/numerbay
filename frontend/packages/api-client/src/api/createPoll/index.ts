@@ -15,7 +15,7 @@ export default async function createPoll(context, params, customQuery?: CustomQu
     date_finish: params.dateFinish,
     is_multiple: params.isMultiple,
     max_options: params.maxOptions,
-    is_nonymous: params.isAnonymous,
+    is_anonymous: params.isAnonymous,
     is_blind: params.isBlind,
     weight_mode: params.weightMode,
     is_stake_predetermined: params.isStakePredetermined,

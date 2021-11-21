@@ -118,7 +118,9 @@ export default {
     const totalItems = computed(() => wishlistGetters.getTotalItems(wishlist.value));
 
     onSSR(async () => {
-      await loadWishlist();
+      if (isAuthenticated.value) {
+        await loadWishlist();
+      }
     });
 
     return {

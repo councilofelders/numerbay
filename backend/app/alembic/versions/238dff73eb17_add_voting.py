@@ -1,8 +1,8 @@
 """Add Voting
 
-Revision ID: 2972c22341f4
+Revision ID: 238dff73eb17
 Revises: 78477dc7bb95
-Create Date: 2021-11-20 13:04:51.410116
+Create Date: 2021-11-21 02:25:08.401934
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2972c22341f4'
+revision = '238dff73eb17'
 down_revision = '78477dc7bb95'
 branch_labels = None
 depends_on = None
@@ -67,7 +67,6 @@ def upgrade():
     sa.Column('date_vote', sa.DateTime(), nullable=False),
     sa.Column('option', sa.Integer(), nullable=False),
     sa.Column('weight_basis', sa.Numeric(), nullable=True),
-    sa.Column('final_weight', sa.Numeric(), nullable=True),
     sa.Column('voter_id', sa.String(), nullable=False),
     sa.Column('voter_address', sa.String(), nullable=True),
     sa.Column('poll_id', sa.String(), nullable=True),

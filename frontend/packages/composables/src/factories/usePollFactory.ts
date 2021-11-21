@@ -8,6 +8,7 @@ export interface UsePollFactoryParams<POLLS, POLL_SEARCH_PARAMS extends any> ext
   createPoll: (context: Context, params: any) => Promise<any>;
   updatePoll: (context: Context, params: any) => Promise<any>;
   deletePoll: (context: Context, params: any) => Promise<any>;
+  closePoll: (context: Context, params: any) => Promise<any>;
   vote: (context: Context, params: any) => Promise<any>;
 }
 
@@ -21,7 +22,8 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
 
     const errorsFactory = (): UsePollErrors => ({
       search: null,
-      listingModal: null
+      pollModal: null,
+      voting: null
     });
 
     const error: Ref<UsePollErrors> = sharedRef(errorsFactory(), `usePoll-error-${id}`);
@@ -52,9 +54,9 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
       try {
         loading.value = true;
         await _factoryParams.createPoll({poll: providedPoll});
-        error.value.listingModal = null;
+        error.value.pollModal = null;
       } catch (err) {
-        error.value.listingModal = err;
+        error.value.pollModal = err;
         Logger.error('usePoll/createPoll', err);
       } finally {
         loading.value = false;
@@ -68,9 +70,9 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
       try {
         loading.value = true;
         await _factoryParams.updatePoll({id, poll: providedPoll});
-        error.value.listingModal = null;
+        error.value.pollModal = null;
       } catch (err) {
-        error.value.listingModal = err;
+        error.value.pollModal = err;
         Logger.error('usePoll/updatePoll', JSON.stringify(err));
       } finally {
         loading.value = false;
@@ -84,10 +86,26 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
       try {
         loading.value = true;
         await _factoryParams.deletePoll({id});
-        error.value.listingModal = null;
+        error.value.pollModal = null;
       } catch (err) {
-        error.value.listingModal = err;
+        error.value.pollModal = err;
         Logger.error('usePoll/deletePoll', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const closePoll = async ({id}) => {
+      Logger.debug('usePollFactory.closePoll', id);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        await _factoryParams.closePoll({id});
+        error.value.pollModal = null;
+      } catch (err) {
+        error.value.pollModal = err;
+        Logger.error('usePoll/closePoll', err);
       } finally {
         loading.value = false;
       }
@@ -100,9 +118,9 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
       try {
         loading.value = true;
         polls.value = await _factoryParams.vote({id, options});
-        error.value.listingModal = null;
+        error.value.voting = null;
       } catch (err) {
-        error.value.listingModal = err;
+        error.value.voting = err;
         Logger.error('usePoll/vote', JSON.stringify(err));
       } finally {
         loading.value = false;
@@ -114,6 +132,7 @@ export function usePollFactory<POLLS, POLL_SEARCH_PARAMS>(
       createPoll,
       updatePoll,
       deletePoll,
+      closePoll,
       vote,
       polls: computed(() => polls.value),
       loading: computed(() => loading.value),

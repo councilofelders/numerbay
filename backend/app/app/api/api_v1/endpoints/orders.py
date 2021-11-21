@@ -149,6 +149,23 @@ def create_order(
             detail="Specifying Numerai model ID for submission is required for this product option",
         )
 
+    # Numerai API
+    if not current_user.is_superuser:
+        try:
+            if (
+                    not current_user.numerai_api_key_public_id
+                    or not current_user.numerai_api_key_secret
+            ):
+                raise ValueError
+            crud.user.get_numerai_api_user_info(
+                public_id=current_user.numerai_api_key_public_id,
+                secret_key=current_user.numerai_api_key_secret,
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=400, detail="Numerai API Error: Insufficient Permission."
+            )
+
     # Numerai api permissions
     if product_option.mode != "file" or (
         submit_model_id is not None

@@ -169,7 +169,9 @@ export default {
     onSSR(async () => {
       await loadUser();
       await loadCart();
-      await loadWishlist();
+      if (isAuthenticated.value) {
+        await loadWishlist();
+      }
     });
 
     const closeSearch = () => {

@@ -17,16 +17,6 @@
       class="my-account"
       @click:change="changeActivePage"
     >
-      <SfContentCategory title="Account">
-        <SfContentPage title="My profile">
-          <MyProfile />
-        </SfContentPage>
-        <SfContentPage title="Numerai API">
-          <NumeraiApi />
-        </SfContentPage>
-        <SfContentPage title="Log out" />
-      </SfContentCategory>
-
       <SfContentCategory title="Buyer">
         <SfContentPage title="Order history">
           <OrderHistory />
@@ -50,6 +40,16 @@
         <SfContentPage title="My polls">
           <MyPolls />
         </SfContentPage>
+      </SfContentCategory>
+
+      <SfContentCategory title="Account">
+        <SfContentPage title="My profile">
+          <MyProfile />
+        </SfContentPage>
+        <SfContentPage title="Numerai API">
+          <NumeraiApi />
+        </SfContentPage>
+        <SfContentPage title="Log out" />
       </SfContentCategory>
 
     </SfContentPages>
