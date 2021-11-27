@@ -15,6 +15,11 @@ class PollBase(BaseModel):
     is_blind: Optional[bool] = None
 
 
+class PollOption(BaseModel):
+    value: int
+    text: str
+
+
 # Properties to receive on poll creation
 class PollCreate(PollBase):
     id: Optional[str] = None
@@ -30,13 +35,13 @@ class PollCreate(PollBase):
     min_rounds: Optional[Decimal] = None
     clip_low: Optional[Decimal] = None
     clip_high: Optional[Decimal] = None
-    options: List[Dict]
+    options: List[PollOption]
     owner_id: Optional[int] = None
 
 
 # Properties to receive on poll update
 class PollUpdate(PollBase):
-    options: Optional[List[Dict]] = None
+    options: Optional[List[PollOption]] = None
 
 
 # Properties shared by models stored in DB

@@ -190,6 +190,16 @@ def create_poll(
             status_code=400, detail="Min rounds threshold must be one of 0, 13 or 52"
         )
 
+    # no clipping for non-stake weighted polls
+    if poll_in.weight_mode not in [
+        "log_numerai_stake",
+        "log_numerai_balance",
+        "log_balance",
+    ] and (poll_in.clip_low is not None or poll_in.clip_high is not None):
+        raise HTTPException(
+            status_code=400, detail="Clipping is only applicable to NMR weighted modes"
+        )
+
     # valid clipping range
     if poll_in.clip_low is not None and poll_in.clip_low <= 0:
         raise HTTPException(
@@ -220,6 +230,19 @@ def create_poll(
             status_code=400,
             detail="High-side clipping threshold must be greater than low-side clipping threshold",
         )
+
+    # valid number of options
+    n_options = len(poll_in.options)
+    if (
+        n_options < 1
+        or (not poll_in.is_multiple and n_options != 1)
+        or (
+            poll_in.is_multiple
+            and (poll_in.max_options is not None)
+            and n_options < poll_in.max_options
+        )
+    ):
+        raise HTTPException(status_code=400, detail="Invalid number of options")
 
     poll_in.date_creation = datetime.utcnow()
     poll_in.owner_id = current_user.id
@@ -350,7 +373,8 @@ def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decim
         # min stake requirement
         if user_nmr_staked <= min_stake:
             raise HTTPException(
-                status_code=400, detail="You are not eligible for this poll"
+                status_code=400,
+                detail=f"You are not eligible for this poll: need to stake more than {min_stake} NMR",
             )
 
         # min rounds requirement
@@ -362,7 +386,8 @@ def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decim
                     break
             if not is_valid:
                 raise HTTPException(
-                    status_code=400, detail="You are not eligible for this poll"
+                    status_code=400,
+                    detail="You are not eligible for this poll: need to have at least one active model for more than 13 weeks",
                 )
 
         if poll.min_rounds == 52:
@@ -373,7 +398,8 @@ def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decim
                     break
             if not is_valid:
                 raise HTTPException(
-                    status_code=400, detail="You are not eligible for this poll"
+                    status_code=400,
+                    detail="You are not eligible for this poll: need to have at least one active model for more than 52 weeks",
                 )
 
         # clip stake
@@ -395,7 +421,9 @@ def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decim
     return weight
 
 
-@router.post("/{id}")
+@router.post(
+    "/{id}", response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]],
+)
 def vote(
     *,
     db: Session = Depends(deps.get_db),
