@@ -182,9 +182,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
             self.update(db, db_obj=user, obj_in=user_update_json)  # type: ignore
             return True
+        except ValueError as e:
+            if "invalid or has expired" in str(e):  # invalid API keys
+                print(f"Invalid API key for user {user_json['username']}: {e}")
+                return False
         except Exception as e:
             print(f"Update failed user (Exception): {user_json['username']}: {e}")
-            return False
+            raise e
+        return False
 
 
 user = CRUDUser(User)

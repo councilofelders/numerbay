@@ -105,15 +105,29 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def update_model_subtask(user_json: Dict) -> Optional[Any]:
+def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
     db = SessionLocal()
     try:
         # Update user info
         crud.user.update_numerai_api(db, user_json)
         # Update user models
         return crud.model.update_model(db, user_json)
+    except Exception as e:
+        print(
+            f"Error updating model scores for user {user_json['username']}: [{e}], {retries} retries remaining"
+        )
+        if retries > 0:
+            print(
+                f"Retrying updating model scores for user {user_json['username']} in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
+            )
+            celery_app.send_task(
+                "app.worker.update_model_subtask",
+                countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+                kwargs=dict(user_json=user_json, retries=retries - 1),
+            )
     finally:
         db.close()
+    return None
 
 
 @celery_app.task  # (acks_late=True)
@@ -127,38 +141,60 @@ def batch_update_models_task() -> None:
         # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
         # commit_models_subtask.s(0)).delay()
         group(
-            [update_model_subtask.s(jsonable_encoder(user)) for user in users]
+            [
+                update_model_subtask.s(jsonable_encoder(user), retries=10).set(
+                    countdown=i // 5
+                )
+                for i, user in enumerate(users)
+            ]
         ).delay()
     finally:
         db.close()
 
 
 @celery_app.task  # (acks_late=True)
-def batch_update_model_scores_task() -> None:
-    pipeline_status = crud.model.get_numerai_pipeline_status(tournament=8)
-    if pipeline_status["isScoringDay"]:
-        if pipeline_status.get("resolvedAt", None):
-            print("Numerai pipeline completed, update model scores...")
-            db = SessionLocal()
-            try:
-                users = crud.user.search(
-                    db, filters={"numerai_api_key_public_id": ["any"]}, limit=None  # type: ignore
-                )["data"]
-                print(f"total: {len(users)}")
-                # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
-                # commit_models_subtask.s(0)).delay()
-                group(
-                    [update_model_subtask.s(jsonable_encoder(user)) for user in users]
-                ).apply_async(countdown=60)
-            finally:
-                db.close()
-        else:
+def batch_update_model_scores_task(retries: int = 0) -> None:
+    try:
+        pipeline_status = crud.model.get_numerai_pipeline_status(tournament=8)
+        if pipeline_status["isScoringDay"]:
+            if pipeline_status.get("resolvedAt", None):
+                print("Numerai pipeline completed, update model scores...")
+                db = SessionLocal()
+                try:
+                    users = crud.user.search(
+                        db, filters={"numerai_api_key_public_id": ["any"]}, limit=None  # type: ignore
+                    )["data"]
+                    print(f"total: {len(users)}")
+                    # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
+                    # commit_models_subtask.s(0)).delay()
+                    group(
+                        [
+                            update_model_subtask.s(
+                                jsonable_encoder(user), retries=10
+                            ).set(countdown=60 + i // 5)
+                            for i, user in enumerate(users)
+                        ]
+                    )
+                finally:
+                    db.close()
+            else:
+                print(
+                    f"Numerai pipeline not ready, checking again in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
+                )
+                celery_app.send_task(
+                    "app.worker.batch_update_model_scores_task",
+                    countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+                )
+    except Exception as e:
+        print(f"Error starting model scores update [{e}], {retries} retries remaining")
+        if retries > 0:
             print(
-                f"Numerai pipeline not ready, checking again in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
+                f"Retrying starting model scores update in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
             )
             celery_app.send_task(
                 "app.worker.batch_update_model_scores_task",
                 countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+                kwargs=dict(retries=retries - 1),
             )
 
 

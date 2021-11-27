@@ -450,9 +450,14 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
             print(f"Updated user: {user_json['username']}")
             return user_json["username"]
+        except ValueError as e:
+            if "invalid or has expired" in str(e):  # invalid API keys
+                print(f"Invalid API key for user {user_json['username']}: {e}")
+                return None
         except Exception as e:
             print(f"Update failed user (Exception): {user_json['username']}: {e}")
-            return None
+            raise e
+        return None
 
     def batch_update_models(self, db: Session) -> bool:
         try:
