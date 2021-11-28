@@ -184,6 +184,7 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
                 celery_app.send_task(
                     "app.worker.batch_update_model_scores_task",
                     countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+                    kwargs=dict(retries=retries),
                 )
     except Exception as e:
         print(f"Error starting model scores update [{e}], {retries} retries remaining")
@@ -898,6 +899,7 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         "batch_update_model_scores": {
             "task": "app.worker.batch_update_model_scores_task",
             "schedule": crontab(day_of_week="tue-sat", hour=14, minute=0),
+            "kwargs": dict(retries=10)
         },
         # "update_globals_task": {
         #     "task": "app.worker.update_globals_task",

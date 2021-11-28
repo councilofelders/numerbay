@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -54,7 +54,8 @@ def create_order(
     Create new order.
     """
     # record time immediately to prevent timing issue
-    date_order = datetime.utcnow()
+    # todo resolve timing issue
+    date_order = datetime.utcnow() #-timedelta(seconds=40)
 
     # Product exists
     product = crud.product.get(db=db, id=id)
