@@ -899,7 +899,7 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         "batch_update_model_scores": {
             "task": "app.worker.batch_update_model_scores_task",
             "schedule": crontab(day_of_week="tue-sat", hour=14, minute=0),
-            "kwargs": dict(retries=10)
+            "kwargs": dict(retries=10),
         },
         # "update_globals_task": {
         #     "task": "app.worker.update_globals_task",
