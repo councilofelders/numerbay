@@ -1,3 +1,4 @@
+import functools
 import io
 import sys
 from datetime import datetime, timedelta, timezone
@@ -9,16 +10,17 @@ import requests
 from celery import group
 from celery.schedules import crontab
 from fastapi.encoders import jsonable_encoder
+from google.api_core.exceptions import NotFound
 from numerapi import NumerAPI
 from raven import Client
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 
 from app import crud
 from app.api import deps
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.models import Model, Poll, StakeSnapshot
+from app.models import Artifact, Category, Model, Poll, Product, StakeSnapshot
 from app.utils import (
     send_email,
     send_failed_artifact_seller_email,
@@ -883,6 +885,55 @@ def batch_update_polls() -> None:
         db.close()
 
 
+@celery_app.task  # (acks_late=True)
+def batch_prune_storage() -> None:
+    db = SessionLocal()
+    try:
+        query_filters = [Category.is_per_round, Artifact.state != "pruned"]
+        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+
+        subq = (
+            db.query(
+                Artifact.product_id,
+                func.max(Artifact.round_tournament).label("max_round"),
+            )
+            .group_by(Artifact.product_id)
+            .subquery()
+        )
+
+        artifacts_to_prune = (
+            db.query(Artifact)
+            .join(Artifact.product)
+            .join(Product.category)
+            .join(
+                subq,
+                and_(
+                    Artifact.product_id == subq.c.product_id,
+                    Artifact.round_tournament < subq.c.max_round,
+                ),
+            )
+            .filter(query_filter)
+            .all()
+        )
+
+        print(f"{len(artifacts_to_prune)} artifacts to prune")
+
+        bucket = deps.get_gcs_bucket()
+        for artifact in artifacts_to_prune:
+            object_name = artifact.object_name
+            if object_name:
+                try:
+                    blob = bucket.blob(object_name)
+                    blob.delete()
+                except NotFound:
+                    pass
+
+            artifact.state = "pruned"
+        db.commit()
+    finally:
+        db.close()
+
+
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
     print("Setup Cron Tasks")
@@ -924,6 +975,10 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         "batch_update_polls": {
             "task": "app.worker.batch_update_polls",
             "schedule": crontab(hour=0, minute=0),
+        },
+        "batch_prune_storage": {
+            "task": "app.worker.batch_prune_storage",
+            "schedule": crontab(day_of_week="wed", hour=0, minute=0),
         },
     }
     sender.add_periodic_task(

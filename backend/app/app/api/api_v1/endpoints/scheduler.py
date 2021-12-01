@@ -95,9 +95,18 @@ def add_job_validate_numerai_models_stake(
 
 
 @router.post("/stake-snapshot")
-def update_stake_snapshots(
+def add_job_update_stake_snapshots(
     *, current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     celery_app.send_task("app.worker.batch_update_stake_snapshots")
+
+    return {"msg": "success!"}
+
+
+@router.post("/prune-storage")
+def add_job_prune_storage(
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.batch_prune_storage")
 
     return {"msg": "success!"}
