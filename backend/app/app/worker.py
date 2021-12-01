@@ -174,7 +174,7 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
                             ).set(countdown=60 + i // 5)
                             for i, user in enumerate(users)
                         ]
-                    )
+                    ).apply_async()
                 finally:
                     db.close()
             else:
