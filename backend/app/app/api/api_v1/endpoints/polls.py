@@ -233,14 +233,10 @@ def create_poll(
 
     # valid number of options
     n_options = len(poll_in.options)
-    if (
-        n_options < 1
-        or (not poll_in.is_multiple and n_options != 1)
-        or (
-            poll_in.is_multiple
-            and (poll_in.max_options is not None)
-            and n_options < poll_in.max_options
-        )
+    if n_options < 2 or (
+        poll_in.is_multiple
+        and (poll_in.max_options is not None)
+        and n_options < poll_in.max_options
     ):
         raise HTTPException(status_code=400, detail="Invalid number of options")
 
