@@ -97,11 +97,23 @@
         </SfCarousel>
     </LazyHydrate>-->
 
-    <LazyHydrate when-visible>
+    <LazyHydrate when-idle>
+      <SfHero class="hero">
+        <SfHeroItem
+          title="Numerai General Dashboard"
+          subtitle="Community-built Numerai dashboard"
+          button-text="View"
+          image="/homepage/dashboard.webp"
+          :link="iframe.src"
+        />
+      </SfHero>
+    </LazyHydrate>
+
+<!--    <LazyHydrate when-visible>
       <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded"  class="desktop-only">
         <iframe width="100%" height="747" :src="iframe.src" frameborder="0" allowFullScreen="true" v-if="iframe.loaded" class="desktop-only"></iframe>
       </SfLoader>
-    </LazyHydrate>
+    </LazyHydrate>-->
 
     <LazyHydrate when-visible>
       <SfCallToAction
@@ -164,7 +176,7 @@ export default {
         {
           title: 'Buy Anything Numerai',
           subtitle: 'NumerBay - The Numerai Community Marketplace',
-          buttonText: 'Browse',
+          buttonText: 'Shop Now',
           background: '#eceff1',
           image: '/homepage/bannerA.webp',
           link: '/c/numerai'

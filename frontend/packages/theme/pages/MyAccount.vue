@@ -40,6 +40,9 @@
         <SfContentPage title="My polls">
           <MyPolls />
         </SfContentPage>
+        <SfContentPage title="Numerai dashboard">
+          <NumeraiDashboard />
+        </SfContentPage>
       </SfContentCategory>
 
       <SfContentCategory title="Account">
@@ -63,6 +66,7 @@ import MyProfile from './MyAccount/MyProfile';
 import NumeraiApi from './MyAccount/NumeraiApi';
 import MyListings from './MyAccount/MyListings';
 import MyPolls from './MyAccount/MyPolls';
+import NumeraiDashboard from './MyAccount/NumeraiDashboard';
 import SalesHistory from './MyAccount/SalesHistory';
 import OrderHistory from './MyAccount/OrderHistory';
 import {
@@ -80,6 +84,7 @@ export default {
     NumeraiApi,
     MyListings,
     MyPolls,
+    NumeraiDashboard,
     SalesHistory,
     OrderHistory
   },
