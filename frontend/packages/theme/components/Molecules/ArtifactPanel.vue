@@ -97,18 +97,17 @@
 </template>
 
 <script>
-import { SfProperty, SfIcon, SfButton, SfInput, SfLoader, SfTable } from '@storefront-ui/vue';
+import { SfButton, SfInput, SfLoader, SfTable } from '@storefront-ui/vue';
 import {
   orderGetters,
   artifactGetters,
   useProductArtifact
 } from '@vue-storefront/numerbay';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
-// import { authHeaders } from '@vue-storefront/numerbay-api/src/api/utils';
 import Dropzone from '../../components/Molecules/Dropzone';
 import 'nuxt-dropzone/dropzone.css';
-import {computed, ref} from '@vue/composition-api';
-import {Logger} from '@vue-storefront/core';
+import { computed, ref } from '@vue/composition-api';
+import { Logger } from '@vue-storefront/core';
 import debounce from 'lodash.debounce';
 import { useUiNotification } from '~/composables';
 
@@ -127,8 +126,6 @@ extend('url', {
 export default {
   name: 'ArtifactPanel',
   components: {
-    SfProperty,
-    SfIcon,
     SfButton,
     SfInput,
     SfLoader,

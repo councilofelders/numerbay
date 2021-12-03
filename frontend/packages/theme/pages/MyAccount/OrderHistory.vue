@@ -4,22 +4,6 @@
       <div v-if="currentOrder">
         <SfButton class="sf-button--text all-orders" @click="currentOrder = null">All Orders</SfButton>
         <OrderInfoPanel :order="currentOrder" :withCopyButtons="orderGetters.getStatus(currentOrder)==='pending'"/>
-        <!--<SfTable class="products">
-          <SfTableHeading>
-            <SfTableHeader class="products__name">{{ $t('Product') }}</SfTableHeader>
-            <SfTableHeader>{{ $t('Quantity') }}</SfTableHeader>
-            <SfTableHeader>{{ $t('Price') }}</SfTableHeader>
-          </SfTableHeading>
-          <SfTableRow v-for="(item, i) in orderGetters.getItems(currentOrder)" :key="i">
-            <SfTableData class="products__name">
-              <nuxt-link :to="'/p/'+orderGetters.getItemSku(item)+'/'+orderGetters.getItemSku(item)">
-                {{orderGetters.getItemName(item)}}
-              </nuxt-link>
-            </SfTableData>
-            <SfTableData>{{orderGetters.getItemQty(item)}}</SfTableData>
-            <SfTableData>{{orderGetters.getFormattedPrice(item)}}</SfTableData>
-          </SfTableRow>
-        </SfTable>-->
       </div>
       <div v-else>
         <p class="message">
@@ -251,35 +235,6 @@ export default {
     text-decoration: none;
     &:hover {
       color: var(--c-text);
-    }
-  }
-}
-.product {
-  &__properties {
-    margin: var(--spacer-xl) 0 0 0;
-  }
-  &__property,
-  &__action {
-    font-size: var(--font-size--sm);
-  }
-  &__action {
-    color: var(--c-gray-variant);
-    font-size: var(--font-size--sm);
-    margin: 0 0 var(--spacer-sm) 0;
-    &:last-child {
-      margin: 0;
-    }
-  }
-  &__qty {
-    color: var(--c-text);
-  }
-}
-.products {
-  --table-column-flex: 1;
-  &__name {
-    margin-right: var(--spacer-sm);
-    @include for-desktop {
-      --table-column-flex: 2;
     }
   }
 }

@@ -90,7 +90,6 @@
 import {
   SfMegaMenu,
   SfList,
-  SfBanner,
   SfProductCard,
   SfScrollable,
   SfMenuItem,
@@ -105,7 +104,6 @@ export default {
   components: {
     SfMegaMenu,
     SfList,
-    SfBanner,
     SfProductCard,
     SfScrollable,
     SfMenuItem,

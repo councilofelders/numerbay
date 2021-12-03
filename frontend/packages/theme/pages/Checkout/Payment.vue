@@ -114,11 +114,9 @@ import {
   SfButton,
   SfDivider,
   SfImage,
-  SfIcon,
   SfPrice,
   SfProperty,
   SfSelect,
-  SfAccordion,
   SfLink,
   SfLoader
 } from '@storefront-ui/vue';
@@ -146,11 +144,9 @@ export default {
     SfButton,
     SfDivider,
     SfImage,
-    SfIcon,
     SfPrice,
     SfProperty,
     SfSelect,
-    SfAccordion,
     SfLink,
     SfLoader,
     VsfPaymentProvider: () => import('~/components/Checkout/VsfPaymentProvider')
@@ -351,19 +347,6 @@ export default {
   margin: 0 0 var(--spacer-sm) 0;
   &__name {
     color: var(--c-text-muted);
-  }
-}
-.accordion {
-  margin: 0 0 var(--spacer-xl) 0;
-  &__item {
-    display: flex;
-    align-items: flex-start;
-  }
-  &__content {
-    flex: 1;
-  }
-  &__edit {
-    flex: unset;
   }
 }
 .content {

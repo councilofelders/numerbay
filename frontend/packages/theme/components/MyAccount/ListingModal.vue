@@ -143,7 +143,6 @@
                   deleteButtonText="Delete"
                   addNewOptionButtonText="Add new option"
                   updateOptionButtonText="Update option"
-                  selectLabel="Country"
                   optionsTabDescription="Manage all the pricing options, the first one will be the default for buyers. Please save the overall form after modifying options."
                   :user="user"
                   :category="form.category"
@@ -222,7 +221,7 @@
 </template>
 <script>
 import { ref, watch, reactive, computed } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfSelect, SfButton, SfLoader, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist/rules';
@@ -318,12 +317,9 @@ export default {
     SfModal,
     SfTabs,
     SfInput,
-    SfTextarea,
     SfSelect,
     SfButton,
-    SfCheckbox,
     SfLoader,
-    SfAlert,
     SfBar,
     SfRadio,
     SfBadge,
@@ -448,19 +444,12 @@ export default {
 
     const resetForm = (product) => ({
       name: product ? productGetters.getName(product) : null,
-      // price: product ? productGetters.getPrice(product).regular : null,
       category: product ? productGetters.getCategoryIds(product)[0] : null,
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      // isOnPlatform: product ? String(product.is_on_platform) : 'true',
-      // currency: product ? product.currency : 'NMR',
-      // wallet: product ? product.wallet : null,
-      // mode: product ? product.mode : 'file',
-      // stakeLimit: product ? product.stake_limit : null,
-      // thirdPartyUrl: product ? product.third_party_url : null,
       options: product ? product.options : []
     });
     const form = ref(resetForm(currentListing));
@@ -544,7 +533,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .modal {
   --modal-index: 3;
   --overlay-z-index: 3;

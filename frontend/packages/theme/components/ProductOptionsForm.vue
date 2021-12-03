@@ -376,7 +376,7 @@ import { orderGetters } from '@vue-storefront/numerbay';
 import _ from 'lodash';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
-import { required, min_value, integer } from 'vee-validate/dist/rules';
+import { required, min_value } from 'vee-validate/dist/rules';
 
 extend('required', {
   ...required,
@@ -387,11 +387,6 @@ extend('min_value', {
   // eslint-disable-next-line camelcase
   ...min_value,
   message: 'This must be greater than 1'
-});
-
-extend('integer', {
-  ...integer,
-  message: 'This field must be an integer'
 });
 
 extend('decimal', {
@@ -490,23 +485,6 @@ export default {
     cancelButtonText: {
       type: String,
       default: 'Cancel'
-    },
-    inputsLabels: {
-      type: Array,
-      default: () => [
-        'First Name',
-        'Last Name',
-        'Street Name',
-        'House/Apartment number',
-        'City',
-        'State/Province',
-        'Zip-Code',
-        'Phone number'
-      ]
-    },
-    selectLabel: {
-      type: String,
-      default: 'Country'
     },
     optionsTabDescription: {
       type: String,

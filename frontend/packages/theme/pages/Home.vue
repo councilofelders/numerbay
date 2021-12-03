@@ -98,15 +98,17 @@
     </LazyHydrate>-->
 
     <LazyHydrate when-idle>
-      <SfHero class="hero">
-        <SfHeroItem
-          title="Numerai General Dashboard"
-          subtitle="Community-built Numerai dashboard"
-          button-text="View"
-          image="/homepage/dashboard.webp"
-          :link="iframe.src"
-        />
-      </SfHero>
+<!--      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded">-->
+        <SfHero class="hero">
+          <SfHeroItem
+            title="Numerai General Dashboard"
+            subtitle="Community-built Numerai dashboard"
+            button-text="View"
+            image="/homepage/dashboard.webp"
+            :link="iframe.src"
+          />
+        </SfHero>
+<!--      </SfLoader>-->
     </LazyHydrate>
 
 <!--    <LazyHydrate when-visible>

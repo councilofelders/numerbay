@@ -455,7 +455,6 @@ import { useUiState, useUiNotification, useUiHelpers } from '~/composables';
 import { useVueRouter } from '../helpers/hooks/useVueRouter';
 import { onSSR } from '@vue-storefront/core';
 import LazyHydrate from 'vue-lazy-hydration';
-import BuyButton from '../components/Molecules/BuyButton';
 import Vue from 'vue';
 
 export default {
@@ -646,7 +645,6 @@ export default {
     SfBadge,
     SfAddToCart,
     SfDropdown,
-    BuyButton,
     LazyHydrate
   }
 };

@@ -157,18 +157,16 @@
 </template>
 
 <script>
-import {SfProperty, SfIcon, SfButton, SfInput, SfTable, SfLoader, SfLink} from '@storefront-ui/vue';
+import {SfProperty, SfButton, SfTable, SfLoader, SfLink} from '@storefront-ui/vue';
 import { orderGetters, artifactGetters, useProductArtifact } from '@vue-storefront/numerbay';
-import {computed} from '@vue/composition-api';
+import { computed } from '@vue/composition-api';
 import { useUiNotification } from '~/composables';
 
 export default {
   name: 'OrderInfoPanel',
   components: {
     SfProperty,
-    SfIcon,
     SfButton,
-    SfInput,
     SfTable,
     SfLoader,
     SfLink

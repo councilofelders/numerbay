@@ -142,19 +142,14 @@
 </template>
 <script>
 import { ref, watch, reactive } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfButton, SfCheckbox, SfLoader, SfBar } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
-import { required, email, min } from 'vee-validate/dist/rules';
+import { required, min } from 'vee-validate/dist/rules';
 import { useUser} from '@vue-storefront/numerbay';
 import { Logger } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
 import MetamaskButton from './Molecules/MetamaskButton';
 import Web3 from 'web3';
-
-extend('email', {
-  ...email,
-  message: 'Invalid email'
-});
 
 extend('required', {
   ...required,
@@ -175,11 +170,10 @@ export default {
     SfButton,
     SfCheckbox,
     SfLoader,
-    SfAlert,
-    ValidationProvider,
-    ValidationObserver,
     SfBar,
-    MetamaskButton
+    MetamaskButton,
+    ValidationProvider,
+    ValidationObserver
   },
   computed: {
     activeAccount() {

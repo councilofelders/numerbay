@@ -53,14 +53,35 @@
 </template>
 
 <script>
-import {reactive, ref} from '@vue/composition-api';
-import { ValidationProvider, ValidationObserver } from 'vee-validate';
+import { reactive, ref } from '@vue/composition-api';
+import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
 import { useUiNotification } from '~/composables';
 import { SfInput, SfButton } from '@storefront-ui/vue';
 import MetamaskButton from '../Molecules/MetamaskButton';
 import Web3 from 'web3';
-import {Logger} from '@vue-storefront/core';
+import { Logger } from '@vue-storefront/core';
+import { email, min, required } from 'vee-validate/dist/rules';
+
+extend('email', {
+  ...email,
+  message: 'Invalid email'
+});
+
+extend('required', {
+  ...required,
+  message: 'This field is required'
+});
+
+extend('min', {
+  ...min,
+  message: 'The field should have at least {length} characters'
+});
+
+// extend('password', {
+//   validate: value => String(value).length >= 8 && String(value).match(/[A-Za-z]/gi) && String(value).match(/[0-9]/gi),
+//   message: 'Password must have at least 8 characters including one letter and a number'
+// });
 
 export default {
   name: 'ProfileUpdateForm',

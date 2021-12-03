@@ -374,47 +374,8 @@
                         type="button"
                       >Add Option</SfButton>
                     </SfTableData>
-<!--                    <SfTableData class="orders__view orders__element&#45;&#45;right">
-                      <div class="listing-actions">
-                        <SfButton class="sf-button&#45;&#45;text action__element" @click="deleteOption(option.value)">
-                          {{ $t('Delete') }}
-                        </SfButton>
-                      </div>
-                    </SfTableData>-->
                   </SfTableRow>
                 </SfTable>
-<!--                <ProductOptionsForm
-                  ref="optionsForm"
-                  optionsTabTitle="Poll options"
-                  changeOptionTabTitle="Update option"
-                  :options="form.options"
-                  transition="sf-fade"
-                  changeOptionDescription="Update pricing option."
-                  changeButtonText="Change"
-                  deleteButtonText="Delete"
-                  addNewOptionButtonText="Add new option"
-                  updateOptionButtonText="Update option"
-                  selectLabel="Country"
-                  optionsTabDescription="Manage all the pricing options, the first one will be the default for buyers. Please save the overall form after modifying options."
-                  :user="user"
-                  :category="form.category"
-                  :isTournamentCategory="isTournamentCategory(form.category)"
-                  :isSubmissionCategory="isSubmissionCategory(form.category)"
-                  :isPerRoundCategory="isPerRoundCategory(form.category)"
-                ></ProductOptionsForm>-->
-                <!--<ValidationProvider v-slot="{ errors }">
-                  <SfTextarea
-                    v-e2e="'listing-modal-description'"
-                    v-model="form.description"
-                    :valid="!errors[0]"
-                    :errorMessage="errors[0]"
-                    name="description"
-                    label="Description"
-                    class="form__element"
-                    :cols="60"
-                    :rows="10"
-                  />
-                </ValidationProvider>-->
                 <div v-if="error.pollModal">
                   {{ error.pollModal }}
                 </div>
@@ -463,7 +424,7 @@
 </template>
 <script>
 import { ref, watch, reactive, computed } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfTextarea, SfSelect, SfButton, SfCheckbox, SfLoader, SfAlert, SfBar, SfRadio, SfBadge, SfTable } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfSelect, SfButton, SfLoader, SfBar, SfRadio, SfBadge, SfTable } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist/rules';
@@ -478,7 +439,6 @@ import {
 } from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
-import ProductOptionsForm from '~/components/ProductOptionsForm';
 
 extend('required', {
   ...required,
@@ -518,30 +478,6 @@ extend('decimal', {
   message: 'The {_field_} field must contain only decimal values'
 });
 
-extend('url', {
-  validate: (value) => {
-    if (value) {
-      // eslint-disable-next-line
-      return /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(value);
-    }
-
-    return false;
-  },
-  message: 'This must be a valid URL'
-});
-
-extend('secureUrl', {
-  validate: (value) => {
-    if (value) {
-      // eslint-disable-next-line
-      return /^(https:\/\/www\.|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(value);
-    }
-
-    return false;
-  },
-  message: 'This must be a valid HTTPS URL'
-});
-
 extend('min', {
   ...min,
   message: 'The field should have at least {length} characters'
@@ -559,17 +495,13 @@ export default {
     SfModal,
     SfTabs,
     SfInput,
-    SfTextarea,
     SfSelect,
     SfButton,
-    SfCheckbox,
     SfLoader,
-    SfAlert,
     SfBar,
     SfRadio,
     SfBadge,
     SfTable,
-    ProductOptionsForm,
     ValidationProvider,
     ValidationObserver
   },
@@ -763,7 +695,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .modal {
   --modal-index: 3;
   --overlay-z-index: 3;

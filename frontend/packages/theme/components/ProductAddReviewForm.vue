@@ -18,73 +18,9 @@
         class="form"
         @submit.prevent="handleSubmit(submitForm(reset))"
       >
-        <!--<div class="form__horizontal">
-          <ValidationProvider
-            v-if="!isAuthenticated"
-            v-slot="{ errors }"
-            rules="required|min:2"
-            name="name"
-            class="form__element"
-          >
-            <SfInput
-              v-model="form.nickname"
-              name="name"
-              label="Name"
-              required
-              :valid="!errors[0]"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-        </div>-->
-        <!--<div class="form__horizontal">
-          <ValidationProvider
-            v-slot="{ errors }"
-            rules="required|min:2"
-            name="summary"
-            class="form__element"
-          >
-            <SfInput
-              v-model="form.summary"
-              name="summary"
-              label="Title"
-              required
-              :valid="!errors[0]"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-        </div>-->
         <div class="form__horizontal">
           <star-rating name="rating" active-color="#5ece7b" :star-size="25" v-model="form.ratings[0]"/>
         </div>
-        <!--<div
-          v-for="metadata in ratingMetadata"
-          :key="metadata.id"
-          class="form__horizontal"
-        >
-          <ValidationProvider
-            v-slot="{ errors }"
-            rules="required"
-            :name="metadata.name.toLowerCase()"
-            class="form__element"
-          >
-            <SfSelect
-              v-model="form.ratings[metadata.id]"
-              :label="metadata.name"
-              :name="metadata.name.toLowerCase()"
-              class="form__element form__element&#45;&#45;half form__element&#45;&#45;half-even form__select sf-select&#45;&#45;underlined"
-              :valid="!errors[0]"
-              :error-message="errors[0]"
-            >
-              <SfSelectOption
-                v-for="value in metadata.values"
-                :key="value.id"
-                :value="value.id"
-              >
-                {{ value.label }}
-              </SfSelectOption>
-            </SfSelect>
-          </ValidationProvider>
-        </div>-->
         <div class="form__horizontal">
           <div class="editor">
             <quill-editor
@@ -94,23 +30,6 @@
               :options="editorOption"
             />
           </div>
-          <!--<ValidationProvider
-            v-slot="{ errors }"
-            rules="required|min:2"
-            name="summary"
-            class="form__element"
-          >
-            <SfTextarea
-              v-model="form.text"
-              label="Review"
-              name="review"
-              :cols="60"
-              :rows="10"
-              wrap="soft"
-              :valid="!errors[0]"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>-->
         </div>
         <SfButton class="form__button" :disabled="!form.ratings[0]">
           Add review
@@ -129,28 +48,11 @@ import {
 import {
   reviewGetters, useReview
 } from '@vue-storefront/numerbay';
-import { extend, ValidationObserver, ValidationProvider } from 'vee-validate';
-import { min, oneOf, required } from 'vee-validate/dist/rules';
+import { ValidationObserver, ValidationProvider } from 'vee-validate';
 import {
-  SfInput,
-  SfButton,
-  SfSelect,
-  SfTextarea
+  SfButton
 } from '@storefront-ui/vue';
 import { useVueRouter } from '~/helpers/hooks/useVueRouter';
-
-extend('required', {
-  ...required,
-  message: 'This field is required'
-});
-extend('min', {
-  ...min,
-  message: 'The field should have at least {length} characters'
-});
-extend('oneOf', {
-  ...oneOf,
-  message: 'Invalid country'
-});
 
 const BASE_FORM = (id) => ({
   // nickname: '',
@@ -163,10 +65,7 @@ const BASE_FORM = (id) => ({
 export default defineComponent({
   name: 'ProductAddReview',
   components: {
-    SfInput,
     SfButton,
-    SfSelect,
-    SfTextarea,
     ValidationProvider,
     ValidationObserver
   },

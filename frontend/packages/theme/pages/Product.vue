@@ -212,34 +212,25 @@
 import {
   SfProperty,
   SfHeading,
-  SfPrice,
   SfRating,
   SfSelect,
   SfAddToCart,
   SfTabs,
-  SfGallery,
   SfIcon,
-  SfImage,
-  SfBanner,
   SfAlert,
-  SfSticky,
   SfBreadcrumbs,
   SfButton,
-  SfColor,
   SfBadge,
   SfLoader
 } from '@storefront-ui/vue';
 
-import InstagramFeed from '~/components/InstagramFeed.vue';
 import RelatedProducts from '~/components/Molecules/RelatedProducts.vue';
 import { ref, computed } from '@vue/composition-api';
-import {useProduct, productGetters, useReview, reviewGetters, useNumerai, useUser, useGlobals} from '@vue-storefront/numerbay';
+import { useProduct, productGetters, useReview, reviewGetters, useNumerai, useUser, useGlobals } from '@vue-storefront/numerbay';
 import { useUiState, useUiNotification } from '~/composables';
 import { onSSR } from '@vue-storefront/core';
-import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
-import BuyButton from '../components/Molecules/BuyButton';
 import SfReview from '~/components/Molecules/SfReview';
 import ProductAddReviewForm from '~/components/ProductAddReviewForm';
 
@@ -261,19 +252,11 @@ export default {
     const { send } = useUiNotification();
 
     const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
-    const options = computed(() => productGetters.getAttributes(products.value.data, ['color', 'size']));
-    const configuration = computed(() => productGetters.getAttributes(product.value, ['color', 'size']));
     // const categories = computed(() => productGetters.getCategoryIds(product.value));
     const reviews = computed(() => reviewGetters.getItems(productReviews.value));
 
     // TODO: Breadcrumbs are temporary disabled because productGetters return undefined. We have a mocks in data
     // const breadcrumbs = computed(() => productGetters.getBreadcrumbs ? productGetters.getBreadcrumbs(product.value) : props.fallbackBreadcrumbs);
-    const productGallery = computed(() => productGetters.getGallery(product.value).map(img => ({
-      mobile: { url: img.small },
-      desktop: { url: img.normal },
-      big: { url: img.big },
-      alt: product.value._name || product.value.name
-    })));
 
     onSSR(async () => {
       await search({ id });
@@ -284,16 +267,6 @@ export default {
       }
       await getGlobals();
     });
-
-    const updateFilter = (filter) => {
-      context.root.$router.push({
-        path: context.root.$route.path,
-        query: {
-          ...configuration.value,
-          ...filter
-        }
-      });
-    };
 
     const getNumeraiChartData = (numeraiData) => {
       const transposed = Object.assign(...Object.keys(numeraiData.modelInfo.modelPerformance.roundModelPerformances[0]).map(key =>
@@ -321,19 +294,6 @@ export default {
       };
     };
 
-    // const resolveProductPlatform = (product) => {
-    //   if (typeof product?.is_on_platform === 'boolean' && product?.is_on_platform === false && product?.third_party_url) {
-    //     const domain = (new URL(product?.third_party_url));
-    //     const urlParts = domain.hostname.split('.').slice(0);
-    //     const baseUrl = urlParts.slice(-(urlParts.length === 4 ? 3 : 2)).join('.');
-    //     return baseUrl;
-    //   }
-    //   if (product?.is_on_platform) {
-    //     return 'NumerBay';
-    //   }
-    //   return '-';
-    // };
-
     const handleBuyButtonClick = (product, optionIdx, qty) => {
       const option = productGetters.getOrderedOption(product, optionIdx);
       if (option.is_on_platform && !isAuthenticated.value) {
@@ -360,24 +320,6 @@ export default {
       }
     };
 
-    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    // const handleCryptoBuyButtonClick = async (product) => {
-    //   await initWeb3Modal();
-    //   await ethereumListener();
-    //   const sender = web3User.value.activeAccount;
-    //   const receiver = web3User.value.activeAccount;
-    //   const web3 = new Web3(web3User.value.providerEthers.provider);
-    //   web3.eth.sendTransaction({
-    //     from: sender,
-    //     // gasPrice: '50',
-    //     // gas: '50',
-    //     to: receiver,
-    //     value: '1000000000000000'
-    //     // data: ''
-    //   });
-    //   // web3.sendTransaction({to: receiver, from: sender, value: web3.toWei("0.5", "ether")})
-    // };
-
     const successAddReview = async (reviewData) => {
       await addReview(reviewData).then(async ()=>{
         if (reviewError.value.addReview) {
@@ -400,13 +342,9 @@ export default {
     };
 
     return {
-      updateFilter,
       getModelInfo,
       getNumeraiChartData,
-      // resolveProductPlatform,
       handleBuyButtonClick,
-      // handleCryptoBuyButtonClick,
-      configuration,
       product,
       reviews,
       reviewsLoading,
@@ -423,70 +361,35 @@ export default {
       numeraiLoading,
       productLoading,
       relatedLoading,
-      options,
       qty,
       optionIdx,
       // addItem,
       // loading,
-      productGetters,
-      productGallery
+      productGetters
     };
   },
   components: {
     SfBadge,
     SfAlert,
-    SfColor,
     SfProperty,
     SfHeading,
-    SfPrice,
     SfRating,
     SfSelect,
     SfAddToCart,
     SfTabs,
-    SfGallery,
     SfIcon,
-    SfImage,
-    SfBanner,
-    SfSticky,
     SfReview,
     SfBreadcrumbs,
     SfButton,
     SfLoader,
-    InstagramFeed,
     RelatedProducts,
-    MobileStoreBanner,
     LazyHydrate,
     NumeraiChart,
-    BuyButton,
     ProductAddReviewForm
   },
   // test
   data() {
     return {
-      stock: 5,
-      properties: [
-        {
-          name: 'Product Code',
-          value: '578902-00'
-        },
-        {
-          name: 'Category',
-          value: 'Numerai'
-        },
-        {
-          name: 'Material',
-          value: 'Cotton'
-        },
-        {
-          name: 'Country',
-          value: 'Germany'
-        }
-      ],
-      description: 'The official example model. Submits example predictions.',
-      detailsIsActive: false,
-      brand:
-          'Brand name is the perfect pairing of quality and design. This label creates major everyday vibes with its collection of modern brooches, silver and gold jewellery, or clips it back with hair accessories in geo styles.',
-      careInstructions: 'Do not wash!',
       breadcrumbs: [
         {
           text: 'Home',
@@ -501,7 +404,7 @@ export default {
           }
         },
         {
-          text: 'Numerai',
+          text: 'Product',
           route: {
             link: '#'
           }
@@ -610,15 +513,6 @@ export default {
   &__drag-icon {
     animation: moveicon 1s ease-in-out infinite;
   }
-  &__price-and-rating {
-    margin: 0 var(--spacer-sm) var(--spacer-base);
-    align-items: center;
-    @include for-desktop {
-      display: flex;
-      justify-content: space-between;
-      margin: var(--spacer-sm) 0 var(--spacer-lg) 0;
-    }
-  }
   &__rating {
     display: flex;
     align-items: center;
@@ -649,35 +543,8 @@ export default {
   &__select-size {
     margin: 0 var(--spacer-sm);
   }
-  &__colors {
-    @include font(
-      --product-color-font,
-      var(--font-weight--normal),
-      var(--font-size--lg),
-      1.6,
-      var(--font-family--secondary)
-    );
-    display: flex;
-    align-items: center;
-    margin-top: var(--spacer-xl);
-  }
-  &__color-label {
-    margin: 0 var(--spacer-lg) 0 0;
-  }
-  &__color {
-    margin: 0 var(--spacer-2xs);
-  }
   &__add-to-cart {
     margin: 0 var(--spacer-sm) 0;
-  }
-  &__guide,
-  &__compare,
-  &__save {
-    display: block;
-    margin: var(--spacer-xl) 0 var(--spacer-base) auto;
-  }
-  &__compare {
-    margin-top: 0;
   }
   &__tabs {
     --tabs-title-z-index: 0;
@@ -697,30 +564,6 @@ export default {
     padding-bottom: 24px;
     border-bottom: var(--c-light) solid 1px;
     margin-bottom: var(--spacer-base);
-  }
-  &__additional-info {
-    color: var(--c-link);
-    @include font(
-      --additional-info-font,
-      var(--font-weight--light),
-      var(--font-size--sm),
-      1.6,
-      var(--font-family--primary)
-    );
-    &__title {
-      font-weight: var(--font-weight--normal);
-      font-size: var(--font-size--base);
-      margin: 0 0 var(--spacer-sm);
-      &:not(:first-child) {
-        margin-top: 3.5rem;
-      }
-    }
-    &__paragraph {
-      margin: 0;
-    }
-  }
-  &__gallery {
-    flex: 1;
   }
 }
 .breadcrumbs {

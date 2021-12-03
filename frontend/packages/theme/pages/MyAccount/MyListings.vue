@@ -2,7 +2,7 @@
   <SfTabs :open-tab="1">
     <SfTab title="My listings">
       <div v-if="currentListing">
-        <SfButton class="sf-button--text all-orders" @click="currentListing = null">All Listings</SfButton>
+        <SfButton class="sf-button--text all-listings" @click="currentListing = null">All Listings</SfButton>
         <ArtifactPanel :product="currentListing"></ArtifactPanel>
       </div>
       <div v-else>
@@ -17,10 +17,10 @@
         <p class="message" v-if="numeraiError.getModels">
           {{ numeraiError.getModels }}
         </p>
-        <div v-if="products.length === 0" class="no-orders">
-          <p class="no-orders__title">{{ $t('You currently have no listings') }}</p>
+        <div v-if="products.length === 0" class="no-listings">
+          <p class="no-listings__title">{{ $t('You currently have no listings') }}</p>
         </div>
-        <SfTable v-else class="orders">
+        <SfTable v-else class="listings">
           <SfTableHeading>
             <SfTableHeader
               v-for="tableHeader in tableHeaders"
@@ -35,7 +35,7 @@
             </SfTableData>
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ categories.find(c=>c.id === Number(productGetters.getCategoryIds(product)[0])).slug }}</span></SfTableData>
             <SfTableData><span :style="productGetters.getIsActive(product) ? '' : 'color: var(--c-text-disabled)'">{{ productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, 0), true) }}</span></SfTableData>
-            <SfTableData class="orders__view orders__element--right">
+            <SfTableData class="listings__view listings__element--right">
               <div class="listing-actions">
                 <SfButton class="sf-button--text action__element" @click="currentListing = product" v-if="!!productGetters.getOrderedOptions(product) && productGetters.getOrderedOptions(product).filter((p)=>p.is_on_platform).length > 0" :disabled="!!numeraiError.getModels || !userGetters.getNumeraiApiKeyPublicId(user) || numeraiLoading || userLoading">
                   {{ $t('Artifacts') }}
@@ -164,7 +164,7 @@ export default {
     justify-content: space-between;
   }
 }
-.no-orders {
+.no-listings {
   &__title {
     margin: 0 0 var(--spacer-lg) 0;
     font: var(--font-weight--normal) var(--font-size--base) / 1.6 var(--font-family--primary);
@@ -176,7 +176,7 @@ export default {
     }
   }
 }
-.orders {
+.listings {
   @include for-desktop {
     &__element {
       &--right {
@@ -186,7 +186,7 @@ export default {
     }
   }
 }
-.all-orders {
+.all-listings {
   --button-padding: var(--spacer-base) 0;
 }
 .message {
@@ -201,62 +201,6 @@ export default {
     &:hover {
       color: var(--c-text);
     }
-  }
-}
-.product {
-  &__properties {
-    margin: var(--spacer-xl) 0 0 0;
-  }
-  &__property,
-  &__action {
-    font-size: var(--font-size--sm);
-  }
-  &__action {
-    color: var(--c-gray-variant);
-    font-size: var(--font-size--sm);
-    margin: 0 0 var(--spacer-sm) 0;
-    &:last-child {
-      margin: 0;
-    }
-  }
-  &__qty {
-    color: var(--c-text);
-  }
-}
-.products {
-  --table-column-flex: 1;
-  &__name {
-    margin-right: var(--spacer-sm);
-    @include for-desktop {
-      --table-column-flex: 2;
-    }
-  }
-}
-.highlighted {
-  box-sizing: border-box;
-  width: 100%;
-  background-color: var(--c-light);
-  padding: var(--spacer-sm);
-  --property-value-font-size: var(--font-size--base);
-  --property-name-font-size: var(--font-size--base);
-  &:last-child {
-    margin-bottom: 0;
-  }
-  ::v-deep .sf-property__name {
-    white-space: nowrap;
-  }
-  ::v-deep .sf-property__value {
-    text-align: right;
-  }
-  &--total {
-    margin-bottom: var(--spacer-sm);
-  }
-  @include for-desktop {
-    padding: var(--spacer-xl);
-    --property-name-font-size: var(--font-size--lg);
-    --property-name-font-weight: var(--font-weight--medium);
-    --property-value-font-size: var(--font-size--lg);
-    --property-value-font-weight: var(--font-weight--semibold);
   }
 }
 .listing-actions {

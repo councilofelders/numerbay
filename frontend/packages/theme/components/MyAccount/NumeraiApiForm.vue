@@ -78,10 +78,21 @@
 
 <script>
 import { ref } from '@vue/composition-api';
-import { ValidationProvider, ValidationObserver } from 'vee-validate';
+import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
 import { useUiNotification } from '~/composables';
 import { SfInput, SfButton, SfLink, SfLoader, SfIcon, SfProperty, SfDivider } from '@storefront-ui/vue';
+import { min, required } from 'vee-validate/dist/rules';
+
+extend('required', {
+  ...required,
+  message: 'This field is required'
+});
+
+extend('min', {
+  ...min,
+  message: 'The field should have at least {length} characters'
+});
 
 export default {
   name: 'NumeraiApiForm',
