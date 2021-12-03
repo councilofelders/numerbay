@@ -258,7 +258,7 @@
                       :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionUrl(productGetters.getOrderedOption(product, product.optionIdx)) && !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx))"
                       @click="handleBuyButtonClick(product, product.optionIdx, product.qty || 1)"
                     >
-                      {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) ? 'Buy @' : 'Ref Price @'} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx), true)}`}}
+                      {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) ? 'Buy for' : 'For Ref Price '} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx), true)}`}}
                     </SfButton>
                   </template>
                 </SfAddToCart>

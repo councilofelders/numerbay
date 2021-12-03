@@ -103,9 +103,9 @@ export const getOptionFormattedPrice = (option: any, withCurrency = true): strin
 
 export const getFormattedOption = (option: any): string => {
   if (option.is_on_platform) {
-    return `${option.quantity} x ${option.mode === 'stake_with_limit' ? 'up to ' + option.stake_limit.toFixed(0) + ' NMR stake' : option.mode} @ ${getOptionFormattedPrice(option, true)}${option.description ? ' [' + option.description + ']' : ''}`;
+    return `${option.quantity} x ${option.mode === 'stake_with_limit' ? 'up to ' + option.stake_limit.toFixed(0) + ' NMR stake' : option.mode} for ${getOptionFormattedPrice(option, true)}${option.description ? ' [' + option.description + ']' : ''}`;
   }
-  return `${option.quantity} x ${getOptionPlatform(option)} @ ${getOptionFormattedPrice(option, true)} ref price${option.description ? ' [' + option.description + ']' : ''}`;
+  return `${option.quantity} x ${getOptionPlatform(option)} for ${getOptionFormattedPrice(option, true)} ref price${option.description ? ' [' + option.description + ']' : ''}`;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

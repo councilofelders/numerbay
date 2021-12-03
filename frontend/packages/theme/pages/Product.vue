@@ -87,7 +87,7 @@
                   :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).third_party_url && !productGetters.getOrderedOption(product, optionIdx).is_on_platform"
                   @click="handleBuyButtonClick(product, optionIdx, qty)"
                 >
-                  {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, optionIdx)) ? 'Buy @' : 'Ref Price @'} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, optionIdx), true)}`}}
+                  {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, optionIdx)) ? 'Buy for' : 'For Ref Price '} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, optionIdx), true)}`}}
                 </SfButton>
               </template>
             </SfAddToCart>
