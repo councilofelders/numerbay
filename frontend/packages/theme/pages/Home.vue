@@ -97,7 +97,7 @@
         </SfCarousel>
     </LazyHydrate>-->
 
-    <LazyHydrate when-idle>
+    <LazyHydrate when-visible>
 <!--      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded">-->
         <SfHero class="hero">
           <SfHeroItem
