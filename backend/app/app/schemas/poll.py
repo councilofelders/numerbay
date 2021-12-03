@@ -72,7 +72,7 @@ class Poll(PollInDBBase):
 
     @root_validator(pre=True)
     def set_votes(cls, values):  # type: ignore
-        if not values["is_blind"]:
+        if not values["is_blind"] or values["is_finished"]:
             votes = values.get("votes", None)
             if votes:
                 votes_df = pd.DataFrame(

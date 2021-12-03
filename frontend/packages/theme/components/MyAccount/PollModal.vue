@@ -245,10 +245,10 @@
                       name="isStakePredetermined"
                       value="false"
                       label="Post-determine Stake"
-                      details="NMR stake and balance will be snapshotted after poll ends, this cannot be changed later [Coming Soon]"
+                      details="NMR stake and balance will be snapshotted after poll ends, this cannot be changed later"
                       v-model="form.isStakePredetermined"
                       class="form__radio"
-                      :disabled="!!currentPoll || form.isBlind === 'false' || true"
+                      :disabled="!!currentPoll || form.isBlind === 'false'"
                     />
                   </ValidationProvider>
                 </div>
@@ -628,7 +628,7 @@ export default {
     const form = ref(resetForm(currentPoll));
 
     const error = reactive({
-      listingModal: null
+      pollModal: null
     });
 
     const resetErrorValues = () => {
@@ -646,9 +646,9 @@ export default {
       resetErrorValues();
       await fn({ id: currentPoll.value ? currentPoll.value.id : null, poll: form.value });
 
-      const hasPollErrors = pollError.value.listingModal;
+      const hasPollErrors = pollError.value.pollModal;
       if (hasPollErrors) {
-        error.pollModal = pollError.value.listingModal?.message;
+        error.pollModal = pollError.value.pollModal?.message;
         return;
       }
 

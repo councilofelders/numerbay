@@ -168,7 +168,7 @@ def refresh_sales_stats(
     """
     Calculate sales stats for all products (for db migration only).
     """
-    products = db.query(Product).filter(Product.is_on_platform).all()
+    products = db.query(Product).all()
     for product in products:
         query_filters = [Order.product_id == product.id, Order.state == "confirmed"]
         query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
@@ -250,7 +250,7 @@ def fill_product_readiness(
     globals = crud.globals.update_singleton(db)
     selling_round = globals.selling_round  # type: ignore
 
-    products = db.query(Product).filter(Product.is_on_platform).all()
+    products = db.query(Product).all()
     for product in products:
         artifacts = crud.artifact.get_multi_by_product_round(
             db, product=product, round_tournament=selling_round

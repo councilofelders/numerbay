@@ -2,7 +2,7 @@ import re
 import secrets
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from jose import jwt
@@ -173,10 +173,10 @@ def create_poll(
         )
 
     # todo support post stake determination
-    if poll_in.is_stake_predetermined is False:
-        raise HTTPException(
-            status_code=400, detail="Post stake determination is not yet supported"
-        )
+    # if poll_in.is_stake_predetermined is False:
+    #     raise HTTPException(
+    #         status_code=400, detail="Post stake determination is not yet supported"
+    #     )
 
     # valid min stake
     if poll_in.min_stake is not None and poll_in.min_stake <= 0:
@@ -303,25 +303,6 @@ def delete_poll(
     return poll
 
 
-@router.post("/{id}/close", response_model=schemas.Poll)
-def close_poll(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: str,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Delete an poll.
-    """
-    poll = crud.poll.get(db=db, id=id)
-    if not poll:
-        raise HTTPException(status_code=404, detail="Poll not found")
-    if poll.owner_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
-    poll = crud.poll.update(db=db, db_obj=poll, obj_in={"is_finished": True})
-    return poll
-
-
 def generate_voter_id(poll: models.Poll, user: models.User) -> str:
     if poll.is_anonymous:
         # todo other wallet support
@@ -332,7 +313,9 @@ def generate_voter_id(poll: models.Poll, user: models.User) -> str:
         return str(user.id)
 
 
-def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decimal:
+def get_voter_weight(
+    db: Session, poll: models.Poll, user: models.User, override: bool = False
+) -> Optional[Decimal]:
     min_stake = poll.min_stake if poll.min_stake is not None else 0
 
     if poll.weight_mode == "equal":
@@ -398,15 +381,18 @@ def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decim
                     detail="You are not eligible for this poll: need to have at least one active model for more than 52 weeks",
                 )
 
-        # clip stake
-        if poll.clip_low and min_stake < user_nmr_staked < poll.clip_low:
-            user_nmr_staked = poll.clip_low
+        if poll.is_stake_predetermined or override:
+            # clip stake
+            if poll.clip_low and min_stake < user_nmr_staked < poll.clip_low:
+                user_nmr_staked = poll.clip_low
 
-        if poll.clip_high and user_nmr_staked > poll.clip_high:
-            user_nmr_staked = poll.clip_high
+            if poll.clip_high and user_nmr_staked > poll.clip_high:
+                user_nmr_staked = poll.clip_high
 
-        # calculate weight
-        weight = (Decimal(user_nmr_staked) + Decimal("1")).ln()
+            # calculate weight
+            weight = (Decimal(user_nmr_staked) + Decimal("1")).ln()
+        else:
+            return None
     elif poll.weight_mode == "log_numerai_balance":
         raise HTTPException(status_code=400, detail="Weight mode not yet supported")
     elif poll.weight_mode == "log_balance":
@@ -415,6 +401,61 @@ def get_voter_weight(db: Session, poll: models.Poll, user: models.User) -> Decim
         raise HTTPException(status_code=400, detail="Invalid weight mode")
 
     return weight
+
+
+def get_user_from_voter_id(
+    db: Session, voter_id: str, is_anonymous: bool
+) -> Optional[models.User]:
+    if is_anonymous:
+        voter_id_decoded = jwt.decode(
+            voter_id, settings.SECRET_KEY, algorithms=["HS256"]
+        )
+        voter_address = voter_id_decoded["voter_address"]
+        return (
+            db.query(models.User)
+            .filter(models.User.numerai_wallet_address == voter_address)
+            .first()
+        )
+    else:
+        return crud.user.get(db, id=int(voter_id))
+
+
+def take_stake_weight_snapshots(db: Session, poll: models.Poll) -> None:
+    for each_vote in poll.votes:  # type: ignore
+        voter = get_user_from_voter_id(db, each_vote.voter_id, poll.is_anonymous)
+        try:
+            weight = get_voter_weight(db, poll, voter, override=True)  # type: ignore
+            each_vote.weight_basis = weight
+        except Exception:
+            print(
+                f"Error taking weight snapshot for {each_vote.voter_id} for poll {poll.id}"
+            )
+    db.commit()
+    db.refresh(poll)
+    return None
+
+
+@router.post("/{id}/close", response_model=schemas.Poll)
+def close_poll(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: str,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Delete an poll.
+    """
+    poll = crud.poll.get(db=db, id=id)
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    if poll.owner_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    if poll.weight_mode == "log_numerai_stake" and not poll.is_stake_predetermined:
+        take_stake_weight_snapshots(db, poll)
+
+    poll = crud.poll.update(db=db, db_obj=poll, obj_in={"is_finished": True})
+    return poll
 
 
 @router.post(
