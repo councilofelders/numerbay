@@ -346,7 +346,11 @@ def get_voter_weight(
             .all()
         )
         user_nmr_staked = sum(
-            [model_snapshot.nmr_staked for model_snapshot in user_models_snapshots]
+            [
+                model_snapshot.nmr_staked
+                for model_snapshot in user_models_snapshots
+                if model_snapshot.nmr_staked is not None
+            ]
         )
 
         # min stake requirement
