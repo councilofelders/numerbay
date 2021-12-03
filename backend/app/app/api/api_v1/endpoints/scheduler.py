@@ -103,6 +103,15 @@ def add_job_update_stake_snapshots(
     return {"msg": "success!"}
 
 
+@router.post("/update-polls")
+def add_job_update_polls(
+    *, current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    celery_app.send_task("app.worker.batch_update_polls")
+
+    return {"msg": "success!"}
+
+
 @router.post("/prune-storage")
 def add_job_prune_storage(
     *, current_user: models.User = Depends(deps.get_current_active_superuser),
