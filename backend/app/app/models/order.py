@@ -25,7 +25,7 @@ class Order(Base):
     chain = Column(String, nullable=False, default="ethereum")
     from_address = Column(String)
     to_address = Column(String)
-    transaction_hash = Column(String)
+    transaction_hash = Column(String, index=True, unique=True)
     state = Column(String)
     buyer_id = Column(Integer, ForeignKey("user.id"))
     buyer = relationship("User", back_populates="orders")

@@ -201,6 +201,21 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                 f"{transaction['amount']} {order_json['currency']} / "
                                 f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}"
                             )
+
+                            # existing match
+                            existing_match = (
+                                db.query(self.model)
+                                .filter(
+                                    self.model.transaction_hash == transaction["txHash"]
+                                )
+                                .first()
+                            )
+                            if existing_match is not None:
+                                print(
+                                    f"Transaction {transaction['txHash']} already matched, skipping... "
+                                )
+                                continue
+
                             if order_obj:
                                 # Confirmed
                                 order_obj.transaction_hash = transaction["txHash"]
