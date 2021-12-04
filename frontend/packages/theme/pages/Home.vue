@@ -98,7 +98,7 @@
     </LazyHydrate>-->
 
     <LazyHydrate when-visible>
-<!--      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded">-->
+      <SfLoader :class="{ loading: !iframe.loaded }" :loading="!iframe.loaded">
         <SfHero class="hero">
           <SfHeroItem
             title="Numerai General Dashboard"
@@ -108,7 +108,7 @@
             :link="iframe.src"
           />
         </SfHero>
-<!--      </SfLoader>-->
+      </SfLoader>
     </LazyHydrate>
 
 <!--    <LazyHydrate when-visible>
