@@ -207,7 +207,7 @@ export default {
       this.products[index].isInWishlist = !this.products[index].isInWishlist;
     }
   },
-  mounted() { // dynamic iframe
+  beforeMount() { // dynamic iframe
     axios.get('https://raw.githubusercontent.com/jos1977/numerai_statistics/main/ClassicDashboardLink.txt').then((response) => {
       this.iframe.src = response.data;
       this.iframe.loaded = true;
