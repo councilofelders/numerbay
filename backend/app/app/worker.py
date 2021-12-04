@@ -528,7 +528,7 @@ def upload_numerai_artifact_task(
             db = SessionLocal()
             try:
                 order = crud.order.get(db, id=order_id)
-                crud.order.update(db, db_obj=order, obj_in={"submit_state": "completed"})  # type: ignore
+                crud.order.update(db, db_obj=order, obj_in={"submit_state": "completed", "last_submit_round": crud.globals.get_singleton(db=db).selling_round})  # type: ignore
             finally:
                 db.close()
         return submission_id

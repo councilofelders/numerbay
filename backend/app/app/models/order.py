@@ -22,6 +22,7 @@ class Order(Base):
     submit_model_id = Column(String, nullable=True)
     submit_model_name = Column(String, nullable=True)
     submit_state = Column(String)
+    last_submit_round = Column(Integer)
     chain = Column(String, nullable=False, default="ethereum")
     from_address = Column(String)
     to_address = Column(String)
