@@ -10,7 +10,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
 from app.models import Artifact, Order, Product
-from app.utils import send_new_confirmed_sale_email
+from app.utils import send_new_confirmed_sale_email, send_order_confirmed_email
 
 router = APIRouter()
 
@@ -98,6 +98,52 @@ def resend_seller_order_emails(
                     amount=order_obj.price,
                     currency=order_obj.currency,  # type: ignore
                 )
+    return {"msg": "success!"}
+
+
+@router.post("/resend-order-emails")
+def resend_order_emails(
+    *,
+    db: Session = Depends(deps.get_db),
+    order_id: int,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    order_obj = crud.order.get(db, id=order_id)
+
+    if order_obj is not None:
+        if order_obj.state == "confirmed":
+            if settings.EMAILS_ENABLED:
+                product = order_obj.product
+                # Send seller email
+                if product.owner.email:
+                    send_new_confirmed_sale_email(
+                        email_to=product.owner.email,
+                        username=product.owner.username,
+                        round_order=order_obj.round_order,
+                        date_order=order_obj.date_order,
+                        product=product.sku,
+                        buyer=order_obj.buyer.username,
+                        from_address=order_obj.from_address,  # type: ignore
+                        to_address=order_obj.to_address,  # type: ignore
+                        transaction_hash=order_obj.transaction_hash,  # type: ignore
+                        amount=order_obj.price,
+                        currency=order_obj.currency,  # type: ignore
+                    )
+
+                # Send buyer email
+                if order_obj.buyer.email:
+                    send_order_confirmed_email(
+                        email_to=order_obj.buyer.email,
+                        username=order_obj.buyer.username,
+                        round_order=order_obj.round_order,
+                        date_order=order_obj.date_order,
+                        product=product.sku,
+                        from_address=order_obj.from_address,  # type: ignore
+                        to_address=order_obj.to_address,  # type: ignore
+                        transaction_hash=order_obj.transaction_hash,  # type: ignore
+                        amount=order_obj.price,
+                        currency=order_obj.currency,  # type: ignore
+                    )
     return {"msg": "success!"}
 
 
