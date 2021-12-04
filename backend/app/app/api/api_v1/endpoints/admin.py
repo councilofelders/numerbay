@@ -1,16 +1,15 @@
 import functools
 from typing import Any
 
-from fastapi.encoders import jsonable_encoder
-
-from app.core.celery_app import celery_app
 from fastapi import APIRouter, Depends
+from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, models
 from app.api import deps
+from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.models import Artifact, Order, Product
 from app.utils import send_new_confirmed_sale_email, send_order_confirmed_email
@@ -57,6 +56,7 @@ router = APIRouter()
 #                     currency=order_obj.currency,  # type: ignore
 #                 )
 #     return {"msg": "success!"}
+
 
 @router.post("/resubmit-for-order")
 def resubmit_for_order(
