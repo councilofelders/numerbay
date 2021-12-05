@@ -8,11 +8,17 @@
     <div class="product" v-if="!productLoading">
       <div class="product__info_full">
         <div class="product__header">
-          <SfHeading
+<!--          <SfHeading
             :title="productGetters.getName(product)"
             :level="1"
+            class="sf-heading&#45;&#45;no-underline sf-heading&#45;&#45;left"
+          />-->
+          <SfHeading
+            :level="1"
             class="sf-heading--no-underline sf-heading--left"
-          />
+          >
+            <template #title><a :href="productGetters.getModelUrl(product)" class="sf-heading__title" target="_blank">{{ productGetters.getName(product) }}</a></template>
+          </SfHeading>
           <SfIcon
             icon="drag"
             size="xxl"
@@ -105,11 +111,20 @@
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
           <div>
             <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
-              <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
               <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
               <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
+              <span><h4>MMC</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.mmc).toFixed(4) }}</p></span>
+              <span v-if="productGetters.getCategory(product).tournament==8"><h4>FNC</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.fnc).toFixed(4) }}</p></span>
+              <span v-if="productGetters.getCategory(product).tournament==8"><h4>CORR W/ METAMODEL</h4><p>{{ Number(numerai.modelInfo.modelPerformance.roundModelPerformances[0].corrWMetamodel).toFixed(4) }}</p></span>
+            </div>
+            <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
+              <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
+              <span><h4>1 DAY RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.oneDay)>0?'positive':'negative'}`">
+                {{ numerai.modelInfo.modelPerformance.latestReturns.oneDay?Number(numerai.modelInfo.modelPerformance.latestReturns.oneDay).toFixed(2):'-' }}%</p></span>
               <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
                 {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%</p></span>
+              <span><h4>1 YR. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.oneYear)>0?'positive':'negative'}`">
+                {{ numerai.modelInfo.modelPerformance.latestReturns.oneYear?Number(numerai.modelInfo.modelPerformance.latestReturns.oneYear).toFixed(2):'-' }}%</p></span>
               <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
             </div>
             <div class="product__details__mobile smartphone-only" v-if="!!numerai.modelInfo">

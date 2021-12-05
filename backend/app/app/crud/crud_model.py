@@ -145,14 +145,18 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                       roundNumber
                       corr
                       mmc
+                      fnc
+                      corrWMetamodel
                     }
                     latestReps {
                       corr
                       mmc
+                      fnc
                     }
                     latestRanks {
                       corr
                       mmc
+                      fnc
                     }
                     latestReturns {
                       oneDay

@@ -162,6 +162,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getIsOnPlatform: (product: PRODUCT) => boolean;
     getExpirationRound: (product: PRODUCT) => number;
     getOwner: (product: PRODUCT) => string;
+    getModelUrl: (product: PRODUCT) => string;
     [getterName: string]: any;
 }
 

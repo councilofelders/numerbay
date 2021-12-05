@@ -66,14 +66,14 @@
         <SfCheckbox v-e2e="'terms'" v-model="terms" name="terms" class="summary__terms">
           <template #label>
             <div class="sf-checkbox__label">
-              I understand that I need to make payment in <b>1 single transaction in full that goes directly to the seller</b>, and <b>neither Numerai nor NumerBay is liable for any loss</b> resulted from this transaction.
+              I understand that I need to make payment in <b>1 single transaction in full</b>, and <b>neither Numerai nor NumerBay is liable for any loss</b> resulted from this transaction.
             </div>
           </template>
         </SfCheckbox>
         <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(productGetters.getOptionById(products[0], optionId))==='file'">
           <template #label>
             <div class="sf-checkbox__label">
-              (Optional) Submit this model to Numerai for me automatically if seller submits to NumerBay. [This will not happen if seller provides self-managed file URL]
+              (Optional) Submit this model to Numerai for me automatically if seller submits file to NumerBay.
             </div>
           </template>
         </SfCheckbox>

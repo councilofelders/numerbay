@@ -165,6 +165,8 @@ export const getProductExpirationRound = (product: ProductVariant): number => (p
 
 export const getProductOwner = (product: ProductVariant): string => (product as any)?.owner?.username || '-';
 
+export const getProductModelUrl = (product: ProductVariant): string => (product as any)?.category?.tournament ? ((product as any)?.category?.tournament === 8 ? `https://numer.ai/${(product as any)?.model?.name}` : `https://signals.numer.ai/${(product as any)?.model?.name}`) : null;
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -199,7 +201,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getIsActive: getProductIsActive,
   getIsOnPlatform: getProductIsOnPlatform,
   getExpirationRound: getProductExpirationRound,
-  getOwner: getProductOwner
+  getOwner: getProductOwner,
+  getModelUrl: getProductModelUrl
 };
 
 export default productGetters;
