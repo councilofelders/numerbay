@@ -137,6 +137,18 @@ def test_create_poll_invalid_inputs(
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid weight mode"
 
+    # valid stake basis round
+    data = copy.deepcopy(base_data)
+    data["stake_basis_round"] = 128
+    response = client.post(
+        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+    )
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "stake_basis_round must be between 293 and current active round"
+    )
+
     # valid min stake
     data = copy.deepcopy(base_data)
     data["min_stake"] = -0.1
@@ -625,6 +637,122 @@ def test_voting_numerai_stake_post_determined(
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Poll already closed"
+
+    crud.poll.remove(db, id=poll.id)  # type: ignore
+    crud.model.remove(db, id=model.id)  # type: ignore
+    crud.model.remove(db, id=another_model.id)  # type: ignore
+    crud.user.remove(db, id=another_voter.id)
+
+
+def test_voting_equal_staked(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
+    current_user = r.json()
+    poll = create_random_poll(
+        db, owner_id=current_user["id"], weight_mode="equal_staked"
+    )
+    poll = crud.poll.update(
+        db,
+        db_obj=poll,
+        obj_in={
+            "min_stake": 0.5,
+            "clip_low": 2,
+            "is_blind": False,
+            "stake_basis_round": 293,
+        },
+    )
+    model_name = random_lower_string()
+    model = crud.model.create(
+        db,
+        obj_in=schemas.ModelCreate(
+            id=model_name, name=model_name, tournament=8, owner_id=current_user["id"],
+        ),
+    )
+    crud.stake_snapshot.create(
+        db,
+        obj_in=schemas.StakeSnapshotCreate(
+            date_creation=datetime.datetime.now(),
+            round_tournament=293,
+            name=model.name,
+            tournament=model.tournament,
+            nmr_staked=1,
+            model_id=model.id,
+        ),
+    )
+
+    # first vote
+    data = [{"value": 0}]
+
+    response = client.post(
+        f"{settings.API_V1_STR}/polls/{poll.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["total"] > 0
+    assert poll.id == content["data"][0]["id"]
+    assert content["data"][0]["has_voted"]
+    assert "votes" in content["data"][0]["options"][0]
+
+    # second vote
+    another_voter = create_random_user(db)
+    another_voter = crud.user.update(
+        db, db_obj=another_voter, obj_in={"is_superuser": True}
+    )
+    another_token_headers = authentication_token_from_username(
+        client=client, username=another_voter.username, db=db
+    )
+    another_model_name = random_lower_string()
+    another_model = crud.model.create(
+        db,
+        obj_in=schemas.ModelCreate(
+            id=another_model_name,
+            name=another_model_name,
+            tournament=8,
+            owner_id=another_voter.id,
+        ),
+    )
+    crud.stake_snapshot.create(
+        db,
+        obj_in=schemas.StakeSnapshotCreate(
+            date_creation=datetime.datetime.now(),
+            round_tournament=293,
+            name=another_model.name,
+            tournament=another_model.tournament,
+            nmr_staked=2,
+            model_id=another_model.id,
+        ),
+    )
+
+    data = [{"value": 1}]
+
+    response = client.post(
+        f"{settings.API_V1_STR}/polls/{poll.id}",
+        headers=another_token_headers,
+        json=data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["total"] > 0
+    assert poll.id == content["data"][0]["id"]
+    assert content["data"][0]["has_voted"]
+    assert "votes" in content["data"][0]["options"][1]
+    assert content["data"][0]["options"][1]["votes"] == 1
+    assert (
+        content["data"][0]["options"][1]["votes"]
+        == content["data"][0]["options"][0]["votes"]
+    )
+
+    # invalid duplicate vote
+    response = client.post(
+        f"{settings.API_V1_STR}/polls/{poll.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "You already voted"
 
     crud.poll.remove(db, id=poll.id)  # type: ignore
     crud.model.remove(db, id=model.id)  # type: ignore

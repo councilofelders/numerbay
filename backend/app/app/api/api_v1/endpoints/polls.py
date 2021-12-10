@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from jose import jwt
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -153,6 +154,7 @@ def create_poll(
     # valid weight mode
     if poll_in.weight_mode not in [
         "equal",
+        "equal_staked",
         "log_numerai_stake",
         "log_numerai_balance",
         "log_balance",
@@ -172,11 +174,15 @@ def create_poll(
             status_code=400, detail="log_balance weight mode is not yet supported"
         )
 
-    # todo support post stake determination
-    # if poll_in.is_stake_predetermined is False:
-    #     raise HTTPException(
-    #         status_code=400, detail="Post stake determination is not yet supported"
-    #     )
+    # valid stake basis round
+    if poll_in.stake_basis_round is not None:
+        active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
+        # todo dynamic stake_basis_round lower bound based on db
+        if poll_in.stake_basis_round > active_round or poll_in.stake_basis_round < 293:
+            raise HTTPException(
+                status_code=400,
+                detail="stake_basis_round must be between 293 and current active round",
+            )
 
     # valid min stake
     if poll_in.min_stake is not None and poll_in.min_stake <= 0:
@@ -192,6 +198,7 @@ def create_poll(
 
     # no clipping for non-stake weighted polls
     if poll_in.weight_mode not in [
+        "equal_staked",
         "log_numerai_stake",
         "log_numerai_balance",
         "log_balance",
@@ -320,7 +327,12 @@ def get_voter_weight(
 
     if poll.weight_mode == "equal":
         weight = Decimal("1")
-    elif poll.weight_mode == "log_numerai_stake":
+    else:
+        if poll.weight_mode == "log_numerai_balance":
+            raise HTTPException(status_code=400, detail="Weight mode not yet supported")
+        elif poll.weight_mode == "log_balance":
+            raise HTTPException(status_code=400, detail="Weight mode not yet supported")
+
         # Numerai API
         if not user.is_superuser:
             try:
@@ -339,10 +351,17 @@ def get_voter_weight(
                     detail="Numerai API Error: Insufficient Permission.",
                 )
 
+        stake_basis_round = poll.stake_basis_round if poll.stake_basis_round is not None else crud.globals.get_singleton(db=db).active_round  # type: ignore
+
         user_models_snapshots = (
             db.query(models.StakeSnapshot)
             .join(models.Model, models.Model.id == models.StakeSnapshot.model_id)
-            .filter(models.Model.owner_id == user.id)
+            .filter(
+                and_(
+                    models.Model.owner_id == user.id,
+                    models.StakeSnapshot.round_tournament == stake_basis_round,
+                )
+            )
             .all()
         )
         user_nmr_staked = sum(
@@ -394,16 +413,12 @@ def get_voter_weight(
                 user_nmr_staked = poll.clip_high
 
             # calculate weight
-            weight = (Decimal(user_nmr_staked) + Decimal("1")).ln()
+            if poll.weight_mode == "equal_staked":
+                weight = Decimal("1")
+            elif poll.weight_mode == "log_numerai_stake":
+                weight = (Decimal(user_nmr_staked) + Decimal("1")).ln()
         else:
             return None
-    elif poll.weight_mode == "log_numerai_balance":
-        raise HTTPException(status_code=400, detail="Weight mode not yet supported")
-    elif poll.weight_mode == "log_balance":
-        raise HTTPException(status_code=400, detail="Weight mode not yet supported")
-    else:
-        raise HTTPException(status_code=400, detail="Invalid weight mode")
-
     return weight
 
 

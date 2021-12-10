@@ -12,16 +12,29 @@ export default async function createPoll(context, params, customQuery?: CustomQu
     id: params.id,
     topic: params.topic,
     description: params.description,
+    // eslint-disable-next-line camelcase
     date_finish: params.dateFinish,
+    // eslint-disable-next-line camelcase
     is_multiple: params.isMultiple,
+    // eslint-disable-next-line camelcase
     max_options: params.maxOptions,
+    // eslint-disable-next-line camelcase
     is_anonymous: params.isAnonymous,
+    // eslint-disable-next-line camelcase
     is_blind: params.isBlind,
+    // eslint-disable-next-line camelcase
     weight_mode: params.weightMode,
+    // eslint-disable-next-line camelcase
     is_stake_predetermined: params.isStakePredetermined,
+    // eslint-disable-next-line camelcase
+    stake_basis_round: params.stakeBasisRound,
+    // eslint-disable-next-line camelcase
     min_stake: params.minStake,
+    // eslint-disable-next-line camelcase
     min_rounds: params.minRounds,
+    // eslint-disable-next-line camelcase
     clip_low: params.clipLow,
+    // eslint-disable-next-line camelcase
     clip_high: params.clipHigh,
     options: params.options
   };

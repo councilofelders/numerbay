@@ -8,6 +8,7 @@ from pydantic import BaseModel
 # Shared properties
 class StakeSnapshotBase(BaseModel):
     date_creation: Optional[datetime] = None
+    round_tournament: Optional[int] = None
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None

@@ -32,6 +32,7 @@ class Poll(Base):
     max_options = Column(Integer, default=1)
     is_anonymous = Column(Boolean, default=True)
     is_blind = Column(Boolean, default=True)
+    stake_basis_round = Column(Integer)
     weight_mode = Column(String, default="equal")
     is_stake_predetermined = Column(Boolean, default=True)
     min_stake = Column(Numeric, nullable=True)

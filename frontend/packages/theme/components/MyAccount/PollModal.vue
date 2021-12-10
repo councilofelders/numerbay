@@ -135,18 +135,18 @@
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
                       name="isBlind"
-                      value="true"
-                      label="Blind Results"
-                      details="Results will be kept blind until poll ends"
+                      value="false"
+                      label="Observable Results"
+                      details="Results will be visible to voters anytime"
                       v-model="form.isBlind"
                       @change="onIsBlindChange(form.isBlind)"
                       class="form__radio"
                     />
                     <SfRadio
                       name="isBlind"
-                      value="false"
-                      label="Observable Results"
-                      details="Results will be visible to voters anytime"
+                      value="true"
+                      label="Blind Results"
+                      details="Results will be kept blind until poll ends"
                       v-model="form.isBlind"
                       @change="onIsBlindChange(form.isBlind)"
                       class="form__radio"
@@ -155,6 +155,15 @@
                 </div>
                 <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="weightMode"
+                      value="equal_staked"
+                      label="Equal Weights for Staked Participants"
+                      details="Equal weights for all staked participants"
+                      v-model="form.weightMode"
+                      class="form__radio"
+                      :disabled="!!currentPoll"
+                    />
                     <SfRadio
                       name="weightMode"
                       value="equal"
@@ -173,7 +182,7 @@
                       class="form__radio"
                       :disabled="!!currentPoll"
                     />
-                    <SfRadio
+<!--                    <SfRadio
                       name="weightMode"
                       value="log_numerai_balance"
                       label="Log Numerai Balance"
@@ -190,7 +199,7 @@
                       v-model="form.weightMode"
                       class="form__radio"
                       disabled
-                    />
+                    />-->
 <!--                    <SfRadio
                       name="weightMode"
                       value="log_clip"
@@ -297,6 +306,20 @@
                     :disabled="!!currentPoll"
                   />
                 </ValidationProvider>-->
+                <ValidationProvider rules="integer|min_value:0"  v-slot="{ errors }">
+                  <SfInput
+                    v-model="form.stakeBasisRound"
+                    :valid="!errors[0]"
+                    :errorMessage="errors[0]"
+                    name="minStake"
+                    label="(Optional) Use Stake as of Tournament Round"
+                    type="number"
+                    step=1
+                    min=0
+                    class="form__element"
+                    :disabled="!!currentPoll"
+                  />
+                </ValidationProvider>
                 <ValidationProvider rules="decimal|min_value:0"  v-slot="{ errors }">
                   <SfInput
                     v-model="form.minStake"
@@ -615,9 +638,10 @@ export default {
       isMultiple: poll ? String(poll.is_multiple) : 'false',
       maxOptions: poll ? poll.max_options : null,
       isAnonymous: poll ? String(poll.is_anonymous) : 'true',
-      isBlind: poll ? String(poll.is_blind) : 'true',
-      weightMode: poll ? pollGetters.getWeightMode(poll) : 'equal',
+      isBlind: poll ? String(poll.is_blind) : 'false',
+      weightMode: poll ? pollGetters.getWeightMode(poll) : 'equal_staked',
       isStakePredetermined: poll ? String(poll.is_stake_predetermined) : 'true',
+      stakeBasisRound: poll ? poll.stake_basis_round : null,
       minStake: poll ? poll.min_stake : null,
       minRounds: poll ? String(poll.min_rounds) : '0',
       clipLow: poll ? poll.clip_low : null,

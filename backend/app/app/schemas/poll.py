@@ -31,6 +31,7 @@ class PollCreate(PollBase):
     is_anonymous: Optional[bool] = None
     weight_mode: Optional[str] = None
     is_stake_predetermined: Optional[bool] = None
+    stake_basis_round: Optional[int] = None
     min_stake: Optional[Decimal] = None
     min_rounds: Optional[Decimal] = None
     clip_low: Optional[Decimal] = None
@@ -55,6 +56,7 @@ class PollInDBBase(PollBase):
     is_anonymous: Optional[bool] = None
     weight_mode: Optional[str] = None
     is_stake_predetermined: Optional[bool] = None
+    stake_basis_round: Optional[int] = None
     min_stake: Optional[Decimal] = None
     min_rounds: Optional[Decimal] = None
     clip_low: Optional[Decimal] = None

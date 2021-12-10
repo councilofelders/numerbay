@@ -13,7 +13,7 @@ from fastapi.encoders import jsonable_encoder
 from google.api_core.exceptions import NotFound
 from numerapi import NumerAPI
 from raven import Client
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, select
 
 from app import crud
 from app.api import deps
@@ -787,7 +787,25 @@ def batch_validate_numerai_models_stake_task() -> None:
 def batch_update_stake_snapshots() -> None:
     db = SessionLocal()
     try:
+        # Connect existing stake snapshots
+        db.query(StakeSnapshot).filter(StakeSnapshot.model_id.is_(None)).update(
+            {
+                StakeSnapshot.model_id: select(Model.id)  # type: ignore
+                .where(
+                    and_(
+                        Model.name == StakeSnapshot.name,
+                        Model.tournament == StakeSnapshot.tournament,
+                    )
+                )
+                .scalar_subquery()
+            },
+            synchronize_session=False,
+        )
+        db.commit()
+
+        # Pull new snapshots
         date_creation = datetime.utcnow()
+        active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
         numerai_models = crud.model.get_leaderboard(tournament=8)
 
         db_models = db.query(Model).filter(Model.tournament == 8).all()
@@ -799,6 +817,7 @@ def batch_update_stake_snapshots() -> None:
         for model in numerai_models:
             new_snapshot = StakeSnapshot(
                 date_creation=date_creation,
+                round_tournament=active_round,
                 name=model["username"],
                 tournament=8,
                 nmr_staked=model["nmrStaked"],
@@ -808,26 +827,8 @@ def batch_update_stake_snapshots() -> None:
             if model["username"] in db_models_dict.keys():
                 new_snapshot.model_id = db_models_dict[model["username"]].id
             db_stake_snapshots_dict[model["username"]] = new_snapshot
-
-        for db_stake_snapshot in (
-            db.query(StakeSnapshot)
-            .filter(
-                and_(
-                    StakeSnapshot.tournament == 8,
-                    StakeSnapshot.name.in_(db_stake_snapshots_dict.keys()),
-                )
-            )
-            .all()
-        ):
-            new_snapshot = db_stake_snapshots_dict.pop(db_stake_snapshot.name)
-            new_snapshot.id = db_stake_snapshot.id
-            db.merge(new_snapshot)
         db.add_all(db_stake_snapshots_dict.values())
         db.commit()
-
-        # for model in numerai_models:
-        #     snapshot_obj = StakeSnapshotCreate(date_creation=date_creation, name=model['username'], tournament=8, nmr_staked=model['nmrStaked'])
-        #     crud.stake_snapshot.create(db, obj_in=snapshot_obj)
 
         signals_models = crud.model.get_leaderboard(tournament=11)
 
@@ -840,6 +841,7 @@ def batch_update_stake_snapshots() -> None:
         for model in signals_models:
             new_snapshot = StakeSnapshot(
                 date_creation=date_creation,
+                round_tournament=active_round,
                 name=model["username"],
                 tournament=11,
                 nmr_staked=model["nmrStaked"],
@@ -849,20 +851,6 @@ def batch_update_stake_snapshots() -> None:
             if model["username"] in db_models_dict.keys():
                 new_snapshot.model_id = db_models_dict[model["username"]].id
             db_stake_snapshots_dict[model["username"]] = new_snapshot
-
-        for db_stake_snapshot in (
-            db.query(StakeSnapshot)
-            .filter(
-                and_(
-                    StakeSnapshot.tournament == 11,
-                    StakeSnapshot.name.in_(db_stake_snapshots_dict.keys()),
-                )
-            )
-            .all()
-        ):
-            new_snapshot = db_stake_snapshots_dict.pop(db_stake_snapshot.name)
-            new_snapshot.id = db_stake_snapshot.id
-            db.merge(new_snapshot)
         db.add_all(db_stake_snapshots_dict.values())
         db.commit()
     finally:
@@ -970,7 +958,7 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         },
         "batch_update_stake_snapshots": {
             "task": "app.worker.batch_update_stake_snapshots",
-            "schedule": crontab(hour=0, minute=0),
+            "schedule": crontab(day_of_week="mon", hour=14, minute=30),
         },
         "batch_update_polls": {
             "task": "app.worker.batch_update_polls",
