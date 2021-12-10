@@ -92,20 +92,23 @@ def update_user_me(
     if email is not None:
         user_in.email = email
     if numerai_api_key_public_id is not None:
-        user_in.numerai_api_key_public_id = numerai_api_key_public_id
-    if numerai_api_key_secret is not None:
-        user_in.numerai_api_key_secret = numerai_api_key_secret
-        user_json = jsonable_encoder(user_in)
-        user_json["id"] = current_user.id
-        tmp_db = SessionLocal()
-        numerai_api_updated = crud.user.update_numerai_api(tmp_db, user_json)
-        if not numerai_api_updated:
-            raise HTTPException(status_code=400, detail="Failed to update Numerai API")
-        result = crud.model.update_model(tmp_db, user_json=user_json)
-        if not result:
-            raise HTTPException(
-                status_code=400, detail="Numerai API Error: Insufficient Permission."
-            )
+        if numerai_api_key_secret is not None:
+            user_in.numerai_api_key_public_id = numerai_api_key_public_id
+            user_in.numerai_api_key_secret = numerai_api_key_secret
+            user_json = jsonable_encoder(user_in)
+            user_json["id"] = current_user.id
+            tmp_db = SessionLocal()
+            numerai_api_updated = crud.user.update_numerai_api(tmp_db, user_json)
+            if not numerai_api_updated:
+                raise HTTPException(
+                    status_code=400, detail="Failed to update Numerai API"
+                )
+            result = crud.model.update_model(tmp_db, user_json=user_json)
+            if not result:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Numerai API Error: Insufficient Permission.",
+                )
     if public_address is not None and public_address == "":  # disconnect web3
         user_in.public_address = None
         user_in.signature = None
