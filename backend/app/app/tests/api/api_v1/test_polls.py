@@ -40,6 +40,8 @@ def test_create_poll(
     content = response.json()
     assert content["id"] == data["id"]
     assert content["topic"] == data["topic"]
+    assert content["is_stake_predetermined"]
+    assert content["stake_basis_round"] == crud.globals.get_singleton(db=db).active_round  # type: ignore
     assert content["options"][0]["text"] == data["options"][0]["text"]  # type: ignore
 
     crud.poll.remove(db, id=content["id"])
@@ -798,6 +800,26 @@ def test_voting_invalid_inputs(
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid number of options"
     poll = crud.poll.update(db, db_obj=poll, obj_in={"is_multiple": True})
+
+    # out-of-range options
+    data = [{"value": 1}, {"value": 3}]
+    response = client.post(
+        f"{settings.API_V1_STR}/polls/{poll.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid options"
+
+    # duplicated options
+    data = [{"value": 1}, {"value": 1}]
+    response = client.post(
+        f"{settings.API_V1_STR}/polls/{poll.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Duplicated options"
 
     # no stake snapshot
     poll = crud.poll.update(

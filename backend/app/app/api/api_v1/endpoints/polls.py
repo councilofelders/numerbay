@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from jose import jwt
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -184,8 +185,11 @@ def create_poll(
                 detail="stake_basis_round must be between 293 and current active round",
             )
 
+    # set pre-determined if not present
+    if poll_in.is_stake_predetermined is None:
+        poll_in.is_stake_predetermined = True
+
     # fill stake basis round if not present, if pre-determined
-    # todo test fill stake basis
     if poll_in.stake_basis_round is None and poll_in.is_stake_predetermined:
         poll_in.stake_basis_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
 
@@ -479,7 +483,6 @@ def close_poll(
     if poll.owner_id != current_user.id:
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    # todo test post determined
     if (
         poll.weight_mode in ["equal_staked", "log_numerai_stake"]
         and not poll.is_stake_predetermined
@@ -539,10 +542,11 @@ def vote(
         raise HTTPException(status_code=400, detail="You already voted")
 
     # Valid options
-    # todo test duplicated options
     seen = set()
     for option in options:
         if not isinstance(option["value"], int):
+            raise HTTPException(status_code=400, detail="Invalid options")
+        if option["value"] >= len(poll.options):  # type: ignore
             raise HTTPException(status_code=400, detail="Invalid options")
         if option["value"] not in seen:
             seen.add(option["value"])
@@ -550,6 +554,7 @@ def vote(
             raise HTTPException(status_code=400, detail="Duplicated options")
 
     # Vote
+    vote_db_objs = []
     for option in options:
         new_vote_dict = {
             "date_vote": date_vote,
@@ -563,8 +568,14 @@ def vote(
 
         new_vote_dict["weight_basis"] = weight
         new_vote = schemas.VoteCreate(**new_vote_dict)
-        crud.vote.create(db, obj_in=new_vote)
-        # todo make atomic
+
+        # crud.vote.create(db, obj_in=new_vote)
+        obj_in_data = jsonable_encoder(new_vote)
+        db_obj = models.Vote(**obj_in_data)  # type: ignore
+        vote_db_objs.append(db_obj)
+    db.add_all(vote_db_objs)
+    db.commit()
+
     return search_polls_authenticated(
         db,
         id=id,
