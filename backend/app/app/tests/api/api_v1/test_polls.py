@@ -435,6 +435,7 @@ def test_voting_numerai_stake(
     poll = crud.poll.update(
         db, db_obj=poll, obj_in={"min_stake": 0.5, "clip_low": 2, "is_blind": False}
     )
+
     model_name = random_lower_string()
     model = crud.model.create(
         db,
@@ -446,6 +447,7 @@ def test_voting_numerai_stake(
         db,
         obj_in=schemas.StakeSnapshotCreate(
             date_creation=datetime.datetime.now(),
+            round_tournament=293,
             name=model.name,
             tournament=model.tournament,
             nmr_staked=1,

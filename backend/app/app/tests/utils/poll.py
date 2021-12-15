@@ -34,6 +34,7 @@ def create_random_poll(
         is_anonymous=True,
         is_blind=True,
         weight_mode=weight_mode,
+        stake_basis_round=293,
         owner_id=owner_id,
         options=[
             {"value": 0, "text": "Python"},
