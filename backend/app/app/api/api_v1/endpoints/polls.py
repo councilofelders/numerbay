@@ -184,6 +184,11 @@ def create_poll(
                 detail="stake_basis_round must be between 293 and current active round",
             )
 
+    # fill stake basis round if not present, if pre-determined
+    # todo test fill stake basis
+    if poll_in.stake_basis_round is None and poll_in.is_stake_predetermined:
+        poll_in.stake_basis_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
+
     # valid min stake
     if poll_in.min_stake is not None and poll_in.min_stake <= 0:
         raise HTTPException(
@@ -474,7 +479,11 @@ def close_poll(
     if poll.owner_id != current_user.id:
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    if poll.weight_mode == "log_numerai_stake" and not poll.is_stake_predetermined:
+    # todo test post determined
+    if (
+        poll.weight_mode in ["equal_staked", "log_numerai_stake"]
+        and not poll.is_stake_predetermined
+    ):
         take_stake_weight_snapshots(db, poll)
 
     poll = crud.poll.update(db=db, db_obj=poll, obj_in={"is_finished": True})
@@ -529,11 +538,19 @@ def vote(
     if len(existing_votes) > 0:
         raise HTTPException(status_code=400, detail="You already voted")
 
+    # Valid options
+    # todo test duplicated options
+    seen = set()
     for option in options:
-        # Valid options
         if not isinstance(option["value"], int):
             raise HTTPException(status_code=400, detail="Invalid options")
+        if option["value"] not in seen:
+            seen.add(option["value"])
+        else:
+            raise HTTPException(status_code=400, detail="Duplicated options")
 
+    # Vote
+    for option in options:
         new_vote_dict = {
             "date_vote": date_vote,
             "option": option["value"],
@@ -547,6 +564,7 @@ def vote(
         new_vote_dict["weight_basis"] = weight
         new_vote = schemas.VoteCreate(**new_vote_dict)
         crud.vote.create(db, obj_in=new_vote)
+        # todo make atomic
     return search_polls_authenticated(
         db,
         id=id,
