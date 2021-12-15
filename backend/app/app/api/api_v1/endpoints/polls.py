@@ -334,6 +334,20 @@ def get_voter_weight(
 ) -> Optional[Decimal]:
     min_stake = poll.min_stake if poll.min_stake is not None else 0
 
+    # Numerai API, check regardless weight mode
+    if not user.is_superuser:
+        try:
+            if not user.numerai_api_key_public_id or not user.numerai_api_key_secret:
+                raise ValueError
+            crud.user.get_numerai_api_user_info(
+                public_id=user.numerai_api_key_public_id,
+                secret_key=user.numerai_api_key_secret,
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=400, detail="Numerai API Error: Insufficient Permission.",
+            )
+
     if poll.weight_mode == "equal":
         weight = Decimal("1")
     else:
@@ -341,24 +355,6 @@ def get_voter_weight(
             raise HTTPException(status_code=400, detail="Weight mode not yet supported")
         elif poll.weight_mode == "log_balance":
             raise HTTPException(status_code=400, detail="Weight mode not yet supported")
-
-        # Numerai API
-        if not user.is_superuser:
-            try:
-                if (
-                    not user.numerai_api_key_public_id
-                    or not user.numerai_api_key_secret
-                ):
-                    raise ValueError
-                crud.user.get_numerai_api_user_info(
-                    public_id=user.numerai_api_key_public_id,
-                    secret_key=user.numerai_api_key_secret,
-                )
-            except Exception:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Numerai API Error: Insufficient Permission.",
-                )
 
         stake_basis_round = poll.stake_basis_round if poll.stake_basis_round is not None else crud.globals.get_singleton(db=db).active_round  # type: ignore
 
