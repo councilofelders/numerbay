@@ -60,15 +60,7 @@ class UserInDB(UserInDBBase):
     numerai_api_key_secret: Optional[str] = None
 
 
-class ProductOwner(BaseModel):
-    id: Optional[int] = None
-    username: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
-class PollOwner(BaseModel):
+class GenericOwner(BaseModel):
     id: Optional[int] = None
     username: Optional[str] = None
 

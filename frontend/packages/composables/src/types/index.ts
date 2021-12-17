@@ -6,6 +6,7 @@ import {
   AgnosticPrice,
   FacetSearchResult, ReviewGetters
 } from '@vue-storefront/core';
+import {AgnosticCoupon, AgnosticDiscount, AgnosticTotals} from '@vue-storefront/core/lib/src/types';
 
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 
@@ -146,6 +147,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getOptionIsOnPlatform: (option: any) => boolean;
     getOptionPlatform: (option: any) => string;
     getOptionFormattedPrice: (option: any, withCurrency: boolean) => string;
+    getOptionFormattedSpecialPrice: (option: any, withCurrency: boolean) => string;
     getFormattedOption: (option: any) => string;
     getFormattedPrice: (price: PRODUCT, withCurrency: boolean, optionIdx: number, decimals: number) => string;
     getMode: (product: PRODUCT) => string;
@@ -233,4 +235,22 @@ export interface PollGetters<POLL> {
     getExpirationRound: (product: POLL) => number;
     getOwner: (product: POLL) => string;
     [getterName: string]: any;
+}
+
+export interface CartGetters<CART, CART_ITEM> {
+    getItems: (cart: CART) => CART_ITEM[];
+    getItemName: (cartItem: CART_ITEM) => string;
+    getItemImage: (cartItem: CART_ITEM) => string;
+    getItemPrice: (cartItem: CART_ITEM) => AgnosticPrice;
+    getItemQty: (cartItem: CART_ITEM) => number;
+    getItemAttributes: (cartItem: CART_ITEM, filters?: Array<string>) => Record<string, AgnosticAttribute | string>;
+    getItemSku: (cartItem: CART_ITEM) => string;
+    getTotals: (cart: CART) => AgnosticTotals;
+    getShippingPrice: (cart: CART) => number;
+    getTotalItems: (cart: CART) => number;
+    getFormattedPrice: (price: number) => string;
+    getCoupons: (cart: CART) => AgnosticCoupon[];
+    getDiscounts: (cart: CART) => AgnosticDiscount[];
+    getAppliedCoupon(cart: CART): AgnosticCoupon | null;
+    [getterName: string]: (element: any, options?: any) => unknown;
 }

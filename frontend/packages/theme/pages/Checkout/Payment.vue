@@ -7,14 +7,21 @@
     />
     <SfTable class="sf-table--bordered table desktop-only">
       <SfTableHeading class="table__row">
-        <SfTableHeader class="table__header table__image">{{ $t('Item') }}</SfTableHeader>
+        <SfTableHeader class="table__header table__image">{{ $t('Product') }}</SfTableHeader>
         <SfTableHeader
-          v-for="tableHeader in tableHeaders"
-          :key="tableHeader"
-          class="table__header"
-          :class="{ table__description: tableHeader === 'Description' }"
+          class="table__header table__description"
         >
-          {{ tableHeader }}
+          Option
+        </SfTableHeader>
+        <SfTableHeader
+          class="table__header table__description"
+        >
+          {{ (!!products[0] && products[0].category.is_per_round) ? 'Number of Rounds' : 'Order Quantity' }}
+        </SfTableHeader>
+        <SfTableHeader
+          class="table__header"
+        >
+          Price
         </SfTableHeader>
       </SfTableHeading>
       <SfTableRow
@@ -26,17 +33,18 @@
           <SfImage :src="productGetters.getCoverImage(product)" :alt="productGetters.getName(product).toUpperCase()" />
         </SfTableData>
         <SfTableData class="table__data table__description table__data">
-          <div class="product-title">{{ productGetters.getName(product).toUpperCase() }}</div>
-          <div class="product-sku">{{ productGetters.getSlug(product).toUpperCase() }}</div>
+<!--          <div class="product-title">{{ productGetters.getName(product).toUpperCase() }}</div>-->
+          <div class="product-title">{{ productGetters.getSlug(product).toUpperCase() }}</div>
           <div class="product-sku">{{ productGetters.getFormattedOption(productGetters.getOptionById(product, optionId)) }}</div>
         </SfTableData>
-        <SfTableData class="table__data">
+<!--        <SfTableData class="table__data">
           {{ productGetters.getOwner(product).toUpperCase() }}
-        </SfTableData>
-        <SfTableData class="table__data">{{ qty }}</SfTableData>
+        </SfTableData>-->
+        <SfTableData class="table__data">{{ product.category.is_per_round ? productGetters.getOptionById(product, optionId).quantity : qty }}</SfTableData>
         <SfTableData class="table__data price">
           <SfPrice
             :regular="productGetters.getOptionFormattedPrice(productGetters.getOptionById(product, optionId), true)"
+            :special="productGetters.getOptionFormattedSpecialPrice(productGetters.getOptionById(product, optionId), true)"
             class="product-price"
           />
         </SfTableData>
@@ -57,7 +65,7 @@
           <SfProperty
             name="Total"
             v-if="!loading && !productLoading && !!products[0]"
-            :value="`${(productGetters.getOptionById(products[0], optionId).price * qty).toFixed(4)} ${productGetters.getOptionById(products[0], optionId).currency}`"
+            :value="`${((productGetters.getOptionById(products[0], optionId).special_price ? productGetters.getOptionById(products[0], optionId).special_price : productGetters.getOptionById(products[0], optionId).price)).toFixed(4)} ${productGetters.getOptionById(products[0], optionId).currency}`"
             class="sf-property--full-width sf-property--large summary__property-total"
           />
         </SfLoader>
@@ -166,6 +174,7 @@ export default {
   },
   setup(props, context) {
     const id = context.root.$route.query.product;
+    const coupon = context.root.$route.query.coupon;
     const optionId = parseInt(context.root.$route.query.option);
     const qty = parseInt(context.root.$route.query.qty) || 1;
     const { load, setCart } = useCart();
@@ -185,7 +194,7 @@ export default {
 
     onSSR(async () => {
       await load();
-      await search({ id });
+      await search({ id, coupon, qty });
     });
 
     getModels();
@@ -217,7 +226,7 @@ export default {
     };
 
     const processOrder = async () => {
-      await make({id, optionId, quantity: qty, submitModelId: submitModelId.value});
+      await make({id, optionId, quantity: qty, submitModelId: submitModelId.value, coupon: coupon});
       if (makeOrderError.value.make) {
         const isNumeraiApiError = makeOrderError.value.make.message.includes('Numerai API');
         send({
@@ -245,7 +254,6 @@ export default {
       productLoading,
       models: computed(() => products?.value?.data ? userGetters.getModels(numerai.value, productGetters.getTournamentId(products?.value?.data[0]), false) : []),
       numeraiLoading,
-      tableHeaders: ['Description', 'Seller', 'Order Quantity', 'Price'],
       productGetters,
       processOrder,
       orderSearch,

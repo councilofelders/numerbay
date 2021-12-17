@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.api.dependencies.coupons import calculate_option_price
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import send_new_artifact_email, send_new_artifact_seller_email
@@ -32,6 +33,8 @@ def search_products(
     filters: Dict = Body(None),
     term: str = Body(None),
     sort: str = Body(None),
+    coupon: str = Body(None),
+    qty: int = Body(None),
 ) -> Any:
     """
     Retrieve products.
@@ -46,38 +49,72 @@ def search_products(
         term=term,
         sort=sort,
     )
-    # print(f"Product results: ({len(products)}): {products}")
-    # for product in products:
-    #     try:
-    #         jsonable_encoder(product)
-    #     except Exception:
-    #         raise HTTPException(
-    #             status_code=500, detail=f"Encoding failed for product {product.id}"
-    #         )
-    # try:
-    #     jsonable_encoder(products)
-    # except:
-    #     raise HTTPException(
-    #         status_code=500,
-    #         detail=f"Encoding failed for all ({len(products)}) products",
-    #     )
+
+    products_to_return = []
+    for product in products["data"]:
+        product_to_return = schemas.Product.from_orm(product)
+        for option in product_to_return.options:  # type: ignore
+            calculate_option_price(
+                option,
+                coupon=None,
+                coupon_obj=None,
+                qty=qty if qty else 1,
+                raise_exceptions=False,
+            )
+        products_to_return.append(product_to_return)
+
+    products["data"] = products_to_return
     return products
 
 
-# @router.get("/my", response_model=List[schemas.Product])
-# def read_my_products(
-#     db: Session = Depends(deps.get_db),
-#     skip: int = 0,
-#     limit: int = 100,
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     """
-#     Retrieve products.
-#     """
-#     products = crud.product.get_multi_by_owner(
-#         db=db, owner_id=current_user.id, skip=skip, limit=limit
-#     )
-#     return products
+@router.post(
+    "/search-authenticated",
+    response_model=Dict[str, Union[int, List[schemas.Product], List, Dict]],
+)
+def search_products_authenticated(
+    db: Session = Depends(deps.get_db),
+    id: int = Body(None),
+    category_id: int = Body(None),
+    skip: int = Body(None),
+    limit: int = Body(None),
+    filters: Dict = Body(None),
+    term: str = Body(None),
+    sort: str = Body(None),
+    coupon: str = Body(None),
+    qty: int = Body(None),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve products (authenticated).
+    """
+    products = crud.product.search(
+        db,
+        id=id,
+        category_id=category_id,
+        skip=skip,
+        limit=limit,
+        filters=filters,
+        term=term,
+        sort=sort,
+    )
+
+    coupon_obj = crud.coupon.get_by_code(db, code=coupon)
+
+    products_to_return = []
+    for product in products["data"]:
+        product_to_return = schemas.Product.from_orm(product)
+        for option in product_to_return.options:  # type: ignore
+            calculate_option_price(
+                option,
+                coupon=coupon,
+                coupon_obj=coupon_obj,
+                qty=qty if qty else 1,
+                raise_exceptions=False,
+            )
+        products_to_return.append(product_to_return)
+
+    products["data"] = products_to_return
+    return products
 
 
 def validate_product_input(

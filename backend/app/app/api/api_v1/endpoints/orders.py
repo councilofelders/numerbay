@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.api.dependencies.coupons import calculate_option_price
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import send_new_order_email
@@ -48,6 +49,7 @@ def create_order(
     option_id: int = Body(...),
     quantity: int = Body(...),
     submit_model_id: str = Body(None),
+    coupon: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -198,9 +200,17 @@ def create_order(
         )
 
     if product:
+        coupon_obj = crud.coupon.get_by_code(db, code=coupon)
+        product_option_obj = schemas.ProductOption.from_orm(product_option)
+        product_option_obj = calculate_option_price(
+            product_option_obj, coupon=coupon, coupon_obj=coupon_obj, qty=quantity
+        )
+
         order_in = schemas.OrderCreate(
             quantity=total_quantity,
-            price=product_option.price * quantity,
+            price=product_option_obj.special_price
+            if product_option_obj.applied_coupon
+            else product_option_obj.price,
             currency=product_option.currency,
             mode=product_option.mode,
             stake_limit=product_option.stake_limit,
@@ -215,6 +225,9 @@ def create_order(
             date_order=date_order,
             round_order=selling_round,
             state="pending",
+            applied_coupon_id=coupon_obj.id  # type: ignore
+            if product_option_obj.applied_coupon
+            else None,
         )
 
         order = crud.order.create_with_buyer(

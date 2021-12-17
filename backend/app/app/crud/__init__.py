@@ -1,5 +1,6 @@
 from .crud_artifact import artifact
 from .crud_category import category
+from .crud_coupon import coupon
 from .crud_favorite import favorite
 from .crud_globals import globals
 from .crud_item import item

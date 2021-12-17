@@ -90,15 +90,29 @@ export const getOptionPlatform = (option: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const getOptionFormattedPrice = (option: any, withCurrency = true): string => {
-  const decimals = option?.is_on_platform ? 4 : 2;
-  const price = (option?.price || 0).toFixed(decimals);
+export const formatPrice = (price: any, currency: any, withCurrency = true): string => {
   if (withCurrency) {
-    const currency = option?.currency || 'USD';
     if (currency === 'USD') return `$${price}`;
     return `${price} ${currency}`;
   }
   return `${price}`;
+};
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const getOptionFormattedPrice = (option: any, withCurrency = true): string => {
+  const decimals = option?.is_on_platform ? 4 : 2;
+  const price = (option?.price || 0).toFixed(decimals);
+  return formatPrice(price, option?.currency, withCurrency);
+};
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const getOptionFormattedSpecialPrice = (option: any, withCurrency = true): string => {
+  const decimals = option?.is_on_platform ? 4 : 2;
+  if (option?.special_price) {
+    const price = (option?.special_price).toFixed(decimals);
+    return formatPrice(price, option?.currency, withCurrency);
+  }
+  return null;
 };
 
 export const getFormattedOption = (option: any): string => {
@@ -187,6 +201,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getOptionIsOnPlatform: getOptionIsOnPlatform,
   getOptionPlatform: getOptionPlatform,
   getOptionFormattedPrice: getOptionFormattedPrice,
+  getOptionFormattedSpecialPrice: getOptionFormattedSpecialPrice,
   getFormattedOption: getFormattedOption,
   getFormattedPrice: getFormattedPrice,
   getMode: getProductMode,

@@ -6,7 +6,7 @@ import pandas as pd
 from pydantic import BaseModel, root_validator
 
 # Shared properties
-from app.schemas.user import PollOwner
+from app.schemas.user import GenericOwner
 
 
 class PollBase(BaseModel):
@@ -69,7 +69,7 @@ class PollInDBBase(PollBase):
 
 # Properties to return to client
 class Poll(PollInDBBase):
-    owner: Optional[PollOwner] = None
+    owner: Optional[GenericOwner] = None
     has_voted: Optional[bool] = False
 
     @root_validator(pre=True)

@@ -8,16 +8,17 @@
       />
     </div>
     <div class="highlighted">
-      <SfProperty
-        name="Order Quantity"
-        :value="qty"
-        class="sf-property--full-width sf-property--large property"
-      />
       <SfLoader :class="{ loader: loading }" :loading="loading">
         <SfProperty
           name="Number of Rounds"
           v-if="!loading && !!products[0] && products[0].category.is_per_round"
-          :value="parseInt(products[0].options.filter((o)=>o.id===optionId)[0].quantity) * parseInt(qty)"
+          :value="parseInt(productOption.quantity)"
+          class="sf-property--full-width sf-property--large property"
+        />
+        <SfProperty
+          name="Order Quantity"
+          v-else
+          :value="qty"
           class="sf-property--full-width sf-property--large property"
         />
       </SfLoader>
@@ -30,29 +31,25 @@
         ]"
       />-->
       <SfLoader :class="{ loader: loading }" :loading="loading">
-        <SfProperty
-          name="Total"
-          v-if="!loading && !!products[0]"
-          :value="`${(products[0].options.filter((o)=>o.id===optionId)[0].price * qty).toFixed(4)} ${products[0].options.filter((o)=>o.id===optionId)[0].currency}`"
-          class="sf-property--full-width sf-property--large property-total"
-        />
+          <SfProperty
+            name="Total"
+            v-if="!loading && !!products[0]"
+            :value="`${(productOption.price).toFixed(4)} ${productOption.currency}`"
+            class="sf-property--full-width sf-property--large property-total"
+          >
+            <template #value={props}>
+              <span class="sf-property__value">
+                <span :class="[{ discounted: productOption.special_price }]">{{ props.value }}</span>
+                <span v-if="!loading && !!products[0] && productOption.special_price">
+                  <br/>
+                  {{ `${(productOption.special_price).toFixed(4)} ${productOption.currency}` }}
+                </span>
+              </span>
+            </template>
+          </SfProperty>
       </SfLoader>
     </div>
-    <!--<div class="highlighted promo-code">
-      <SfInput
-        data-cy="cart-preview-input_promoCode"
-        v-model="promoCode"
-        name="promoCode"
-        :label="$t('Enter promo code')"
-        class="sf-input&#45;&#45;filled promo-code__input"
-        disabled
-      />
-      <SfButton
-        class="promo-code__button"
-        @click="() => applyCoupon({ couponCode: promoCode })"
-        disabled
-      >{{ $t('Apply') }}</SfButton>
-    </div>-->
+    <CouponCode class="highlighted" />
     <div class="highlighted">
       <SfCharacteristic
         v-for="characteristic in characteristics"
@@ -78,6 +75,8 @@ import {
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
 import {useCart, useProduct, checkoutGetters, cartGetters, productGetters} from '@vue-storefront/numerbay';
+import CouponCode from '../CouponCode.vue';
+
 export default {
   name: 'CartPreview',
   components: {
@@ -88,7 +87,8 @@ export default {
     SfCharacteristic,
     SfInput,
     SfCircleIcon,
-    SfLoader
+    SfLoader,
+    CouponCode
   },
   setup (props, context) {
     const id = context.root.$route.query.product;
@@ -97,8 +97,6 @@ export default {
     const { cart, removeItem, updateItemQty, applyCoupon } = useCart();
     const { products, loading } = useProduct(String(id));
     const listIsHidden = ref(false);
-    const promoCode = ref('');
-    const showPromoCode = ref(false);
     const totalItems = computed(() => cartGetters.getTotalItems(cart.value));
     const discounts = computed(() => cartGetters.getDiscounts(cart.value));
     const shippingMethodPrice = computed(() => checkoutGetters.getShippingMethodPrice(cart.value));
@@ -108,10 +106,9 @@ export default {
       totalItems,
       listIsHidden,
       products: computed(() => products?.value?.data ? products?.value?.data : []),
+      productOption: computed(() => products?.value?.data ? productGetters.getOptionById(products?.value?.data[0], optionId) : []),
       loading,
       productGetters,
-      promoCode,
-      showPromoCode,
       removeItem,
       updateItemQty,
       checkoutGetters,
@@ -182,7 +179,7 @@ export default {
   }
 }
 .discounted {
-  &::v-deep .sf-property__value {
+  &::v-deep {
     color: var(--c-danger);
     text-decoration: line-through;
   }

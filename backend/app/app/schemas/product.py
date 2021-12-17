@@ -11,7 +11,7 @@ from app.schemas.product_option import (
     ProductOptionUpdate,
 )
 from app.schemas.review import Review
-from app.schemas.user import ProductOwner
+from app.schemas.user import GenericOwner
 
 
 # Shared properties
@@ -67,7 +67,7 @@ class ProductInDBBase(ProductBase):
 
 # Properties to return to client
 class Product(ProductInDBBase):
-    owner: Optional[ProductOwner] = None
+    owner: Optional[GenericOwner] = None
     model: Optional[ModelSummary] = None
     reviews: Optional[List[Review]] = None
     options: Optional[List[ProductOption]] = None

@@ -21,7 +21,8 @@ export default async function createOrder(context, params, customQuery?: CustomQ
     option_id: parseInt(params.optionId),
     quantity: parseInt(params.quantity),
     // eslint-disable-next-line camelcase
-    submit_model_id: params.submitModelId
+    submit_model_id: params.submitModelId,
+    coupon: params.coupon
   };
 
   // Use axios to send a POST request

@@ -25,6 +25,7 @@ class OrderBase(BaseModel):
     to_address: Optional[str] = None
     transaction_hash: Optional[str] = None
     state: Optional[str] = None
+    applied_coupon_id: Optional[int] = None
 
 
 # Properties to receive on order creation

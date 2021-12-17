@@ -1,5 +1,6 @@
-import { CartGetters, AgnosticPrice, AgnosticTotals, AgnosticCoupon, AgnosticDiscount } from '@vue-storefront/core';
+import { AgnosticPrice, AgnosticTotals, AgnosticCoupon, AgnosticDiscount } from '@vue-storefront/core';
 import { Cart, LineItem } from '@vue-storefront/numerbay-api/src/types';
+import { CartGetters } from '../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getCartItems = (cart: Cart): LineItem[] => [
@@ -68,6 +69,14 @@ export const getCoupons = (cart: Cart): AgnosticCoupon[] => [];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getDiscounts = (cart: Cart): AgnosticDiscount[] => [];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getAppliedCoupon = (cart: any): AgnosticCoupon | null => ((cart as any)?.applied_coupon ? {
+  id: (cart as any)?.applied_coupon,
+  name: (cart as any)?.applied_coupon,
+  value: 0,
+  code: (cart as any)?.applied_coupon
+} : null);
+
 const cartGetters: CartGetters<Cart, LineItem> = {
   getTotals: getCartTotals,
   getShippingPrice: getCartShippingPrice,
@@ -81,7 +90,8 @@ const cartGetters: CartGetters<Cart, LineItem> = {
   getFormattedPrice: getFormattedPrice,
   getTotalItems: getCartTotalItems,
   getCoupons,
-  getDiscounts
+  getDiscounts,
+  getAppliedCoupon
 };
 
 export default cartGetters;

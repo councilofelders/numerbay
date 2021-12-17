@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .poll import Poll  # noqa: F401
     from .review import Review  # noqa: F401
     from .vote import Vote  # noqa: F401
+    from .coupon import Coupon  # noqa: F401
 
 
 class User(Base):
@@ -39,3 +40,4 @@ class User(Base):
     reviews = relationship("Review", back_populates="reviewer")
     favorites = relationship("Favorite", back_populates="user")
     polls = relationship("Poll", back_populates="owner")
+    coupons = relationship("Coupon", back_populates="owner")
