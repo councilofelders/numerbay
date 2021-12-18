@@ -5,24 +5,23 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from fastapi.encoders import jsonable_encoder
-from numerapi import NumerAPI
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.api import deps
 from app.api.dependencies.coupons import create_coupon_for_order
+from app.api.dependencies.numerai import get_numerai_wallet_transactions
+from app.api.dependencies.orders import (
+    send_order_confirmation_emails,
+    send_order_expired_emails,
+)
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.product import Product
 from app.schemas.order import OrderCreate, OrderUpdate
-from app.utils import (
-    send_new_confirmed_sale_email,
-    send_order_confirmed_email,
-    send_order_expired_email,
-)
 
 
 def parse_sort_option(sort: Optional[str]) -> Any:
@@ -146,41 +145,13 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
 
         return {"total": count, "data": data}
 
-    def get_numerai_wallet_transactions(self, public_id: str, secret_key: str) -> Any:
-        """
-        Retrieve products.
-        """
-        query = """
-                  query {
-                    account {
-                      username
-                      walletAddress
-                      walletTxns {
-                        amount
-                        from
-                        status
-                        time
-                        to
-                        tournament
-                        txHash
-                        type
-                      }
-                    }
-                  }
-                """
-
-        api = NumerAPI(public_id=public_id, secret_key=secret_key)
-        account = api.raw_query(query, authorization=True)["data"]["account"]
-        wallet_transactions = account["walletTxns"]
-        return wallet_transactions
-
     def update_payment(self, db: Session, order_json: Dict) -> None:
         order_obj = crud.order.get(db, id=order_json["id"])
         if order_json["currency"] == "NMR":
             buyer = crud.user.get(db, id=order_json["buyer_id"])
             if buyer:
                 try:
-                    numerai_wallet_transactions = self.get_numerai_wallet_transactions(
+                    numerai_wallet_transactions = get_numerai_wallet_transactions(
                         public_id=buyer.numerai_api_key_public_id,  # type: ignore
                         secret_key=buyer.numerai_api_key_secret,  # type: ignore
                     )
@@ -291,39 +262,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                                     ),
                                                 )
 
-                                if settings.EMAILS_ENABLED:
-                                    product = order_obj.product
-                                    # Send seller email
-                                    if product.owner.email:
-                                        send_new_confirmed_sale_email(
-                                            email_to=product.owner.email,
-                                            username=product.owner.username,
-                                            round_order=order_obj.round_order,
-                                            date_order=order_obj.date_order,
-                                            product=product.sku,
-                                            buyer=order_obj.buyer.username,
-                                            from_address=order_obj.from_address,  # type: ignore
-                                            to_address=order_obj.to_address,  # type: ignore
-                                            transaction_hash=order_obj.transaction_hash,  # type: ignore
-                                            amount=order_obj.price,
-                                            currency=order_obj.currency,  # type: ignore
-                                        )
-
-                                    # Send buyer email
-                                    if order_obj.buyer.email:
-                                        send_order_confirmed_email(
-                                            email_to=order_obj.buyer.email,
-                                            username=order_obj.buyer.username,
-                                            round_order=order_obj.round_order,
-                                            date_order=order_obj.date_order,
-                                            product=product.sku,
-                                            from_address=order_obj.from_address,  # type: ignore
-                                            to_address=order_obj.to_address,  # type: ignore
-                                            transaction_hash=order_obj.transaction_hash,  # type: ignore
-                                            amount=order_obj.price,
-                                            currency=order_obj.currency,  # type: ignore
-                                        )
-
+                                send_order_confirmation_emails(order_obj)
                                 break
                 except Exception:
                     pass
@@ -339,22 +278,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     db.commit()
                     db.refresh(order_obj)
 
-                    if settings.EMAILS_ENABLED:
-                        # Send buyer email
-                        product = order_obj.product
-                        if order_obj.buyer.email:
-                            send_order_expired_email(
-                                email_to=order_obj.buyer.email,
-                                username=order_obj.buyer.username,
-                                round_order=order_obj.round_order,
-                                date_order=order_obj.date_order,
-                                product=product.sku,
-                                from_address=order_obj.from_address,  # type: ignore
-                                to_address=order_obj.to_address,  # type: ignore
-                                amount=order_obj.price,
-                                currency=order_obj.currency,  # type: ignore
-                            )
-
+                    send_order_expired_emails(order_obj)
             else:  # invalid buyer
                 if order_obj:
                     order_obj.state = "invalid_buyer"
