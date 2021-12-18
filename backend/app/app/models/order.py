@@ -1,6 +1,15 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -28,6 +37,8 @@ class Order(Base):
     from_address = Column(String)
     to_address = Column(String)
     transaction_hash = Column(String, index=True, unique=True)
+    coupon = Column(Boolean)
+    coupon_specs = Column(JSON)
     state = Column(String)
     buyer_id = Column(Integer, ForeignKey("user.id"))
     buyer = relationship("User", back_populates="orders")

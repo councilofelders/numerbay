@@ -230,6 +230,14 @@ def create_product(
     # Create options
     for product_option_in in product_options_in:  # type: ignore
         product_option_in.product_id = product.id
+        if product_option_in.coupon_specs:
+            if (
+                product.id
+                not in product_option_in.coupon_specs["applicable_product_ids"]
+            ):
+                product_option_in.coupon_specs["applicable_product_ids"].append(
+                    product.id
+                )
         crud.product_option.create(db, obj_in=product_option_in)
 
     product = crud.product.get(db, id=product.id)  # type: ignore
@@ -329,6 +337,20 @@ def update_product(
                     json_product_option_in.pop("price", None)
                 if json_product_option_in.get("currency", None) is None:
                     json_product_option_in.pop("currency", None)
+                if json_product_option_in.get("coupon", None) is None:
+                    json_product_option_in.pop("coupon", None)
+                if json_product_option_in.get("coupon_specs", None) is None:
+                    json_product_option_in.pop("coupon_specs", None)
+                else:
+                    if (
+                        product.id
+                        not in json_product_option_in.get("coupon_specs")[
+                            "applicable_product_ids"
+                        ]
+                    ):
+                        json_product_option_in.get("coupon_specs")[
+                            "applicable_product_ids"
+                        ].append(product.id)
                 crud.product_option.update(
                     db, db_obj=db_product_option, obj_in=json_product_option_in
                 )
@@ -337,6 +359,16 @@ def update_product(
                 json_product_option_in = jsonable_encoder(product_option_in)
                 json_product_option_in.pop("id", None)
                 json_product_option_in["product_id"] = product.id
+                if json_product_option_in.get("coupon_specs", False):
+                    if (
+                        product.id
+                        not in json_product_option_in.get("coupon_specs")[
+                            "applicable_product_ids"
+                        ]
+                    ):
+                        json_product_option_in.get("coupon_specs")[
+                            "applicable_product_ids"
+                        ].append(product.id)
                 crud.product_option.create(db, obj_in=json_product_option_in)
 
     product = crud.product.get(db, id=product.id)  # type: ignore

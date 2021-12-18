@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import BaseModel, HttpUrl
 
@@ -18,6 +18,8 @@ class ProductOptionBase(BaseModel):
     stake_limit: Optional[Decimal] = None
     mode: Optional[str] = None
     is_active: Optional[bool] = None
+    coupon: Optional[bool] = None
+    coupon_specs: Optional[Dict] = None
 
 
 # Properties to receive on product_option creation

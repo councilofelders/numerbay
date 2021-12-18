@@ -43,13 +43,15 @@ export default {
   plugins: [
     { src: 'plugins/nuxt-poll-plugin', ssr: false },
     { src: 'plugins/nuxt-star-rating-plugin', ssr: false },
+    { src: 'plugins/nuxt-multiselect-plugin', ssr: false },
     { src: 'plugins/nuxt-quill-plugin', ssr: false },
     { src: 'plugins/nuxt-clipboard2', ssr: false }
   ],
   css: [
     'quill/dist/quill.core.css',
     // for snow theme
-    'quill/dist/quill.snow.css'
+    'quill/dist/quill.snow.css',
+    'vue-multiselect/dist/vue-multiselect.min.css'
   ],
   buildModules: [
     // to core

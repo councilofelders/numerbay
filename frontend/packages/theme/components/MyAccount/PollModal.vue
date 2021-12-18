@@ -471,7 +471,7 @@ extend('required', {
 extend('min_value', {
   // eslint-disable-next-line camelcase
   ...min_value,
-  message: 'This must be greater than 1'
+  message: 'This must be positive'
 });
 
 extend('integer', {

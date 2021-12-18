@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import BaseModel
 
@@ -26,6 +26,8 @@ class OrderBase(BaseModel):
     transaction_hash: Optional[str] = None
     state: Optional[str] = None
     applied_coupon_id: Optional[int] = None
+    coupon: Optional[bool] = None
+    coupon_specs: Optional[Dict] = None
 
 
 # Properties to receive on order creation

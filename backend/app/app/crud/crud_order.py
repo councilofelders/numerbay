@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.api import deps
+from app.api.dependencies.coupons import create_coupon_for_order
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.crud.base import CRUDBase
@@ -227,6 +228,9 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                                     order_obj.state = "confirmed"
                                 db.commit()
                                 db.refresh(order_obj)
+
+                                # Generate coupon if applicable
+                                create_coupon_for_order(db, order_obj)
 
                                 # Update product sales stats
                                 crud.product.update(

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Numeric, String
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -23,5 +23,7 @@ class ProductOption(Base):
     stake_limit = Column(Numeric, nullable=True)
     mode = Column(String, nullable=True)
     is_active = Column(Boolean, server_default="t")
+    coupon = Column(Boolean)
+    coupon_specs = Column(JSON)
     product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"))
     product = relationship("Product", back_populates="options")

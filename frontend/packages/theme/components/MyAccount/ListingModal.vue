@@ -1,6 +1,7 @@
 <template>
   <SfModal
     v-e2e="'listing-modal'"
+    :persistent="true"
     :visible="isListingModalOpen"
     class="modal"
     @close="toggleListingModal"
@@ -32,10 +33,6 @@
                     :valid="!errors[0]"
                     :errorMessage="errors[0]" required :disabled="!!currentListing || !form.category" @input="populateModelInfo">
                     <SfSelectOption value=""></SfSelectOption>
-<!--                    <SfSelectOption value="">========== Numerai Models ==========</SfSelectOption>-->
-<!--                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=8, sortDate=false)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>-->
-<!--                    <SfSelectOption value="">========== Signals Models ==========</SfSelectOption>-->
-<!--                    <SfSelectOption v-for="model in userGetters.getModels(numerai, tournament=11, sortDate=false)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>-->
                     <SfSelectOption v-for="model in getFilteredModels(form.category)" :key="`${model.tournament}-${model.name}`" :value="`${model.name}`">{{model.name}}</SfSelectOption>
                   </SfSelect>
                 </ValidationProvider>
@@ -149,6 +146,7 @@
                   :isTournamentCategory="isTournamentCategory(form.category)"
                   :isSubmissionCategory="isSubmissionCategory(form.category)"
                   :isPerRoundCategory="isPerRoundCategory(form.category)"
+                  :groupedProducts="groupProducts(products)"
                 ></ProductOptionsForm>
                 <client-only>
                   <div class="editor">
@@ -246,7 +244,7 @@ extend('required', {
 extend('min_value', {
   // eslint-disable-next-line camelcase
   ...min_value,
-  message: 'This must be greater than 1'
+  message: 'This must be positive'
 });
 
 extend('integer', {
@@ -350,6 +348,13 @@ export default {
     };
   },
   methods: {
+    groupProducts(products) {
+      const groupedProducts = products.reduce((rv, x) => {
+        (rv[x.category.slug] = rv[x.category.slug] || []).push(x);
+        return rv;
+      }, {});
+      return Object.keys(groupedProducts).map((key) => ({category: key, products: groupedProducts[key]}));
+    },
     isSubmissionCategory(categoryId) {
       if (categoryId) {
         const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
@@ -434,7 +439,7 @@ export default {
   setup() {
     const { isListingModalOpen, currentListing, toggleListingModal } = useUiState();
     const { categories, search: categorySearch } = useCategory();
-    const { search: productSearch, createProduct, updateProduct, deleteProduct, loading, error: productError } = useProduct('products');
+    const { products, search: productSearch, createProduct, updateProduct, deleteProduct, loading, error: productError } = useProduct('products');
     const { numerai, error: numeraiError } = useNumerai('my-listings');
     const { user } = useUser();
     const { globals } = useGlobals();
@@ -522,6 +527,7 @@ export default {
       leafCategories: computed(() => categories ? categories.value.filter((category) => {
         return category.items.length === 0;
       }).sort((a, b) => -a.slug.localeCompare(b.slug)) : []),
+      products: computed(() => products?.value?.data ? products?.value?.data : []),
       resetForm,
       populateModelInfo,
       handleProductForm,

@@ -18,6 +18,16 @@
             <slot name="form">
               <ValidationObserver v-slot="{ handleSubmit }" key="options">
                 <form @submit.prevent="handleSubmit(updateOption)">
+                  <ValidationProvider v-slot="{ errors }">
+                    <SfInput
+                      v-model="description"
+                      :valid="!errors[0]"
+                      :errorMessage="errors[0]"
+                      name="optionDescription"
+                      label="(Optional) Option Description"
+                      class="form__element"
+                    />
+                  </ValidationProvider>
                   <div class="form__radio-group">
                     <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                       <SfRadio
@@ -151,10 +161,10 @@
                       </ValidationProvider>
                     </div>
                     <div v-if="isPerRoundCategory">
-                      Quantity (Number of Rounds)
+                      Number of Rounds per Unit
                       <SfQuantitySelector
                         v-model="quantity"
-                        aria-label="Quantity (Number of Rounds)"
+                        aria-label="Number of Rounds per Unit"
                         class="sf-add-to-cart__select-quantity"
                       />
                     </div>
@@ -172,13 +182,78 @@
                         class="form__element"
                       />
                     </ValidationProvider>
+                    <SfCheckbox v-model="coupon" name="coupon">
+                      <template #label>
+                        <div class="sf-checkbox__label">
+                          Reward coupons to buyers
+                        </div>
+                      </template>
+                    </SfCheckbox>
+                    <div v-if="!!coupon">
+                      <multiselect ref="couponMultiSelect" placeholder="Applicable Products (in Addition to This Product)" v-model="couponSpecs.applicable_products"
+                                   :options="groupedProducts" :multiple="true" :close-on-select="false" group-values="products" group-label="category" :group-select="true" track-by="id" label="sku"
+                      >
+  <!--                      <template slot="singleLabel" slot-scope="props"><span class="option__desc"><span class="option__title">{{ props.option.name }}</span></span></template>-->
+  <!--                      <template slot="tag" slot-scope="props">
+                          <span class="multiselect__tag">
+                            <span v-text="props.option.name"></span>
+                            <i tabindex="1" @keypress.enter.prevent="removeElement(option)"  @mousedown.prevent="removeElement(option)" class="multiselect__tag-icon"></i>
+                          </span>
+                        </template>-->
+                        <template slot="option" slot-scope="props">
+  <!--                        <img class="option__image" :src="props.option.avatar" alt="No Man’s Sky">-->
+  <!--                        <div class="option__desc"><span class="option__title">{{ props.option.name }}</span><span class="option__small">{{ props.option.name }}</span></div>-->
+                          <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
+                        </template>
+                      </multiselect>
+                      <ValidationProvider rules="required|integer|min_value:1|max_value:100" v-slot="{ errors }">
+                        <SfInput
+                          v-model="couponSpecs.discount_percent"
+                          :valid="!errors[0]"
+                          :errorMessage="errors[0]"
+                          name="discountPercent"
+                          label="Coupon Discount % (0-100, 100 being free)"
+                          type="number"
+                          step=1.0
+                          class="form__element"
+                        />
+                      </ValidationProvider>
+<!--                      Coupon Discount % (0-100, 100 being free)
+                      <SfQuantitySelector
+                        v-model="couponSpecs.discount_percent"
+                        aria-label="Coupon Discount % (0-100, 100 being free)"
+                        class="sf-add-to-cart__select-quantity"
+                      />-->
+                      <ValidationProvider rules="required|min_value:0" v-slot="{ errors }">
+                        <SfInput
+                          v-model="couponSpecs.max_discount"
+                          :valid="!errors[0]"
+                          :errorMessage="errors[0]"
+                          name="maxDiscount"
+                          label="Max Discount Cap (in NMR)"
+                          type="number"
+                          class="form__element"
+                        />
+                      </ValidationProvider>
+                      <ValidationProvider rules="min_value:0" v-slot="{ errors }">
+                        <SfInput
+                          v-model="couponSpecs.min_spend"
+                          :valid="!errors[0]"
+                          :errorMessage="errors[0]"
+                          name="minSpend"
+                          label="(Optional) Min Spend (in NMR) for Getting Coupon"
+                          type="number"
+                          class="form__element"
+                        />
+                      </ValidationProvider>
+                    </div>
                   </div>
                   <div v-else>
                     <div v-if="isPerRoundCategory">
-                      Quantity (Number of Rounds)
+                      Number of Rounds per Unit
                       <SfQuantitySelector
                         v-model="quantity"
-                        aria-label="Quantity (Number of Rounds)"
+                        aria-label="Number of Rounds per Unit"
                         class="sf-add-to-cart__select-quantity"
                       />
                     </div>
@@ -210,16 +285,6 @@
                       />
                     </ValidationProvider>
                   </div>
-                  <ValidationProvider v-slot="{ errors }">
-                    <SfInput
-                      v-model="description"
-                      :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                      name="optionDescription"
-                      label="Option Description"
-                      class="form__element"
-                    />
-                  </ValidationProvider>
                   <div style="display: flex">
                     <SfButton
                       v-if="updateOptionButtonText"
@@ -262,6 +327,12 @@
                 <div class="pricing__content" v-if="option.is_on_platform">
                   <b>On-Platform</b>
                   <SfProperty
+                    v-if="option.description"
+                    name="Description"
+                    :value="option.description"
+                    class="sf-property property"
+                  />
+                  <SfProperty
                     name="Price"
                     :value="orderGetters.getFormattedPrice(option, withCurrency=true, decimals=4)"
                     class="sf-property property"
@@ -288,10 +359,12 @@
                     class="sf-property property"
                   />
                   <SfProperty
-                    name="Description"
-                    :value="option.description"
+                    v-if="option.coupon"
+                    name="Rewards Coupon"
+                    value="Yes"
                     class="sf-property property"
                   />
+                  {{option}}
                 </div>
                 <div class="pricing__content" v-else>
                   <b>Off-Platform</b>
@@ -369,14 +442,16 @@ import {
   SfIcon,
   SfRadio,
   SfBadge,
-  SfProperty
+  SfProperty,
+  SfCheckbox,
+  SfSelect
 } from '@storefront-ui/vue';
 import SfQuantitySelector from '~/components/Molecules/SfQuantitySelector';
 import { orderGetters } from '@vue-storefront/numerbay';
 import _ from 'lodash';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
-import { required, min_value } from 'vee-validate/dist/rules';
+import {required, min_value, max_value, integer} from 'vee-validate/dist/rules';
 
 extend('required', {
   ...required,
@@ -386,7 +461,18 @@ extend('required', {
 extend('min_value', {
   // eslint-disable-next-line camelcase
   ...min_value,
-  message: 'This must be greater than 1'
+  message: 'This must be positive'
+});
+
+extend('max_value', {
+  // eslint-disable-next-line camelcase
+  ...max_value,
+  message: 'This must be <= 100'
+});
+
+extend('integer', {
+  ...integer,
+  message: 'This field must be an integer'
 });
 
 extend('decimal', {
@@ -422,6 +508,8 @@ export default {
     SfBadge,
     SfQuantitySelector,
     SfProperty,
+    SfCheckbox,
+    SfSelect,
     ValidationProvider,
     ValidationObserver
   },
@@ -489,6 +577,10 @@ export default {
     optionsTabDescription: {
       type: String,
       default: ''
+    },
+    groupedProducts: {
+      type: Array,
+      default: () => ([])
     }
   },
   data() {
@@ -504,7 +596,9 @@ export default {
       price: null,
       wallet: null,
       thirdPartyUrl: null,
-      description: null
+      description: null,
+      coupon: false,
+      couponSpecs: {}
     };
   },
   computed: {
@@ -553,6 +647,17 @@ export default {
         this.thirdPartyUrl = option.third_party_url;
         this.description = option.description;
         this.editedOption = index;
+        this.coupon = option.coupon ? option.coupon : false;
+        this.couponSpecs = {
+          // eslint-disable-next-line camelcase
+          applicable_products: option.coupon_specs?.applicable_product_ids ? option.coupon_specs.applicable_product_ids.map(id => this.groupedProducts.map(gp=>gp.products).flat().find((p)=>parseInt(p.id) === parseInt(String(id)))) : [],
+          // eslint-disable-next-line camelcase
+          discount_percent: option.coupon_specs?.discount_percent,
+          // eslint-disable-next-line camelcase
+          max_discount: option.coupon_specs?.max_discount,
+          // eslint-disable-next-line camelcase
+          min_spend: option.coupon_specs?.min_spend
+        };
       } else if (!this.isTournamentCategory) {
         this.isOnPlatform = 'false';
         this.currency = 'USD';
@@ -582,7 +687,19 @@ export default {
         wallet: this.wallet,
         // eslint-disable-next-line camelcase
         third_party_url: this.thirdPartyUrl,
-        description: this.description
+        description: this.description,
+        coupon: this.coupon ? this.coupon : false,
+        // eslint-disable-next-line camelcase
+        coupon_specs: {
+          // eslint-disable-next-line camelcase
+          applicable_product_ids: this.couponSpecs.applicable_products ? this.couponSpecs.applicable_products.map(p => p.id) : [],
+          // eslint-disable-next-line camelcase
+          discount_percent: this.couponSpecs.discount_percent,
+          // eslint-disable-next-line camelcase
+          max_discount: this.couponSpecs.max_discount,
+          // eslint-disable-next-line camelcase
+          min_spend: this.couponSpecs.min_spend
+        }
       };
       if (index > -1) {
         options[index] = pricing;
@@ -603,6 +720,11 @@ export default {
     deleteOption(index) {
       this.options.splice(index, 1);
       this.$emit('delete-option', index);
+    }
+  },
+  beforeDestroy() {
+    if (this.$refs.couponMultiSelect) {
+      this.$refs.couponMultiSelect.deactivate();
     }
   },
   setup() {

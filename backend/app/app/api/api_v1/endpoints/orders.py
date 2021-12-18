@@ -200,6 +200,7 @@ def create_order(
         )
 
     if product:
+        # todo test coupon
         coupon_obj = crud.coupon.get_by_code(db, code=coupon)
         product_option_obj = schemas.ProductOption.from_orm(product_option)
         product_option_obj = calculate_option_price(
@@ -228,6 +229,8 @@ def create_order(
             applied_coupon_id=coupon_obj.id  # type: ignore
             if product_option_obj.applied_coupon
             else None,
+            coupon=product_option_obj.coupon,
+            coupon_specs=product_option_obj.coupon_specs,
         )
 
         order = crud.order.create_with_buyer(
