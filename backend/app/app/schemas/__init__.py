@@ -23,5 +23,5 @@ from .stake_snapshot import (
     StakeSnapshotUpdate,
 )
 from .token import Nonce, Token, TokenPayload
-from .user import User, UserCreate, UserInDB, UserUpdate
+from .user import GenericOwner, User, UserCreate, UserInDB, UserUpdate
 from .vote import Vote, VoteCreate, VoteInDB, VoteUpdate

@@ -4,9 +4,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-# Shared properties
-from app.schemas.user import GenericOwner
-
 
 class CouponBase(BaseModel):
     date_expiration: Optional[date] = None
@@ -37,7 +34,7 @@ class CouponInDBBase(CouponBase):
     id: int
     date_creation: datetime
     code: str
-    applicable_seller_id: int
+    applicable_seller_id: Optional[int] = None
     state: Optional[str] = None
     is_owned_by_seller: bool
 
@@ -45,9 +42,17 @@ class CouponInDBBase(CouponBase):
         orm_mode = True
 
 
+class CouponOwner(BaseModel):
+    id: Optional[int] = None
+    username: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
 # Properties to return to client
 class Coupon(CouponInDBBase):
-    owner: Optional[GenericOwner] = None
+    owner: Optional[CouponOwner] = None
     quantity_remaining: Optional[int] = None  # todo calculate quantity_remaining
 
 

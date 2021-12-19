@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr
 
+from app.schemas import Coupon
+
 # Shared properties
 from .model import ModelMinimal
 
@@ -50,6 +52,7 @@ class User(UserInDBBase):
     numerai_api_key_can_read_user_info: Optional[bool] = None
     numerai_wallet_address: Optional[str] = None
     models: Optional[List[ModelMinimal]] = []
+    coupons: Optional[List[Coupon]] = []
 
 
 # Additional properties stored in DB
