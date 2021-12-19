@@ -19,6 +19,7 @@ from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
+from app.api.dependencies.orders import update_payment
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -294,11 +295,11 @@ def update_round_rollover() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def update_payment_subtask(order_json: Dict) -> None:
+def update_payment_subtask(order_id: int) -> None:
     db = SessionLocal()
     try:
         # Update order payment
-        crud.order.update_payment(db, order_json)
+        update_payment(db, order_id)
     finally:
         db.close()
 
@@ -309,9 +310,7 @@ def batch_update_payments_task() -> None:
     try:
         orders = crud.order.get_multi_by_state(db, state="pending")
         print(f"total pending orders: {len(orders)}")
-        group(
-            [update_payment_subtask.s(jsonable_encoder(order)) for order in orders]
-        ).delay()
+        group([update_payment_subtask.s(order.id) for order in orders]).delay()
     finally:
         db.close()
 

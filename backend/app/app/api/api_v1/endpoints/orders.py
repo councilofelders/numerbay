@@ -191,7 +191,11 @@ def create_order(
         coupon_obj = crud.coupon.get_by_code(db, code=coupon)
         product_option_obj = schemas.ProductOption.from_orm(product_option)
         product_option_obj = calculate_option_price(
-            product_option_obj, coupon=coupon, coupon_obj=coupon_obj, qty=quantity
+            product_option_obj,
+            coupon=coupon,
+            coupon_obj=coupon_obj,
+            qty=quantity,
+            user=current_user,
         )
 
         order_in = schemas.OrderCreate(

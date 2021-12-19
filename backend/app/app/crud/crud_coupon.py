@@ -1,6 +1,7 @@
 import functools
 from typing import Optional
 
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import and_, func  # type: ignore
 from sqlalchemy.orm import Session
 
@@ -21,6 +22,16 @@ class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
         ]
         query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
         return db.query(self.model).filter(query_filter).first()
+
+    def create_with_owner(
+        self, db: Session, *, obj_in: CouponCreate, owner_id: int
+    ) -> Coupon:
+        obj_in_data = jsonable_encoder(obj_in)
+        db_obj = self.model(**obj_in_data, owner_id=owner_id)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
 
 
 coupon = CRUDCoupon(Coupon)

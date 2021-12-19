@@ -117,6 +117,7 @@ def search_products_authenticated(
                 coupon_obj=coupon_obj,
                 qty=qty if qty else 1,
                 raise_exceptions=False,
+                user=current_user,
             )
         products_to_return.append(product_to_return)
 

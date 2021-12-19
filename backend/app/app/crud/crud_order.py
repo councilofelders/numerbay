@@ -1,23 +1,10 @@
 import functools
-from datetime import datetime, timedelta
-from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import Session
 
-from app import crud
-from app.api import deps
-from app.api.dependencies import numerai
-from app.api.dependencies.coupons import create_coupon_for_order
-from app.api.dependencies.orders import (
-    send_order_confirmation_emails,
-    send_order_expired_emails,
-)
-from app.core.celery_app import celery_app
-from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.product import Product
@@ -144,153 +131,6 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         data = query.offset(skip).limit(limit).all()
 
         return {"total": count, "data": data}
-
-    def update_payment(self, db: Session, order_json: Dict) -> None:
-        order_obj = crud.order.get(db, id=order_json["id"])
-        if order_json["currency"] == "NMR":
-            buyer = crud.user.get(db, id=order_json["buyer_id"])
-            if buyer:
-                try:
-                    numerai_wallet_transactions = numerai.get_numerai_wallet_transactions(
-                        public_id=buyer.numerai_api_key_public_id,  # type: ignore
-                        secret_key=buyer.numerai_api_key_secret,  # type: ignore
-                    )
-                    for transaction in numerai_wallet_transactions:
-                        time = (
-                            pd.to_datetime(transaction["time"])
-                            .tz_localize(None)
-                            .to_pydatetime()
-                        )
-                        if (
-                            time
-                            < pd.to_datetime(order_json["date_order"]).to_pydatetime()
-                        ):
-                            continue
-                        if transaction["to"] == order_json["to_address"]:
-                            print(
-                                f"Transaction match for order {order_json['id']} "
-                                f"[{buyer.username}->{order_json['product']['name']}], "
-                                f"{transaction['amount']} {order_json['currency']} / "
-                                f"{order_json['price']} {order_json['currency']}, status: {transaction['status']}"
-                            )
-
-                            # existing match
-                            existing_match = (
-                                db.query(self.model)
-                                .filter(
-                                    self.model.transaction_hash == transaction["txHash"]
-                                )
-                                .first()
-                            )
-                            if existing_match is not None:
-                                print(
-                                    f"Transaction {transaction['txHash']} already matched, skipping... "
-                                )
-                                continue
-
-                            if order_obj:
-                                # Confirmed
-                                order_obj.transaction_hash = transaction["txHash"]
-                                if (
-                                    Decimal(transaction["amount"])
-                                    >= Decimal(order_obj.price)
-                                    and transaction["status"] == "confirmed"
-                                ):
-                                    order_obj.state = "confirmed"
-                                db.commit()
-                                db.refresh(order_obj)
-
-                                # Generate coupon if applicable
-                                create_coupon_for_order(db, order_obj)
-
-                                # Update product sales stats
-                                crud.product.update(
-                                    db,
-                                    db_obj=order_obj.product,
-                                    obj_in={
-                                        "total_num_sales": order_obj.product.total_num_sales
-                                        + 1,
-                                        "last_sale_price_delta": order_obj.price
-                                        - order_obj.product.last_sale_price
-                                        if order_obj.product.last_sale_price
-                                        else None,
-                                        "last_sale_price": order_obj.price,
-                                    },
-                                )
-
-                                # Upload csv artifact for order if round open
-                                globals = crud.globals.update_singleton(db)
-                                selling_round = globals.selling_round  # type: ignore
-                                if (
-                                    selling_round == globals.active_round
-                                    and order_obj.submit_model_id
-                                ):  # if round open
-                                    print(
-                                        f"Round {globals.active_round} is open, search for artifact to upload"
-                                    )
-                                    artifacts = crud.artifact.get_multi_by_product_round(
-                                        db,
-                                        product=order_obj.product,
-                                        round_tournament=selling_round,
-                                    )
-                                    if artifacts:
-                                        csv_artifacts = [
-                                            artifact
-                                            for artifact in artifacts
-                                            if artifact.object_name.endswith(".csv")  # type: ignore
-                                        ]
-                                        if csv_artifacts:
-                                            csv_artifact = csv_artifacts[-1]
-                                            bucket = deps.get_gcs_bucket()
-                                            blob = bucket.blob(csv_artifact.object_name)
-                                            if blob.exists():
-                                                print(
-                                                    f"Uploading csv artifact {csv_artifact.object_name} for order {order_obj.id}"
-                                                )
-                                                celery_app.send_task(
-                                                    "app.worker.upload_numerai_artifact_task",
-                                                    kwargs=dict(
-                                                        order_id=order_obj.id,
-                                                        object_name=csv_artifact.object_name,
-                                                        model_id=order_json[
-                                                            "submit_model_id"
-                                                        ],
-                                                        numerai_api_key_public_id=buyer.numerai_api_key_public_id,
-                                                        numerai_api_key_secret=buyer.numerai_api_key_secret,
-                                                        tournament=order_obj.product.model.tournament,
-                                                        version=1,
-                                                    ),
-                                                )
-
-                                send_order_confirmation_emails(order_obj)
-                                break
-                except Exception:
-                    pass
-                # expiration
-                if (
-                    order_obj
-                    and order_obj.state != "confirmed"
-                    and datetime.now() - order_obj.date_order
-                    > timedelta(minutes=settings.PENDING_ORDER_EXPIRE_MINUTES)
-                ):
-                    print(f"Order {order_json['id']} expired")
-                    order_obj.state = "expired"
-                    db.commit()
-                    db.refresh(order_obj)
-
-                    send_order_expired_emails(order_obj)
-            else:  # invalid buyer
-                if order_obj:
-                    order_obj.state = "invalid_buyer"
-                db.commit()
-                db.refresh(order_obj)
-            return
-        else:
-            if order_obj:
-                order_obj.state = "invalid_currency"
-            db.commit()
-            db.refresh(order_obj)
-            return
 
 
 order = CRUDOrder(Order)

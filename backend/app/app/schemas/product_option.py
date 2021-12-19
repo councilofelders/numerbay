@@ -54,6 +54,7 @@ class ProductOption(ProductOptionInDBBase):
     special_price: Optional[Decimal] = None
     applied_coupon: Optional[str] = None
     error: Optional[str] = None
+    product_id: Optional[int] = None
 
 
 # Properties properties stored in DB
