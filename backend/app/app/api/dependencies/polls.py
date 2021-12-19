@@ -27,18 +27,7 @@ def get_voter_weight(
     min_stake = poll.min_stake if poll.min_stake is not None else 0
 
     # Numerai API, check regardless weight mode
-    if not user.is_superuser:
-        try:
-            if not user.numerai_api_key_public_id or not user.numerai_api_key_secret:
-                raise ValueError
-            numerai.get_numerai_api_user_info(
-                public_id=user.numerai_api_key_public_id,
-                secret_key=user.numerai_api_key_secret,
-            )
-        except Exception:
-            raise HTTPException(
-                status_code=400, detail="Numerai API Error: Insufficient Permission.",
-            )
+    numerai.check_user_numerai_api(user)
 
     weight = None
 

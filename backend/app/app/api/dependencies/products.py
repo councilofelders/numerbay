@@ -9,7 +9,9 @@ from app import crud, models, schemas
 
 
 def validate_product_input(
-    db: Session, product_in: Union[schemas.ProductCreate, schemas.ProductUpdate]
+    db: Session,
+    product_in: Union[schemas.ProductCreate, schemas.ProductUpdate],
+    category: Union[schemas.Category, models.Category],
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
     # Product name
     if isinstance(product_in, schemas.ProductCreate) and re.match(r"^[\w-]+$", product_in.name) is None:  # type: ignore
@@ -173,6 +175,30 @@ def validate_product_input(
                         status_code=400,
                         detail="Specifying chain is not supported for off-platform listing",
                     )
+
+    # Category
+    for product_option_in in product_in.options:  # type: ignore
+        # On-platform Category Mode check
+        if (
+            product_option_in.is_on_platform
+            and product_option_in.mode in ["stake", "stake_with_limit"]
+            and not category.is_submission
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Stake modes are not allowed for non-submission categories",
+            )
+
+        # On-platform Category Quantity check
+        if (
+            not category.is_per_round
+            and product_option_in.quantity is not None
+            and product_option_in.quantity > 1
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="This product is not per-round, quantity must be 1",
+            )
 
     return product_in
 

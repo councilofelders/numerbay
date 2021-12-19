@@ -2,9 +2,10 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict
 
+from fastapi import HTTPException
 from numerapi import NumerAPI
 
-from app.schemas import User
+from app import models
 
 
 def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
@@ -405,16 +406,31 @@ def get_numerai_active_round() -> Dict:
     return active_round
 
 
-async def fetch_single_user_models(user: User) -> Dict:
+async def fetch_single_user_models(user: models.User) -> Dict:
     from app.api.api_v1.endpoints.numerai import (
         get_numerai_models_endpoint,
         get_numerai_model_performance_endpoint,
     )
 
-    models = get_numerai_models_endpoint(current_user=user)  # type: ignore
-    for model in models:
+    numerai_models = get_numerai_models_endpoint(current_user=user)  # type: ignore
+    for model in numerai_models:
         model_performance = get_numerai_model_performance_endpoint(
             tournament=int(model["tournament"]), model_name=model["name"]
         )
         model["model_performance"] = model_performance
-    return {"id": user.id, "models": models}
+    return {"id": user.id, "models": numerai_models}
+
+
+def check_user_numerai_api(user: models.User) -> None:
+    if not user.is_superuser:
+        try:
+            if not user.numerai_api_key_public_id or not user.numerai_api_key_secret:
+                raise ValueError
+            get_numerai_api_user_info(
+                public_id=user.numerai_api_key_public_id,
+                secret_key=user.numerai_api_key_secret,
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=400, detail="Numerai API Error: Insufficient Permission."
+            )

@@ -18,16 +18,12 @@ from sqlalchemy import and_, func, select
 from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
+from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models import Artifact, Category, Model, Poll, Product, StakeSnapshot
-from app.utils import (
-    send_email,
-    send_failed_artifact_seller_email,
-    send_new_artifact_email,
-    send_new_artifact_seller_email,
-)
+from app.utils import send_email, send_failed_artifact_seller_email
 
 client_sentry = Client(settings.SENTRY_DSN)
 
@@ -74,35 +70,7 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
             if not artifact:
                 return None
 
-            globals = crud.globals.update_singleton(db)
-            selling_round = globals.selling_round  # type: ignore
-
-            # orders = crud.order.get_multi_by_state(
-            #     db, state="confirmed", round_order=selling_round
-            # )
-            orders = crud.order.get_active_orders(db, round_order=selling_round)
-            for order in orders:
-                if order.product_id == artifact.product_id:
-                    # Send new artifact email notifications to buyers
-                    if order.buyer.email:
-                        send_new_artifact_email(
-                            email_to=order.buyer.email,
-                            username=order.buyer.username,
-                            round_order=order.round_order,
-                            product=order.product.sku,
-                            order_id=order.id,
-                            artifact=artifact.object_name,  # type: ignore
-                        )
-
-            # Send new artifact email notification to seller
-            if artifact.product.owner.email:
-                send_new_artifact_seller_email(
-                    email_to=artifact.product.owner.email,
-                    username=artifact.product.owner.username,
-                    round_tournament=artifact.round_tournament,  # type: ignore
-                    product=artifact.product.sku,
-                    artifact=artifact.object_name,  # type: ignore
-                )
+            send_artifact_emails_for_active_orders(db, artifact, is_file=True)
         finally:
             db.close()
 

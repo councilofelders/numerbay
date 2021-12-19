@@ -103,21 +103,7 @@ def create_poll(
     Create new poll.
     """
     # Numerai API
-    if not current_user.is_superuser:
-        try:
-            if (
-                not current_user.numerai_api_key_public_id
-                or not current_user.numerai_api_key_secret
-            ):
-                raise ValueError
-            numerai.get_numerai_api_user_info(
-                public_id=current_user.numerai_api_key_public_id,
-                secret_key=current_user.numerai_api_key_secret,
-            )
-        except Exception:
-            raise HTTPException(
-                status_code=400, detail="Numerai API Error: Insufficient Permission."
-            )
+    numerai.check_user_numerai_api(current_user)
 
     # id
     if poll_in.id is not None and re.match(r"^[\w-]+$", poll_in.id) is None:  # type: ignore

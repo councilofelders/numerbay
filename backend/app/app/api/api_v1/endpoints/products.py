@@ -12,6 +12,7 @@ from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import (
     get_object_name,
+    send_artifact_emails_for_active_orders,
     validate_existing_artifact,
     validate_new_artifact,
 )
@@ -23,7 +24,6 @@ from app.api.dependencies.products import (
 )
 from app.core.celery_app import celery_app
 from app.core.config import settings
-from app.utils import send_new_artifact_email, send_new_artifact_seller_email
 
 router = APIRouter()
 
@@ -134,35 +134,13 @@ def create_product(
     """
     Create new product.
     """
-    product_in = validate_product_input(db, product_in)  # type: ignore
 
     # Category
     category = crud.category.get(db=db, id=product_in.category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    for product_option_in in product_in.options:  # type: ignore
-        # On-platform Category Mode check
-        if (
-            product_option_in.is_on_platform
-            and product_option_in.mode in ["stake", "stake_with_limit"]
-            and not category.is_submission
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="Stake modes are not allowed for non-submission categories",
-            )
-
-        # On-platform Category Quantity check
-        if (
-            not category.is_per_round
-            and product_option_in.quantity is not None
-            and product_option_in.quantity > 1
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="This product is not per-round, quantity must be 1",
-            )
+    product_in = validate_product_input(db, product_in, category=category)  # type: ignore
 
     # Leaf category
     child_categories_count = (
@@ -184,21 +162,7 @@ def create_product(
         )
 
     # Numerai API
-    if not current_user.is_superuser:
-        try:
-            if (
-                not current_user.numerai_api_key_public_id
-                or not current_user.numerai_api_key_secret
-            ):
-                raise ValueError
-            numerai.get_numerai_api_user_info(
-                public_id=current_user.numerai_api_key_public_id,
-                secret_key=current_user.numerai_api_key_secret,
-            )
-        except Exception:
-            raise HTTPException(
-                status_code=400, detail="Numerai API Error: Insufficient Permission."
-            )
+    numerai.check_user_numerai_api(current_user)
 
     # Model ownership
     tournament = category.tournament
@@ -260,32 +224,7 @@ def update_product(
         db, product_id=id, currend_user_id=current_user.id
     )
 
-    product_in = validate_product_input(db, product_in)  # type: ignore
-
-    # Category
-    category = product.category
-    for product_option_in in product_in.options:  # type: ignore
-        # On-platform Category Mode check
-        if (
-            product_option_in.is_on_platform
-            and product_option_in.mode in ["stake", "stake_with_limit"]
-            and not category.is_submission
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="Stake modes are not allowed for non-submission categories",
-            )
-
-        # On-platform Category Quantity check
-        if (
-            not category.is_per_round
-            and product_option_in.quantity is not None
-            and product_option_in.quantity > 1
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="This product is not per-round, quantity must be 1",
-            )
+    product_in = validate_product_input(db, product_in, category=product.category)  # type: ignore
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)
@@ -377,15 +316,15 @@ def update_product(
     return product
 
 
-@router.get("/{id}", response_model=schemas.Product)
-def read_product(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
-    """
-    Get product by ID.
-    """
-    product = crud.product.get(db=db, id=id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return product
+# @router.get("/{id}", response_model=schemas.Product)
+# def read_product(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
+#     """
+#     Get product by ID.
+#     """
+#     product = crud.product.get(db=db, id=id)
+#     if not product:
+#         raise HTTPException(status_code=404, detail="Product not found")
+#     return product
 
 
 @router.delete("/{id}", response_model=schemas.Product)
@@ -619,33 +558,7 @@ async def create_product_artifact(
             crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
 
     # Send notification emails
-    if settings.EMAILS_ENABLED:
-        # orders = crud.order.get_multi_by_state(
-        #     db, state="confirmed", round_order=globals.selling_round  # type: ignore
-        # )
-        orders = crud.order.get_active_orders(db, round_order=globals.selling_round)  # type: ignore
-        for order in orders:
-            if order.product_id == artifact.product_id:
-                # Send new artifact email notifications to buyers
-                if order.buyer.email:
-                    send_new_artifact_email(
-                        email_to=order.buyer.email,
-                        username=order.buyer.username,
-                        round_order=order.round_order,
-                        product=order.product.sku,
-                        order_id=order.id,
-                        artifact=artifact.url,  # type: ignore
-                    )
-
-        # Send new artifact email notification to seller
-        if artifact.product.owner.email:
-            send_new_artifact_seller_email(
-                email_to=artifact.product.owner.email,
-                username=artifact.product.owner.username,
-                round_tournament=artifact.round_tournament,  # type: ignore
-                product=artifact.product.sku,
-                artifact=artifact.url,  # type: ignore
-            )
+    send_artifact_emails_for_active_orders(db, artifact, is_file=False)
     return artifact
 
 
@@ -777,29 +690,6 @@ def generate_download_url(
         version="v4",
     )
     return url
-
-
-# @router.get('/{product_id}/artifacts/{artifact_id}')
-# def download_product_artifact(
-#     *,
-#     product_id: int,
-#     artifact_id: int,
-#     db: Session = Depends(deps.get_db),
-#     driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     # product ownership
-#     validate_existing_product(db, product_id=product_id, currend_user_id=current_user.id)
-#
-#     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-#     artifact = crud.artifact.get(db, id=artifact_id)
-#     validate_existing_artifact(artifact=artifact, product_id=product_id, selling_round=selling_round)
-#
-#     if artifact.object_name:
-#         download_obj = download_file(driver, object_name=artifact.object_name)
-#         return StreamingResponse(download_obj)
-#     else:
-#         return artifact
 
 
 @router.delete("/{product_id}/artifacts/{artifact_id}", response_model=schemas.Artifact)

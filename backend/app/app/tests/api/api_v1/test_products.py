@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -359,19 +357,19 @@ def test_search_products(client: TestClient, db: Session) -> None:
     crud.user.remove(db, id=product.owner_id)  # type: ignore
 
 
-def test_read_product(client: TestClient, db: Session) -> None:
-    product = create_random_product(db)
-    response = client.get(f"{settings.API_V1_STR}/products/{product.id}",)
-    assert response.status_code == 200
-    content = response.json()
-    assert content["name"] == product.name
-    assert Decimal(str(content["options"][0]["price"])) == product.options[0].price  # type: ignore
-    assert content["id"] == product.id
-    assert content["owner"]["id"] == product.owner_id
-
-    crud.product.remove(db, id=product.id)
-    crud.model.remove(db, id=product.model_id)  # type: ignore
-    crud.user.remove(db, id=product.owner_id)
+# def test_read_product(client: TestClient, db: Session) -> None:
+#     product = create_random_product(db)
+#     response = client.get(f"{settings.API_V1_STR}/products/{product.id}",)
+#     assert response.status_code == 200
+#     content = response.json()
+#     assert content["name"] == product.name
+#     assert Decimal(str(content["options"][0]["price"])) == product.options[0].price  # type: ignore
+#     assert content["id"] == product.id
+#     assert content["owner"]["id"] == product.owner_id
+#
+#     crud.product.remove(db, id=product.id)
+#     crud.model.remove(db, id=product.model_id)  # type: ignore
+#     crud.user.remove(db, id=product.owner_id)
 
 
 def test_update_product(
