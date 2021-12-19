@@ -1,10 +1,10 @@
 import functools
 from typing import Any, Dict, Optional, Union
 
-from numerapi import NumerAPI
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
+from app.api.dependencies import numerai
 from app.core.security import get_password_hash, verify_password, verify_signature
 from app.crud.base import CRUDBase
 from app.models.user import User
@@ -13,12 +13,16 @@ from app.schemas.user import UserCreate, UserUpdate
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_username(self, db: Session, *, username: str) -> Optional[User]:
-        return db.query(User).filter(User.username == username).first()
+        return db.query(self.model).filter(self.model.username == username).first()
 
     def get_by_public_address(
         self, db: Session, *, public_address: str
     ) -> Optional[User]:
-        return db.query(User).filter(User.public_address == public_address).first()
+        return (
+            db.query(self.model)
+            .filter(self.model.public_address == public_address)
+            .first()
+        )
 
     def search(
         self,
@@ -112,32 +116,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def is_superuser(self, user: User) -> bool:
         return user.is_superuser
 
-    def get_numerai_api_user_info(self, public_id: str, secret_key: str) -> Any:
-        """
-        Retrieve numerai user info.
-        """
-        query = """
-                  query {
-                    account {
-                      username
-                      email
-                      id
-                      status
-                      insertedAt
-                      walletAddress
-                      apiTokens {
-                        name
-                        publicId
-                        scopes
-                      }
-                    }
-                  }
-                """
-
-        api = NumerAPI(public_id=public_id, secret_key=secret_key)
-        account = api.raw_query(query, authorization=True)["data"]["account"]
-        return account
-
     def update_numerai_api(self, db: Session, user_json: Dict) -> bool:
         if (
             "numerai_api_key_secret" not in user_json
@@ -147,7 +125,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             print(f"Update failed user (API Key): {user_json['username']}")
             return False
         try:
-            account = self.get_numerai_api_user_info(
+            account = numerai.get_numerai_api_user_info(
                 public_id=user_json.get("numerai_api_key_public_id", None),
                 secret_key=user_json.get("numerai_api_key_secret"),  # type: ignore
             )  # type: ignore

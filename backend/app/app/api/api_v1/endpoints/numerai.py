@@ -3,14 +3,15 @@ from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 
-from app import crud, models
+from app import models
 from app.api import deps
+from app.api.dependencies import numerai
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List)
-def get_numerai_models(
+def get_numerai_models_endpoint(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     if (
@@ -22,7 +23,7 @@ def get_numerai_models(
             detail="Numerai API Key is required to perform this action",
         )
     try:
-        all_models = crud.model.get_numerai_models(
+        all_models = numerai.get_numerai_models(
             public_id=current_user.numerai_api_key_public_id,  # type: ignore
             secret_key=current_user.numerai_api_key_secret,
         )
@@ -35,22 +36,22 @@ def get_numerai_models(
 
 
 @router.get("/{tournament}/pipeline-status", response_model=Dict)
-def get_numerai_pipeline_status(tournament: int) -> Any:
+def get_numerai_pipeline_status_endpoint(tournament: int) -> Any:
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
-        data = crud.model.get_numerai_pipeline_status(tournament=tournament)
+        data = numerai.get_numerai_pipeline_status(tournament=tournament)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Numerai API Error: " + str(e))
     return data
 
 
 @router.get("/{tournament}/{model_name}", response_model=Dict)
-def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
+def get_numerai_model_performance_endpoint(tournament: int, model_name: str) -> Any:
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
-        data = crud.model.get_numerai_model_performance(
+        data = numerai.get_numerai_model_performance(
             tournament=tournament, model_name=model_name
         )
     except Exception as e:
@@ -73,7 +74,7 @@ def get_numerai_model_target_stake(
             detail="Numerai API Key is required to perform this action",
         )
     try:
-        target_stake = crud.model.get_target_stake(
+        target_stake = numerai.get_target_stake(
             public_id=current_user.numerai_api_key_public_id,  # type: ignore
             secret_key=current_user.numerai_api_key_secret,
             tournament=tournament,
@@ -103,7 +104,7 @@ def set_numerai_model_target_stake(
             detail="Numerai API Key is required to perform this action",
         )
     try:
-        result_stake = crud.model.set_target_stake(
+        result_stake = numerai.set_target_stake(
             public_id=current_user.numerai_api_key_public_id,  # type: ignore
             secret_key=current_user.numerai_api_key_secret,
             tournament=tournament,

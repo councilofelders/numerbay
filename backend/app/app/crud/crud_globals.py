@@ -2,37 +2,17 @@ from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import pandas as pd
-from numerapi import NumerAPI
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import models
+from app.api.dependencies import numerai
 from app.crud.base import CRUDBase
 from app.models.globals import Globals
 from app.schemas.globals import GlobalsCreate, GlobalsUpdate
 
 
 class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
-    def get_numerai_active_round(self) -> Dict:
-        """
-        Retrieve products.
-        """
-        query = """
-                  query {
-                    rounds(tournament: 8
-                           number: 0) {
-                      number
-                      openTime
-                      closeTime
-                      closeStakingTime
-                    }
-                  }
-                """
-
-        api = NumerAPI()
-        active_round = api.raw_query(query)["data"]["rounds"][0]
-        return active_round
-
     def get_selling_round(self, active_round: Dict) -> int:
         utc_time = datetime.now(timezone.utc)
         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
@@ -53,7 +33,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         if instance:
             return instance
         else:
-            active_round = self.get_numerai_active_round()
+            active_round = numerai.get_numerai_active_round()
             selling_round_number = self.get_selling_round(active_round)
             instance = Globals(
                 id=0,
@@ -69,7 +49,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
 
     def update_singleton(self, db: Session) -> Globals:
         instance = self.get_singleton(db)
-        active_round = self.get_numerai_active_round()
+        active_round = numerai.get_numerai_active_round()
         selling_round_number = self.get_selling_round(active_round)
         return super().update(
             db,

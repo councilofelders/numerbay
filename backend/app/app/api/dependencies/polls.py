@@ -7,6 +7,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import crud, models
+from app.api.dependencies import numerai
 from app.core.config import settings
 
 
@@ -30,7 +31,7 @@ def get_voter_weight(
         try:
             if not user.numerai_api_key_public_id or not user.numerai_api_key_secret:
                 raise ValueError
-            crud.user.get_numerai_api_user_info(
+            numerai.get_numerai_api_user_info(
                 public_id=user.numerai_api_key_public_id,
                 secret_key=user.numerai_api_key_secret,
             )
@@ -38,6 +39,8 @@ def get_voter_weight(
             raise HTTPException(
                 status_code=400, detail="Numerai API Error: Insufficient Permission.",
             )
+
+    weight = None
 
     if poll.weight_mode == "equal":
         weight = Decimal("1")

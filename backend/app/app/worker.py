@@ -17,6 +17,7 @@ from sqlalchemy import and_, func, select
 
 from app import crud
 from app.api import deps
+from app.api.dependencies import numerai
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -157,7 +158,7 @@ def batch_update_models_task() -> None:
 @celery_app.task  # (acks_late=True)
 def batch_update_model_scores_task(retries: int = 0) -> None:
     try:
-        pipeline_status = crud.model.get_numerai_pipeline_status(tournament=8)
+        pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
         if pipeline_status["isScoringDay"]:
             if pipeline_status.get("resolvedAt", None):
                 print("Numerai pipeline completed, update model scores...")
@@ -226,7 +227,7 @@ def update_active_round() -> None:
     try:
         globals = crud.globals.get_singleton(db)
 
-        active_round = crud.globals.get_numerai_active_round()
+        active_round = numerai.get_numerai_active_round()
         utc_time = datetime.now(timezone.utc)
         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
         close_staking_time = pd.to_datetime(
@@ -265,7 +266,7 @@ def update_round_rollover() -> None:
     try:
         globals = crud.globals.get_singleton(db)
 
-        active_round = crud.globals.get_numerai_active_round()
+        active_round = numerai.get_numerai_active_round()
         utc_time = datetime.now(timezone.utc)
         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
         close_staking_time = pd.to_datetime(
@@ -758,7 +759,7 @@ def batch_validate_numerai_models_stake_task() -> None:
         for order in orders:
             if order.mode != "stake_with_limit" or not order.submit_model_id:
                 continue
-            target_stake = crud.model.get_target_stake(
+            target_stake = numerai.get_target_stake(
                 public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
                 secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
                 tournament=order.product.model.tournament,  # type: ignore
@@ -769,7 +770,7 @@ def batch_validate_numerai_models_stake_task() -> None:
                 print(
                     f"Order {order.id} model {order.submit_model_name} [user {order.buyer_id}: {order.buyer.username}] exceeded stake limit {target_stake} / {stake_limit}"
                 )
-                result = crud.model.set_target_stake(
+                result = numerai.set_target_stake(
                     public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
                     secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
                     tournament=order.product.model.tournament,  # type: ignore
@@ -806,7 +807,7 @@ def batch_update_stake_snapshots() -> None:
         # Pull new snapshots
         date_creation = datetime.utcnow()
         active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
-        numerai_models = crud.model.get_leaderboard(tournament=8)
+        numerai_models = numerai.get_leaderboard(tournament=8)
 
         db_models = db.query(Model).filter(Model.tournament == 8).all()
         db_models_dict = {}
@@ -830,7 +831,7 @@ def batch_update_stake_snapshots() -> None:
         db.add_all(db_stake_snapshots_dict.values())
         db.commit()
 
-        signals_models = crud.model.get_leaderboard(tournament=11)
+        signals_models = numerai.get_leaderboard(tournament=11)
 
         db_models = db.query(Model).filter(Model.tournament == 11).all()
         db_models_dict = {}

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import (
     get_object_name,
     validate_existing_artifact,
@@ -190,7 +191,7 @@ def create_product(
                 or not current_user.numerai_api_key_secret
             ):
                 raise ValueError
-            crud.user.get_numerai_api_user_info(
+            numerai.get_numerai_api_user_info(
                 public_id=current_user.numerai_api_key_public_id,
                 secret_key=current_user.numerai_api_key_secret,
             )

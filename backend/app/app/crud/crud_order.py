@@ -10,8 +10,8 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.api import deps
+from app.api.dependencies import numerai
 from app.api.dependencies.coupons import create_coupon_for_order
-from app.api.dependencies.numerai import get_numerai_wallet_transactions
 from app.api.dependencies.orders import (
     send_order_confirmation_emails,
     send_order_expired_emails,
@@ -151,7 +151,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             buyer = crud.user.get(db, id=order_json["buyer_id"])
             if buyer:
                 try:
-                    numerai_wallet_transactions = get_numerai_wallet_transactions(
+                    numerai_wallet_transactions = numerai.get_numerai_wallet_transactions(
                         public_id=buyer.numerai_api_key_public_id,  # type: ignore
                         secret_key=buyer.numerai_api_key_secret,  # type: ignore
                     )
