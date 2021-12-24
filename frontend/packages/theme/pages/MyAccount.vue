@@ -22,6 +22,10 @@
           <OrderHistory />
         </SfContentPage>
 
+        <SfContentPage title="My coupons">
+          <MyCoupons />
+        </SfContentPage>
+
         <!--<SfContentPage title="My reviews">
           <MyReviews />
         </SfContentPage>-->
@@ -69,6 +73,7 @@ import MyPolls from './MyAccount/MyPolls';
 import NumeraiDashboard from './MyAccount/NumeraiDashboard';
 import SalesHistory from './MyAccount/SalesHistory';
 import OrderHistory from './MyAccount/OrderHistory';
+import MyCoupons from './MyAccount/MyCoupons';
 import {
   mapMobileObserver,
   unMapMobileObserver
@@ -86,7 +91,8 @@ export default {
     MyPolls,
     NumeraiDashboard,
     SalesHistory,
-    OrderHistory
+    OrderHistory,
+    MyCoupons
   },
   middleware: [
     'is-authenticated'

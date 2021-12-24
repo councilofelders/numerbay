@@ -1,8 +1,9 @@
+import copy
 from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 
 class CouponBase(BaseModel):
@@ -54,6 +55,17 @@ class CouponOwner(BaseModel):
 class Coupon(CouponInDBBase):
     owner: Optional[CouponOwner] = None
     quantity_remaining: Optional[int] = None  # todo calculate quantity_remaining
+
+    @root_validator(pre=True)
+    def set_quantity_remaining(cls, values):  # type: ignore
+        values_to_return = dict(**values)
+        if values["quantity_total"]:
+            redemption_count = 0
+            for redemption in values["redemptions"]:  # type: ignore
+                if redemption["state"] != "expired":  # pending+confirmed
+                    redemption_count += 1
+            values_to_return["quantity_remaining"] = values["quantity_total"] - redemption_count
+        return values_to_return
 
 
 # Properties properties stored in DB
