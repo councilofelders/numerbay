@@ -33,5 +33,14 @@ class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
         db.refresh(db_obj)
         return db_obj
 
+    def calculate_quantity_remaining(self, db_obj: Coupon) -> Optional[int]:
+        redemption_count = 0
+        for redemption in db_obj.redemptions:  # type: ignore
+            if redemption.state != "expired":  # pending+confirmed
+                redemption_count += 1
+        if db_obj.quantity_total:
+            return db_obj.quantity_total - redemption_count
+        return None
+
 
 coupon = CRUDCoupon(Coupon)

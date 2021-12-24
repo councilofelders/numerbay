@@ -74,11 +74,10 @@ def calculate_option_price(
 
             # check remaining
             if coupon_obj.quantity_total:
-                redemption_count = 0
-                for redemption in coupon_obj.redemptions:  # type: ignore
-                    if redemption.state != "expired":  # pending+confirmed
-                        redemption_count += 1
-                if redemption_count >= coupon_obj.quantity_total:
+                quantity_remaining = crud.coupon.calculate_quantity_remaining(
+                    db_obj=coupon_obj
+                )
+                if quantity_remaining <= 0:  # type: ignore
                     option.error = "Coupon used up"
                     if raise_exceptions:
                         raise HTTPException(
