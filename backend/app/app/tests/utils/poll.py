@@ -1,5 +1,6 @@
 import datetime
-from typing import Optional
+from contextlib import contextmanager
+from typing import Generator, Optional
 
 from sqlalchemy.orm import Session
 
@@ -46,3 +47,23 @@ def create_random_poll(
     poll = crud.poll.create(db=db, obj_in=poll_in,)
 
     return poll
+
+
+@contextmanager
+def get_random_poll(
+    db: Session,
+    *,
+    owner_id: Optional[int] = None,
+    is_multiple: bool = False,
+    weight_mode: Optional[str] = "equal",
+) -> Generator:
+    poll = create_random_poll(
+        db, owner_id=owner_id, is_multiple=is_multiple, weight_mode=weight_mode
+    )
+    try:
+        yield poll
+    finally:
+        owner_id_tmp = poll.owner_id
+        crud.poll.remove(db, id=poll.id)  # type: ignore
+        if owner_id is None:
+            crud.user.remove(db, id=owner_id_tmp)  # type: ignore

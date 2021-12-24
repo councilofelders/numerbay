@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.core.config import settings
-from app.tests.utils.product import create_random_product
+from app.tests.utils.product import get_random_product
 from app.tests.utils.utils import random_lower_string
 
 
@@ -339,22 +339,15 @@ def test_create_product_invalid_inputs(
 
 
 def test_search_products(client: TestClient, db: Session) -> None:
-    product = create_random_product(db)
-    model = product.model
-    model_id = model.id
-    response = client.post(
-        f"{settings.API_V1_STR}/products/search",
-        json={"category_id": product.category_id, "term": product.name},
-    )
-    assert response.status_code == 200
-    content = response.json()
-    assert content["total"] > 0
-    assert product.name == content["data"][0]["name"]
-
-    crud.product.remove(db, id=product.id)
-    model = crud.model.remove(db, id=model_id)  # type: ignore
-    assert model.id == model_id
-    crud.user.remove(db, id=product.owner_id)  # type: ignore
+    with get_random_product(db) as product:
+        response = client.post(
+            f"{settings.API_V1_STR}/products/search",
+            json={"category_id": product.category_id, "term": product.name},
+        )
+        assert response.status_code == 200
+        content = response.json()
+        assert content["total"] > 0
+        assert product.name == content["data"][0]["name"]
 
 
 # def test_read_product(client: TestClient, db: Session) -> None:
@@ -377,92 +370,89 @@ def test_update_product(
 ) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
-    product = create_random_product(db, owner_id=current_user["id"])
-    data = dict()  # type: ignore
+    with get_random_product(db, owner_id=current_user["id"]) as product:
+        data = dict()  # type: ignore
 
-    # product_name = random_lower_string()
-    # data = {
-    #     "name": product_name,
-    #     "price": 10,
-    #     "category_id": 3,
-    #     "description": "Description",
-    #     "is_on_platform": False,
-    #     "currency": "USD",
-    # }
-    # model = crud.model.create(
-    #     db,
-    #     obj_in=schemas.ModelCreate(
-    #         id=product_name,
-    #         name=product_name,
-    #         tournament=8,
-    #         owner_id=current_user["id"],
-    #     ),
-    # )
-    # response = client.post(
-    #     f"{settings.API_V1_STR}/products/",
-    #     headers=normal_user_token_headers,
-    #     json=data,
-    # )
-    # assert response.status_code == 200
-    # content = response.json()
-    # assert content["name"] == data["name"]
+        # product_name = random_lower_string()
+        # data = {
+        #     "name": product_name,
+        #     "price": 10,
+        #     "category_id": 3,
+        #     "description": "Description",
+        #     "is_on_platform": False,
+        #     "currency": "USD",
+        # }
+        # model = crud.model.create(
+        #     db,
+        #     obj_in=schemas.ModelCreate(
+        #         id=product_name,
+        #         name=product_name,
+        #         tournament=8,
+        #         owner_id=current_user["id"],
+        #     ),
+        # )
+        # response = client.post(
+        #     f"{settings.API_V1_STR}/products/",
+        #     headers=normal_user_token_headers,
+        #     json=data,
+        # )
+        # assert response.status_code == 200
+        # content = response.json()
+        # assert content["name"] == data["name"]
 
-    # update price
-    data["options"] = [
-        {
-            "id": product.options[0].id,  # type: ignore
-            "price": 20.5,
-        }
-    ]
-    response = client.put(
-        f"{settings.API_V1_STR}/products/{product.id}",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 200
-    content = response.json()
+        # update price
+        data["options"] = [
+            {
+                "id": product.options[0].id,  # type: ignore
+                "price": 20.5,
+            }
+        ]
+        response = client.put(
+            f"{settings.API_V1_STR}/products/{product.id}",
+            headers=normal_user_token_headers,
+            json=data,
+        )
+        assert response.status_code == 200
+        content = response.json()
 
-    assert content["options"][0]["price"] == data["options"][0]["price"]
-    assert "id" in content
-    assert "owner" in content
+        assert content["options"][0]["price"] == data["options"][0]["price"]
+        assert "id" in content
+        assert "owner" in content
 
-    # invalid attempt to change owner id
-    data["owner_id"] = current_user["id"] + 1
-    response = client.put(
-        f"{settings.API_V1_STR}/products/{content['id']}",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    content = response.json()
-    assert content["owner"]["id"] == current_user["id"]
+        # invalid attempt to change owner id
+        data["owner_id"] = current_user["id"] + 1
+        response = client.put(
+            f"{settings.API_V1_STR}/products/{content['id']}",
+            headers=normal_user_token_headers,
+            json=data,
+        )
+        content = response.json()
+        assert content["owner"]["id"] == current_user["id"]
 
-    # invalid attempt to change product name
-    data["name"] = random_lower_string()  # type: ignore
-    response = client.put(
-        f"{settings.API_V1_STR}/products/{content['id']}",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    content = response.json()
-    assert content["name"] == product.name
+        # invalid attempt to change product name
+        data["name"] = random_lower_string()  # type: ignore
+        response = client.put(
+            f"{settings.API_V1_STR}/products/{content['id']}",
+            headers=normal_user_token_headers,
+            json=data,
+        )
+        content = response.json()
+        assert content["name"] == product.name
 
-    # invalid attempt to change category id
-    data["category_id"] = 2  # type: ignore
-    response = client.put(
-        f"{settings.API_V1_STR}/products/{content['id']}",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    content = response.json()
-    assert content["category"]["id"] == 3
+        # invalid attempt to change category id
+        data["category_id"] = 2  # type: ignore
+        response = client.put(
+            f"{settings.API_V1_STR}/products/{content['id']}",
+            headers=normal_user_token_headers,
+            json=data,
+        )
+        content = response.json()
+        assert content["category"]["id"] == 3
 
-    # todo soft delete
-    # response = client.delete(
-    #     f"{settings.API_V1_STR}/products/{content['id']}",
-    #     headers=normal_user_token_headers,
-    #     json=data,
-    # )
-    # assert response.status_code == 200
-    crud.product.remove(db, id=content["id"])
-    crud.model.remove(db, id=product.model_id)  # type: ignore
-    # crud.user.remove(db, id=product.owner_id)  # type: ignore
+        # todo soft delete
+        # response = client.delete(
+        #     f"{settings.API_V1_STR}/products/{content['id']}",
+        #     headers=normal_user_token_headers,
+        #     json=data,
+        # )
+        # assert response.status_code == 200

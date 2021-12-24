@@ -1,4 +1,5 @@
-from typing import Dict
+from contextlib import contextmanager
+from typing import Dict, Generator
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -28,6 +29,15 @@ def create_random_user(db: Session) -> User:
     user_in = UserCreate(username=email, email=email, password=password)
     user = crud.user.create(db=db, obj_in=user_in)
     return user
+
+
+@contextmanager
+def get_random_user(db: Session) -> Generator:
+    user = create_random_user(db)
+    try:
+        yield user
+    finally:
+        crud.user.remove(db, id=user.id)  # type: ignore
 
 
 def authentication_token_from_username(
