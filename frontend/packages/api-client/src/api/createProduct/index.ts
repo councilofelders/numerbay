@@ -28,7 +28,9 @@ export default async function createProduct(context, params, customQuery?: Custo
     // eslint-disable-next-line camelcase
     expiration_round: params.expirationRound,
     description: params.description,
-    options: params.options
+    options: params.options,
+    // eslint-disable-next-line camelcase
+    featured_products: params.featuredProducts ? params.featuredProducts.map(p => p.id) : null
   };
 
   // Use axios to send a POST request

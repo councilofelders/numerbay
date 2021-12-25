@@ -32,6 +32,7 @@ class ProductBase(BaseModel):
     total_num_sales: Optional[int] = None
     last_sale_price: Optional[Decimal] = None
     last_sale_price_delta: Optional[Decimal] = None
+    featured_products: Optional[List[int]] = None
 
 
 # Properties to receive on product creation

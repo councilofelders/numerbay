@@ -129,6 +129,23 @@
                     />
                   </ValidationProvider>
                 </div>
+                <SfCheckbox v-model="form.hasFeaturedProducts" name="coupon">
+                  <template #label>
+                    <div class="sf-checkbox__label">
+                      Feature my other products
+                    </div>
+                  </template>
+                </SfCheckbox>
+                <div v-if="form.hasFeaturedProducts">
+                  {{form}}
+                  <multiselect ref="couponMultiSelect" placeholder="Featured Products" v-model="form.featuredProducts" class="multiselect"
+                                   :options="groupProducts(products)" :multiple="true" :close-on-select="false" group-values="products" group-label="category" :group-select="true" track-by="id" label="sku"
+                  >
+                    <template slot="option" slot-scope="props">
+                      <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
+                    </template>
+                  </multiselect>
+                </div>
                 <ProductOptionsForm
                   ref="optionsForm"
                   optionsTabTitle="Pricing options"
@@ -219,7 +236,7 @@
 </template>
 <script>
 import { ref, watch, reactive, computed } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfSelect, SfButton, SfLoader, SfBar, SfRadio, SfBadge } from '@storefront-ui/vue';
+import { SfModal, SfTabs, SfInput, SfSelect, SfButton, SfLoader, SfBar, SfRadio, SfBadge, SfCheckbox } from '@storefront-ui/vue';
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 // eslint-disable-next-line camelcase
 import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist/rules';
@@ -321,6 +338,7 @@ export default {
     SfBar,
     SfRadio,
     SfBadge,
+    SfCheckbox,
     ProductOptionsForm,
     ValidationProvider,
     ValidationObserver
@@ -455,7 +473,9 @@ export default {
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
-      options: product ? product.options : []
+      options: product ? product.options : [],
+      hasFeaturedProducts: Boolean(product.featured_products),
+      featuredProducts: []
     });
     const form = ref(resetForm(currentListing));
 

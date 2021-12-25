@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Numeric, String, ARRAY
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -27,6 +27,7 @@ class Product(Base):
     total_num_sales = Column(Integer, default=0, server_default="0")
     last_sale_price = Column(Numeric)
     last_sale_price_delta = Column(Numeric)
+    featured_products = Column(ARRAY(Integer))
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="products")
     category_id = Column(Integer, ForeignKey("category.id"))
