@@ -218,7 +218,7 @@
       <RelatedProducts
         :products="relatedProducts"
         :loading="relatedLoading"
-        title="From the same seller"
+        title="Featured by seller"
       />
     </LazyHydrate>
   </div>
@@ -275,7 +275,8 @@ export default {
 
     onSSR(async () => {
       await search({ id });
-      await searchRelatedProducts({ filters: {user: {in: [product.value.owner.id]}}}); // catId: product.value.category.id,
+      // await searchRelatedProducts({ filters: {user: {in: [product.value.owner.id]}}}); // catId: product.value.category.id,
+      await searchRelatedProducts({ filters: {id: {in: product?.value?.featured_products || []}}});
       await searchReviews({ productId: id });
       if (product?.value?.category?.tournament) {
         await getModelInfo({tournament: product?.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value.name});

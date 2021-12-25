@@ -129,23 +129,22 @@
                     />
                   </ValidationProvider>
                 </div>
-                <SfCheckbox v-model="form.hasFeaturedProducts" name="coupon">
+<!--                <SfCheckbox v-model="form.hasFeaturedProducts" name="coupon">
                   <template #label>
                     <div class="sf-checkbox__label">
                       Feature my other products
                     </div>
                   </template>
-                </SfCheckbox>
-                <div v-if="form.hasFeaturedProducts">
-                  {{form}}
-                  <multiselect ref="couponMultiSelect" placeholder="Featured Products" v-model="form.featuredProducts" class="multiselect"
-                                   :options="groupProducts(products)" :multiple="true" :close-on-select="false" group-values="products" group-label="category" :group-select="true" track-by="id" label="sku"
-                  >
-                    <template slot="option" slot-scope="props">
-                      <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
-                    </template>
-                  </multiselect>
-                </div>
+                </SfCheckbox>-->
+<!--                <div v-if="form.hasFeaturedProducts">-->
+                <multiselect ref="featuredProductsMultiSelect" placeholder="(Optional) Featured Products" v-model="form.featuredProducts" class="multiselect"
+                                 :options="groupedProducts" :multiple="true" :close-on-select="false" group-values="products" group-label="category" :group-select="true" track-by="id" label="sku"
+                >
+                  <template slot="option" slot-scope="props">
+                    <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
+                  </template>
+                </multiselect>
+<!--                </div>-->
                 <ProductOptionsForm
                   ref="optionsForm"
                   optionsTabTitle="Pricing options"
@@ -163,7 +162,7 @@
                   :isTournamentCategory="isTournamentCategory(form.category)"
                   :isSubmissionCategory="isSubmissionCategory(form.category)"
                   :isPerRoundCategory="isPerRoundCategory(form.category)"
-                  :groupedProducts="groupProducts(products)"
+                  :groupedProducts="groupedProducts"
                 ></ProductOptionsForm>
                 <client-only>
                   <div class="editor">
@@ -366,13 +365,6 @@ export default {
     };
   },
   methods: {
-    groupProducts(products) {
-      const groupedProducts = products.reduce((rv, x) => {
-        (rv[x.category.slug] = rv[x.category.slug] || []).push(x);
-        return rv;
-      }, {});
-      return Object.keys(groupedProducts).map((key) => ({category: key, products: groupedProducts[key]}));
-    },
     isSubmissionCategory(categoryId) {
       if (categoryId) {
         const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
@@ -454,6 +446,11 @@ export default {
       }
     }
   },
+  beforeDestroy() {
+    if (this.$refs.featuredProductsMultiSelect) {
+      this.$refs.featuredProductsMultiSelect.deactivate();
+    }
+  },
   setup() {
     const { isListingModalOpen, currentListing, toggleListingModal } = useUiState();
     const { categories, search: categorySearch } = useCategory();
@@ -465,6 +462,18 @@ export default {
       await categorySearch();
     });
 
+    const groupProducts = (products) => {
+      const groupedProducts = products.reduce((rv, x) => {
+        (rv[x.category.slug] = rv[x.category.slug] || []).push(x);
+        return rv;
+      }, {});
+      return Object.keys(groupedProducts).map((key) => ({category: key, products: groupedProducts[key]}));
+    };
+
+    const productsData = computed(() => products?.value?.data ? products?.value?.data : []);
+
+    const groupedProducts = computed(() => groupProducts(productsData.value));
+
     const resetForm = (product) => ({
       name: product ? productGetters.getName(product) : null,
       category: product ? productGetters.getCategoryIds(product)[0] : null,
@@ -474,8 +483,8 @@ export default {
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
       options: product ? product.options : [],
-      hasFeaturedProducts: Boolean(product.featured_products),
-      featuredProducts: []
+      // hasFeaturedProducts: product?.featured_products?.length > 0,
+      featuredProducts: product?.featured_products ? product?.featured_products.map(id => groupedProducts.value.map(gp=>gp.products).flat().find((p)=>parseInt(p.id) === parseInt(String(id)))) : null
     });
     const form = ref(resetForm(currentListing));
 
@@ -547,7 +556,8 @@ export default {
       leafCategories: computed(() => categories ? categories.value.filter((category) => {
         return category.items.length === 0;
       }).sort((a, b) => -a.slug.localeCompare(b.slug)) : []),
-      products: computed(() => products?.value?.data ? products?.value?.data : []),
+      products: productsData,
+      groupedProducts,
       resetForm,
       populateModelInfo,
       handleProductForm,

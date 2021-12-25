@@ -167,6 +167,9 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         if isinstance(filters, dict):
             for filter_key, filter_item in filters.items():
+                if filter_key == "id":
+                    id_list = [int(i) for i in filter_item["in"]]
+                    query_filters.append(Product.id.in_(id_list))
                 if filter_key == "platform":
                     with_on_platform = "on-platform" in filter_item["in"]
                     with_off_platform = "off-platform" in filter_item["in"]
