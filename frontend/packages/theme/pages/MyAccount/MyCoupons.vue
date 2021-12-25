@@ -19,12 +19,16 @@
             >{{ tableHeader }}</SfTableHeader>
         </SfTableHeading>
         <SfTableRow v-for="coupon in user.coupons" :key="coupon.id">
-          <SfTableData>{{ coupon.code }}</SfTableData>
-          <SfTableData>{{ coupon.date_expiration }}</SfTableData>
-          <SfTableData>{{ coupon.applicable_product_ids }}</SfTableData>
-          <SfTableData>{{ coupon.discount_percent }} %</SfTableData>
-          <SfTableData>{{ coupon.max_discount }} NMR</SfTableData>
-          <SfTableData>{{ coupon.quantity_remaining }} / {{ coupon.quantity_total }}</SfTableData>
+          <SfTableData><span :style="coupon.quantity_remaining > 0 ? '' : 'color: var(--c-text-disabled)'">{{ coupon.code }}</span></SfTableData>
+          <SfTableData><span :style="coupon.quantity_remaining > 0 ? '' : 'color: var(--c-text-disabled)'">{{ coupon.date_expiration || '-' }}</span></SfTableData>
+          <SfTableData>
+            <SfLink v-for="product_id in coupon.applicable_product_ids" :key="product_id" :href="`/p/${product_id}/${product_id}`" target="_blank" style="text-decoration: none;">
+              <span :style="coupon.quantity_remaining > 0 ? '' : 'color: var(--c-text-disabled)'">{{ product_id }}, </span>
+            </SfLink>
+          </SfTableData>
+          <SfTableData><span :style="coupon.quantity_remaining > 0 ? '' : 'color: var(--c-text-disabled)'">{{ coupon.discount_percent }} %</span></SfTableData>
+          <SfTableData><span :style="coupon.quantity_remaining > 0 ? '' : 'color: var(--c-text-disabled)'">{{ coupon.max_discount }} NMR</span></SfTableData>
+          <SfTableData><span :style="coupon.quantity_remaining > 0 ? '' : 'color: var(--c-text-disabled)'">{{ coupon.quantity_remaining }} / {{ coupon.quantity_total }}</span></SfTableData>
 <!--          <SfTableData>{{ coupon.state }}</SfTableData>-->
         </SfTableRow>
       </SfTable>
@@ -57,7 +61,7 @@ export default {
     const { user, loading } = useUser();
 
     const tableHeaders = [
-      'Coupon Code',
+      'Code',
       'Valid Until',
       'Applicable Product IDs',
       'Discount %',
