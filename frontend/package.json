@@ -38,7 +38,7 @@
     "eslint-plugin-vue": "^7.0.1",
     "husky": "^4.2.3",
     "jest": "^24.9.0",
-    "lerna": "^3.15.0",
+    "lerna": "^4.0.0",
     "lint-staged": "^10.0.7",
     "rimraf": "^3.0.2",
     "rollup": "^1.25.2",
