@@ -190,7 +190,18 @@
                       </template>
                     </SfCheckbox>
                     <div v-if="!!coupon">
-                      <multiselect ref="couponMultiSelect" placeholder="Applicable Products (in Addition to This Product)" v-model="couponSpecs.applicable_products"
+                      <ValidationProvider rules="min_value:0" v-slot="{ errors }">
+                        <SfInput
+                          v-model="couponSpecs.reward_min_spend"
+                          :valid="!errors[0]"
+                          :errorMessage="errors[0]"
+                          name="rewardMinSpend"
+                          label="(Optional) Min Spend on This Product (in NMR) for Rewarding Coupon"
+                          type="number"
+                          class="form__element"
+                        />
+                      </ValidationProvider>
+                      <multiselect ref="couponMultiSelect" placeholder="Applicable Products (in Addition to This Product)" v-model="couponSpecs.applicable_products" class="multiselect"
                                    :options="groupedProducts" :multiple="true" :close-on-select="false" group-values="products" group-label="category" :group-select="true" track-by="id" label="sku"
                       >
   <!--                      <template slot="singleLabel" slot-scope="props"><span class="option__desc"><span class="option__title">{{ props.option.name }}</span></span></template>-->
@@ -230,7 +241,7 @@
                           :valid="!errors[0]"
                           :errorMessage="errors[0]"
                           name="maxDiscount"
-                          label="Max Discount Cap (in NMR)"
+                          label="Coupon Max Discount (in NMR)"
                           type="number"
                           class="form__element"
                         />
@@ -241,7 +252,7 @@
                           :valid="!errors[0]"
                           :errorMessage="errors[0]"
                           name="minSpend"
-                          label="(Optional) Min Spend (in NMR) for Getting Coupon"
+                          label="(Optional) Coupon Min Spend (in NMR)"
                           type="number"
                           class="form__element"
                         />
@@ -364,7 +375,6 @@
                     value="Yes"
                     class="sf-property property"
                   />
-                  {{option}}
                 </div>
                 <div class="pricing__content" v-else>
                   <b>Off-Platform</b>
@@ -656,7 +666,9 @@ export default {
           // eslint-disable-next-line camelcase
           max_discount: option.coupon_specs?.max_discount,
           // eslint-disable-next-line camelcase
-          min_spend: option.coupon_specs?.min_spend
+          min_spend: option.coupon_specs?.min_spend,
+          // eslint-disable-next-line camelcase
+          reward_min_spend: option.coupon_specs?.reward_min_spend
         };
       } else if (!this.isTournamentCategory) {
         this.isOnPlatform = 'false';
@@ -698,7 +710,9 @@ export default {
           // eslint-disable-next-line camelcase
           max_discount: this.couponSpecs.max_discount,
           // eslint-disable-next-line camelcase
-          min_spend: this.couponSpecs.min_spend
+          min_spend: this.couponSpecs.min_spend,
+          // eslint-disable-next-line camelcase
+          reward_min_spend: this.couponSpecs.reward_min_spend
         }
       };
       if (index > -1) {
@@ -863,4 +877,28 @@ export default {
     padding: 0.15em;
   }
 }
+
+/*.multiselect {
+  .multiselect__option--group-selected.multiselect__option--highlight {
+    background: var(--c-danger);
+    color: #fff;
+  }
+
+  .multiselect__option--group-selected.multiselect__option--highlight:after {
+    background: var(--c-danger);
+    content: attr(data-deselect);
+    color: #fff;
+  }
+
+  .multiselect__option--selected.multiselect__option--highlight {
+    background: var(--c-danger);
+    color: #fff;
+  }
+
+  .multiselect__option--selected.multiselect__option--highlight:after {
+    background: var(--c-danger);
+    content: attr(data-deselect);
+    color: #fff;
+  }
+}*/
 </style>

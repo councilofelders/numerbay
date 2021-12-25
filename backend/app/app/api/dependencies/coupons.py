@@ -119,21 +119,22 @@ def create_coupon_for_order(
     db: Session, order_obj: models.Order
 ) -> Optional[models.Coupon]:
     if order_obj.coupon and order_obj.coupon_specs:
-        data = {
-            "date_creation": datetime.utcnow(),
-            "applicability": "specific_products",
-            "code": generate_promo_code(8),
-            "applicable_product_ids": order_obj.coupon_specs.get(  # type: ignore
-                "applicable_product_ids", []
-            ),
-            "discount_mode": "percent",
-            "discount_percent": order_obj.coupon_specs.get("discount_percent", 0),  # type: ignore
-            "max_discount": order_obj.coupon_specs.get("max_discount", None),  # type: ignore
-            "min_spend": order_obj.coupon_specs.get("min_spend", None),  # type: ignore
-            "quantity_total": 1,
-        }
-        coupon_obj = crud.coupon.create_with_owner(
-            db, obj_in=schemas.CouponCreate(**data), owner_id=order_obj.buyer_id  # type: ignore
-        )
-        return coupon_obj
+        if order_obj.price >= Decimal(order_obj.coupon_specs.get("reward_min_spend", "0")):  # type: ignore
+            data = {
+                "date_creation": datetime.utcnow(),
+                "applicability": "specific_products",
+                "code": generate_promo_code(8),
+                "applicable_product_ids": order_obj.coupon_specs.get(  # type: ignore
+                    "applicable_product_ids", []
+                ),
+                "discount_mode": "percent",
+                "discount_percent": order_obj.coupon_specs.get("discount_percent", 0),  # type: ignore
+                "max_discount": order_obj.coupon_specs.get("max_discount", None),  # type: ignore
+                "min_spend": order_obj.coupon_specs.get("min_spend", None),  # type: ignore
+                "quantity_total": 1,
+            }
+            coupon_obj = crud.coupon.create_with_owner(
+                db, obj_in=schemas.CouponCreate(**data), owner_id=order_obj.buyer_id  # type: ignore
+            )
+            return coupon_obj
     return None

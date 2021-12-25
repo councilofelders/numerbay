@@ -1,4 +1,3 @@
-import copy
 from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Optional
@@ -62,9 +61,11 @@ class Coupon(CouponInDBBase):
         if values["quantity_total"]:
             redemption_count = 0
             for redemption in values["redemptions"]:  # type: ignore
-                if redemption["state"] != "expired":  # pending+confirmed
+                if redemption.state != "expired":  # pending+confirmed
                     redemption_count += 1
-            values_to_return["quantity_remaining"] = values["quantity_total"] - redemption_count
+            values_to_return["quantity_remaining"] = (
+                values["quantity_total"] - redemption_count
+            )
         return values_to_return
 
 
