@@ -234,23 +234,34 @@
   </SfModal>
 </template>
 <script>
-import { ref, watch, reactive, computed } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfSelect, SfButton, SfLoader, SfBar, SfRadio, SfBadge, SfCheckbox } from '@storefront-ui/vue';
-import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
-// eslint-disable-next-line camelcase
-import { required, min_value, integer, min, alpha_dash } from 'vee-validate/dist/rules';
 import {
-  userGetters,
-  useUser,
+  SfBadge,
+  SfBar,
+  SfButton,
+  SfCheckbox,
+  SfInput,
+  SfLoader,
+  SfModal,
+  SfRadio,
+  SfSelect,
+  SfTabs
+} from '@storefront-ui/vue';
+import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
+import { computed, reactive, ref, watch } from '@vue/composition-api';
+// eslint-disable-next-line camelcase
+import { alpha_dash, integer, min, min_value, required } from 'vee-validate/dist/rules';
+import {
   productGetters,
   useCategory,
-  useProduct,
+  useGlobals,
   useNumerai,
-  useGlobals
+  useProduct,
+  useUser,
+  userGetters
 } from '@vue-storefront/numerbay';
+import ProductOptionsForm from '~/components/ProductOptionsForm';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
-import ProductOptionsForm from '~/components/ProductOptionsForm';
 
 extend('required', {
   ...required,
@@ -412,8 +423,7 @@ export default {
         if (category.slug.startsWith('signals-')) {
           tournament = 11;
         }
-        const models = userGetters.getModels(this.numerai, tournament, false);
-        return models;
+        return userGetters.getModels(this.numerai, tournament, false);
       }
       return [];
     },

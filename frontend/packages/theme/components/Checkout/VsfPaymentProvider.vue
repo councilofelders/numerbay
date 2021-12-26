@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { SfButton, SfRadio, SfBadge } from '@storefront-ui/vue';
+import { SfBadge, SfButton, SfRadio } from '@storefront-ui/vue';
 import { ref } from '@vue/composition-api';
 
 const PAYMENT_OPTIONS = [

@@ -157,8 +157,8 @@
 </template>
 
 <script>
-import {SfProperty, SfButton, SfTable, SfLoader, SfLink} from '@storefront-ui/vue';
-import { orderGetters, artifactGetters, useProductArtifact } from '@vue-storefront/numerbay';
+import { SfButton, SfLink, SfLoader, SfProperty, SfTable } from '@storefront-ui/vue';
+import { artifactGetters, orderGetters, useProductArtifact } from '@vue-storefront/numerbay';
 import { computed } from '@vue/composition-api';
 import { useUiNotification } from '~/composables';
 

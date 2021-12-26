@@ -24,13 +24,13 @@
 
 <script>
 import {
-  SfHeading,
   SfButton,
+  SfHeading,
   SfLoader
 } from '@storefront-ui/vue';
-import { computed } from '@vue/composition-api';
 import { orderGetters, useUserOrder } from '@vue-storefront/numerbay';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
+import { computed } from '@vue/composition-api';
 
 export default {
   name: 'Confirmation',

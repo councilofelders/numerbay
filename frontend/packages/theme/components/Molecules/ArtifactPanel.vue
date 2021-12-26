@@ -98,18 +98,19 @@
 
 <script>
 import { SfButton, SfInput, SfLoader, SfTable } from '@storefront-ui/vue';
+import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
 import {
-  orderGetters,
   artifactGetters,
+  orderGetters,
   useProductArtifact
 } from '@vue-storefront/numerbay';
-import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
-import Dropzone from '../../components/Molecules/Dropzone';
-import 'nuxt-dropzone/dropzone.css';
 import { computed, ref } from '@vue/composition-api';
+import Dropzone from '../../components/Molecules/Dropzone';
 import { Logger } from '@vue-storefront/core';
 import debounce from 'lodash.debounce';
 import { useUiNotification } from '~/composables';
+
+import 'nuxt-dropzone/dropzone.css';
 
 extend('url', {
   validate: (value) => {

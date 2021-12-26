@@ -64,17 +64,17 @@
 </template>
 <script>
 import {
-  SfHeading,
   SfButton,
-  SfCollectedProduct,
-  SfProperty,
   SfCharacteristic,
-  SfInput,
   SfCircleIcon,
-  SfLoader
+  SfCollectedProduct,
+  SfHeading,
+  SfInput,
+  SfLoader,
+  SfProperty
 } from '@storefront-ui/vue';
+import { cartGetters, checkoutGetters, productGetters, useCart, useProduct } from '@vue-storefront/numerbay';
 import { computed, ref } from '@vue/composition-api';
-import {useCart, useProduct, checkoutGetters, cartGetters, productGetters} from '@vue-storefront/numerbay';
 import CouponCode from '../CouponCode.vue';
 
 export default {

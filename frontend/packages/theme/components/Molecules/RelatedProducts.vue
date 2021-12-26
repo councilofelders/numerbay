@@ -38,9 +38,9 @@
 
 import {
   SfCarousel,
+  SfLoader,
   SfProductCard,
-  SfSection,
-  SfLoader
+  SfSection
 } from '@storefront-ui/vue';
 
 import { productGetters } from '@vue-storefront/numerbay';

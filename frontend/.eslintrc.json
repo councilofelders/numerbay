@@ -93,6 +93,13 @@
         "SwitchCase": 1
       }
     ],
+    "sort-imports": ["error", {
+        "ignoreCase": false,
+        "ignoreDeclarationSort": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
+        "allowSeparatedGroups": true
+    }],
 //    "line-comment-position": 2,
     "linebreak-style": 2,
     "lines-around-comment": 2,
@@ -123,7 +130,8 @@
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/no-unused-vars": 2,
-    "@typescript-eslint/ban-ts-ignore": 0
+    "@typescript-eslint/ban-ts-ignore": 0,
+    "@typescript-eslint/explicit-module-boundary-types": 0
   },
   "overrides": [
     {

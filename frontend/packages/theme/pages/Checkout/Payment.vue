@@ -116,30 +116,30 @@
 
 <script>
 import {
-  SfHeading,
-  SfTable,
-  SfCheckbox,
   SfButton,
+  SfCheckbox,
   SfDivider,
+  SfHeading,
   SfImage,
+  SfLink,
+  SfLoader,
   SfPrice,
   SfProperty,
   SfSelect,
-  SfLink,
-  SfLoader
+  SfTable
 } from '@storefront-ui/vue';
-import { onSSR } from '@vue-storefront/core';
-import { ref, computed } from '@vue/composition-api';
+import { computed, ref } from '@vue/composition-api';
 import {
-  useProduct,
-  useMakeOrder,
-  useCart,
-  useUserOrder,
-  useNumerai,
   productGetters,
+  useCart,
   useGlobals,
+  useMakeOrder,
+  useNumerai,
+  useProduct,
+  useUserOrder,
   userGetters
 } from '@vue-storefront/numerbay';
+import { onSSR } from '@vue-storefront/core';
 import { useUiNotification } from '~/composables';
 // import Web3 from 'web3';
 
