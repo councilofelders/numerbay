@@ -38,7 +38,7 @@ class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
         for redemption in db_obj.redemptions:  # type: ignore
             if redemption.state != "expired":  # pending+confirmed
                 redemption_count += 1
-        if db_obj.quantity_total:
+        if db_obj.quantity_total is not None:
             return db_obj.quantity_total - redemption_count
         return None
 

@@ -12,6 +12,7 @@ def validate_product_input(
     db: Session,
     product_in: Union[schemas.ProductCreate, schemas.ProductUpdate],
     category: Union[schemas.Category, models.Category],
+    current_user: Union[schemas.User, models.User],
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
     # Product name
     if isinstance(product_in, schemas.ProductCreate) and re.match(r"^[\w-]+$", product_in.name) is None:  # type: ignore
@@ -149,6 +150,101 @@ def validate_product_input(
                         status_code=400,
                         detail="Specifying chain is not yet supported for on-platform listing",
                     )
+
+                # On-platform coupon and specs
+                if product_option.coupon:
+                    # require specs
+                    if not product_option.coupon_specs or not isinstance(
+                        product_option.coupon_specs, dict
+                    ):
+                        raise HTTPException(
+                            status_code=400, detail="Coupon specs must be provided",
+                        )
+
+                    # drop unknown fields
+                    product_option.coupon_specs = {
+                        k: v
+                        for k, v in product_option.coupon_specs.items()
+                        if k
+                        in [
+                            "reward_min_spend",
+                            "applicable_product_ids",
+                            "discount_percent",
+                            "max_discount",
+                            "min_spend",
+                        ]
+                    }
+
+                    if "applicable_product_ids" not in product_option.coupon_specs.keys() or not isinstance(
+                        product_option.coupon_specs["applicable_product_ids"], list
+                    ):
+                        raise HTTPException(
+                            status_code=400,
+                            detail="List of applicable product IDs must be provided in coupon specs",
+                        )
+
+                    if "discount_percent" not in product_option.coupon_specs.keys():
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Discount percentage (0-100) must be provided in coupon specs",
+                        )
+
+                    if "max_discount" not in product_option.coupon_specs.keys():
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Max discount (in NMR) must be provided in coupon specs",
+                        )
+
+                    # validate specs
+                    if "reward_min_spend" in product_option.coupon_specs.keys() and not (
+                        Decimal(product_option.coupon_specs["reward_min_spend"])
+                        >= Decimal("1")
+                    ):
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Min spend (in NMR) for rewarding coupon must be above 1",
+                        )
+
+                    for applicable_product_id in product_option.coupon_specs[
+                        "applicable_product_ids"
+                    ]:
+                        applicable_product_obj = crud.product.get(
+                            db, id=applicable_product_id
+                        )
+                        if (
+                            not applicable_product_obj
+                            or applicable_product_obj.owner_id != current_user.id
+                        ):
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Invalid applicable product ID {applicable_product_id}",
+                            )
+
+                    if (
+                        not isinstance(
+                            product_option.coupon_specs["discount_percent"], int
+                        )
+                        or product_option.coupon_specs["discount_percent"] > 100
+                        or product_option.coupon_specs["discount_percent"] < 0
+                    ):
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Discount percentage must be an integer between 0-100",
+                        )
+
+                    if Decimal(product_option.coupon_specs["max_discount"]) <= Decimal(
+                        "0"
+                    ):
+                        raise HTTPException(
+                            status_code=400, detail="Max discount must be positive",
+                        )
+
+                    if "min_spend" in product_option.coupon_specs.keys() and Decimal(
+                        product_option.coupon_specs["min_spend"]
+                    ) < Decimal("1"):
+                        raise HTTPException(
+                            status_code=400, detail="Coupon min spend must be above 1",
+                        )
             else:
                 # Off-platform currency type
                 if (
@@ -174,6 +270,13 @@ def validate_product_input(
                     raise HTTPException(
                         status_code=400,
                         detail="Specifying chain is not supported for off-platform listing",
+                    )
+
+                # Off-platform coupon and specs
+                if product_option.coupon or product_option.coupon_specs:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Rewarding coupon is not supported for off-platform listing",
                     )
 
     # Category

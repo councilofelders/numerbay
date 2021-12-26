@@ -141,7 +141,7 @@ def create_product(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    product_in = validate_product_input(db, product_in, category=category)  # type: ignore
+    product_in = validate_product_input(db, product_in, category=category, current_user=current_user)  # type: ignore
 
     # Leaf category
     child_categories_count = (
@@ -225,7 +225,7 @@ def update_product(
         db, product_id=id, currend_user_id=current_user.id
     )
 
-    product_in = validate_product_input(db, product_in, category=product.category)  # type: ignore
+    product_in = validate_product_input(db, product_in, category=product.category, current_user=current_user)  # type: ignore
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)

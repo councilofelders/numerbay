@@ -58,7 +58,7 @@ class Coupon(CouponInDBBase):
     @root_validator(pre=True)
     def set_quantity_remaining(cls, values):  # type: ignore
         values_to_return = dict(**values)
-        if values["quantity_total"]:
+        if values["quantity_total"] is not None:
             redemption_count = 0
             for redemption in values["redemptions"]:  # type: ignore
                 if redemption.state != "expired":  # pending+confirmed

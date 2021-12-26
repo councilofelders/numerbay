@@ -41,6 +41,7 @@ def calculate_option_price(
                 return option
 
             # check expiration
+            # todo coupon expiration
             if coupon_obj.date_expiration:
                 if coupon_obj.date_expiration <= datetime.utcnow():
                     option.error = "Coupon expired"
@@ -73,7 +74,7 @@ def calculate_option_price(
                 return option
 
             # check remaining
-            if coupon_obj.quantity_total:
+            if coupon_obj.quantity_total is not None:
                 quantity_remaining = crud.coupon.calculate_quantity_remaining(
                     db_obj=coupon_obj
                 )
