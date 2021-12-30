@@ -57,17 +57,17 @@ jobs:
           node-version: 14.x
           # cache: yarn
           # cache-dependency-path: '**/yarn.lock'
-      - name: setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-      - name: pydoc-markdown install
-        run: |
-          python -m pip install --upgrade pip
-          pip install pydoc-markdown
-      - name: pydoc-markdown run
-        run: |
-          pydoc-markdown
+#      - name: setup python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: "3.8"
+#      - name: pydoc-markdown install
+#        run: |
+#          python -m pip install --upgrade pip
+#          pip install pydoc-markdown
+#      - name: pydoc-markdown run
+#        run: |
+#          pydoc-markdown
       - name: Build docs
         run: |
           if [ -e yarn.lock ]; then
