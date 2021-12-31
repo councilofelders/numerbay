@@ -4,6 +4,8 @@ sidebar_position: 2
 
 # Buy a Product
 
+You need to have a [NumerBay account](./set-up-account) with Numerai API Key in order to make purchases on NumerBay.
+
 Documents are **groups of pages** connected through:
 
 - a **sidebar**
@@ -18,7 +20,6 @@ Documents are **groups of pages** connected through:
 
 ## Checkout
 
-You need to have a [NumerBay account](/docs/tutorial-basics/set-up-account) with Numerai API Key in order to checkout.
 
 ## Payment
 

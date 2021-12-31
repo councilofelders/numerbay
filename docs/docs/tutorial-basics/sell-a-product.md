@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Sell a Product
 
-You need to have a [NumerBay account](/docs/tutorial-basics/set-up-account) with Numerai API Key in order to sell on NumerBay.
+You need to have a [NumerBay account](./set-up-account) with Numerai API Key in order to sell on NumerBay.
 
 ## Create listing
 ### Basic product information
