@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://docs.numerbay.ai/updates</id>
+    <title>NumerBay Blog</title>
+    <updated>2021-12-31T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://docs.numerbay.ai/updates"/>
+    <subtitle>NumerBay Blog</subtitle>
+    <icon>https://docs.numerbay.ai/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[Welcome]]></title>
+        <id>welcome</id>
+        <link href="https://docs.numerbay.ai/updates/welcome"/>
+        <updated>2021-12-31T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[WIP]]></summary>
+        <content type="html"><![CDATA[<p>WIP</p>]]></content>
+        <author>
+            <name>ResTrading</name>
+            <uri>https://github.com/restrading</uri>
+        </author>
+    </entry>
+</feed>
