@@ -8,13 +8,13 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'NumerBay',
   tagline: 'The Numerai Community Marketplace',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://docs.numerbay.ai',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'councilofelders', // Usually your GitHub org/user name.
+  projectName: 'numerbay', // Usually your repo name.
 
   presets: [
     [
@@ -26,13 +26,17 @@ const config = {
           sidebarCollapsed: false,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/councilofelders/numerbay/tree/master/docs/',
         },
         blog: {
+          path: 'updates',
+          blogTitle: 'Project Updates',
+          blogDescription: 'Project Updates',
+          routeBasePath: 'updates',
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/councilofelders/numerbay/tree/master/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -57,9 +61,9 @@ const config = {
             position: 'left',
             label: 'Tutorial',
           },
-          { to: '/blog', label: 'Blog', position: 'left' },
+          { to: '/updates', label: 'Project Updates', position: 'left' },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/councilofelders/numerbay',
             label: 'GitHub',
             position: 'right',
           },
@@ -123,8 +127,8 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
+                label: 'Project Updates',
+                to: '/updates',
               },
               {
                 label: 'GitHub',
@@ -133,13 +137,30 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Logo: Numerai, ${new Date().getFullYear()}. Sponsored by Numerai Council of Elders. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
     }),
+  plugins: [
+    // ... Your other plugins.
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      {
+        // ... Your options.
+        // `hashed` is recommended as long-term-cache of index file is possible.
+        hashed: true,
+        blogDir:"./updates/"
+        // For Docs using Chinese, The `language` is recommended to set to:
+        // ```
+        // language: ["en", "zh"],
+        // ```
+        // When applying `zh` in language, please install `nodejieba` in your project.
+      },
+    ],
+  ],
 };
 
 module.exports = config;
