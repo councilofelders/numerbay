@@ -1,8 +1,24 @@
 ---
-sidebar_position: 1
+sidebar_position: 3
 ---
 
-# List a Product
+# Sell a Product
+
+You need to have a [NumerBay account](/docs/tutorial-basics/set-up-account) with Numerai API Key in order to sell on NumerBay.
+
+## Create listing
+### Basic product information
+### (Optional) Featured products
+### Pricing options
+
+## Upload artifacts
+:::tip Advanced tip
+
+You can automate this via NumerBay API, head over to the advanced [API Tutorial](/docs/tutorial-extras/translate-your-site) for details
+
+:::
+
+## Manage sells
 
 Add **Markdown or React** files to `src/pages` to create a **standalone page**:
 

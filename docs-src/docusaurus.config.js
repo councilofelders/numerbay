@@ -23,6 +23,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
+          sidebarCollapsed: false,
           // Please change this to your repo.
           editUrl:
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
@@ -46,8 +47,8 @@ const config = {
       navbar: {
         title: 'NumerBay',
         logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          alt: 'Numerai Logo 2021',
+          src: 'img/Numerai-Logo-Icon.png',
         },
         items: [
           {
@@ -74,22 +75,47 @@ const config = {
                 label: 'Tutorial',
                 to: '/docs/intro',
               },
+              {
+                label: 'API Reference (Swagger)',
+                href: 'https://numerbay.ai/docs',
+              },
+              {
+                label: 'API Reference (ReDoc)',
+                href: 'https://numerbay.ai/redoc',
+              },
+            ],
+          },
+          {
+            title: 'Official Numerai',
+            items: [
+              {
+                label: 'Numerai',
+                href: 'https://numer.ai/',
+              },
+              {
+                label: 'Signals',
+                href: 'https://signals.numer.ai/',
+              },
+              {
+                label: 'Forum',
+                href: 'https://forum.numer.ai/',
+              },
+              {
+                label: 'RocketChat',
+                href: 'https://community.numer.ai/',
+              },
             ],
           },
           {
             title: 'Community',
             items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                label: 'NumerBay',
+                href: 'https://numerbay.ai/',
               },
               {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
+                label: 'CoE Wallet',
+                href: 'https://gnosis-safe.io/app/#/safes/0xF58B7c28DAF13926329ef0c74FA3f7258f5A9131/',
               },
             ],
           },
@@ -102,7 +128,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/councilofelders/numerbay',
               },
             ],
           },

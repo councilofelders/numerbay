@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Create a Document
+# Buy a Product
 
 Documents are **groups of pages** connected through:
 
@@ -10,19 +10,23 @@ Documents are **groups of pages** connected through:
 - **previous/next navigation**
 - **versioning**
 
-## Create your first Doc
+## Browse products
 
-Create a markdown file at `docs/hello.md`:
+- [Classic Numerai Tournament Products](https://numerbay.ai/c/numerai)
+- [Signals Tournament Products](https://numerbay.ai/c/signals)
+- [NFTs and Others](https://numerbay.ai/c/onlyfams)
 
-```md title="docs/hello.md"
-# Hello
+## Checkout
 
-This is my **first Docusaurus document**!
-```
+You need to have a [NumerBay account](/docs/tutorial-basics/set-up-account) with Numerai API Key in order to checkout.
 
-A new document is now available at `http://localhost:3000/docs/hello`.
+## Payment
 
-## Configure the Sidebar
+## Download artifacts
+
+## Submission
+
+## Manage orders
 
 Docusaurus automatically **creates a sidebar** from the `docs` folder.
 
@@ -53,3 +57,4 @@ module.exports = {
   ],
 };
 ```
+
