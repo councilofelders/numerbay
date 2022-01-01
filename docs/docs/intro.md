@@ -8,7 +8,10 @@ Let's discover **NumerBay in less than 5 minutes**.
 
 ## Getting Started (WIP)
 
-**Explore NumerBay immediately** with **[numerbay.ai](https://numerbay.ai)**.
+NumerBay is the community marketplace funded by the Numerai Council of Elders.
 
-## About NumerBay (WIP)
+**Explore NumerBay immediately** at **[numerbay.ai](https://numerbay.ai)**.
 
+## Key Features (WIP)
+### Buy and Sell (WIP)
+### Vote (WIP)

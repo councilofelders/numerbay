@@ -4,35 +4,32 @@ import styles from './HomepageFeatures.module.css';
 
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('../../static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'Direct Buy and Sell',
+    Svg: require('../../static/img/Circle-icons-computer.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        NumerBay is a marketplace for the Numerai Community. Anything related to the Numerai tournaments can be traded directly without middleman.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('../../static/img/undraw_docusaurus_tree.svg').default,
+    title: 'Automated Submission',
+    Svg: require('../../static/img/Circle-icons-gear.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        NumerBay offers automated submission for buyers. Non-tournament participants can stake on others' predictions by buying on NumerBay and setting up auto-submission.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('../../static/img/undraw_docusaurus_react.svg').default,
+    title: 'Community Owned',
+    Svg: require('../../static/img/Circle-icons-dev.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        NumerBay is sponsored by the Numerai Council of Elders and developed by the Numerai Community.
       </>
     ),
-  },
+  }
 ];
 
 function Feature({Svg, title, description}) {

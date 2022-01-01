@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { SfFooter, SfList, SfImage, SfMenuItem } from '@storefront-ui/vue';
+import { SfFooter, SfImage, SfList, SfMenuItem } from '@storefront-ui/vue';
 import axios from 'axios';
 
 export default {
@@ -46,14 +46,15 @@ export default {
           children: [
             { name: 'Maintainer: Numerai Community', link: '#' },
             { name: 'Sponsor: Numerai Council of Elders', link: '#' },
-            { name: 'Logo: Numerai, 2021', link: '#' }
+            { name: 'Logo: Numerai, 2022', link: '#' }
           ]
         },
         api: {
-          name: 'NumerBay API Docs',
+          name: 'NumerBay Docs',
           children: [
-            { name: 'Swagger', clickHandler: () => window.open('https://numerbay.ai/docs', '_blank') },
-            { name: 'ReDoc', clickHandler: () => window.open('https://numerbay.ai/redoc', '_blank') }
+            { name: 'Tutorial', clickHandler: () => window.open('https://docs.numerbay.ai/', '_blank') },
+            { name: 'API Reference (Swagger)', clickHandler: () => window.open('https://numerbay.ai/docs', '_blank') },
+            { name: 'API Reference (ReDoc)', clickHandler: () => window.open('https://numerbay.ai/redoc', '_blank') }
           ]
         },
         officialNumerai: {
