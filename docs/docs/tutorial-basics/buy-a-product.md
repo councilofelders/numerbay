@@ -58,14 +58,18 @@ You will be directed to the payment confirmation page. You can leave this page i
 
 Payment needs to be made **in full** and **in one single transaction** from your **Numerai wallet** within **30 minutes** after order creation. If no matching payment transaction is found within the time limit, the order will expire.
 
+If you need help, please contact site admin for assistance by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
 :::
 
-## Download artifacts (WIP)
+## Download artifacts
 
 Your past orders are viewable in the [Order History](https://numerbay.ai/my-account/order-history) page. 
 In order to download product artifacts such as tournament submission files, click **View details** on your order to view the list of downloadable artifact files.
 
 ![Order List](/img/tutorial/orderList.png)
 
-## Submission (WIP)
+## Submission
+If you made your order with auto-submission set up during checkout, submissions will be automatically done for you after tournament round open and after the seller submits their files.
+
+If you did not designate auto-submission lot or auto-submission failed, you can trigger a submission from the artifact list.
 
