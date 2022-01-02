@@ -1,10 +1,10 @@
 import {
-  AgnosticMediaGalleryItem,
   AgnosticAttribute,
+  AgnosticMediaGalleryItem,
   AgnosticPrice
 } from '@vue-storefront/core';
-import { ProductVariant } from '@vue-storefront/numerbay-api/src/types';
 import { ProductGetters } from '../types';
+import { ProductVariant } from '@vue-storefront/numerbay-api/src/types';
 import { getReviewRating } from './reviewGetters';
 
 type ProductVariantFilters = any
@@ -181,6 +181,10 @@ export const getProductOwner = (product: ProductVariant): string => (product as 
 
 export const getProductModelUrl = (product: ProductVariant): string => (product as any)?.category?.tournament ? ((product as any)?.category?.tournament === 8 ? `https://numer.ai/${(product as any)?.model?.name}` : `https://signals.numer.ai/${(product as any)?.model?.name}`) : null;
 
+export const getProductIsAvailable = (product: ProductVariant, optionIdx: number): boolean => {
+  return getProductIsActive(product) && !(!getOptionUrl(getProductOrderedOption(product, optionIdx)) && !getOptionIsOnPlatform(getProductOrderedOption(product, optionIdx)));
+};
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -217,7 +221,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getIsOnPlatform: getProductIsOnPlatform,
   getExpirationRound: getProductExpirationRound,
   getOwner: getProductOwner,
-  getModelUrl: getProductModelUrl
+  getModelUrl: getProductModelUrl,
+  getIsAvailable: getProductIsAvailable
 };
 
 export default productGetters;

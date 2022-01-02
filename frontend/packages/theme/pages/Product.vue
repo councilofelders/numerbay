@@ -70,40 +70,12 @@
               <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${productGetters.getOrderedOption(product, optionIdx).currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>-->
             </div>
           </div>
-          <div>
-            <SfSelect
-              v-e2e="'size-select'"
-              :disabled="!(productGetters.getOptions(product).length > 1)"
-              v-model="optionIdx"
-              label="Option"
-              class="sf-select--underlined product__select-size"
-              required
-            >
-              <SfSelectOption v-for="(option, key) in productGetters.getOrderedOptions(product)" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
-            </SfSelect>
-            <SfAddToCart
-              v-e2e="'product_add-to-cart'"
-              v-model="qty"
-              :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).is_on_platform || !productGetters.getCategory(product).is_per_round"
-              class="product__add-to-cart"
-            >
-              <template #add-to-cart-btn>
-                <SfButton
-                  class="sf-add-to-cart__button"
-                  :disabled="productLoading || !productGetters.getIsActive(product) || !productGetters.getOrderedOption(product, optionIdx).third_party_url && !productGetters.getOrderedOption(product, optionIdx).is_on_platform"
-                  @click="handleBuyButtonClick(product, optionIdx, qty)"
-                >
-                  {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, optionIdx)) ? 'Buy for' : 'For Ref Price '} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, optionIdx), true)}`}}
-                </SfButton>
-              </template>
-            </SfAddToCart>
-          </div>
-          <!--<BuyButton
-            :disabled="!productGetters.getIsActive(product) || !product.third_party_url && !product.is_on_platform"
-            :price="productGetters.getFormattedPrice(product, withCurrency=!product.is_on_platform, decimals=product.is_on_platform?4:2)"
-            :label="product.is_on_platform ? 'NMR' : 'Ref Price'"
-            @click="handleBuyButtonClick(product)"
-          />-->
+          <CheckoutButton
+            :product="product"
+            :optionIdx="optionIdx"
+            :qty="qty"
+            @buy="(selectedOptionIdx, selectedQty) => handleBuyButtonClick(product, selectedOptionIdx, selectedQty)"
+          ></CheckoutButton>
         </div>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
           <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!productGetters.getCategory(product).tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
@@ -225,29 +197,27 @@
 </template>
 <script>
 import {
-  SfProperty,
-  SfHeading,
-  SfRating,
-  SfSelect,
-  SfAddToCart,
-  SfTabs,
-  SfIcon,
   SfAlert,
-  SfBreadcrumbs,
-  SfButton,
   SfBadge,
-  SfLoader
+  SfBreadcrumbs,
+  SfHeading,
+  SfIcon,
+  SfLoader,
+  SfProperty,
+  SfRating,
+  SfTabs
 } from '@storefront-ui/vue';
 
-import RelatedProducts from '~/components/Molecules/RelatedProducts.vue';
-import { ref, computed } from '@vue/composition-api';
-import { useProduct, productGetters, useReview, reviewGetters, useNumerai, useUser, useGlobals } from '@vue-storefront/numerbay';
-import { useUiState, useUiNotification } from '~/composables';
-import { onSSR } from '@vue-storefront/core';
+import { computed, ref } from '@vue/composition-api';
+import { productGetters, reviewGetters, useGlobals, useNumerai, useProduct, useReview, useUser } from '@vue-storefront/numerbay';
+import { useUiNotification, useUiState } from '~/composables';
+import CheckoutButton from '~/components/Molecules/CheckoutButton';
 import LazyHydrate from 'vue-lazy-hydration';
 import NumeraiChart from '../components/Molecules/NumeraiChart';
-import SfReview from '~/components/Molecules/SfReview';
 import ProductAddReviewForm from '~/components/ProductAddReviewForm';
+import RelatedProducts from '~/components/Molecules/RelatedProducts.vue';
+import SfReview from '~/components/Molecules/SfReview';
+import { onSSR } from '@vue-storefront/core';
 
 export default {
   name: 'Product',
@@ -390,18 +360,16 @@ export default {
     SfProperty,
     SfHeading,
     SfRating,
-    SfSelect,
-    SfAddToCart,
     SfTabs,
     SfIcon,
     SfReview,
     SfBreadcrumbs,
-    SfButton,
     SfLoader,
     RelatedProducts,
     LazyHydrate,
     NumeraiChart,
-    ProductAddReviewForm
+    ProductAddReviewForm,
+    CheckoutButton
   },
   // test
   data() {

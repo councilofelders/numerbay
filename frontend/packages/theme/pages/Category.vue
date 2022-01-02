@@ -236,32 +236,12 @@
                 </div>
               </template>
               <template #add-to-cart>
-                <SfSelect
-                  v-e2e="'size-select'"
-                  :disabled="!(productGetters.getOptions(product).length > 1)"
-                  v-model="product.optionIdx"
-                  label="Option"
-                  class="sf-select--underlined product__select-size"
-                  required
-                >
-                  <SfSelectOption v-for="(option, key) in productGetters.getOrderedOptions(product)" :key="key" :value="key">{{ productGetters.getFormattedOption(option) }}</SfSelectOption>
-                </SfSelect>
-                <SfAddToCart
-                  v-e2e="'product_add-to-cart'"
-                  v-model="product.qty"
-                  :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) || !productGetters.getCategory(product).is_per_round"
-                  class="sf-product-card-horizontal__add-to-cart desktop-only"
-                >
-                  <template #add-to-cart-btn>
-                    <SfButton
-                      class="sf-add-to-cart__button"
-                      :disabled="!productGetters.getIsActive(product) || !productGetters.getOptionUrl(productGetters.getOrderedOption(product, product.optionIdx)) && !productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx))"
-                      @click="handleBuyButtonClick(product, product.optionIdx, product.qty || 1)"
-                    >
-                      {{`${productGetters.getOptionIsOnPlatform(productGetters.getOrderedOption(product, product.optionIdx)) ? 'Buy for' : 'For Ref Price '} ${productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx), true)}`}}
-                    </SfButton>
-                  </template>
-                </SfAddToCart>
+                <CheckoutButton
+                  :product="product"
+                  :optionIdx="product.optionIdx"
+                  :qty="product.qty || 1"
+                  @buy="(selectedOptionIdx, selectedQty) => handleBuyButtonClick(product, selectedOptionIdx, selectedQty)"
+                ></CheckoutButton>
               </template>
               <template #actions>
                 <SfButton
@@ -428,34 +408,34 @@
 
 <script>
 import {
-  SfSidebar,
+  SfAccordion,
+  SfBadge,
+  SfBreadcrumbs,
   SfButton,
-  SfList,
-  SfIcon,
-  SfHeading,
-  SfMenuItem,
+  SfDropdown,
   SfFilter,
+  SfHeading,
+  SfIcon,
+  SfLink,
+  SfList,
+  SfLoader,
+  SfMenuItem,
+  SfPagination,
   SfProductCard,
   SfProductCardHorizontal,
-  SfPagination,
-  SfAccordion,
-  SfSelect,
-  SfBreadcrumbs,
-  SfLoader,
-  SfRange,
   SfProperty,
-  SfLink,
-  SfBadge,
-  SfAddToCart,
-  SfDropdown
+  SfRange,
+  SfSelect,
+  SfSidebar
 } from '@storefront-ui/vue';
-import { ref, computed, onMounted } from '@vue/composition-api';
-import { useCart, useWishlist, productGetters, useFacet, useUser, facetGetters } from '@vue-storefront/numerbay';
-import { useUiState, useUiNotification, useUiHelpers } from '~/composables';
-import { useVueRouter } from '../helpers/hooks/useVueRouter';
-import { onSSR } from '@vue-storefront/core';
+import { computed, onMounted, ref } from '@vue/composition-api';
+import { facetGetters, productGetters, useCart, useFacet, useUser, useWishlist } from '@vue-storefront/numerbay';
+import { useUiHelpers, useUiNotification, useUiState } from '~/composables';
+import CheckoutButton from '~/components/Molecules/CheckoutButton';
 import LazyHydrate from 'vue-lazy-hydration';
 import Vue from 'vue';
+import { onSSR } from '@vue-storefront/core';
+import { useVueRouter } from '../helpers/hooks/useVueRouter';
 
 export default {
   name: 'Category',
@@ -643,9 +623,9 @@ export default {
     SfProperty,
     SfLink,
     SfBadge,
-    SfAddToCart,
     SfDropdown,
-    LazyHydrate
+    LazyHydrate,
+    CheckoutButton
   }
 };
 </script>

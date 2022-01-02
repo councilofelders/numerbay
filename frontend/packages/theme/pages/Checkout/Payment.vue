@@ -81,19 +81,19 @@
         <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(productGetters.getOptionById(products[0], optionId))==='file'">
           <template #label>
             <div class="sf-checkbox__label">
-              (Optional) Submit this model to Numerai for me automatically if seller submits file to NumerBay.
+              (Optional) Auto-submit this model to Numerai for me once seller submits to NumerBay.
             </div>
           </template>
         </SfCheckbox>
         <SfCheckbox disabled selected name="terms" class="summary__submit" v-else>
           <template #label>
             <div class="sf-checkbox__label">
-              Submit this model to Numerai for me automatically.
+              Auto-submit this model to Numerai for me.
             </div>
           </template>
         </SfCheckbox>
         <SfLoader :class="{ loader: loading || productLoading || numeraiLoading }" :loading="loading || productLoading || numeraiLoading">
-          <SfSelect label="Model Name" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(productGetters.getOptionById(products[0], optionId))!=='file')">
+          <SfSelect label="Model Slot for Auto-submission" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(productGetters.getOptionById(products[0], optionId))!=='file')">
             <SfSelectOption value=""></SfSelectOption>
             <SfSelectOption v-for="model in models" :key="`${model.id}`" :value="`${model.id}`">{{model.name}}</SfSelectOption>
           </SfSelect>

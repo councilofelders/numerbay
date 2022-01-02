@@ -1,4 +1,3 @@
-import {ProductVariant} from '@vue-storefront/numerbay-api';
 import {
   AgnosticAttribute,
   AgnosticBreadcrumb,
@@ -6,9 +5,9 @@ import {
   AgnosticPrice,
   FacetSearchResult, ReviewGetters
 } from '@vue-storefront/core';
-import {AgnosticCoupon, AgnosticDiscount, AgnosticTotals} from '@vue-storefront/core/lib/src/types';
-
+import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
+import {ProductVariant} from '@vue-storefront/numerbay-api';
 
 export type Address = Record<string, unknown>;
 
@@ -165,6 +164,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getExpirationRound: (product: PRODUCT) => number;
     getOwner: (product: PRODUCT) => string;
     getModelUrl: (product: PRODUCT) => string;
+    getIsAvailable: (product: PRODUCT, optionIdx: number) => boolean;
     [getterName: string]: any;
 }
 
