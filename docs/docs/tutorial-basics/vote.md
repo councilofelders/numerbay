@@ -4,13 +4,17 @@ sidebar_position: 3
 
 # Vote
 
+This tutorial walks you through the process of creating a sybil-resistant poll on NumerBay.
+
 :::note
 
 You need to have a [NumerBay account](./set-up-account) with Numerai API Key in order to create polls or vote on NumerBay.
 
 :::
 
-## Create a poll (WIP)
+## Create a poll
+To create a poll, head to **[My polls](https://numerbay.ai/my-account/my-polls)** page. Click the **New Poll** button and complete the new poll form as shown below.
+
 ![Poll Creation](/img/tutorial/pollCreation.png)
 * Custom Poll ID: Used for generating short URL, cannot be changed later
 * End Date: Poll automatically ends on this date at 00:00 UTC

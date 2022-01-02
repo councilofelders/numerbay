@@ -4,6 +4,8 @@ sidebar_position: 2
 
 # Buy a Product
 
+This tutorial walks you through the process of buying a product on NumerBay.
+
 :::note
 
 You need to have a [NumerBay account](./set-up-account) with Numerai API Key in order to make purchases on NumerBay.
@@ -63,7 +65,7 @@ If you need help, please contact site admin for assistance by posting in the [#n
 
 ## Download artifacts
 
-Your past orders are viewable in the [Order History](https://numerbay.ai/my-account/order-history) page. 
+Your past orders are viewable in the **[Order History](https://numerbay.ai/my-account/order-history)** page. 
 In order to download product artifacts such as tournament submission files, click **View details** on your order to view the list of downloadable artifact files.
 
 ![Order List](/img/tutorial/orderList.png)

@@ -4,6 +4,8 @@ sidebar_position: 3
 
 # Sell a Product
 
+This tutorial walks you through the process of listing a product on NumerBay.
+
 :::note
 
 You need to have a [NumerBay account](./set-up-account) with Numerai API Key in order to sell on NumerBay.
@@ -11,6 +13,8 @@ You need to have a [NumerBay account](./set-up-account) with Numerai API Key in 
 :::
 
 ## Create listing
+To create a listing, head to **[My listings](https://numerbay.ai/my-account/my-listings)** page. Click the **New Listing** button and complete the new listing form as shown below.
+
 ### Basic product information
 ![Listing Basic](/img/tutorial/listingBasic.png)
 * Category

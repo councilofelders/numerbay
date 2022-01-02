@@ -6,12 +6,20 @@ sidebar_position: 1
 
 Let's discover **NumerBay in less than 5 minutes**.
 
-## Getting Started (WIP)
+## Getting Started
 
-NumerBay is the community marketplace funded by the Numerai Council of Elders.
+NumerBay is the Numerai community marketplace funded by the Numerai Council of Elders. Anything related to the Numerai tournaments can be traded directly without middleman.
 
-**Explore NumerBay immediately** at **[numerbay.ai](https://numerbay.ai)**.
+Data scientists can trade their Numerai tournament submissions and artifacts for NMRs. Non-tournament participants can stake on others' predictions by buying on NumerBay and setting up auto-submission.
 
-## Key Features (WIP)
-### Buy and Sell (WIP)
-### Vote (WIP)
+**Explore NumerBay immediately** at **[numerbay.ai](https://numerbay.ai)**. Learn how to [set up an account](./tutorial-basics/set-up-account.md) on NumerBay.
+
+## Key Features
+### Buy
+Learn how to [buy Numerai products](./tutorial-basics/buy-a-product.md) on NumerBay.
+
+### Sell
+Learn how to [get your Numerai products listed](./tutorial-basics/sell-a-product.md) on NumerBay, and [automate your sales workflow](./tutorial-extras/api-automation.md) with NumerBay APIs.
+
+### Vote
+Learn how to [create a poll](./tutorial-basics/vote.md) with support for NMR stake weighting.

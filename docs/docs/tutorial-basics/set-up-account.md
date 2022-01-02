@@ -49,7 +49,7 @@ Please check if you are logged in with the correct MetaMask wallet or if you hav
 :::
 
 ## Update profile
-You can change your username, password and email in the [profile update form](https://numerbay.ai/my-account/my-profile). By default, your Numerai email address is used to receive email notifications.
+You can change your username, password and email in the **[profile update form](https://numerbay.ai/my-account/my-profile)**. By default, your Numerai email address is used to receive email notifications.
 
 :::caution
 
