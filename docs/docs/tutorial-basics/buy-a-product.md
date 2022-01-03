@@ -58,7 +58,7 @@ You will be directed to the payment confirmation page. You can leave this page i
 
 :::caution
 
-Payment needs to be made **in full** and **in one single transaction** from your **Numerai wallet** within **30 minutes** after order creation. If no matching payment transaction is found within the time limit, the order will expire.
+Payment needs to be made **in full** and **in one single transaction** from your **Numerai wallet** within **45 minutes** after order creation. If no matching payment transaction is found within the time limit, the order will expire.
 
 If you need help, please contact site admin for assistance by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
 :::
