@@ -78,20 +78,22 @@
             </div>
           </template>
         </SfCheckbox>
-        <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(productGetters.getOptionById(products[0], optionId))==='file'">
-          <template #label>
-            <div class="sf-checkbox__label">
-              (Optional) Auto-submit this model to Numerai for me once seller submits to NumerBay.
-            </div>
-          </template>
-        </SfCheckbox>
-        <SfCheckbox disabled selected name="terms" class="summary__submit" v-else>
-          <template #label>
-            <div class="sf-checkbox__label">
-              Auto-submit this model to Numerai for me.
-            </div>
-          </template>
-        </SfCheckbox>
+        <div v-if="products && products[0] && products[0].category.is_submission">
+          <SfCheckbox v-model="submitModel" name="terms" class="summary__submit" v-if="productGetters.getMode(productGetters.getOptionById(products[0], optionId))==='file'">
+            <template #label>
+              <div class="sf-checkbox__label">
+                (Optional) Auto-submit this model to Numerai for me once seller submits to NumerBay.
+              </div>
+            </template>
+          </SfCheckbox>
+          <SfCheckbox disabled selected name="terms" class="summary__submit" v-else>
+            <template #label>
+              <div class="sf-checkbox__label">
+                Auto-submit this model to Numerai for me.
+              </div>
+            </template>
+          </SfCheckbox>
+        </div>
         <SfLoader :class="{ loader: loading || productLoading || numeraiLoading }" :loading="loading || productLoading || numeraiLoading">
           <SfSelect label="Model Slot for Auto-submission" v-model="submitModelId" v-if="!loading && !productLoading && !numeraiLoading && (submitModel || productGetters.getMode(productGetters.getOptionById(products[0], optionId))!=='file')">
             <SfSelectOption value=""></SfSelectOption>
