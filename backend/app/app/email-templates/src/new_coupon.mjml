@@ -17,7 +17,11 @@
         <mj-text font-size="16px" color="#555">Discount Cap: <b>{{ max_discount }} NMR</b></mj-text>
         <mj-text font-size="16px" color="#555">Min Spend: <b>{{ min_spend }}</b></mj-text>
         <mj-text font-size="16px" color="#555">Time of Expiration: {{ date_expiration }}</mj-text>
-        <mj-text font-size="16px" color="#555">Applicable Products: {{ applicable_product_ids }}</mj-text>
+        <mj-text font-size="16px" color="#555">Applicable Products:
+        	{% for applicable_product_id in applicable_product_ids %}
+          	<a href="https://numerbay.ai/p/{{ applicable_product_id }}/{{ applicable_product_id }}" class="link-nostyle" target="_blank">{{ applicable_product_id }}</a>&nbsp;
+          {% endfor %}
+        </mj-text>
         <mj-button padding="50px 0px" href="{{ link }}">Go to My Coupons</mj-button>
         <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the <a href="https://community.numer.ai/channel/numerbay" class="link-nostyle" target="_blank">#numerbay</a> channel on Numerai RocketChat.</mj-text>
         <mj-divider border-color="#555" border-width="2px" />
