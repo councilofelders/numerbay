@@ -172,6 +172,7 @@
                       v-model="form.description"
                       :options="editorOption"
                     />
+                    <input ref="imageInput" class="d-none" type="file" accept="image/*" @change="_doImageUpload" style="display: none">
                   </div>
                 </client-only>
                 <!--<ValidationProvider v-slot="{ errors }">
@@ -260,6 +261,7 @@ import {
   userGetters
 } from '@vue-storefront/numerbay';
 import ProductOptionsForm from '~/components/ProductOptionsForm';
+import axios from 'axios';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
 
@@ -355,6 +357,10 @@ export default {
   },
   data () {
     return {
+      content: '',
+      imageUpload: {
+        url: 'https://api.cloudinary.com/v1_1/numerbay/image/upload'
+      },
       editorOption: {
         theme: 'snow',
         modules: {
@@ -367,15 +373,47 @@ export default {
               [{ header: [1, 2, 3, 4, 5, 6, false] }],
               [{ color: [] }, { background: [] }],
               [{ font: [] }],
-              ['link']
-            ]
+              ['link', 'image']
+            ],
+            handlers: {
+              image: this.insertImage
+            }
           }
         },
         placeholder: 'Product Description'
       }
     };
   },
+  computed: {
+    quillInstance () {
+      return this.$refs.descriptionEditor.quill;
+    }
+  },
   methods: {
+    insertImage () {
+      // manipulate the DOM to do a click on hidden input
+      this.$refs.imageInput.click();
+    },
+    async _doImageUpload (event) {
+      // for simplicity I only upload the first image
+      const file = event.target.files[0];
+      // create form data
+      const fd = new FormData();
+      // just add file instance to form data normally
+      fd.append('upload_preset', 'numerbay');
+      fd.append('file', file);
+      // I use axios here, should be obvious enough
+      const response = await axios.post(this.imageUpload.url, fd);
+      // clear input value to make selecting the same image work
+      event.target.value = '';
+      // get current index of the cursor
+      const currentIndex = this.quillInstance.selection.lastRange.index;
+      // insert uploaded image url to 'image' embed (quill does this for you)
+      // the embed looks like this: <img src="{url}" />
+      this.quillInstance.insertEmbed(currentIndex, 'image', response.data.url);
+      // set cursor position to after the image
+      this.quillInstance.setSelection(currentIndex + 1, 0);
+    },
     isSubmissionCategory(categoryId) {
       if (categoryId) {
         const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];

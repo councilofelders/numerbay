@@ -220,6 +220,16 @@ def validate_product_input(
                                 detail=f"Invalid applicable product ID {applicable_product_id}",
                             )
 
+                    try:
+                        product_option.coupon_specs["discount_percent"] = int(
+                            product_option.coupon_specs["discount_percent"]
+                        )
+                    except ValueError:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Discount percentage must be an integer",
+                        )
+
                     if (
                         not isinstance(
                             product_option.coupon_specs["discount_percent"], int

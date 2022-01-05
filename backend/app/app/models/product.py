@@ -1,6 +1,15 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, Boolean, Column, ForeignKey, Integer, Numeric, String
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    Column,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -20,7 +29,7 @@ class Product(Base):
     name = Column(String, index=True, nullable=False)
     sku = Column(String, index=True, nullable=False, unique=True)
     avatar = Column(String)
-    description = Column(String)
+    description = Column(Text)
     is_active = Column(Boolean, server_default="t")
     is_ready = Column(Boolean)
     expiration_round = Column(Integer)
