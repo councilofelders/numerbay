@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import emails
 from emails.template import JinjaTemplate
@@ -316,6 +316,44 @@ def send_new_artifact_seller_email(
                 "round_tournament": round_tournament,
                 "product": product,
                 "artifact": artifact,
+                "link": link,
+            },
+        ),
+    )
+
+
+def send_new_coupon_email(
+    email_to: str,
+    username: str,
+    code: str,
+    date_expiration: datetime,
+    applicable_product_ids: Optional[List[int]],
+    min_spend: Optional[float],
+    max_discount: Optional[float],
+    discount_percent: int,
+    quantity_total: int,
+) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New coupon available for {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_coupon.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/my-account/my-coupons"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "code": code,
+                "date_expiration": date_expiration,
+                "applicable_product_ids": applicable_product_ids,
+                "min_spend": min_spend,
+                "max_discount": max_discount,
+                "discount_percent": discount_percent,
+                "quantity_total": quantity_total,
                 "link": link,
             },
         ),

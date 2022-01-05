@@ -7,6 +7,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
+from app.core.config import settings
+from app.utils import send_new_coupon_email
 
 
 def generate_promo_code(num_chars: int) -> str:
@@ -116,6 +118,23 @@ def calculate_option_price(
     return option
 
 
+def send_new_coupon_email_for_coupon(coupon_obj: models.Coupon) -> None:
+    if settings.EMAILS_ENABLED:
+        # Send new coupon email to buyer
+        if coupon_obj.owner.email:
+            send_new_coupon_email(
+                email_to=coupon_obj.owner.email,
+                username=coupon_obj.owner.username,
+                code=coupon_obj.code,
+                date_expiration=coupon_obj.date_expiration,  # type: ignore
+                applicable_product_ids=coupon_obj.applicable_product_ids,
+                min_spend=coupon_obj.min_spend,
+                max_discount=coupon_obj.max_discount,
+                discount_percent=coupon_obj.discount_percent,  # type: ignore
+                quantity_total=coupon_obj.quantity_total,  # type: ignore
+            )
+
+
 def create_coupon_for_order(
     db: Session, order_obj: models.Order
 ) -> Optional[models.Coupon]:
@@ -137,5 +156,8 @@ def create_coupon_for_order(
             coupon_obj = crud.coupon.create_with_owner(
                 db, obj_in=schemas.CouponCreate(**data), owner_id=order_obj.buyer_id  # type: ignore
             )
+
+            send_new_coupon_email_for_coupon(coupon_obj)
+
             return coupon_obj
     return None
