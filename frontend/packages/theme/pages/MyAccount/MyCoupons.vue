@@ -3,9 +3,9 @@
     <SfTab title="My coupons">
       <p class="message">
         {{ $t('List of coupons') }}
-<!--        <SfButton class="sf-button color-secondary" @click="refresh" :disabled="loading">
+        <SfButton class="sf-button color-secondary" @click="refresh" :disabled="loading">
           Refresh
-        </SfButton>-->
+        </SfButton>
       </p>
       <div v-if="!user.coupons || user.coupons.length === 0" class="no-orders">
         <p class="no-orders__title">{{ $t('You currently have no coupons') }}</p>
@@ -38,14 +38,14 @@
 
 <script>
 import {
-  SfTabs,
-  SfTable,
   SfButton,
+  SfLink,
   SfProperty,
-  SfLink
+  SfTable,
+  SfTabs
 } from '@storefront-ui/vue';
-import { useUser } from '@vue-storefront/numerbay';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
+import { useUser } from '@vue-storefront/numerbay';
 
 export default {
   name: 'MyCoupons',
@@ -57,8 +57,13 @@ export default {
     SfLink,
     OrderInfoPanel
   },
+  methods: {
+    refresh() {
+      this.load();
+    }
+  },
   setup() {
-    const { user, loading } = useUser();
+    const { user, load, loading } = useUser();
 
     const tableHeaders = [
       'Code',
@@ -73,6 +78,7 @@ export default {
     return {
       tableHeaders,
       user,
+      load,
       loading
     };
   }

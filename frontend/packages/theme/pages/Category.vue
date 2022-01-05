@@ -221,6 +221,7 @@
                   <SfBadge class="sf-badge mode-badge" v-if="!!productGetters.getCategory(product) && productGetters.getCategory(product).slug.includes('-data')" title="Data artifacts such as CSV and Parquet features">Data Files</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake'" title="Submit for buyers automatically without distributing artifact files">Stake Only</SfBadge>
                   <SfBadge class="sf-badge mode-badge" v-if="productGetters.getMode(productGetters.getOrderedOption(product, product.optionIdx))==='stake_with_limit'" title="Submit for buyers automatically without distributing artifact files, with NMR stake limit">Stake Limit: {{ productGetters.getStakeLimit(productGetters.getOrderedOption(product, product.optionIdx)) }}</SfBadge>
+                  <SfBadge class="sf-badge ready-badge" v-if="productGetters.getOrderedOption(product, product.optionIdx).coupon" title="Rewards buyers with coupons">Reward</SfBadge>
                 </div>
               </template>
               <template #configuration>
@@ -240,6 +241,8 @@
                   :product="product"
                   :optionIdx="product.optionIdx"
                   :qty="product.qty || 1"
+                  @optionSelect="(idx)=>{product.optionIdx = idx}"
+                  @qtyChange="(newQty)=>{product.qty = newQty}"
                   @buy="(selectedOptionIdx, selectedQty) => handleBuyButtonClick(product, selectedOptionIdx, selectedQty)"
                 ></CheckoutButton>
               </template>

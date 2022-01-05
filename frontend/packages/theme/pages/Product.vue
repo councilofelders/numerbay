@@ -70,10 +70,18 @@
               <p :class="`last-sale-change delta-${Number(product.last_sale_price_delta)>0?'positive':'negative'}`">{{ product.last_sale_price_delta ? `${product.last_sale_price_delta} ${productGetters.getOrderedOption(product, optionIdx).currency} (${(Number(product.last_sale_price_delta)*100.0/(Number(product.last_sale_price)-Number(product.last_sale_price_delta))).toFixed(1)}%)` : '' }}</p>-->
             </div>
           </div>
+<!--          <CheckoutButton
+            :product="product"
+            :optionIdx="optionIdx"
+            :qty="qty"
+            @buy="(selectedOptionIdx, selectedQty) => handleBuyButtonClick(product, selectedOptionIdx, selectedQty)"
+          ></CheckoutButton>-->
           <CheckoutButton
             :product="product"
             :optionIdx="optionIdx"
             :qty="qty"
+            @optionSelect="(idx)=>{optionIdx = idx}"
+            @qtyChange="(newQty)=>{qty = newQty}"
             @buy="(selectedOptionIdx, selectedQty) => handleBuyButtonClick(product, selectedOptionIdx, selectedQty)"
           ></CheckoutButton>
         </div>

@@ -49,10 +49,25 @@ export default {
     };
   },
 
+  watch: {
+    optionIdx(idx) {
+      this.$emit('optionSelect', idx);
+    },
+    qty(newQty) {
+      this.$emit('qtyChange', newQty);
+    }
+  },
+
   props: {
     product: {
       type: Object
     }
+    // optionIdx: {
+    //   type: [Number, String]
+    // },
+    // qty: {
+    //   type: Number
+    // }
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit }) {
