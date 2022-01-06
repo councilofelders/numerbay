@@ -22,15 +22,15 @@
               v-for="tableHeader in tableHeaders"
               :key="tableHeader"
               >{{ tableHeader }}</SfTableHeader>
-            <!--<SfTableHeader class="orders__element&#45;&#45;right">
+            <SfTableHeader class="orders__element--right">
               <span class="smartphone-only">{{ $t('Download') }}</span>
               <SfButton
-                class="desktop-only sf-button&#45;&#45;text orders__download-all"
+                class="desktop-only sf-button--text orders__download-all"
                 @click="downloadOrders()"
               >
-                {{ $t('Download all') }}
+                {{ $t('Export CSV') }}
               </SfButton>
-            </SfTableHeader>-->
+            </SfTableHeader>
           </SfTableHeading>
           <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)">
             <SfTableData>{{ orderGetters.getId(order) }}</SfTableData>
@@ -65,16 +65,16 @@
 
 <script>
 import {
-  SfTabs,
-  SfTable,
   SfButton,
+  SfLink,
   SfProperty,
-  SfLink
+  SfTable,
+  SfTabs
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
-import { useUserOrder, orderGetters } from '@vue-storefront/numerbay';
-import { onSSR } from '@vue-storefront/core';
+import { orderGetters, productGetters, useUserOrder } from '@vue-storefront/numerbay';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
+import { onSSR } from '@vue-storefront/core';
 
 export default {
   name: 'OrderHistory',
@@ -127,8 +127,8 @@ export default {
       'Round(s)',
       'Amount',
       'Order Status',
-      'Submission',
-      'Action'
+      'Submission'
+      // 'Action'
     ];
 
     const getStatusTextClass = (order) => {
@@ -172,11 +172,42 @@ export default {
     };
 
     const downloadOrders = async () => {
-      downloadFile(new Blob([JSON.stringify(orders.value)], {type: 'application/json'}), 'orders.json');
-    };
+      let csvContent = [
+        'Order ID',
+        'Date',
+        'Round',
+        'Product',
+        'Quantity (Round)',
+        'Seller',
+        'Amount (NMR)',
+        'Mode',
+        'Transaction Hash',
+        'Status',
+        'Submit to Model',
+        'Submission Status',
+        'Stake Limit'
+      ].join(',') + '\r\n';
 
-    const downloadOrder = async (order) => {
-      downloadFile(new Blob([JSON.stringify(order)], {type: 'application/json'}), 'order ' + orderGetters.getId(order) + '.json');
+      orders.value.data.forEach((order) => {
+        const row = [
+          order.id,
+          order.date_order,
+          orderGetters.getRound(order),
+          orderGetters.getItemSku(orderGetters.getProduct(order)),
+          parseInt(orderGetters.getItemQty(order)),
+          productGetters.getOwner(orderGetters.getProduct(order)),
+          orderGetters.getFormattedPrice(order, false, 4),
+          order.mode,
+          orderGetters.getTransactionHash(order),
+          orderGetters.getStatus(order),
+          orderGetters.getSubmitModelName(order),
+          orderGetters.getSubmissionStatus(order),
+          orderGetters.getStakeLimit(order)
+        ].join(',');
+        csvContent += row + '\r\n';
+      });
+      // convertToCSV(JSON.stringify(orders.value))
+      downloadFile(new Blob([csvContent], {type: 'application/csv'}), 'orders.csv');
     };
 
     return {
@@ -187,7 +218,6 @@ export default {
       loading,
       getStatusTextClass,
       getSubmissionStatusTextClass,
-      downloadOrder,
       downloadOrders,
       currentOrder
     };
