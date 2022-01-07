@@ -20,9 +20,26 @@ You need to have a [NumerBay account](./set-up-account) with Numerai API Key in 
 
 ![Product Catalog](/img/tutorial/productCatalog.png)
 
+### Key product properties
+* Category
+    - numerai-predictions: [Numerai "Classic" tournament](https://numer.ai/tournament) submission files
+    - numerai-model: Model binary file, training scripts or Jupyter notebooks for the associated model
+    - signals-predictions: [Signals tournament](https://signals.numer.ai/tournament) submission files
+    - signals-data: Data files used to train the associated Signals model or other files useful for Signals modeling
+    - onlyfams-*: Anything other than the above such as meme NFTs, clothing, etc.
+* Platform
+    - On-Platform: Product is sold on NumerBay with full features
+    - Off-Platform: Product only links to an external listing page
+* Listing Mode:
+    - File Mode: You can download artifact files and optionally designate a model slot for submission
+    - Stake Only Mode: Submit for you automatically without distributing artifact files, without stake limit. [only available for "numerai-predictions" and "signals-predictions" categories]
+    - Stake Only Mode with Limit: Submit for you automatically without distributing artifact files, with a stake limit (in NMR). [only available for "numerai-predictions" and "signals-predictions" categories]
+* Reward: If a Reward badge is shown on the category page for a product option, you will be rewarded with a coupon if your order meets some conditions.
+
+
 ## Checkout and payment
 
-### Select option and quantity
+### Select product option and quantity
 Select your preferred **product option** and the **quantity** of that product option you would like to buy, then click the **buy** button.
 
 ![Product Quantity](/img/tutorial/productQuantity.png)
@@ -48,7 +65,7 @@ If you have a valid discount coupon for the product, you can apply it on the rig
 
 
 ### Auto-submission
-If the product you are buying is a tournament submission, you can select a model slot to auto-submit to.
+If the product you are buying is a tournament submission, you can select a model slot to auto-submit to. This is mandatory if the product is sold in "Stake Only" mode. 
 
 
 ### Payment
