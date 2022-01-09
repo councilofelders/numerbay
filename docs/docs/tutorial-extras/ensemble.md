@@ -17,6 +17,12 @@ Python client API reference is available at [https://docs.numerbay.ai/docs/refer
 
 ## Using Python Client
 
+### Install
+If you have not installed the `numerbay` client, install by:
+```commandline
+pip install numerbay
+```
+
 ### Initialize Python client
 ```python
 import pandas as pd
