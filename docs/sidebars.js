@@ -23,6 +23,10 @@ const sidebars = {
     }
   ],
 
+  "API Documentation": [
+    require("./docs/reference/sidebar.json")
+  ],
+
   // But you can create a sidebar manually
   /*
   tutorialSidebar: [

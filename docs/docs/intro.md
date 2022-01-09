@@ -16,7 +16,7 @@ Data scientists can trade their Numerai tournament submissions and artifacts for
 
 ## Key Features
 ### Buy
-Learn how to [buy Numerai products](./tutorial-basics/buy-a-product.md) on NumerBay.
+Learn how to [buy Numerai products](./tutorial-basics/buy-a-product.md) and [make ensembles](./tutorial-extras/ensemble.md) on NumerBay.
 
 ### Sell
 Learn how to [get your Numerai products listed](./tutorial-basics/sell-a-product.md) on NumerBay, and [automate your sales workflow](./tutorial-extras/api-automation.md) with NumerBay APIs.

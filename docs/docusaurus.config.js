@@ -61,6 +61,11 @@ const config = {
             position: 'left',
             label: 'Tutorial',
           },
+          {
+            "to": "/docs/reference/numerbay",
+            "label": "Python Client",
+            "position": "left"
+          },
           { to: '/updates', label: 'Project Updates', position: 'left' },
           {
             href: 'https://github.com/councilofelders/numerbay',
