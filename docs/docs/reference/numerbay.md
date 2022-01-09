@@ -3,8 +3,6 @@ sidebar_label: numerbay
 title: numerbay
 ---
 
-Parts of the API that is shared between Signals and Classic
-
 ## NumerBay Objects
 
 ```python
