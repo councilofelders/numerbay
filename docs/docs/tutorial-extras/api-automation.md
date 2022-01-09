@@ -77,7 +77,7 @@ NumerBay provides REST APIs at the backend endpoint `https://numerbay.ai/backend
 
 Interactive Swagger API docs are available at [https://numerbay.ai/docs](https://numerbay.ai/docs)
 
-A working example notebook for using REST API is available at [https://github.com/councilofelders/numerbay/blob/master/NumerBay%20Example.ipynb](https://github.com/councilofelders/numerbay/blob/master/NumerBay%20Example.ipynb)
+A working example notebook for using REST API is available at [https://github.com/councilofelders/numerbay/blob/master/examples/NumerBay%20Example.ipynb](https://github.com/councilofelders/numerbay/blob/master/examples/NumerBay%20Example.ipynb)
 
 ### Login to get authentication token
 
