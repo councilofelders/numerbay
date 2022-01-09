@@ -241,8 +241,8 @@ Get all your listings.
   "is_per_round":True,
   "is_submission":True,
   "id":3,
-- `"items"` - [..],
-- `"parent"` - {..}
+  "items":[..],
+  "parent":{..}
   },
   "owner":{
   "id":2,

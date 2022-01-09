@@ -13,7 +13,7 @@ Products you buy need to be listed in `File` mode so that you can download the f
 
 A working example notebook for this tutorial is available at [https://github.com/councilofelders/numerbay/blob/master/examples/NumerBay%20Ensemble%20Example.ipynb](https://github.com/councilofelders/numerbay/blob/master/examples/NumerBay%20Ensemble%20Example.ipynb)
 
-Python client API reference is available at [https://docs.numerbay.ai/docs/reference/numerbay](https://docs.numerbay.ai/docs/reference/numerbay)
+Checkout the **[Python Client Reference](/docs/reference/numerbay)** docs to learn about all available methods, parameters and returned values.
 
 ## Using Python Client
 
