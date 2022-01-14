@@ -3,6 +3,13 @@ sidebar_label: numerbay
 title: numerbay
 ---
 
+NumerBay API module
+
+Install via:
+```commandline
+pip install numerbay
+```
+
 ## NumerBay Objects
 
 ```python
@@ -155,6 +162,75 @@ Get all your orders.
   "buyer":{
   "id":2,
   "username":"myusername"
+  }
+  }, ...]
+  ```
+
+### get\_my\_sales
+
+```python
+def get_my_sales() -> List
+```
+
+Get all your sales (including pending and expired sales).
+
+**Returns**:
+
+- `list` - List of dicts with the following structure:
+  
+  * date_order (`datetime`)
+  * round_order (`int`)
+  * quantity (`int`)
+  * price (`decimal.Decimal`)
+  * currency (`str`)
+  * mode (`str`)
+  * stake_limit (`decimal.Decimal`)
+  * submit_model_id (`str`)
+  * submit_model_name (`str`)
+  * submit_state (`str`)
+  * chain (`str`)
+  * from_address (`str`)
+  * to_address (`str`)
+  * transaction_hash (`str`)
+  * state (`str`)
+  * applied_coupon_id (`int`)
+  * coupon (`bool`)
+  * coupon_specs (`dict`)
+  * id (`int`)
+  * product (`dict`)
+  * buyer (`dict`)
+
+**Example**:
+
+  ```python
+  api = NumerBay(username="..", password="..")
+  api.get_my_sales()
+  ```
+  ```
+  [{
+  "date_order":"2021-12-25T06:34:58.047278",
+  "round_order":296,
+  "quantity":1,
+  "price":9,
+  "currency":"NMR",
+  "mode":"file",
+  "stake_limit":None,
+  "submit_model_id":None,
+  "submit_model_name":None,
+  "submit_state":None,
+  "chain":"ethereum",
+  "from_address":"0x00000000000000000000000000000fromaddress",
+  "to_address":"0x0000000000000000000000000000000toaddress",
+  "transaction_hash":"0x09bd2a0f814a745...7a20e5abcdef",
+  "state":"confirmed",
+  "applied_coupon_id":1,
+  "coupon":None,
+  "coupon_specs":None,
+  "id":126,
+  "product":{..},
+  "buyer":{
+  "id":2,
+  "username":"someusername"
   }
   }, ...]
   ```

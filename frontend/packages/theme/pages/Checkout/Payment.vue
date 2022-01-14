@@ -70,7 +70,14 @@
           />
         </SfLoader>
 <!--        <VsfPaymentProvider @status="isPaymentReady = true"/>-->
-
+        <br/>
+        <SfNotification
+          visible
+          :persistent="true"
+          title=""
+          message="DO NOT SEND NMR FROM YOUR OWN WALLET. Currently only payments from your Numerai Wallet will be recognized, otherwise payments will be lost."
+          type="warning"
+        />
         <SfCheckbox v-e2e="'terms'" v-model="terms" name="terms" class="summary__terms">
           <template #label>
             <div class="sf-checkbox__label">
@@ -125,6 +132,7 @@ import {
   SfImage,
   SfLink,
   SfLoader,
+  SfNotification,
   SfPrice,
   SfProperty,
   SfSelect,
@@ -159,6 +167,7 @@ export default {
     SfSelect,
     SfLink,
     SfLoader,
+    SfNotification,
     VsfPaymentProvider: () => import('~/components/Checkout/VsfPaymentProvider')
   },
   async mounted() {

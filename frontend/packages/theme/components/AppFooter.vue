@@ -52,9 +52,8 @@ export default {
         api: {
           name: 'NumerBay Docs',
           children: [
-            { name: 'Tutorial', clickHandler: () => window.open('https://docs.numerbay.ai/', '_blank') },
-            { name: 'API Reference (Swagger)', clickHandler: () => window.open('https://numerbay.ai/docs', '_blank') },
-            { name: 'API Reference (ReDoc)', clickHandler: () => window.open('https://numerbay.ai/redoc', '_blank') }
+            { name: 'Tutorials and Docs', clickHandler: () => window.open('https://docs.numerbay.ai/', '_blank') },
+            { name: 'Python Client Reference', clickHandler: () => window.open('https://docs.numerbay.ai/docs/reference/numerbay', '_blank') }
           ]
         },
         officialNumerai: {

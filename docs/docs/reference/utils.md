@@ -3,7 +3,7 @@ sidebar_label: utils
 title: utils
 ---
 
-collection of utility functions
+collection of utility functions (from numerapi: https://github.com/uuazed/numerapi)
 
 #### parse\_datetime\_string
 
