@@ -8,7 +8,7 @@ In order to buy or sell on NumerBay, a NumerBay account with Numerai API key nee
 
 ## Sign up
 
-Head to **[numerbay.ai](https://numerbay.ai)**, click the account icon on the top right of the page, and:
+Head to **[numerbay.ai](https://numerbay.ai)**, click the account icon on the top right of the page, and sign up/login via either MetaMask or username:
 
 ### Login via MetaMask
 <img alt="Sign up MetaMask" src="/img/tutorial/signUpMetaMask.png" width="400"/>
@@ -21,7 +21,7 @@ If you don't want to use MetaMask, sign up manually by clicking the **Username L
 
 ## Set up Numerai API Key
 
-After signing up and logging in, head to the [NumerBay account](https://numerbay.ai/my-account) page for the **[Numerai API form](https://numerbay.ai/my-account/numerai-api)** under the Account sidebar section.
+After signing up and logging in, head to the NumerBay account page for the **[Numerai API form](https://numerbay.ai/my-account/numerai-api)** under the Account sidebar section.
 
 If you don't have a Numerai API key yet, you can create one in the [Numerai Account Settings](https://numer.ai/account) page. Make sure it has at least **View user info** permission. NumerBay only uses user info for model ownership verification and email notifications.
 
@@ -43,7 +43,7 @@ After creating an API key with the permissions required, plug them into the form
 
 :::info
 
-If you encounter error while updating with a valid Numerai API key, it may be likely that you are not logged in with the correct NumerBay account, you may have another old account bound to the same Numerai account. 
+If you encounter errors while updating with a valid Numerai API key, it may be likely that you are not logged in with the correct NumerBay account, you might have another old account bound to the same Numerai account. 
 Please check if you are logged in with the correct MetaMask wallet or if you have an old account or account created with username.
 
 :::
@@ -55,7 +55,7 @@ You can change your username, password and email in the **[profile update form](
 
 If you disconnect MetaMask wallet in the profile update form and your account was created with MetaMask login. You need to set a password before logging out, or you might lose access to the account.
 
-NumerBay does not yet allow password recovery, please contact site admin for assistance by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
+NumerBay does not yet allow password recovery, please contact support by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
 
 :::
 

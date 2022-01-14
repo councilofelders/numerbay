@@ -75,7 +75,7 @@
           visible
           :persistent="true"
           title=""
-          message="DO NOT SEND NMR FROM YOUR OWN WALLET. Currently only payments from your Numerai Wallet will be recognized, otherwise payments will be lost."
+          message="DO NOT send NMR from your own wallet. Currently only payments from your Numerai Wallet will be recognized, otherwise payments will be lost."
           type="warning"
         />
         <SfCheckbox v-e2e="'terms'" v-model="terms" name="terms" class="summary__terms">

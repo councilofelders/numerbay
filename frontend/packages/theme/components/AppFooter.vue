@@ -52,7 +52,7 @@ export default {
         api: {
           name: 'NumerBay Docs',
           children: [
-            { name: 'Tutorials and Docs', clickHandler: () => window.open('https://docs.numerbay.ai/', '_blank') },
+            { name: 'Docs and Tutorials', clickHandler: () => window.open('https://docs.numerbay.ai/', '_blank') },
             { name: 'Python Client Reference', clickHandler: () => window.open('https://docs.numerbay.ai/docs/reference/numerbay', '_blank') }
           ]
         },

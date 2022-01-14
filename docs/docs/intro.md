@@ -8,9 +8,12 @@ Let's discover **NumerBay in less than 5 minutes**.
 
 ## Getting Started
 
-NumerBay is the Numerai community marketplace funded by the Numerai Council of Elders. Anything related to the Numerai tournaments can be traded directly without middleman.
+**[NumerBay](https://numerbay.ai)** is the Numerai community marketplace funded by the Numerai Council of Elders. Anything related to the Numerai tournaments can be traded directly without middleman.
 
-Data scientists can trade their Numerai tournament submissions and artifacts for NMRs. Non-tournament participants can stake on others' predictions by buying on NumerBay and setting up auto-submission.
+> [Numerai](https://numer.ai/) is the hardest data science tournament on the planet where data scientists around the world comes together to build the world's last hedge fund by predicting the stock market. 
+Learn more by reading the [Numerai Docs](https://docs.numer.ai/tournament/learn)
+
+On NumerBay, data scientists can trade their Numerai tournament submissions and other artifacts for [Numeraire (NMR)](https://coinmarketcap.com/currencies/numeraire/) tokens. Non-tournament participants can stake on others' predictions by buying on NumerBay and setting up auto-submission.
 
 **Explore NumerBay immediately** at **[numerbay.ai](https://numerbay.ai)**. Learn how to [set up an account](./tutorial-basics/set-up-account.md) on NumerBay.
 

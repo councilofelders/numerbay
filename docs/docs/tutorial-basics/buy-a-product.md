@@ -22,19 +22,21 @@ You need to have a [NumerBay account](./set-up-account) with Numerai API Key in 
 
 ### Key product properties
 * Category
-    - numerai-predictions: [Numerai "Classic" tournament](https://numer.ai/tournament) submission files
-    - numerai-model: Model binary file, training scripts or Jupyter notebooks for the associated model
-    - signals-predictions: [Signals tournament](https://signals.numer.ai/tournament) submission files
-    - signals-data: Data files used to train the associated Signals model or other files useful for Signals modeling
-    - onlyfams-*: Anything other than the above such as meme NFTs, clothing, etc.
+    - `numerai-predictions`: [Numerai "Classic" tournament](https://numer.ai/tournament) submission files, per-round category
+    - `numerai-model`: Model binary file, training scripts or Jupyter notebooks for the associated model
+    - `signals-predictions`: [Signals tournament](https://signals.numer.ai/tournament) submission files, per-round category
+    - `signals-data`: Data files used to train the associated Signals model or other files useful for Signals modeling, per-round category
+    - `onlyfams-*`: Anything other than the above such as meme NFTs, clothing, etc.
 * Platform
-    - On-Platform: Product is sold on NumerBay with full features
-    - Off-Platform: Product only links to an external listing page
+    - `On-Platform`: Product is sold on NumerBay with full features
+    - `Off-Platform`: Product only links to an external listing page
 * Listing Mode:
-    - File Mode: You can download artifact files and optionally designate a model slot for submission
-    - Stake Only Mode: Submit for you automatically without distributing artifact files, without stake limit. [only available for "numerai-predictions" and "signals-predictions" categories]
-    - Stake Only Mode with Limit: Submit for you automatically without distributing artifact files, with a stake limit (in NMR). [only available for "numerai-predictions" and "signals-predictions" categories]
-* Reward: If a Reward badge is shown on the category page for a product option, you will be rewarded with a coupon if your order meets some conditions.
+    - `File Mode`: You can download artifact files and optionally designate a model slot for submission
+    - `Stake Only Mode`: Submit for you automatically without distributing artifact files, without stake limit. [only available for "numerai-predictions" and "signals-predictions" categories]
+    - `Stake Only Mode with Limit`: Submit for you automatically without distributing artifact files, with a stake limit (in NMR). [only available for "numerai-predictions" and "signals-predictions" categories]
+* Reward: If a `Reward` badge is shown on the catalog page for a product option, you will be rewarded with a coupon if your order meets some conditions.
+* Ready: If a `Ready` badge is shown on the catalog page for a product option, this means the product artifact files are ready for download immediately after purchasing. If not shown, artifacts will be available when seller uploads files later. 
+  This badge is reset every week for per-round categories `numerai-predictions`, `signals-predictions` and `signals-data`.
 
 
 ## Checkout and payment
@@ -69,21 +71,36 @@ If the product you are buying is a tournament submission, you can select a model
 
 
 ### Payment
-You will be directed to the payment confirmation page. You can leave this page if you want to. Head over to your [Numerai wallet](https://numer.ai/wallet) to make payment.
-
-![Product Payment](/img/tutorial/productPayment.png)
-
 :::caution
 
 Payment needs to be made **in full** and **in one single transaction** from your **Numerai wallet** within **45 minutes** after order creation. If no matching payment transaction is found within the time limit, the order will expire.
 
-If you need help, please contact site admin for assistance by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
+NumerBay currently does not support payment from arbitrary NMR wallet, **DO NOT** send NMR from your own wallet or exchange wallets.
+
+If you need help, please contact support by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
 :::
+
+You will be directed to the payment confirmation page. You can leave this page if you want to. Head over to your [Numerai wallet](https://numer.ai/wallet) to make payment.
+
+![Product Payment](/img/tutorial/productPayment.png)
+
 
 ## Download artifacts
 
-Your past orders are viewable in the **[Order History](https://numerbay.ai/my-account/order-history)** page. 
+Your orders are viewable in the **[Order history](https://numerbay.ai/my-account/order-history)** page. 
 In order to download product artifacts such as tournament submission files, click **View details** on your order to view the list of downloadable artifact files.
+
+If you purchased before Numerai tournament round starts (Saturday 18:00 UTC), artifacts may not be available for immediate download. 
+Sellers will be notified of your order and will upload artifacts once the tournament round starts.
+
+You can **download** artifacts for the currently active tournament round **before the round submission deadline** (Monday 14:30 UTC). 
+After the deadline the active round will rollover and sale for the next round will open, you may not be able to download artifacts for past rounds.
+
+:::tip Advanced tip
+
+You can also download via the NumerBay Python / Cli Client, head over to the [API Tutorial](/docs/tutorial-extras/ensemble) for examples.
+
+:::
 
 ![Order List](/img/tutorial/orderList.png)
 
@@ -92,3 +109,7 @@ If you made your order with auto-submission set up during checkout, submissions 
 
 If you did not designate auto-submission lot or auto-submission failed, you can trigger a submission from the artifact list.
 
+## Manage coupons
+Some sellers may reward you with coupons for your orders. Your coupons are viewable in the **[My coupons](https://numerbay.ai/my-account/my-coupons)** page. 
+
+![My Coupons](/img/tutorial/myCoupons.png)

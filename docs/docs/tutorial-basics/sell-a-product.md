@@ -18,11 +18,11 @@ To create a listing, head to **[My listings](https://numerbay.ai/my-account/my-l
 ### Basic product information
 ![Listing Basic](/img/tutorial/listingBasic.png)
 * Category
-    - numerai-predictions: [Numerai "Classic" tournament](https://numer.ai/tournament) submission files
-    - numerai-model: Model binary file, training scripts or Jupyter notebooks for the associated model
-    - signals-predictions: [Signals tournament](https://signals.numer.ai/tournament) submission files
-    - signals-data: Data files used to train the associated Signals model or other files useful for Signals modeling
-    - onlyfams-*: Anything other than the above such as meme NFTs, clothing, etc.
+    - `numerai-predictions`: [Numerai "Classic" tournament](https://numer.ai/tournament) submission files
+    - `numerai-model`: Model binary file, training scripts or Jupyter notebooks for the associated model
+    - `signals-predictions`: [Signals tournament](https://signals.numer.ai/tournament) submission files
+    - `signals-data`: Data files used to train the associated Signals model or other files useful for Signals modeling
+    - `onlyfams-*`: Anything other than the above such as meme NFTs, clothing, etc.
 * Product name:
     - For tournament categories this is a dropdown of Numerai models, select one
     - For onlyfams categories, enter an alphanumeric product name
@@ -39,12 +39,12 @@ Select from your other listings to be featured in this product's page
 ### Pricing options
 ![Listing Option](/img/tutorial/listingOption.png)
 * Platform
-    - On-Platform: Product is sold on NumerBay with full features
-    - Off-Platform: Product only links to an external listing page
+    - `On-Platform`: Product is sold on NumerBay with full features
+    - `Off-Platform`: Product only links to an external listing page
 * Listing Mode:
-    - File Mode: Buyers can download artifact files and optionally designate a model slot for submission. You can upload artifacts to NumerBay or add external file URLs
-    - Stake Only Mode: Submit for buyers automatically without distributing artifact files, without stake limit. You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
-    - Stake Only Mode with Limit: Submit for buyers automatically without distributing artifact files, with a stake limit (in NMR). You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
+    - `File Mode`: Buyers can download artifact files and optionally designate a model slot for submission. You can upload artifacts to NumerBay or add external file URLs
+    - `Stake Only Mode`: Submit for buyers automatically without distributing artifact files, without stake limit. You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
+    - `Stake Only Mode with Limit`: Submit for buyers automatically without distributing artifact files, with a stake limit (in NMR). You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
 * Number of Rounds per Unit: Number of tournament rounds bundled into this pricing option. 
 
 :::info
@@ -71,13 +71,30 @@ Coupons generated using this reward mechanism are bound to the specific buyers a
 
 :::
 
-## Upload artifacts (WIP)
+## Upload artifacts
 :::tip Advanced tip
 
-You can automate this via NumerBay API, head over to the advanced [API Tutorial](/docs/tutorial-extras/api-automation) for details
+You can automate this via NumerBay Python / Cli Client, head over to the [API Tutorial](/docs/tutorial-extras/api-automation) for examples.
 
 :::
 
-After tournament round opens, you need to upload artifact files to NumerBay to fulfill your active orders.
+After tournament round opens, you need to upload artifact files to NumerBay to fulfill your active orders. 
+Click the **Artifacts** button on your product in the My listings page for the upload panel.
 
-## Manage sales (WIP)
+It is recommended to upload artifacts after tournament round opens and regardless if you have active buyers.
+Once artifacts are uploaded, your product will be tagged with a `Ready` badge in the catalog page which makes it more likely to be purchased.
+
+:::caution
+
+After submitting to NumerBay, you still need to submit your files to Numerai. NumerBay does not forward submissions to Numerai for sellers.
+
+:::
+
+![Listing Artifacts](/img/tutorial/listingArtifacts.png)
+
+![Product Ready](/img/tutorial/productReady.png)
+
+## Manage sales
+Your sales are viewable in the **[Sales history](https://numerbay.ai/my-account/sales-history)** page. 
+
+![Sales History](/img/tutorial/salesHistory.png)
