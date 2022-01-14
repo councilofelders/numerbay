@@ -39,6 +39,8 @@ export type OrderItem = Record<string, unknown>;
 
 export type Artifact = Record<string, unknown>;
 
+export type Numerai = Record<string, unknown>;
+
 export type Product = Record<string, unknown>;
 
 export type Review = Record<string, unknown>;
@@ -193,24 +195,43 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
 }
 
 export interface ProductArtifactGetters<ARTIFACT> {
-    getDate: (order: ARTIFACT) => string;
-    getId: (order: ARTIFACT) => string;
-    getObjectName: (order: ARTIFACT) => string;
-    getObjectSize: (order: ARTIFACT) => string;
-    getDescription: (order: ARTIFACT) => string;
-    getPrice: (order: ARTIFACT) => number;
-    getCurrency: (order: ARTIFACT) => string;
-    getFromAddress: (order: ARTIFACT) => string;
-    getToAddress: (order: ARTIFACT) => string;
-    getTransactionHash: (order: ARTIFACT) => string;
-    getProduct: (order: ARTIFACT) => any;
-    getItems: (order: ARTIFACT) => ARTIFACT[];
-    getItemSku: (item: ARTIFACT) => string;
-    getItemName: (item: ARTIFACT) => string;
-    getItemQty: (item: ARTIFACT) => number;
-    getItemPrice: (item: ARTIFACT) => number;
-    getFormattedPrice: (item: ARTIFACT, withCurrency: boolean, decimals: number) => string;
-    getBuyer: (item: ARTIFACT) => string;
+    getDate: (artifact: ARTIFACT) => string;
+    getId: (artifact: ARTIFACT) => string;
+    getObjectName: (artifact: ARTIFACT) => string;
+    getObjectSize: (artifact: ARTIFACT) => string;
+    getDescription: (artifact: ARTIFACT) => string;
+    getPrice: (artifact: ARTIFACT) => number;
+    getCurrency: (artifact: ARTIFACT) => string;
+    getFromAddress: (artifact: ARTIFACT) => string;
+    getToAddress: (artifact: ARTIFACT) => string;
+    getTransactionHash: (artifact: ARTIFACT) => string;
+    getProduct: (artifact: ARTIFACT) => any;
+    getItems: (artifact: ARTIFACT) => ARTIFACT[];
+    getItemSku: (artifact: ARTIFACT) => string;
+    getItemName: (artifact: ARTIFACT) => string;
+    getItemQty: (artifact: ARTIFACT) => number;
+    getItemPrice: (artifact: ARTIFACT) => number;
+    getFormattedPrice: (artifact: ARTIFACT, withCurrency: boolean, decimals: number) => string;
+    getBuyer: (artifact: ARTIFACT) => string;
+    [getterName: string]: (element: any, options?: any) => unknown;
+}
+
+export interface NumeraiGetters<NUMERAI> {
+    getCorrRank: (numerai: NUMERAI) => number;
+    getMmcRank: (numerai: NUMERAI) => number;
+    getFncRank: (numerai: NUMERAI) => number;
+    getCorrRep: (numerai: NUMERAI) => number,
+    getMmcRep: (numerai: NUMERAI) => number,
+    getFncRep: (numerai: NUMERAI) => number,
+    getMetaCorr: (numerai: NUMERAI) => number,
+    getOneDayReturn: (numerai: NUMERAI) => number,
+    getThreeMonthsReturn: (numerai: NUMERAI) => number,
+    getOneYearReturn: (numerai: NUMERAI) => number,
+    getNmrStaked: (numerai: NUMERAI) => number,
+    getWokeDateTime: (numerai: NUMERAI) => string,
+    getWokeDate: (numerai: NUMERAI) => string,
+    getFormatted: (value: number, decimals: number) => string,
+    getNumeraiChartData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }
 

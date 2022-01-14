@@ -31,10 +31,11 @@
             <div class="product__meta">
               <span class="product__meta__item"><span v-if="!!productGetters.getCategory(product).tournament">Round:&nbsp;</span><span class="product__subheader__highlight" v-if="!globalsLoading && !!productGetters.getCategory(product).tournament">{{ globals.selling_round }}</span></span>
               <span class='divider-pipe desktop-only' v-if="!!productGetters.getCategory(product).tournament">|</span>
+              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getCategory(product).slug.toUpperCase() }}</span></span>
+              <span class='divider-pipe desktop-only'>|</span>
               <span class="product__meta__item">Seller:&nbsp;<span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span></span>
               <span class='divider-pipe desktop-only'>|</span>
-              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getCategory(product).slug.toUpperCase() }}</span></span>
-              <span class='divider-pipe desktop-only'>|</span> <span class="product__meta__item">Platform:&nbsp;<SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
+              <span class="product__meta__item">Platform:&nbsp;<SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
               <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(productGetters.getOrderedOption(product, optionIdx)) }}</span></span>
             </div>
             <div class="product__meta" v-if="productGetters.getMode(productGetters.getOrderedOption(product, optionIdx))">
@@ -90,37 +91,51 @@
         </SfLoader>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
           <div>
-            <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
-              <span><h4>RANK</h4><p>{{ numerai.modelInfo.modelPerformance.latestRanks.corr }}</p></span>
-              <span><h4>REPUTATION</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4) }}</p></span>
-              <span><h4>MMC</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.mmc).toFixed(4) }}</p></span>
-              <span v-if="productGetters.getCategory(product).tournament==8"><h4>FNC</h4><p>{{ Number(numerai.modelInfo.modelPerformance.latestReps.fnc).toFixed(4) }}</p></span>
-              <span v-if="productGetters.getCategory(product).tournament==8"><h4>CORR W/ METAMODEL</h4><p>{{ Number(numerai.modelInfo.modelPerformance.roundModelPerformances[0].corrWMetamodel).toFixed(4) }}</p></span>
+            <div v-if="productGetters.getCategory(product).tournament==8">
+              <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
+                <div><h4>CORR RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getCorrRank(numerai), 0) }}</p></div>
+                <div><h4>MMC RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMmcRank(numerai), 0) }}</p></div>
+                <div><h4>FNC RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getFncRank(numerai), 0) }}</p></div>
+              </div>
+              <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
+                <div><h4>CORR REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getCorrRep(numerai)) }}</p></div>
+                <div><h4>MMC REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMmcRep(numerai)) }}</p></div>
+                <div><h4>FNC REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getFncRep(numerai)) }}</p></div>
+                <div><h4>CORR W/ METAMODEL</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMetaCorr(numerai)) }}</p></div>
+              </div>
+            </div>
+            <div v-else>
+              <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
+                <div><h4>CORR RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getCorrRank(numerai), 0) }}</p></div>
+                <div><h4>MMC RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMmcRank(numerai), 0) }}</p></div>
+                <div><h4>CORR REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getCorrRep(numerai)) }}</p></div>
+                <div><h4>MMC REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMmcRep(numerai)) }}</p></div>
+              </div>
             </div>
             <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
-              <span><h4>OWNER STAKE</h4><p>{{ Number(numerai.modelInfo.nmrStaked).toFixed(2) }} NMR</p></span>
-              <span><h4>1 DAY RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.oneDay)>0?'positive':'negative'}`">
-                {{ numerai.modelInfo.modelPerformance.latestReturns.oneDay?Number(numerai.modelInfo.modelPerformance.latestReturns.oneDay).toFixed(2):'-' }}%</p></span>
-              <span><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
-                {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%</p></span>
-              <span><h4>1 YR. RETURN</h4><p :class="`delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.oneYear)>0?'positive':'negative'}`">
-                {{ numerai.modelInfo.modelPerformance.latestReturns.oneYear?Number(numerai.modelInfo.modelPerformance.latestReturns.oneYear).toFixed(2):'-' }}%</p></span>
-              <span><h4>WOKE</h4><p>{{ numerai.modelInfo.startDate.split('T')[0] }}</p></span>
+              <div><h4>OWNER STAKE</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getNmrStaked(numerai), 2) }} NMR</p></div>
+              <div><h4>1 DAY RETURN</h4><p :class="`delta-${Number(numeraiGetters.getOneDayReturn(numerai))>0?'positive':'negative'}`">
+                {{ numeraiGetters.getFormatted(numeraiGetters.getOneDayReturn(numerai), 2) }}%</p></div>
+              <div><h4>3 MTH. RETURN</h4><p :class="`delta-${Number(numeraiGetters.getThreeMonthsReturn(numerai))>0?'positive':'negative'}`">
+                {{ numeraiGetters.getFormatted(numeraiGetters.getThreeMonthsReturn(numerai), 2) }}%</p></div>
+              <div><h4>1 YR. RETURN</h4><p :class="`delta-${Number(numeraiGetters.getOneYearReturn(numerai))>0?'positive':'negative'}`">
+                {{ numeraiGetters.getFormatted(numeraiGetters.getOneYearReturn(numerai), 2) }}%</p></div>
+              <div><h4>WOKE</h4><p>{{ numeraiGetters.getWokeDate(numerai) }}</p></div>
             </div>
             <div class="product__details__mobile smartphone-only" v-if="!!numerai.modelInfo">
               <SfProperty
                   name="Owner Stake"
-                  :value="`${Number(numerai.modelInfo.nmrStaked).toFixed(2)} NMR`"
+                  :value="`${Number(numeraiGetters.getNmrStaked(numerai)).toFixed(2)} NMR`"
                   class="product__property"
               />
               <SfProperty
                   name="Rank"
-                  :value="`${numerai.modelInfo.modelPerformance.latestRanks.corr}`"
+                  :value="`${numeraiGetters.getCorrRank(numerai)}`"
                   class="product__property"
               />
               <SfProperty
                   name="Reputation"
-                  :value="`${Number(numerai.modelInfo.modelPerformance.latestReps.corr).toFixed(4)}`"
+                  :value="`${Number(numeraiGetters.getCorrRep(numerai)).toFixed(4)}`"
                   class="product__property"
               />
               <SfProperty
@@ -128,14 +143,14 @@
                   class="product__property"
               >
                 <template #value>
-                  <span :class="`sf-property__value delta-${Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths)>0?'positive':'negative'}`">
-                {{ numerai.modelInfo.modelPerformance.latestReturns.threeMonths?Number(numerai.modelInfo.modelPerformance.latestReturns.threeMonths).toFixed(2):'-' }}%
+                  <span :class="`sf-property__value delta-${Number(numeraiGetters.getThreeMonthsReturn(numerai))>0?'positive':'negative'}`">
+                    {{ numeraiGetters.getFormatted(numeraiGetters.getThreeMonthsReturn(numerai), 2) }}%
                   </span>
                 </template>
               </SfProperty>
               <SfProperty
                   name="Woke"
-                  :value="`${numerai.modelInfo.startDate.split('T')[0]}`"
+                  :value="`${numeraiGetters.getWokeDate(numerai)}`"
                   class="product__property"
               />
             </div>
@@ -217,7 +232,7 @@ import {
 } from '@storefront-ui/vue';
 
 import { computed, ref } from '@vue/composition-api';
-import { productGetters, reviewGetters, useGlobals, useNumerai, useProduct, useReview, useUser } from '@vue-storefront/numerbay';
+import { numeraiGetters, productGetters, reviewGetters, useGlobals, useNumerai, useProduct, useReview, useUser } from '@vue-storefront/numerbay';
 import { useUiNotification, useUiState } from '~/composables';
 import CheckoutButton from '~/components/Molecules/CheckoutButton';
 import LazyHydrate from 'vue-lazy-hydration';
@@ -261,32 +276,6 @@ export default {
       }
       await getGlobals();
     });
-
-    const getNumeraiChartData = (numeraiData) => {
-      const transposed = Object.assign(...Object.keys(numeraiData.modelInfo.modelPerformance.roundModelPerformances[0]).map(key =>
-        ({ [key]: numeraiData.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
-      ));
-
-      return {
-        labels: transposed.roundNumber,
-        datasets: [
-          {
-            label: 'CORR',
-            borderColor: '#666666',
-            fill: false,
-            lineTension: 0,
-            data: transposed.corr
-          },
-          {
-            label: 'MMC',
-            borderColor: '#acacac',
-            fill: false,
-            lineTension: 0,
-            data: transposed.mmc
-          }
-        ]
-      };
-    };
 
     const handleBuyButtonClick = (product, optionIdx, qty) => {
       const option = productGetters.getOrderedOption(product, optionIdx);
@@ -337,7 +326,6 @@ export default {
 
     return {
       getModelInfo,
-      getNumeraiChartData,
       handleBuyButtonClick,
       product,
       reviews,
@@ -348,7 +336,7 @@ export default {
       totalReviews: computed(() => reviewGetters.getTotalReviews(productReviews.value)),
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p)=>parseInt(p.id) !== parseInt(id))),
       numerai: computed(() => numerai.value ? numerai.value : null),
-      numeraiChartData: computed(() => numerai.value.modelInfo ? getNumeraiChartData(numerai.value) : {}),
+      numeraiChartData: computed(() => numerai.value.modelInfo ? numeraiGetters.getNumeraiChartData(numerai.value) : {}),
       modelInfo: computed(() => numerai.value?.modelInfo ? numerai.value?.modelInfo : null),
       globals,
       globalsLoading,
@@ -359,6 +347,7 @@ export default {
       optionIdx,
       // addItem,
       // loading,
+      numeraiGetters,
       productGetters
     };
   },

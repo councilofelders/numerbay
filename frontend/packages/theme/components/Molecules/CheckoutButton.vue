@@ -2,7 +2,7 @@
   <div>
     <SfSelect
       v-e2e="'size-select'"
-      :disabled="!(productGetters.getOptions(product).length > 1)"
+      :disabled="!(productGetters.getOptions(product).length > 0)"
       v-model="optionIdx"
       label="Option"
       class="sf-select--underlined product__select-size"
