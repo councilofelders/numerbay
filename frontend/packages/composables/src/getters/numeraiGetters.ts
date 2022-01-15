@@ -12,6 +12,9 @@ export const getMmcRank = (numerai: any): number => numerai?.modelInfo?.modelPer
 export const getFncRank = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestRanks?.fnc;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getTcRank = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestRanks?.tc;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getCorrRep = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestReps?.corr;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -19,6 +22,9 @@ export const getMmcRep = (numerai: any): number => numerai?.modelInfo?.modelPerf
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getFncRep = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestReps?.fnc;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getTcRep = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestReps?.tc;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getMetaCorr = (numerai: any): number => {
@@ -56,7 +62,7 @@ export const getWokeDate = (numerai: any): string => numerai?.modelInfo?.startDa
 export const getFormatted = (value: number, decimals = 4): string => value ? Number(value).toFixed(decimals) : '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiChartData = (numerai: any) => {
+export const getNumeraiCorrMmcChartData = (numerai: any) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
@@ -71,14 +77,39 @@ export const getNumeraiChartData = (numerai: any) => {
         borderColor: '#666666',
         fill: false,
         lineTension: 0,
-        data: transposed.corr
+        data: transposed.corr,
+        data1: transposed.corrPercentile
       },
       {
         label: 'MMC',
         borderColor: '#acacac',
         fill: false,
         lineTension: 0,
-        data: transposed.mmc
+        data: transposed.mmc,
+        data1: transposed.mmcPercentile
+      }
+    ]
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getNumeraiTcChartData = (numerai: any) => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
+    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
+  ));
+
+  return {
+    labels: transposed.roundNumber,
+    datasets: [
+      {
+        label: 'TC',
+        borderColor: '#acacac',
+        fill: false,
+        lineTension: 0,
+        data: transposed.tc,
+        data1: transposed.tcPercentile
       }
     ]
   };
@@ -88,9 +119,11 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getCorrRank,
   getMmcRank,
   getFncRank,
+  getTcRank,
   getCorrRep,
   getMmcRep,
   getFncRep,
+  getTcRep,
   getMetaCorr,
   getOneDayReturn,
   getThreeMonthsReturn,
@@ -99,7 +132,8 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getWokeDateTime,
   getWokeDate,
   getFormatted,
-  getNumeraiChartData
+  getNumeraiCorrMmcChartData,
+  getNumeraiTcChartData
 };
 
 export default numeraiGetters;

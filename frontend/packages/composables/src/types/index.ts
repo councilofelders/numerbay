@@ -220,9 +220,11 @@ export interface NumeraiGetters<NUMERAI> {
     getCorrRank: (numerai: NUMERAI) => number;
     getMmcRank: (numerai: NUMERAI) => number;
     getFncRank: (numerai: NUMERAI) => number;
+    getTcRank: (numerai: NUMERAI) => number;
     getCorrRep: (numerai: NUMERAI) => number,
     getMmcRep: (numerai: NUMERAI) => number,
     getFncRep: (numerai: NUMERAI) => number,
+    getTcRep: (numerai: NUMERAI) => number,
     getMetaCorr: (numerai: NUMERAI) => number,
     getOneDayReturn: (numerai: NUMERAI) => number,
     getThreeMonthsReturn: (numerai: NUMERAI) => number,
@@ -231,7 +233,8 @@ export interface NumeraiGetters<NUMERAI> {
     getWokeDateTime: (numerai: NUMERAI) => string,
     getWokeDate: (numerai: NUMERAI) => string,
     getFormatted: (value: number, decimals: number) => string,
-    getNumeraiChartData: (numerai: NUMERAI) => any,
+    getNumeraiCorrMmcChartData: (numerai: NUMERAI) => any,
+    getNumeraiTcChartData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }
 

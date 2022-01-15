@@ -87,7 +87,10 @@
           ></CheckoutButton>
         </div>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
-          <NumeraiChart class="numerai-chart" v-if="!productLoading && !numeraiLoading && !!productGetters.getCategory(product).tournament" :chartdata="!numerai.modelInfo?{}:numeraiChartData"></NumeraiChart>
+          <div v-if="!productLoading && !numeraiLoading && !!productGetters.getCategory(product).tournament">
+            <NumeraiChart class="numerai-chart" :chartdata="!numerai.modelInfo?{}:numeraiCorrMmcChartData"></NumeraiChart>
+            <NumeraiChart v-if="productGetters.getCategory(product).tournament==8" class="numerai-chart" :chartdata="!numerai.modelInfo?{}:numeraiTcChartData"></NumeraiChart>
+          </div>
         </SfLoader>
         <SfLoader :class="{ loader: numeraiLoading }" :loading="numeraiLoading">
           <div>
@@ -96,11 +99,13 @@
                 <div><h4>CORR RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getCorrRank(numerai), 0) }}</p></div>
                 <div><h4>MMC RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMmcRank(numerai), 0) }}</p></div>
                 <div><h4>FNC RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getFncRank(numerai), 0) }}</p></div>
+                <div><h4>TC RANK</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getTcRank(numerai), 0) }}</p></div>
               </div>
               <div class="product__details desktop-only" v-if="!!numerai.modelInfo">
                 <div><h4>CORR REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getCorrRep(numerai)) }}</p></div>
                 <div><h4>MMC REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMmcRep(numerai)) }}</p></div>
                 <div><h4>FNC REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getFncRep(numerai)) }}</p></div>
+                <div><h4>TC REP</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getTcRep(numerai)) }}</p></div>
                 <div><h4>CORR W/ METAMODEL</h4><p>{{ numeraiGetters.getFormatted(numeraiGetters.getMetaCorr(numerai)) }}</p></div>
               </div>
             </div>
@@ -336,7 +341,8 @@ export default {
       totalReviews: computed(() => reviewGetters.getTotalReviews(productReviews.value)),
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p)=>parseInt(p.id) !== parseInt(id))),
       numerai: computed(() => numerai.value ? numerai.value : null),
-      numeraiChartData: computed(() => numerai.value.modelInfo ? numeraiGetters.getNumeraiChartData(numerai.value) : {}),
+      numeraiCorrMmcChartData: computed(() => numerai.value.modelInfo ? numeraiGetters.getNumeraiCorrMmcChartData(numerai.value) : {}),
+      numeraiTcChartData: computed(() => numerai.value.modelInfo ? numeraiGetters.getNumeraiTcChartData(numerai.value) : {}),
       modelInfo: computed(() => numerai.value?.modelInfo ? numerai.value?.modelInfo : null),
       globals,
       globalsLoading,
@@ -582,7 +588,7 @@ export default {
   font-size: var(--h4-font-size);
 }
 .numerai-chart {
-  margin-top: var(--spacer-xl);
+  margin-top: var(--spacer-lg);
 }
 .delta-positive {
   color: #00a800;

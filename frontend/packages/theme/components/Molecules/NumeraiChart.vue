@@ -8,7 +8,7 @@ export default {
   props: {
     height: {
       type: Number,
-      default: 300
+      default: 240
     },
     chartdata: {
       type: Object,
@@ -16,7 +16,29 @@ export default {
     },
     options: {
       type: Object,
-      default: () => ({responsive: true, maintainAspectRatio: false})
+      default: () => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        tooltips: {
+          callbacks: {
+            title(tooltipItem, data) {
+              return data.labels[tooltipItem[0].index];
+            },
+            label(tooltipItem, data) {
+              let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+              if (label) {
+                label += ': ';
+              }
+              label += Math.round(tooltipItem.yLabel * 1000) / 1000;
+              return label;
+            },
+            afterLabel(tooltipItem, data) {
+              return 'Percentile: ' + (Math.round(data.datasets[tooltipItem.datasetIndex].data1[tooltipItem.index] * 1000) / 10);
+            }
+          }
+        }
+      })
     }
   },
   mounted () {

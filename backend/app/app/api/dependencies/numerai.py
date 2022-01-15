@@ -103,10 +103,12 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
             normalized_data["modelPerformance"]["latestRanks"] = {
                 "corr": data["v2SignalsProfile"]["latestRanks"]["corr20d"],
                 "mmc": data["v2SignalsProfile"]["latestRanks"]["mmc20d"],
+                "tc": data["v2SignalsProfile"]["latestRanks"]["tc"],
             }
             normalized_data["modelPerformance"]["latestReps"] = {
                 "corr": data["v2SignalsProfile"]["latestReps"]["corr20d"],
                 "mmc": data["v2SignalsProfile"]["latestReps"]["mmc20d"],
+                "tc": data["v2SignalsProfile"]["latestReps"]["tc"],
             }
             normalized_data["modelPerformance"]["latestReturns"] = data[
                 "v2SignalsProfile"
@@ -122,6 +124,10 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
                     "roundNumber": round_performance["roundNumber"],
                     "corr": round_performance["corr20d"],
                     "mmc": round_performance["mmc20d"],
+                    "tc": round_performance["tc"],
+                    "corrPercentile": round_performance["corr20dPercentile"],
+                    "mmcPercentile": round_performance["mmc20dPercentile"],
+                    "tcPercentile": round_performance["tcPercentile"],
                 }
                 normalized_data["modelPerformance"]["roundModelPerformances"].append(
                     round_performance_normalized
@@ -143,17 +149,23 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   corr
                   mmc
                   fnc
+                  tc
                   corrWMetamodel
+                  corrPercentile
+                  mmcPercentile
+                  tcPercentile
                 }
                 latestReps {
                   corr
                   mmc
                   fnc
+                  tc
                 }
                 latestRanks {
                   corr
                   mmc
                   fnc
+                  tc
                 }
                 latestReturns {
                   oneDay
@@ -176,14 +188,20 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   roundNumber
                   corr20d
                   mmc20d
+                  tc
+                  corr20dPercentile
+                  mmc20dPercentile
+                  tcPercentile
                 }
                 latestReps {
                   corr20d
                   mmc20d
+                  tc
                 }
                 latestRanks {
                   corr20d
                   mmc20d
+                  tc
                 }
                 latestReturns {
                   oneDay
