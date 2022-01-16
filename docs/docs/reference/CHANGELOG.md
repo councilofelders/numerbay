@@ -7,6 +7,8 @@ title: Changelog
 Notable changes to this project.
 
 ## dev
+
+## [0.1.4] - 2022-01-16
 - added `get_my_sales`
 - added error message for resolving artifact_id in `download_artifact` when no active artifact exists
 - set pypi GitHub workflow to run only on tagged commits
