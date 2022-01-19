@@ -34,6 +34,11 @@ def search_polls(
     """
     Retrieve polls.
     """
+    if skip and skip < 0:
+        raise HTTPException(
+            status_code=400, detail="Skip must be positive",
+        )
+
     polls = crud.poll.search(
         db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
     )
@@ -67,6 +72,11 @@ def search_polls_authenticated(
     """
     Retrieve polls (authenticated).
     """
+    if skip and skip < 0:
+        raise HTTPException(
+            status_code=400, detail="Skip must be positive",
+        )
+
     polls = crud.poll.search(
         db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
     )

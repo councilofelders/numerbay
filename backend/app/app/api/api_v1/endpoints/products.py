@@ -46,6 +46,11 @@ def search_products(
     """
     Retrieve products.
     """
+    if skip and skip < 0:
+        raise HTTPException(
+            status_code=400, detail="Skip must be positive",
+        )
+
     products = crud.product.search(
         db,
         id=id,
@@ -94,6 +99,11 @@ def search_products_authenticated(
     """
     Retrieve products (authenticated).
     """
+    if skip and skip < 0:
+        raise HTTPException(
+            status_code=400, detail="Skip must be positive",
+        )
+
     products = crud.product.search(
         db,
         id=id,

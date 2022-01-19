@@ -1,4 +1,4 @@
-import {Context, useFacetFactory, FacetSearchResult, Logger} from '@vue-storefront/core';
+import {Context, FacetSearchResult, Logger, useFacetFactory} from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
 // import getFiltersFromProductsAttributes from '../helpers/internals/getFiltersFromProductsAttributes';
 
@@ -42,7 +42,7 @@ const factoryParams = {
       })
     };
     const productResponse = await context.$numerbay.api.getProduct({
-      catId: categories[0].id,
+      catId: categories[0]?.id,
       limit: itemsPerPage,
       offset: (params.input.page - 1) * itemsPerPage,
       filters,

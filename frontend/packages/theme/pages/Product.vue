@@ -31,9 +31,9 @@
             <div class="product__meta">
               <span class="product__meta__item"><span v-if="!!productGetters.getCategory(product).tournament">Round:&nbsp;</span><span class="product__subheader__highlight" v-if="!globalsLoading && !!productGetters.getCategory(product).tournament">{{ globals.selling_round }}</span></span>
               <span class='divider-pipe desktop-only' v-if="!!productGetters.getCategory(product).tournament">|</span>
-              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getCategory(product).slug.toUpperCase() }}</span></span>
+              <span class="product__meta__item">Type:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getCategory(product).slug ? productGetters.getCategory(product).slug.toUpperCase() : '-' }}</span></span>
               <span class='divider-pipe desktop-only'>|</span>
-              <span class="product__meta__item">Seller:&nbsp;<span class="product__subheader__highlight">{{ product.owner?product.owner.username.toUpperCase():'-' }}</span></span>
+              <span class="product__meta__item">Seller:&nbsp;<span class="product__subheader__highlight">{{ productGetters.getOwner(product).toUpperCase() }}</span></span>
               <span class='divider-pipe desktop-only'>|</span>
               <span class="product__meta__item">Platform:&nbsp;<SfBadge class="color-warning sf-badge third-party-badge" v-if="!productGetters.getOrderedOption(product, optionIdx).is_on_platform">3rd Party</SfBadge>
               <span class="product__subheader__highlight">{{ productGetters.getOptionPlatform(productGetters.getOrderedOption(product, optionIdx)) }}</span></span>
@@ -270,6 +270,11 @@ export default {
 
     // TODO: Breadcrumbs are temporary disabled because productGetters return undefined. We have a mocks in data
     // const breadcrumbs = computed(() => productGetters.getBreadcrumbs ? productGetters.getBreadcrumbs(product.value) : props.fallbackBreadcrumbs);
+
+    if (products?.value?.total === 0) {
+      // non-existent product, redirect to home
+      context.root.$router.push('/');
+    }
 
     onSSR(async () => {
       await search({ id });

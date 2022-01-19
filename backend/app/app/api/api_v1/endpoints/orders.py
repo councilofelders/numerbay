@@ -29,6 +29,11 @@ def search_orders(
     """
     Retrieve orders.
     """
+    if skip and skip < 0:
+        raise HTTPException(
+            status_code=400, detail="Skip must be positive",
+        )
+
     orders = crud.order.search(
         db,
         role=role,

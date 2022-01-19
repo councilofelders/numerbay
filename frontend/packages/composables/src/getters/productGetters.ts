@@ -139,7 +139,7 @@ export const getFormattedPrice = (product: ProductVariant, withCurrency = true, 
   return `${price}`;
 };
 
-export const getProductMode = (product: ProductVariant): string => (product as any)?.mode;
+export const getProductMode = (product: ProductVariant): string => (product as any)?.mode || '-';
 
 export const getProductStakeLimit = (product: ProductVariant): string => (product as any)?.stake_limit ? `${(product as any)?.stake_limit} NMR` : '-';
 

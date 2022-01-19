@@ -464,7 +464,7 @@ export default {
     const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'platform', 'rank', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
     const activeCategory = computed(() => {
-      const items = categoryTree.value.items;
+      const items = categoryTree?.value?.items;
 
       if (!items) {
         return '';
@@ -474,6 +474,11 @@ export default {
 
       return category?.label || items[0].label;
     });
+
+    if (!categoryTree.value) {
+      // non-existent category, redirect to home
+      context.root.$router.push('/');
+    }
 
     const { changeFilters, isFacetCheckbox } = useUiHelpers();
     const { toggleFilterSidebar } = useUiState();

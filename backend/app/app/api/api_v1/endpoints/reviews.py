@@ -23,6 +23,11 @@ def search_reviews(
     """
     Retrieve reviews.
     """
+    if skip and skip < 0:
+        raise HTTPException(
+            status_code=400, detail="Skip must be positive",
+        )
+
     reviews = crud.review.search(
         db,
         id=id,
