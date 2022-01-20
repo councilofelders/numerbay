@@ -22,7 +22,12 @@ export default async function getProduct(context, params, customQuery?: CustomQu
   };
 
   // Use axios to send a POST request
-  const { data } = await context.client.post(url.href, payload, token ? authHeaders(token) : null);
+  const { data } = await context.client.post(url.href, payload, token ? authHeaders(token) : null).catch(async () => {
+    if (token) {
+      // retry without token
+      return await context.client.post((new URL('products/search', context.config.api.url)).href, payload);
+    }
+  });
 
   // Return data from the API
   return data;
