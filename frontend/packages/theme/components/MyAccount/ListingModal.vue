@@ -129,6 +129,26 @@
                     />
                   </ValidationProvider>
                 </div>
+                <div class="form__radio-group">
+                  <ValidationProvider v-slot="{ errors }" class="form__horizontal">
+                    <SfRadio
+                      name="useEncryption"
+                      value="true"
+                      label="Encrypt Artifacts"
+                      details="People will be able to buy this product"
+                      v-model="form.useEncryption"
+                      class="form__radio"
+                    />
+                    <SfRadio
+                      name="useEncryption"
+                      value="false"
+                      label="No Encryption"
+                      details="Buy button will be disabled without deleting the product"
+                      v-model="form.useEncryption"
+                      class="form__radio"
+                    />
+                  </ValidationProvider>
+                </div>
 <!--                <SfCheckbox v-model="form.hasFeaturedProducts" name="coupon">
                   <template #label>
                     <div class="sf-checkbox__label">
@@ -528,6 +548,7 @@ export default {
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
       isActive: product ? String(productGetters.getIsActive(product)) : 'true',
+      useEncryption: product ? String(productGetters.getUseEncryption(product)) : 'true',
       isPerpetual: String(productGetters.getExpirationRound(product) === null),
       expirationRound: productGetters.getExpirationRound(product),
       options: product ? product.options : [],

@@ -3,7 +3,7 @@
     <SfTab title="My orders">
       <div v-if="currentOrder">
         <SfButton class="sf-button--text all-orders" @click="currentOrder = null">All Orders</SfButton>
-        <OrderInfoPanel :order="currentOrder" :withCopyButtons="orderGetters.getStatus(currentOrder)==='pending'"/>
+        <OrderInfoPanel :order="currentOrder" :encryptedPrivateKey="user.encrypted_private_key" :withCopyButtons="orderGetters.getStatus(currentOrder)==='pending'"/>
       </div>
       <div v-else>
         <p class="message">
@@ -72,7 +72,7 @@ import {
   SfTabs
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
-import { orderGetters, productGetters, useUserOrder } from '@vue-storefront/numerbay';
+import { orderGetters, productGetters, useUser, useUserOrder } from '@vue-storefront/numerbay';
 import OrderInfoPanel from '../../components/Molecules/OrderInfoPanel';
 import { onSSR } from '@vue-storefront/core';
 
@@ -114,6 +114,7 @@ export default {
     next();
   },
   setup() {
+    const { user } = useUser();
     const { orders, search, loading } = useUserOrder('order-history');
     const currentOrder = ref(null);
 
@@ -219,7 +220,8 @@ export default {
       getStatusTextClass,
       getSubmissionStatusTextClass,
       downloadOrders,
-      currentOrder
+      currentOrder,
+      user
     };
   }
 };

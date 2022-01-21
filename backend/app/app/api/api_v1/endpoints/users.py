@@ -74,6 +74,8 @@ def update_user_me(
     numerai_api_key_public_id: str = Body(None),
     numerai_api_key_secret: str = Body(None),
     signature: str = Body(None),
+    public_key: str = Body(None),
+    encrypted_private_key: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -119,6 +121,10 @@ def update_user_me(
         user_in.nonce = new_nonce
         user_in.public_address = public_address
         user_in.signature = signature
+    if public_key is not None and encrypted_private_key is not None:
+        # todo validate key
+        user_in.public_key = public_key
+        user_in.encrypted_private_key = encrypted_private_key
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 

@@ -7,6 +7,7 @@ from .item import Item, ItemCreate, ItemInDB, ItemUpdate
 from .model import Model, ModelCreate, ModelInDB, ModelUpdate
 from .msg import Msg
 from .order import Order, OrderCreate, OrderInDB, OrderUpdate
+from .order_artifact import OrderArtifact, OrderArtifactCreate, OrderArtifactInDB, OrderArtifactUpdate
 from .poll import Poll, PollCreate, PollInDB, PollUpdate
 from .product import Product, ProductCreate, ProductInDB, ProductUpdate
 from .product_option import (

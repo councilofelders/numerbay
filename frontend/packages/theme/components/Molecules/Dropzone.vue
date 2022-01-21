@@ -10,6 +10,47 @@
 let component = {};
 
 if (process.browser) {
+  // encryption
+  const sigUtil = require('eth-sig-util');
+  const { encodeBase64 } = require('tweetnacl-util');
+
+  const readfile = (file) => {
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => {
+        resolve(fr.result);
+      };
+      fr.readAsArrayBuffer(file);
+    });
+  };
+
+  const encryptfile = async (objFile) => {
+    const plaintextbytes = await readfile(objFile)
+      .catch((err) => {
+        console.error(err);
+      });
+
+    const key = objFile.encryptionKey;
+
+    const cipherbytes = JSON.stringify(sigUtil.encrypt(
+      key,
+      { data: encodeBase64(new Uint8Array(plaintextbytes)) },
+      'x25519-xsalsa20-poly1305'
+    ));
+
+    if (!cipherbytes) {
+      console.error('Error encrypting file.');
+    }
+
+    const blob = new Blob([cipherbytes], {type: 'application/download'});
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    return new Promise((resolve, reject) => {
+      resolve(new File([blob], objFile.name + '.enc'));
+    });
+  };
+
+  // dropzone
   const Dropzone = require('dropzone').Dropzone;
   const {generateSignedUrl} = require('../../plugins/gcs');
   const useUiNotification = require('~/composables').useUiNotification;
@@ -55,6 +96,11 @@ if (process.browser) {
         type: Function,
         default: null,
         required: false
+      },
+      orders: {
+        type: Array,
+        required: false,
+        default: null
       }
     },
     computed: {
@@ -73,35 +119,48 @@ if (process.browser) {
           sending (file, xhr) {
             const _send = xhr.send;
             xhr.send = () => {
-              _send.call(xhr, file);
+              encryptfile(file).then((encryptedFile)=>{
+                _send.call(xhr, encryptedFile);
+              });
             };
           },
+          // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
           async accept(file, done) {
-            // eslint-disable-next-line no-use-before-define
-            if (vm.isS3) {
-              // eslint-disable-next-line no-use-before-define
-              const incFile = vm.awss3.includeFile === true;
-              // eslint-disable-next-line no-use-before-define
-              const signed = await generateSignedUrl(that.awss3.signingURL, that.awss3.params, file, incFile, vm.awss3);
-              if (signed.error) {
-                const { send } = useUiNotification();
-                send({
-                  message: signed.detail,
-                  type: 'danger'
-                });
+            for (const order of that.orders) {
+              if (!order.buyer_public_key) {
+                continue;
               }
+
               // eslint-disable-next-line no-use-before-define
-              vm.setOption('headers', {
-                'Content-Type': 'application/octet-stream'
-                // 'x-amz-acl': 'public-read'
-              });
-              file.artifactId = signed.id;
-              // eslint-disable-next-line no-use-before-define
-              vm.setOption('url', signed.url);
-              done();
-              // eslint-disable-next-line no-use-before-define
-              setTimeout(() => vm.dropzone.processFile(file));
+              if (vm.isS3) {
+                // eslint-disable-next-line no-use-before-define
+                const incFile = vm.awss3.includeFile === true;
+                // eslint-disable-next-line no-use-before-define
+                const signed = await generateSignedUrl(that.awss3.signingURL, {...that.awss3.params, orderId: Number(order.id)}, file, incFile, vm.awss3);
+                if (signed.error) {
+                  const {send} = useUiNotification();
+                  send({
+                    message: signed.detail,
+                    type: 'danger'
+                  });
+                }
+                // eslint-disable-next-line no-use-before-define
+                vm.setOption('headers', {
+                  'Content-Type': 'application/octet-stream'
+                  // 'x-amz-acl': 'public-read'
+                });
+                file.artifactId = signed.id;
+                file.encryptionKey = order.buyer_public_key;
+                // eslint-disable-next-line no-use-before-define
+                vm.setOption('url', signed.url);
+
+                // eslint-disable-next-line no-use-before-define
+                await vm.dropzone.processFile(file);
+                // setTimeout(() => vm.dropzone.processFile(file));
+                console.log('file', file);
+              }
             }
+            // done();
           }
         };
         Object.keys(s3Settings).forEach((key) => {

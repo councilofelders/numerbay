@@ -1,9 +1,9 @@
 import {
+  ComposableFunctionArgs,
   ComputedProperty,
   CustomQuery,
   UseUserLoginParams,
-  UseUserRegisterParams,
-  ComposableFunctionArgs
+  UseUserRegisterParams
 } from '@vue-storefront/core';
 import {Ref} from '@vue/composition-api';
 
@@ -107,6 +107,27 @@ export interface UseProductArtifact<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> {
   search(params: ComposableFunctionArgs<ARTIFACT_SEARCH_PARAMS>): Promise<void>;
   loading: ComputedProperty<boolean>;
   error: ComputedProperty<UseProductArtifactErrors>;
+  downloadArtifact(params: { productId: number, artifactId: number }): Promise<void>;
+  submitArtifact(params: { orderId: number, artifactId: number }): Promise<void>;
+  createArtifact(params: { artifact: any }): Promise<void>;
+  updateArtifact(params: { productId: number, artifactId: number, description: string }): Promise<void>;
+  deleteArtifact(params: { productId: number, artifactId: number }): Promise<void>;
+}
+
+export interface UseOrderArtifactErrors {
+  search: Error;
+  downloadArtifact: Error;
+  submitArtifact: Error;
+  createArtifact: Error;
+  updateArtifact: Error;
+  deleteArtifact: Error;
+}
+
+export interface UseOrderArtifact<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> {
+  artifacts: ComputedProperty<ARTIFACTS>;
+  search(params: ComposableFunctionArgs<ARTIFACT_SEARCH_PARAMS>): Promise<void>;
+  loading: ComputedProperty<boolean>;
+  error: ComputedProperty<UseOrderArtifactErrors>;
   downloadArtifact(params: { productId: number, artifactId: number }): Promise<void>;
   submitArtifact(params: { orderId: number, artifactId: number }): Promise<void>;
   createArtifact(params: { artifact: any }): Promise<void>;

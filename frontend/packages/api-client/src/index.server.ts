@@ -1,42 +1,46 @@
-import {apiClientFactory, ApiClientExtension, Logger} from '@vue-storefront/core';
-import getProduct from './api/getProduct';
-import createProduct from './api/createProduct';
-import updateProduct from './api/updateProduct';
-import deleteProduct from './api/deleteProduct';
-import getCategory from './api/getCategory';
-import getReview from './api/getReview';
-import getFavorite from './api/getFavorite';
+import {ApiClientExtension, Logger, apiClientFactory} from '@vue-storefront/core';
+import axios from 'axios';
+import closePoll from './api/closePoll';
+import createArtifact from './api/createArtifact';
 import createFavorite from './api/createFavorite';
-import deleteFavorite from './api/deleteFavorite';
-import createReview from './api/createReview';
-import signUpUser from './api/signUpUser';
-import logInGetToken from './api/logInGetToken';
-import logInGetTokenWeb3 from './api/logInGetTokenWeb3';
-import logInGetNonce from './api/logInGetNonce';
-import logInGetNonceAuthenticated from './api/logInGetNonceAuthenticated';
-import logOutUser from './api/logOutUser';
-import getMe from './api/getMe';
-import userUpdateMe from './api/userUpdateMe';
-import getNumeraiModels from './api/getNumeraiModels';
-import getNumeraiModelInfo from './api/getNumeraiModelInfo';
-import getOrder from './api/getOrder';
 import createOrder from './api/createOrder';
-import getGlobals from './api/getGlobals';
+import createPoll from './api/createPoll';
+import createProduct from './api/createProduct';
+import createReview from './api/createReview';
+import deleteArtifact from './api/deleteArtifact';
+import deleteFavorite from './api/deleteFavorite';
+import deleteOrderArtifact from './api/deleteOrderArtifact';
+import deletePoll from './api/deletePoll';
+import deleteProduct from './api/deleteProduct';
+import getArtifact from './api/getArtifact';
 import getArtifactDownloadUrl from './api/getArtifactDownloadUrl';
 import getArtifactUploadUrl from './api/getArtifactUploadUrl';
-import validateArtifactUpload from './api/validateArtifactUpload';
-import getArtifact from './api/getArtifact';
-import createArtifact from './api/createArtifact';
+import getCategory from './api/getCategory';
+import getFavorite from './api/getFavorite';
+import getGlobals from './api/getGlobals';
+import getMe from './api/getMe';
+import getNumeraiModelInfo from './api/getNumeraiModelInfo';
+import getNumeraiModels from './api/getNumeraiModels';
+import getOrder from './api/getOrder';
+import getOrderArtifact from './api/getOrderArtifact';
+import getOrderArtifactDownloadUrl from './api/getOrderArtifactDownloadUrl';
+import getOrderArtifactUploadUrl from './api/getOrderArtifactUploadUrl';
+import getPoll from './api/getPoll';
+import getProduct from './api/getProduct';
+import getReview from './api/getReview';
+import logInGetNonce from './api/logInGetNonce';
+import logInGetNonceAuthenticated from './api/logInGetNonceAuthenticated';
+import logInGetToken from './api/logInGetToken';
+import logInGetTokenWeb3 from './api/logInGetTokenWeb3';
+import logOutUser from './api/logOutUser';
+import signUpUser from './api/signUpUser';
 import submitArtifact from './api/submitArtifact';
 import updateArtifact from './api/updateArtifact';
-import deleteArtifact from './api/deleteArtifact';
-import getPoll from './api/getPoll';
-import createPoll from './api/createPoll';
 import updatePoll from './api/updatePoll';
-import deletePoll from './api/deletePoll';
-import closePoll from './api/closePoll';
+import updateProduct from './api/updateProduct';
+import userUpdateMe from './api/userUpdateMe';
+import validateArtifactUpload from './api/validateArtifactUpload';
 import votePoll from './api/votePoll';
-import axios from 'axios';
 
 // const defaultSettings = {};
 
@@ -136,13 +140,17 @@ const { createApiClient } = apiClientFactory<any, any>({
     createOrder,
     getGlobals,
     getArtifactDownloadUrl,
+    getOrderArtifactDownloadUrl,
     getArtifactUploadUrl,
+    getOrderArtifactUploadUrl,
     validateArtifactUpload,
     getArtifact,
+    getOrderArtifact,
     createArtifact,
     submitArtifact,
     updateArtifact,
     deleteArtifact,
+    deleteOrderArtifact,
     getPoll,
     createPoll,
     updatePoll,

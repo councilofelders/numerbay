@@ -8,6 +8,7 @@ from app.api.api_v1.endpoints import (  # items,
     login,
     numerai,
     orders,
+    order_artifacts,
     polls,
     products,
     reviews,
@@ -24,6 +25,7 @@ api_router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
 api_router.include_router(categories.router, prefix="/categories", tags=["categories"])
 api_router.include_router(favorites.router, prefix="/favorites", tags=["favorites"])
 api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
+api_router.include_router(order_artifacts.router, prefix="/artifacts", tags=["artifacts"])
 api_router.include_router(numerai.router, prefix="/numerai", tags=["numerai"])
 api_router.include_router(polls.router, prefix="/polls", tags=["polls"])
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])

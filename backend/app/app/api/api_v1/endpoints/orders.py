@@ -227,6 +227,7 @@ def create_order(
             else None,
             coupon=product_option_obj.coupon,
             coupon_specs=product_option_obj.coupon_specs,
+            buyer_public_key=current_user.public_key if product.use_encryption else None  # validate buyer key exists
         )
 
         order = crud.order.create_with_buyer(

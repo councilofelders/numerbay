@@ -17,10 +17,14 @@ export type User = {
   id?: number;
   username?: string;
   email?: string;
-    // eslint-disable-next-line camelcase
+  // eslint-disable-next-line camelcase
   public_address?: string;
-    // eslint-disable-next-line camelcase
+  // eslint-disable-next-line camelcase
   numerai_api_key_public_id?: string;
+  // eslint-disable-next-line camelcase
+  public_key?: string;
+  // eslint-disable-next-line camelcase
+  encrypted_private_key?: string;
   nonce?: string;
   models?: any[]
 };
@@ -162,6 +166,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
     getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
     getIsActive: (product: PRODUCT) => boolean;
+    getUseEncryption: (product: PRODUCT) => boolean;
     getIsOnPlatform: (product: PRODUCT) => boolean;
     getExpirationRound: (product: PRODUCT) => number;
     getOwner: (product: PRODUCT) => string;

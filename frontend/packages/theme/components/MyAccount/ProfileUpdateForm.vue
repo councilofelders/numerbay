@@ -47,21 +47,26 @@
       <div v-if="error.web3">
         {{ error.web3 }}
       </div>
+      <SfButton class="form__button" @click="generateKeyPair" type="button">{{ $t('Generate key Pair') }}</SfButton>
+      {{form}}
       <SfButton class="form__button">{{ $t('Update profile data') }}</SfButton>
     </form>
   </ValidationObserver>
 </template>
 
 <script>
+import { SfButton, SfInput } from '@storefront-ui/vue';
+import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
+import { email, min, required } from 'vee-validate/dist/rules';
 import { reactive, ref } from '@vue/composition-api';
-import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
 import { useUser, userGetters } from '@vue-storefront/numerbay';
-import { useUiNotification } from '~/composables';
-import { SfInput, SfButton } from '@storefront-ui/vue';
+import { Logger } from '@vue-storefront/core';
 import MetamaskButton from '../Molecules/MetamaskButton';
 import Web3 from 'web3';
-import { Logger } from '@vue-storefront/core';
-import { email, min, required } from 'vee-validate/dist/rules';
+import { encodeBase64 } from 'tweetnacl-util';
+import { encrypt } from 'eth-sig-util';
+import nacl from 'tweetnacl';
+import { useUiNotification } from '~/composables';
 
 extend('email', {
   ...email,
@@ -99,6 +104,34 @@ export default {
     }
   },
   methods: {
+    async generateKeyPair() {
+      const keyPair = nacl.box.keyPair();
+      const privateKeyBytes = keyPair.secretKey;
+      const publicKeyBytes = keyPair.publicKey;
+
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+
+      const key = await window.ethereum.request({
+        method: 'eth_getEncryptionPublicKey',
+        params: [accounts[0]]
+      });
+
+      const encryptedPrivateKey = JSON.stringify(encrypt(
+        key,
+        { data: privateKeyBytes.toString('hex') },
+        'x25519-xsalsa20-poly1305'
+      ));
+
+      await this.updateUser({
+        user: {
+          publicKey: encodeBase64(publicKeyBytes),
+          encryptedPrivateKey: encryptedPrivateKey
+        }
+      });
+      this.form = this.resetForm();
+    },
     async handleWeb3Connect() {
       await this.initWeb3Modal();
       await this.ethereumListener();
@@ -184,7 +217,9 @@ export default {
       username: userGetters.getUsername(user.value),
       email: userGetters.getEmailAddress(user.value),
       publicAddress: userGetters.getPublicAddress(user.value),
-      nonce: userGetters.getNonce(user.value)
+      nonce: userGetters.getNonce(user.value),
+      publicKey: user.value.public_key,
+      encryptedPrivateKey: user.value.encrypted_private_key
     });
 
     const form = ref(resetForm());

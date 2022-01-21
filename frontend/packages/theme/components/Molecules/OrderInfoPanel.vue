@@ -118,7 +118,7 @@
         class="sf-property--full-width property"
       />
     </div>
-    <SfTable class="orders" v-if="artifacts && orderGetters.getStatus(order)=='confirmed'">
+    <SfTable class="orders" v-if="artifacts && orderGetters.getStatus(order)=='confirmed' && !order.buyer_public_key">
       <SfTableHeading>
         <SfTableHeader
           v-for="tableHeader in tableHeaders"
@@ -153,14 +153,54 @@
         </SfTableData>
       </SfTableRow>
     </SfTable>
+
+    <SfTable class="orders" v-if="orderArtifacts && orderGetters.getStatus(order)=='confirmed' && !!order.buyer_public_key">
+      <SfTableHeading>
+        <SfTableHeader
+          v-for="tableHeader in ['Name', 'Action']"
+          :key="tableHeader"
+          >{{ tableHeader }}</SfTableHeader>
+      </SfTableHeading>
+      <SfTableRow v-if="orderArtifacts && orderArtifacts.total===0">Please wait for the seller to upload artifacts after the round opens</SfTableRow>
+      <SfTableRow v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
+        <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
+        <SfTableData class="orders__view orders__element--right">
+          <SfLoader :class="{ loader: loading }" :loading="loading">
+            <span class="artifact-actions">
+              <SfButton class="sf-button--text action__element" @click="downloadAndDecrypt(artifact)" v-if="order.mode === 'file'">
+                {{ $t('Download') }}
+              </SfButton>
+              <SfButton class="sf-button--text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name && !!order.submit_model_id">
+                {{ $t('Submit') }}
+              </SfButton>
+            </span>
+          </SfLoader>
+        </SfTableData>
+      </SfTableRow>
+    </SfTable>
   </div>
 </template>
 
 <script>
 import { SfButton, SfLink, SfLoader, SfProperty, SfTable } from '@storefront-ui/vue';
-import { artifactGetters, orderGetters, useProductArtifact } from '@vue-storefront/numerbay';
+import { artifactGetters, orderGetters, useOrderArtifact, useProductArtifact } from '@vue-storefront/numerbay';
+import axios from 'axios';
 import { computed } from '@vue/composition-api';
+import { decodeBase64 } from 'tweetnacl-util';
+import { decrypt } from 'eth-sig-util';
 import { useUiNotification } from '~/composables';
+
+// decryption
+function readfile(file) {
+  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      resolve(fr.result);
+    };
+    fr.readAsBinaryString(file);
+  });
+}
 
 export default {
   name: 'OrderInfoPanel',
@@ -173,6 +213,9 @@ export default {
   },
   props: {
     order: {
+      default: null
+    },
+    encryptedPrivateKey: {
       default: null
     },
     withCopyButtons: {
@@ -194,9 +237,9 @@ export default {
       }
 
       const downloadUrl = await this.downloadArtifact({productId: this.order.product.id, artifactId: artifact.id});
-      if (this.error.downloadArtifact) {
+      if (this.orderArtifactError.downloadArtifact) {
         this.send({
-          message: this.error.downloadArtifact.message,
+          message: this.orderArtifactError.downloadArtifact.message,
           type: 'danger'
         });
         return;
@@ -207,17 +250,68 @@ export default {
       link.href = downloadUrl;
       link.download = filename;
       link.click();
-      // console.log('downloadUrl', downloadUrl);
-      // axios.get(downloadUrl, { responseType: 'blob', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'} })
-      //   .then(response => {
-      //     const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
-      //     const blob = new Blob([response.data], { type: 'application/pdf' });
-      //     const link = document.createElement('a');
-      //     link.href = URL.createObjectURL(blob);
-      //     link.download = filename;
-      //     link.click();
-      //     URL.revokeObjectURL(link.href);
-      //   }).catch(console.error);
+    },
+    async decryptfile(objFile) {
+      const cipherbytes = await readfile(objFile)
+        .catch((err) => {
+          console.error(err);
+        });
+
+      const privateKeyStr = await window.ethereum.request({
+        method: 'eth_decrypt',
+        params: [this.encryptedPrivateKey, window.ethereum.selectedAddress]
+      });
+
+      const privateKey = (Buffer.from(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))))).toString('hex');
+
+      const plaintextbytes = decodeBase64(decrypt(
+        JSON.parse(cipherbytes),
+        privateKey
+      ));
+
+      if (!plaintextbytes) {
+        console.log('Error decrypting file.');
+      }
+
+      console.log('ciphertext decrypted');
+
+      const blob = new Blob([plaintextbytes], {type: 'application/download'});
+      const blobUrl = URL.createObjectURL(blob);
+
+      // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+      return new Promise((resolve, reject) => {
+        resolve(blobUrl);
+      });
+    },
+    async downloadAndDecrypt(artifact) {
+      if (!artifact.object_name && artifact.url) {
+        window.open(artifact.url, '_blank');
+        return;
+      }
+      this.activeArtifact = artifact;
+      const downloadUrl = await this.downloadOrderArtifact({artifactId: artifact.id});
+      this.activeArtifact = null;
+      if (this.error.downloadArtifact) {
+        this.send({
+          message: this.error.downloadArtifact.message,
+          type: 'danger'
+        });
+        return;
+      }
+
+      axios.get(downloadUrl, { responseType: 'blob', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'} })
+        .then(response => {
+          const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
+          const blob = new Blob([response.data]);
+          const file = new File([blob], filename);
+          this.decryptfile(file).then((blobUrl) => {
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+          });
+        }).catch(console.error);
     },
     async submit(artifact) {
       await this.submitArtifact({orderId: this.order.id, artifactId: artifact.id});
@@ -232,9 +326,12 @@ export default {
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const { artifacts, search, downloadArtifact, submitArtifact, loading, error } = useProductArtifact(`${props.order.product.id}`);
+    const { artifacts: orderArtifacts, search: searchOrderArtifacts, downloadArtifact: downloadOrderArtifact,
+      submitArtifact: submitOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError } = useOrderArtifact(`${props.order.id}`);
     const { send } = useUiNotification();
 
     search({ productId: props.order.product.id });
+    searchOrderArtifacts({ orderId: props.order.id });
 
     const tableHeaders = [
       'Artifact ID',
@@ -247,11 +344,16 @@ export default {
     return {
       tableHeaders,
       artifacts: computed(() => artifacts ? artifacts.value : null),
+      orderArtifacts: computed(() => orderArtifacts ? orderArtifacts.value : null),
       loading,
+      orderArtifactLoading,
       error,
+      orderArtifactError,
       send,
       downloadArtifact,
+      downloadOrderArtifact,
       submitArtifact,
+      submitOrderArtifact,
       orderGetters,
       artifactGetters
     };

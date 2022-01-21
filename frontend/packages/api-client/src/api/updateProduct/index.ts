@@ -25,6 +25,8 @@ export default async function updateProduct(context, params, customQuery?: Custo
     // eslint-disable-next-line camelcase
     is_active: params.isActive,
     // eslint-disable-next-line camelcase
+    use_encryption: params.useEncryption,
+    // eslint-disable-next-line camelcase
     expiration_round: params.expirationRound,
     description: params.description,
     options: params.options,

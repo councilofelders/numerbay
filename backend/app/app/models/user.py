@@ -33,6 +33,8 @@ class User(Base):
     numerai_api_key_can_read_submission_info = Column(Boolean, nullable=True)
     numerai_api_key_can_read_user_info = Column(Boolean, nullable=True)
     numerai_wallet_address = Column(String, nullable=True, unique=True)
+    public_key = Column(String)
+    encrypted_private_key = Column(String)
     items = relationship("Item", back_populates="owner")
     products = relationship("Product", back_populates="owner")
     models = relationship("Model", back_populates="owner")

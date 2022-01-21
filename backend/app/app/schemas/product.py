@@ -16,17 +16,10 @@ from app.schemas.user import GenericOwner
 
 # Shared properties
 class ProductBase(BaseModel):
-    # is_on_platform: Optional[bool] = None
-    # price: Optional[Decimal] = None
-    # currency: Optional[str] = None
-    # wallet: Optional[str] = None
-    # mode: Optional[str] = None
-    # stake_limit: Optional[Decimal] = None
-    # chain: Optional[str] = None
     avatar: Optional[HttpUrl] = None
-    # third_party_url: Optional[HttpUrl] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    use_encryption: Optional[bool] = None
     is_ready: Optional[bool] = None
     expiration_round: Optional[int] = None
     total_num_sales: Optional[int] = None
@@ -38,10 +31,6 @@ class ProductBase(BaseModel):
 # Properties to receive on product creation
 class ProductCreate(ProductBase):
     name: str
-    # is_on_platform: bool
-    # price: Decimal
-    # currency: str
-    # chain: Optional[str]
     category_id: int
     options: Optional[List[ProductOptionCreate]]
 
@@ -56,10 +45,6 @@ class ProductInDBBase(ProductBase):
     id: int
     name: str
     sku: str
-    # is_on_platform: bool
-    # price: Decimal
-    # currency: str
-    # chain: Optional[str]
     category: Optional[Category]
 
     class Config:

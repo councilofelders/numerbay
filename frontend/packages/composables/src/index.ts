@@ -14,6 +14,7 @@ export { default as useUser } from './useUser';
 export { default as useUserBilling } from './useUserBilling';
 export { default as useUserOrder } from './useUserOrder';
 export { default as useProductArtifact } from './useProductArtifact';
+export { default as useOrderArtifact } from './useOrderArtifact';
 export { default as useUserShipping } from './useUserShipping';
 export { default as useWishlist } from './useWishlist';
 export { default as useNumerai } from './useNumerai';

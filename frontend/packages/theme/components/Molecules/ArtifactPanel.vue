@@ -3,7 +3,7 @@
     <div class="highlighted highlighted--total">
       <!--<dropzone id="foo" ref="foo" :options="dropzoneOptions" :destroyDropzone="true" @vdropzone-error="onUploadError" v-on:vdropzone-sending="onSending"></dropzone>-->
   <!--    <SfLoader :class="{ loader: componentLoading }" :loading="componentLoading">-->
-        <dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
+        <dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false" :orders="orders"
           v-on:vdropzone-error="s3UploadError"
           v-on:vdropzone-success="s3UploadSuccess"
           v-on:vdropzone-total-upload-progress="s3UploadProgress"
@@ -142,7 +142,8 @@ export default {
       componentKey: 0,
       componentLoading: false,
       gcs: {
-        signingURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
+        // signingURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
+        signingURL: vm.$root.context.$vsf.$numerbay.api.getOrderArtifactUploadUrl,
         params: {
           productId: vm.product.id
         },
@@ -187,6 +188,9 @@ export default {
     },
     withCopyButtons: {
       default: false
+    },
+    orders: {
+      default: null
     }
   },
   watch: {
