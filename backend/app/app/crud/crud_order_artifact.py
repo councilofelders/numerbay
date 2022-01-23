@@ -8,7 +8,9 @@ from app.models.order_artifact import OrderArtifact
 from app.schemas.order_artifact import OrderArtifactCreate, OrderArtifactUpdate
 
 
-class CRUDOrderArtifact(CRUDBase[OrderArtifact, OrderArtifactCreate, OrderArtifactUpdate]):
+class CRUDOrderArtifact(
+    CRUDBase[OrderArtifact, OrderArtifactCreate, OrderArtifactUpdate]
+):
     def get_multi_by_order_round(
         self, db: Session, *, order: models.Order, round_tournament: int
     ) -> List[OrderArtifact]:

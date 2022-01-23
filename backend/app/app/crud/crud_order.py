@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import Session
 
+from app import crud
 from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.product import Product
@@ -119,6 +120,14 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 if filter_key == "state":
                     state_list = [str(i) for i in filter_item["in"]]
                     query_filters.append(Order.state.in_(state_list))
+                if filter_key == "active":
+                    current_round = crud.globals.update_singleton(db).selling_round  # type: ignore
+                    query_filters.extend(
+                        [
+                            Order.round_order > current_round - Order.quantity,  # type: ignore
+                            Order.state == "confirmed",
+                        ]
+                    )
 
         query = db.query(self.model)
         if role != "buyer":  # to handle filter on Product owner

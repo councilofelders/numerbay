@@ -82,25 +82,28 @@ if (process.browser) {
               // eslint-disable-next-line no-use-before-define
               const incFile = vm.awss3.includeFile === true;
               // eslint-disable-next-line no-use-before-define
-              const signed = await generateSignedUrl(that.awss3.signingURL, that.awss3.params, file, incFile, vm.awss3);
-              if (signed.error) {
-                const { send } = useUiNotification();
-                send({
-                  message: signed.detail,
-                  type: 'danger'
+              if (file.isSubtask) {
+                // eslint-disable-next-line no-use-before-define
+                const signed = await generateSignedUrl(that.awss3.signingURL, that.awss3.params, file, incFile, vm.awss3);
+                if (signed.error) {
+                  const {send} = useUiNotification();
+                  send({
+                    message: signed.detail,
+                    type: 'danger'
+                  });
+                }
+                // eslint-disable-next-line no-use-before-define
+                vm.setOption('headers', {
+                  'Content-Type': 'application/octet-stream'
+                  // 'x-amz-acl': 'public-read'
                 });
+                file.artifactId = signed.id;
+                // eslint-disable-next-line no-use-before-define
+                vm.setOption('url', signed.url);
+                done();
+                // eslint-disable-next-line no-use-before-define
+                setTimeout(() => vm.dropzone.processFile(file));
               }
-              // eslint-disable-next-line no-use-before-define
-              vm.setOption('headers', {
-                'Content-Type': 'application/octet-stream'
-                // 'x-amz-acl': 'public-read'
-              });
-              file.artifactId = signed.id;
-              // eslint-disable-next-line no-use-before-define
-              vm.setOption('url', signed.url);
-              done();
-              // eslint-disable-next-line no-use-before-define
-              setTimeout(() => vm.dropzone.processFile(file));
             }
           }
         };
@@ -264,6 +267,40 @@ if (process.browser) {
       if (this.destroyDropzone) this.dropzone.destroy();
     },
     methods: {
+      // addFile(file) {
+      //   file.upload = {
+      //     uuid: Dropzone.uuidv4(),
+      //     progress: 0,
+      //     // Setting the total upload size to file.size for the beginning
+      //     // It's actual different than the size to be transmitted.
+      //     total: file.size,
+      //     bytesSent: 0,
+      //     filename: this.dropzone._renameFile(file)
+      //     // Not setting chunking information here, because the acutal data — and
+      //     // thus the chunks — might change if `options.transformFile` is set
+      //     // and does something to the data.
+      //   };
+      //   this.dropzone.files.push(file);
+      //
+      //   file.status = Dropzone.ADDED;
+      //
+      //   this.dropzone.emit('addedfile', file);
+      //
+      //   this.dropzone._enqueueThumbnail(file);
+      //
+      //   this.dropzone.accept(file, (error) => {
+      //     if (error) {
+      //       file.accepted = false;
+      //       this.dropzone._errorProcessing([file], error); // Will set the file.status
+      //     } else {
+      //       file.accepted = true;
+      //       if (this.dropzone.options.autoQueue) {
+      //         this.dropzone.enqueueFile(file);
+      //       } // Will set .accepted = true
+      //     }
+      //     this.dropzone._updateMaxFilesReachedClass();
+      //   });
+      // },
       manuallyAddFile(file, fileUrl) {
         file.manuallyAdded = true;
         this.dropzone.emit('addedfile', file);
@@ -375,7 +412,7 @@ if (process.browser) {
   };
 }
 
-component.name = 'dropzone';
+component.name = 'multiple-dropzone';
 component.props = component.props || ['useCustomSlot', 'includeStyling'];
 component.render = (createElement) => {
   // eslint-disable-next-line consistent-this

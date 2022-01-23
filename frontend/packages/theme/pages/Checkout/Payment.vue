@@ -77,7 +77,9 @@
           title=""
           message="DO NOT send NMR from your own wallet. Currently only payments from your Numerai Wallet will be recognized, otherwise payments will be lost."
           type="warning"
-        />
+        >
+          <template #close><span></span></template>
+        </SfNotification>
         <SfCheckbox v-e2e="'terms'" v-model="terms" name="terms" class="summary__terms">
           <template #label>
             <div class="sf-checkbox__label">

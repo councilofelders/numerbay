@@ -1,95 +1,94 @@
 <template>
   <div>
     <div class="highlighted highlighted--total">
-      <!--<dropzone id="foo" ref="foo" :options="dropzoneOptions" :destroyDropzone="true" @vdropzone-error="onUploadError" v-on:vdropzone-sending="onSending"></dropzone>-->
-  <!--    <SfLoader :class="{ loader: componentLoading }" :loading="componentLoading">-->
-        <dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
+        <multiple-dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false" :orders="orders"
           v-on:vdropzone-error="s3UploadError"
           v-on:vdropzone-success="s3UploadSuccess"
-          v-on:vdropzone-total-upload-progress="s3UploadProgress"
+          v-on:vdropzone-total-upload-progress="s3TotalUploadProgress"
           v-on:vdropzone-queue-complete="s3UploadAllComplete"
           v-on:vdropzone-removed-file="onRemove"
+          v-on:vdropzone-file-added="onFileAdd"
         >
-          Drop files here to upload<br/>Allowed extentions: {{this.dropzoneOptions.acceptedFiles}}<br/>File names are obfuscated on upload
-        </dropzone>
-  <!--    </SfLoader>-->
-  <!--    v-on:vdropzone-sending="onSending"-->
+          Drop files here to upload<br/>An encrypted copy will be added for each active order<br/>Allowed extentions: {{this.dropzoneOptions.acceptedFiles}}
+        </multiple-dropzone>
     </div>
-    <div class="top-buttons">
-      <SfButton class="sf-button color-secondary" @click="isManualFormOpen = !isManualFormOpen" :disabled="loading">
-        {{ $t('Manually Add URL') }}
-      </SfButton>
-    </div>
-    <SfTable class="orders" v-if="artifacts">
+
+    <SfNotification
+      visible
+      :persistent="true"
+      title=""
+      message="You still have active orders for unencrypted sales, files will be not be encrypted for those orders."
+      type="warning"
+      v-if="false"
+    >
+      <template #icon>
+        <SfIcon
+          class="sf-notification__icon"
+          icon="info_shield"
+          size="lg"
+          color="white"
+        />
+      </template>
+      <template #close><span></span></template>
+    </SfNotification>
+    <SfNotification
+      visible
+      :persistent="true"
+      title=""
+      message="Files will be encrypted in your browser before upload for each active order."
+      type="success"
+      v-else
+    >
+      <template #icon>
+        <SfIcon
+          class="sf-notification__icon"
+          icon="safety"
+          size="lg"
+          color="white"
+        />
+      </template>
+      <template #close><span></span></template>
+    </SfNotification>
+
+    <SfTable class="orders" v-if="getAllOrderArtifacts() && orders && orders.length > 0">
       <SfTableHeading>
         <SfTableHeader
-          v-for="tableHeader in tableHeaders"
+          v-for="tableHeader in ['Order ID', 'File Name', 'State', 'Action']"
           :key="tableHeader"
           >{{ tableHeader }}</SfTableHeader>
-        <!--<SfTableHeader class="orders__element&#45;&#45;right">
-          <span class="smartphone-only">{{ $t('Download') }}</span>
-          <SfButton
-            class="desktop-only sf-button&#45;&#45;text orders__download-all"
-            @click="downloadOrders()"
-          >
-            {{ $t('Download all') }}
-          </SfButton>
-        </SfTableHeader>-->
       </SfTableHeading>
-      <SfTableRow v-if="artifacts && artifacts.total===0">Please upload artifacts after the round opens</SfTableRow>
-      <SfTableRow v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
-        <SfTableData>{{ artifactGetters.getId(artifact) }}</SfTableData>
+      <SfTableRow v-if="getAllOrderArtifacts() && getAllOrderArtifacts().length===0">Please upload artifacts after the round opens</SfTableRow>
+      <SfTableRow v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
+        <SfTableData>{{ artifact.order_id }}</SfTableData>
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
-        <SfTableData>
-          <SfLoader :class="{ loader: componentLoading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="componentLoading && !!activeArtifact && activeArtifact.id===artifact.id">
-            <SfInput :value="artifact.description" style="margin-right: 10px" label="Description" :disabled="(componentLoading || loading) && !!activeArtifact" @input="(value)=>{artifact.description=value; activeArtifact=artifact}"/>
-<!--             @input="(value)=>(formEdit=(()=>handleEdit(value, product, artifact)))"-->
-          </SfLoader>
-        </SfTableData>
-<!--        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>-->
+        <SfTableData><span :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="loading && activeArtifact && activeArtifact.id===artifact.id">
-            <span class="artifact-actions" v-if="!!activeArtifact && activeArtifact.id===artifact.id">
-              <SfLoader :class="{ loader: loading }" :loading="loading">
-                <SfButton class="sf-button--text" @click="handleEdit(product, activeArtifact)">
-                  {{ $t('Save') }}
-                </SfButton>
-              </SfLoader>
-            </span>
-            <span class="artifact-actions" v-else>
-              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact" @click="download(artifact)">
+            <span class="artifact-actions">
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact && activeArtifact.id===artifact.id" @click="downloadEncrypted(artifact)">
                 {{ $t('Download') }}
               </SfButton>
-              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact" @click="onManualRemove(artifact)">
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact && activeArtifact.id===artifact.id" @click="onManualRemoveOrderArtifact(artifact)">
                 {{ $t('Delete') }}
               </SfButton>
             </span>
           </SfLoader>
         </SfTableData>
       </SfTableRow>
-      <SfTableRow :key="'new'" v-if="isManualFormOpen">
-        <SfTableData></SfTableData>
+    </SfTable>
+
+    <SfTable class="orders">
+      <SfTableHeading>
+        <SfTableHeader>Active Order ID</SfTableHeader>
+        <SfTableHeader>Buyer</SfTableHeader>
+        <SfTableHeader>Files Uploaded</SfTableHeader>
+      </SfTableHeading>
+      <SfTableRow v-if="orders && orders.length===0">No active order to upload for</SfTableRow>
+      <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)" :class="(getOrderArtifacts(order).length === 0 || getOrderArtifacts(order).length < getMaxOrderArtifactsCount()) ? 'upload-warning' : ''">
+        <SfTableData>{{ orderGetters.getId(order) }}</SfTableData>
+        <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
         <SfTableData>
-          <ValidationObserver v-slot="{ handleSubmit }">
-            <ValidationProvider rules="url" v-slot="{ errors }">
-              <SfInput v-model="form.url"
-                       style="margin-right: 10px"
-                       label="URL"
-                       type="url"
-                       :valid="!errors[0]"
-                      :errorMessage="errors[0]"
-                       @change="encodeURL"></SfInput>
-            </ValidationProvider>
-          </ValidationObserver>
-        </SfTableData>
-        <SfTableData><SfInput v-model="form.description" style="margin-right: 10px" label="Description"></SfInput></SfTableData>
-<!--        <SfTableData></SfTableData>-->
-        <SfTableData class="orders__view orders__element--right">
-          <SfLoader :class="{ loader: loading }" :loading="loading">
-            <SfButton class="sf-button--text" @click="handleNew">
-              {{ $t('Save') }}
-            </SfButton>
-          </SfLoader>
+          {{getOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
         </SfTableData>
       </SfTableRow>
     </SfTable>
@@ -97,18 +96,23 @@
 </template>
 
 <script>
-import { SfButton, SfInput, SfLoader, SfTable } from '@storefront-ui/vue';
+import { SfButton, SfIcon, SfInput, SfLoader, SfNotification, SfTable } from '@storefront-ui/vue';
 import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
 import {
   artifactGetters,
   orderGetters,
-  useProductArtifact
+  useOrderArtifact,
+  useProductArtifact,
+  useUserOrder
 } from '@vue-storefront/numerbay';
 import { computed, ref } from '@vue/composition-api';
-import Dropzone from '../../components/Molecules/Dropzone';
 import { Logger } from '@vue-storefront/core';
+import MultipleDropzone from '../../components/Molecules/MultipleDropzone';
 import debounce from 'lodash.debounce';
 import { useUiNotification } from '~/composables';
+
+import { encodeBase64 } from 'tweetnacl-util';
+import { encrypt } from 'eth-sig-util';
 
 import 'nuxt-dropzone/dropzone.css';
 
@@ -124,14 +128,50 @@ extend('url', {
   message: 'This must be a valid URL'
 });
 
+const readfile = (file) => {
+  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      resolve(fr.result);
+    };
+    fr.readAsArrayBuffer(file);
+  });
+};
+
+const encryptfile = async (objFile, key) => {
+  const plaintextbytes = await readfile(objFile)
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const cipherbytes = JSON.stringify(encrypt(
+    key,
+    { data: encodeBase64(new Uint8Array(plaintextbytes)) },
+    'x25519-xsalsa20-poly1305'
+  ));
+
+  if (!cipherbytes) {
+    console.error('Error encrypting file.');
+  }
+
+  const blob = new Blob([cipherbytes], {type: 'application/download'});
+  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+  return new Promise((resolve, reject) => {
+    resolve(new File([blob], objFile.name));
+  });
+};
+
 export default {
-  name: 'ArtifactPanel',
+  name: 'OrderArtifactPanel',
   components: {
     SfButton,
+    SfIcon,
     SfInput,
     SfLoader,
+    SfNotification,
     SfTable,
-    Dropzone,
+    MultipleDropzone,
     ValidationProvider,
     ValidationObserver
   },
@@ -142,7 +182,8 @@ export default {
       componentKey: 0,
       componentLoading: false,
       gcs: {
-        signingURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
+        // signingURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
+        signingURL: vm.$root.context.$vsf.$numerbay.api.getOrderArtifactUploadUrl,
         params: {
           productId: vm.product.id
         },
@@ -187,35 +228,71 @@ export default {
     },
     withCopyButtons: {
       default: false
+    },
+    orders: {
+      default: null
     }
   },
-  watch: {
-    artifacts(artifacts) {
-      Logger.debug('artifact changed watch', artifacts);
-      if (artifacts) {
-        // this.$refs.foo.removeAllFiles(true);
-        for (const artifact of artifacts.data) {
-          if (artifact.object_name) {
-            const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size };
-            const url = '';
-            this.$refs.foo.manuallyAddFile(file, url);
+  // watch: {
+  //   artifacts(artifacts) {
+  //     Logger.debug('artifact changed watch', artifacts);
+  //     if (artifacts) {
+  //       // this.$refs.foo.removeAllFiles(true);
+  //       for (const artifact of artifacts.data) {
+  //         if (artifact.object_name) {
+  //           const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size };
+  //           const url = '';
+  //           this.$refs.foo.manuallyAddFile(file, url);
+  //         }
+  //       }
+  //     }
+  //   }
+  // },
+  methods: {
+    getOrderArtifacts(order) {
+      return this.orders.filter(o=>(o.id === order.id)).map(o=>o.artifacts).flat() || [];
+    },
+    getMaxOrderArtifactsCount() {
+      return Math.max.apply(null, this.orders.map(o=>o.artifacts?.length));
+    },
+    getAllOrderArtifacts() {
+      return this.orders.map(o=>o.artifacts).flat();
+    },
+    onFileAdd(file) {
+      if (!file.isSubtask) {
+        this.$refs.foo.dropzone.cancelUpload(file);
+        this.$refs.foo.dropzone.files = this.$refs.foo.dropzone.files.filter(f=>(f !== file)).map(f=>f);
+        this.$refs.foo.dropzone.updateTotalUploadProgress();
+        if (!this.orders || this.orders.length === 0) {
+          this.send({
+            message: 'Upload cancelled, no active order to upload for',
+            type: 'warning'
+          });
+          return;
+        }
+        for (const order of this.orders) {
+          if (!order.buyer_public_key) {
+            continue;
           }
+          encryptfile(file, order.buyer_public_key).then((newFile)=>{
+            newFile.isSubtask = true;
+            newFile.orderId = order.id;
+            this.$refs.foo.addFile(newFile);
+          });
         }
       }
-    }
-  },
-  methods: {
-    async download(artifact) {
+    },
+    async downloadEncrypted(artifact) {
       if (!artifact.object_name && artifact.url) {
         window.open(artifact.url, '_blank');
         return;
       }
       this.activeArtifact = artifact;
-      const downloadUrl = await this.downloadArtifact({productId: artifact.product_id, artifactId: artifact.id});
+      const downloadUrl = await this.downloadOrderArtifact({artifactId: artifact.id});
       this.activeArtifact = null;
-      if (this.error.downloadArtifact) {
+      if (this.orderArtifactError.downloadArtifact) {
         this.send({
-          message: this.error.downloadArtifact.message,
+          message: this.orderArtifactError.downloadArtifact.message,
           type: 'danger'
         });
         return;
@@ -226,64 +303,6 @@ export default {
       link.href = downloadUrl;
       link.download = filename;
       link.click();
-      // console.log('downloadUrl', downloadUrl);
-      // axios.get(downloadUrl, { responseType: 'blob', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'} })
-      //   .then(response => {
-      //     const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
-      //     const blob = new Blob([response.data], { type: 'application/pdf' });
-      //     const link = document.createElement('a');
-      //     link.href = URL.createObjectURL(blob);
-      //     link.download = filename;
-      //     link.click();
-      //     URL.revokeObjectURL(link.href);
-      //   }).catch(console.error);
-    },
-    encodeURL() {
-      if (this.form.url) {
-        this.form.url = encodeURI(decodeURI(this.form.url));
-      }
-    },
-    async handleEdit(product, artifact) {
-      const onComplete = async () => {
-        if (this.error.updateArtifact) {
-          this.send({
-            message: this.error.updateArtifact.message,
-            type: 'danger'
-          });
-        }
-        this.componentLoading = true;
-        try {
-          this.$refs.foo.disable();
-          this.componentKey += 1;
-          await this.search({ productId: this.product.id });
-        } finally {
-          this.$refs.foo.enable();
-          this.componentLoading = false;
-          this.activeArtifact = null;
-        }
-      };
-      await this.onArtifactEdit(artifact.description, product, artifact, onComplete);
-    },
-    async handleNew() {
-      await this.createArtifact({productId: this.product.id, artifact: this.form}).then(() => {
-        if (this.error.createArtifact) {
-          this.send({
-            message: this.error.createArtifact.message,
-            type: 'danger'
-          });
-        }
-      });
-      this.componentLoading = true;
-      try {
-        this.$refs.foo.disable();
-        this.componentKey += 1;
-        await this.search({ productId: this.product.id });
-        this.form = this.resetForm();
-        this.isManualFormOpen = false;
-      } finally {
-        this.$refs.foo.enable();
-        this.componentLoading = false;
-      }
     },
     onUploadError(file, message, xhr) {
       console.error('Upload Error: ', message, file, xhr);
@@ -296,17 +315,24 @@ export default {
     //     _send.call(xhr, file);
     //   };
     // },
-    async s3UploadProgress(progress) {
+    async s3TotalUploadProgress(progress) {
       if (progress === 100) {
         this.componentLoading = true;
       }
     },
+    // async s3UploadProgress(file, progress, bytesSent) {
+    //   // console.log(file.artifactId, progress, bytesSent);
+    //   // if (progress === 100) {
+    //   //   this.componentLoading = true;
+    //   // }
+    // },
     async s3UploadAllComplete() {
       if (this.componentLoading) {
         try {
           this.$refs.foo.disable();
           this.componentKey += 1;
           await this.search({ productId: this.product.id });
+          await this.orderSearch({ role: 'seller', filters: { active: true} });
         } finally {
           this.$refs.foo.enable();
           this.componentLoading = false;
@@ -314,9 +340,10 @@ export default {
       }
     },
     async s3UploadSuccess(file) {
-      Logger.debug('Upload success', this.product.id, file.artifactId);
-      const response = await this.$root.context.$vsf.$numerbay.api.validateArtifactUpload({productId: this.product.id, artifactId: file.artifactId});
+      Logger.debug('Upload success', file.artifactId);
+      const response = await this.$root.context.$vsf.$numerbay.api.validateOrderArtifactUpload({artifactId: file.artifactId});
       Logger.debug('response: ', response);
+      await this.orderSearch({ role: 'seller', filters: { active: true} });
     },
     s3UploadError(errorMessage) {
       Logger.error('s3 error', errorMessage);
@@ -327,10 +354,10 @@ export default {
     // },
     async onRemove(file, error, xhr) {
       Logger.debug('onRemove', file, error, xhr);
-      await this.deleteArtifact({productId: this.product.id, artifactId: file.artifactId}).then(() => {
-        if (this.error.deleteArtifact) {
+      await this.deleteOrderArtifact({artifactId: file.artifactId}).then(() => {
+        if (this.orderArtifactError.deleteArtifact) {
           this.send({
-            message: this.error.deleteArtifact.message,
+            message: this.orderArtifactError.deleteArtifact.message,
             type: 'danger'
           });
         }
@@ -338,21 +365,21 @@ export default {
       this.componentKey += 1;
       await this.search({ productId: this.product.id });
     },
-    async onManualRemove(artifact) {
+    async onManualRemoveOrderArtifact(artifact) {
       this.activeArtifact = artifact;
       this.componentLoading = true;
       try {
         this.$refs.foo.disable();
-        await this.deleteArtifact({productId: this.product.id, artifactId: artifact.id}).then(() => {
-          if (this.error.deleteArtifact) {
+        await this.deleteOrderArtifact({artifactId: artifact.id}).then(() => {
+          if (this.orderArtifactError.deleteArtifact) {
             this.send({
-              message: this.error.deleteArtifact.message,
+              message: this.orderArtifactError.deleteArtifact.message,
               type: 'danger'
             });
           }
         });
         this.componentKey += 1;
-        await this.search({ productId: this.product.id });
+        await this.orderSearch({ role: 'seller', filters: { active: true} });
       } finally {
         this.$refs.foo.enable();
         this.componentLoading = false;
@@ -370,6 +397,8 @@ export default {
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit, root }) {
     const { artifacts, search, createArtifact, updateArtifact, downloadArtifact, deleteArtifact, loading, error } = useProductArtifact(`${props.product.id}`);
+    const { downloadArtifact: downloadOrderArtifact, deleteArtifact: deleteOrderArtifact, error: orderArtifactError } = useOrderArtifact(`${props.product.id}`);
+    const { search: orderSearch } = useUserOrder('my-listings');
     const { send } = useUiNotification();
 
     search({ productId: props.product.id });
@@ -416,13 +445,28 @@ export default {
       // };
     }, 1000);
 
+    const getStatusTextClass = (artifact) => {
+      const status = artifact?.state;
+      switch (status) {
+        case 'pending':
+          return 'text-warning';
+        case 'active':
+          return 'text-success';
+        default:
+          return '';
+      }
+    };
+
     return {
       artifacts: computed(() => artifacts ? artifacts.value : null),
       createArtifact,
       downloadArtifact,
+      downloadOrderArtifact,
       deleteArtifact,
+      deleteOrderArtifact,
       loading,
       error,
+      orderArtifactError,
       send,
       search,
       tableHeaders,
@@ -432,7 +476,9 @@ export default {
       resetForm,
       onArtifactEdit,
       orderGetters,
-      artifactGetters
+      artifactGetters,
+      orderSearch,
+      getStatusTextClass
     };
   }
 
@@ -487,5 +533,8 @@ export default {
       margin-right: 0;
     }
   }
+}
+.upload-warning {
+  background-color: #ecc71330;
 }
 </style>

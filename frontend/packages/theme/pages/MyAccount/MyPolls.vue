@@ -53,26 +53,24 @@
 
 <script>
 import {
-  SfTabs,
-  SfTable,
   SfButton,
-  SfProperty,
   SfLink,
-  SfNotification
+  SfNotification,
+  SfProperty,
+  SfTable,
+  SfTabs
 } from '@storefront-ui/vue';
 import { computed, ref } from '@vue/composition-api';
-import { useUiState } from '~/composables';
 import {
   pollGetters,
+  useGlobals,
+  useNumerai,
   usePoll,
   useUser,
-  userGetters,
-  useNumerai,
-  useGlobals
+  userGetters
 } from '@vue-storefront/numerbay';
 import { onSSR } from '@vue-storefront/core';
-import NumeraiApiForm from '../../components/MyAccount/NumeraiApiForm';
-import ArtifactPanel from '../../components/Molecules/ArtifactPanel';
+import { useUiState } from '~/composables';
 
 export default {
   name: 'MyPolls',
@@ -82,9 +80,7 @@ export default {
     SfButton,
     SfProperty,
     SfLink,
-    SfNotification,
-    NumeraiApiForm,
-    ArtifactPanel
+    SfNotification
   },
   mounted() {
     if (this.userGetters.getNumeraiApiKeyPublicId(this.user)) {

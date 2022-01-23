@@ -3,67 +3,8 @@
     <SfTab title="My listings">
       <div v-if="currentListing">
         <SfButton class="sf-button--text all-listings" @click="currentListing = null">All Listings</SfButton>
-        <ArtifactPanel :product="currentListing" :orders="getFilteredOrders(currentListing)"></ArtifactPanel>
-        <SfTable class="orders">
-          <SfTableHeading>
-            <SfTableHeader>Order ID</SfTableHeader>
-            <SfTableHeader>Round(s)</SfTableHeader>
-            <SfTableHeader>Buyer</SfTableHeader>
-            <SfTableHeader>Amount</SfTableHeader>
-            <SfTableHeader>Status</SfTableHeader>
-            <SfTableHeader>Action</SfTableHeader>
-          </SfTableHeading>
-          <SfTableRow v-for="order in getFilteredOrders(currentListing)" :key="orderGetters.getId(order)">
-            <SfTableData>{{ orderGetters.getId(order) }}</SfTableData>
-            <SfTableData v-if="orderGetters.getProduct(order).category.is_per_round && parseInt(orderGetters.getItemQty(order)) > 1">{{ `${orderGetters.getRound(order)}-${parseInt(orderGetters.getRound(order))+parseInt(orderGetters.getItemQty(order))-1}` }}</SfTableData>
-            <SfTableData v-else>{{ orderGetters.getRound(order) }}</SfTableData>
-            <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
-            <SfTableData>{{ orderGetters.getFormattedPrice(order, withCurrency=true, decimals=4) }}</SfTableData>
-            <SfTableData>
-              <span :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
-            </SfTableData>
-<!--            <SfTableData>-->
-<!--              <span :class="getSubmissionStatusTextClass(order)">{{ orderGetters.getSubmissionStatus(order) }}</span>-->
-<!--            </SfTableData>-->
-            <SfTableData class="orders__view orders__element--right">
-              <!--<SfButton class="sf-button&#45;&#45;text smartphone-only" @click="downloadOrder(order)">
-                {{ $t('Download') }}
-              </SfButton>-->
-<!--              <SfButton class="sf-button&#45;&#45;text" @click="currentOrder = order">
-                {{ $t('View details') }}
-              </SfButton>-->
-            </SfTableData>
-            <SfTableRow v-for="artifact in order.artifacts" :key="artifactGetters.getId(artifact)">
-              <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
-              <SfTableData>
-                <SfLoader :class="{ loader: componentLoading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="componentLoading && !!activeArtifact && activeArtifact.id===artifact.id">
-                  <SfInput :value="artifact.description" style="margin-right: 10px" label="Description" :disabled="(componentLoading || loading) && !!activeArtifact" @input="(value)=>{artifact.description=value; activeArtifact=artifact}"/>
-      <!--             @input="(value)=>(formEdit=(()=>handleEdit(value, product, artifact)))"-->
-                </SfLoader>
-              </SfTableData>
-      <!--        <SfTableData>{{ artifactGetters.getObjectSize(artifact) }}</SfTableData>-->
-              <SfTableData class="orders__view orders__element--right">
-                <SfLoader :class="{ loader: loading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="loading && activeArtifact && activeArtifact.id===artifact.id">
-                  <span class="artifact-actions" v-if="!!activeArtifact && activeArtifact.id===artifact.id">
-                    <SfLoader :class="{ loader: loading }" :loading="loading">
-                      <SfButton class="sf-button--text" @click="handleEdit(product, activeArtifact)">
-                        {{ $t('Save') }}
-                      </SfButton>
-                    </SfLoader>
-                  </span>
-                  <span class="artifact-actions" v-else>
-                    <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact" @click="download(artifact)">
-                      {{ $t('Download') }}
-                    </SfButton>
-                    <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact" @click="onManualRemove(artifact)">
-                      {{ $t('Delete') }}
-                    </SfButton>
-                  </span>
-                </SfLoader>
-              </SfTableData>
-            </SfTableRow>
-          </SfTableRow>
-        </SfTable>
+        <OrderArtifactPanel :product="currentListing" :orders="getFilteredOrders(currentListing)" v-if="currentListing && currentListing.use_encryption"></OrderArtifactPanel>
+        <ArtifactPanel :product="currentListing" v-else></ArtifactPanel>
       </div>
       <div v-else>
         <div class="top-buttons">
@@ -138,6 +79,7 @@ import { computed, ref } from '@vue/composition-api';
 import { AgnosticOrderStatus } from '@vue-storefront/core';
 import ArtifactPanel from '../../components/Molecules/ArtifactPanel';
 import NumeraiApiForm from '../../components/MyAccount/NumeraiApiForm';
+import OrderArtifactPanel from '../../components/Molecules/OrderArtifactPanel';
 import { onSSR } from '@vue-storefront/core';
 import { useUiState } from '~/composables';
 
@@ -151,7 +93,8 @@ export default {
     SfLink,
     SfNotification,
     NumeraiApiForm,
-    ArtifactPanel
+    ArtifactPanel,
+    OrderArtifactPanel
   },
   methods: {
     getFilteredOrders(product) {
@@ -180,7 +123,7 @@ export default {
       await categorySearch(); // {slug: 'all'}
     });
     const { products, search } = useProduct('products');
-    const { orders, search: orderSearch } = useUserOrder('order-history');
+    const { orders, search: orderSearch } = useUserOrder('my-listings');
     const { toggleListingModal } = useUiState();
     const currentListing = ref(null);
 
@@ -191,7 +134,7 @@ export default {
     onSSR(async () => {
       await search({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
       await getGlobals();
-      await orderSearch({ role: 'seller' });
+      await orderSearch({ role: 'seller', filters: { active: true} });
     });
 
     const tableHeaders = [

@@ -2,24 +2,20 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
-from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 from google.api_core.exceptions import NotFound
 from google.cloud.storage import Bucket
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.dependencies.artifacts import (
+from app.api.dependencies.order_artifacts import (  # send_artifact_emails_for_active_orders,
     get_object_name,
-    send_artifact_emails_for_active_orders,
-    validate_existing_artifact,
-    validate_new_artifact,
+    validate_existing_order_artifact,
+    validate_new_order_artifact,
 )
-from app.api.dependencies.products import (
-    validate_buyer,
-    validate_existing_product,
-)
-from app.core.celery_app import celery_app
+from app.api.dependencies.products import validate_buyer, validate_existing_product
+# from app.core.celery_app import celery_app
 from app.core.config import settings
 
 router = APIRouter()
@@ -38,13 +34,10 @@ def generate_upload_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    # product = crud.product.get(db, id=product_id)
-    # validate_new_artifact(
-    #     product=product, current_user=current_user, url=None, filename=filename
-    # )
-
     order = crud.order.get(db, id=order_id)
-    product = order.product
+    validate_new_order_artifact(
+        order=order, current_user=current_user, url=None, filename=filename
+    )
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)
@@ -57,7 +50,7 @@ def generate_upload_url(
     selling_round = globals.selling_round  # type: ignore
 
     object_name = get_object_name(
-        sku=product.sku,  # type: ignore
+        sku=order.product.sku,  # type: ignore
         selling_round=selling_round,
         original_filename=filename,
         override_filename=filename_suffix,
@@ -100,14 +93,7 @@ def generate_upload_url(
             detail="Failed to create artifact",
         )
 
-    # Check upload later after link expires
-    # celery_app.send_task(
-    #     "app.worker.validate_artifact_upload_task",
-    #     kwargs=dict(artifact_id=artifact.id),
-    #     countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
-    # )
-
-    return {"id": artifact.id, "url": url}
+    return {"id": artifact.id, "url": url, "buyer_public_key": order.buyer_public_key}  # type: ignore
 
 
 @router.post("/{artifact_id}/validate-upload")
@@ -122,14 +108,9 @@ def validate_upload(
     selling_round = globals.selling_round  # type: ignore
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
-    # artifact = validate_existing_artifact(
-    #     artifact=artifact, product_id=product_id, selling_round=selling_round
-    # )
-
-    # product = crud.product.get(db, id=product_id)
-    # validate_new_artifact(
-    #     product=product, current_user=current_user, url=artifact.url, filename=artifact.object_name  # type: ignore
-    # )
+    artifact = validate_existing_order_artifact(
+        artifact=artifact, selling_round=selling_round
+    )
 
     if not artifact.object_name:
         raise HTTPException(
@@ -145,9 +126,10 @@ def validate_upload(
     crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
 
     # mark product as ready
-    # if product:
-    #     if not product.is_ready:
-    #         crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
+    if not artifact.order.product.is_ready:
+        crud.product.update(
+            db, db_obj=artifact.order.product, obj_in={"is_ready": True}
+        )
 
     # validate and fulfill orders immediately
     # celery_app.send_task(
@@ -155,120 +137,13 @@ def validate_upload(
     #     kwargs=dict(artifact_id=artifact.id, skip_if_active=False),
     # )
 
+    # todo email notification
+
     return artifact
 
 
-# @router.post("/", response_model=schemas.OrderArtifact)
-# async def create_product_artifact(
-#     *,
-#     order_id: int,
-#     url: str = Body(...),
-#     description: str = Body(None),
-#     # filename: str = Body(None),
-#     db: Session = Depends(deps.get_db),
-#     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     product = crud.product.get(db, id=product_id)
-#
-#     validate_new_artifact(
-#         product=product, current_user=current_user, url=url, filename=None
-#     )
-#
-#     all_modes = [option.mode for option in product.options]  # type: ignore
-#
-#     if "stake" in all_modes or "stake_with_limit" in all_modes:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Stake modes require native artifact uploads for automated submissions",
-#         )
-#
-#     # not during round rollover
-#     globals = crud.globals.get_singleton(db=db)
-#     if globals.is_doing_round_rollover:  # type: ignore
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Round rollover in progress, please try again after the round submission deadline",
-#         )
-#
-#     selling_round = globals.selling_round  # type: ignore
-#
-#     # Create artifact
-#     artifact_in = schemas.OrderArtifactCreate(
-#         product_id=product_id,
-#         date=datetime.utcnow(),
-#         round_tournament=selling_round,
-#         description=description,
-#         url=url,
-#         # object_name=object_name,
-#     )
-#     artifact = crud.order_artifact.create(db=db, obj_in=artifact_in)
-#
-#     # mark product as ready
-#     if product:
-#         if not product.is_ready:
-#             crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
-#
-#     # Send notification emails
-#     send_artifact_emails_for_active_orders(db, artifact, is_file=False)
-#     return artifact
-
-
-# @router.put("/{artifact_id}")
-# async def update_product_artifact(
-#     *,
-#     artifact_id: str,
-#     description: str = Body(None),
-#     url: str = Body(None),
-#     filename: str = Body(None),
-#     db: Session = Depends(deps.get_db),
-#     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     product = crud.product.get(db, id=product_id)
-#     validate_new_artifact(
-#         product=product, current_user=current_user, url=url, filename=filename
-#     )
-#
-#     # not during round rollover
-#     globals = crud.globals.get_singleton(db=db)
-#     if globals.is_doing_round_rollover:  # type: ignore
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Round rollover in progress, please try again after the round submission deadline",
-#         )
-#
-#     selling_round = globals.selling_round  # type: ignore
-#
-#     artifact = crud.order_artifact.get(db, id=artifact_id)
-#     artifact = validate_existing_artifact(
-#         artifact=artifact, product_id=product_id, selling_round=selling_round
-#     )
-#
-#     # object_name = None
-#     # if file_obj:
-#     #     object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
-#     #                                   override_filename=filename)
-#     #     upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
-#     #     if not upload_obj:
-#     #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#     #                             detail="File could not be uploaded")
-#
-#     # Update artifact
-#     artifact_dict = {}
-#     artifact_dict["description"] = description
-#     if url:
-#         artifact_dict["url"] = url
-#     # if file_obj:
-#     #     artifact_dict['object_name'] = object_name
-#
-#     artifact = crud.order_artifact.update(db=db, db_obj=artifact, obj_in=artifact_dict)
-#     return artifact
-
-
 @router.get(
-    "/",
-    response_model=Dict[str, Union[int, List[schemas.OrderArtifact]]],
+    "/", response_model=Dict[str, Union[int, List[schemas.OrderArtifact]]],
 )
 def list_order_artifacts(
     *,
@@ -282,10 +157,10 @@ def list_order_artifacts(
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
-    # if product.owner_id != current_user.id and not validate_buyer(
-    #     product, current_user, selling_round
-    # ):
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.product.owner_id != current_user.id and not validate_buyer(
+        order.product, current_user, selling_round
+    ):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     artifacts = crud.order_artifact.get_multi_by_order_round(
         db, order=order, round_tournament=selling_round
@@ -301,30 +176,27 @@ def generate_download_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    # product = crud.product.get(db=db, id=product_id)
-    # if not product:
-    #     raise HTTPException(status_code=404, detail="Product not found")
-
-    # selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-
-    # is_seller = product.owner_id == current_user.id
-    # order = validate_buyer(product, current_user, selling_round)
-
-    # # owner or buyer
-    # if not is_seller and not order:
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
-    #
-    # # file mode
-    # if order and not is_seller and order.mode != "file":
-    #     raise HTTPException(
-    #         status_code=403, detail="Download not allowed for this artifact"
-    #     )
-
     artifact = crud.order_artifact.get(db, id=artifact_id)
+
     if not artifact:
         raise HTTPException(status_code=404, detail="Artifact not found")
     if not artifact.object_name:
         raise HTTPException(status_code=400, detail="Artifact not an upload")
+
+    order = artifact.order
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    is_seller = order.product.owner_id == current_user.id
+    order = validate_buyer(order.product, current_user, selling_round)  # type: ignore
+
+    # owner or buyer
+    if not is_seller and not order:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # file mode
+    if order and not is_seller and order.mode != "file":
+        raise HTTPException(
+            status_code=403, detail="Download not allowed for this artifact"
+        )
 
     action = "GET"
     blob = bucket.blob(artifact.object_name)
@@ -353,11 +225,6 @@ def delete_product_artifact(
     """
     Delete an artifact.
     """
-    # product ownership
-    # validate_existing_product(
-    #     db, product_id=product_id, currend_user_id=current_user.id
-    # )
-
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)
     if globals.is_doing_round_rollover:  # type: ignore
@@ -369,11 +236,14 @@ def delete_product_artifact(
     selling_round = globals.selling_round  # type: ignore
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
-    # validate_existing_artifact(
-    #     artifact=artifact, product_id=product_id, selling_round=selling_round
-    # )
+    validate_existing_order_artifact(artifact=artifact, selling_round=selling_round)
 
-    artifact = crud.order_artifact.remove(db=db, id=artifact_id)
+    # product ownership
+    validate_existing_product(
+        db, product_id=artifact.order.product_id, currend_user_id=current_user.id  # type: ignore
+    )
+
+    artifact = crud.order_artifact.remove(db=db, id=artifact_id)  # type: ignore
     object_name = artifact.object_name
     if object_name:
         try:

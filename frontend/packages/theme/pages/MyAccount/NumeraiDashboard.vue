@@ -13,17 +13,15 @@
 
 <script>
 import {
-  SfLoader,
-  SfTabs,
-  SfTable,
   SfButton,
-  SfProperty,
   SfLink,
-  SfNotification
+  SfLoader,
+  SfNotification,
+  SfProperty,
+  SfTable,
+  SfTabs
 } from '@storefront-ui/vue';
 import LazyHydrate from 'vue-lazy-hydration';
-import NumeraiApiForm from '../../components/MyAccount/NumeraiApiForm';
-import ArtifactPanel from '../../components/Molecules/ArtifactPanel';
 import axios from 'axios';
 
 export default {
@@ -36,9 +34,7 @@ export default {
     SfButton,
     SfProperty,
     SfLink,
-    SfNotification,
-    NumeraiApiForm,
-    ArtifactPanel
+    SfNotification
   },
   data() {
     return {
