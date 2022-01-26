@@ -285,6 +285,11 @@ def update_round_rollover() -> None:
                 # expire old products
                 crud.product.bulk_expire(db, current_round=globals.selling_round)  # type: ignore
 
+                # mark order artifacts for pruning
+                crud.order_artifact.bulk_mark_for_pruning(
+                    db, current_round=globals.selling_round  # type: ignore
+                )
+
                 # unmark product readiness
                 crud.product.bulk_unmark_is_ready(db)
     finally:

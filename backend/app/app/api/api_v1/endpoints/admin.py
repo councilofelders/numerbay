@@ -7,7 +7,7 @@ from numerapi import NumerAPI
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, models
 from app.api import deps
 from app.api.dependencies.orders import send_order_confirmation_emails
 from app.core.celery_app import celery_app
@@ -16,22 +16,22 @@ from app.models import Artifact, Order, Product
 router = APIRouter()
 
 
-@router.post("/create-coupon")
-def create_coupon(*, db: Session = Depends(deps.get_db),) -> Any:
-    from datetime import datetime
-
-    data = {
-        "date_creation": datetime.utcnow(),
-        "applicability": "specific_seller",
-        "code": "TEST",
-        "applicable_seller_id": 148,
-        "discount_mode": "percent",
-        "discount_percent": 50,
-        "max_discount": 7,
-        "min_spend": 10,
-        "quantity_total": 1,
-    }
-    crud.coupon.create(db, obj_in=schemas.CouponCreate(**data))
+# @router.post("/create-coupon")
+# def create_coupon(*, db: Session = Depends(deps.get_db),) -> Any:
+#     from datetime import datetime
+#
+#     data = {
+#         "date_creation": datetime.utcnow(),
+#         "applicability": "specific_seller",
+#         "code": "TEST",
+#         "applicable_seller_id": 148,
+#         "discount_mode": "percent",
+#         "discount_percent": 50,
+#         "max_discount": 7,
+#         "min_spend": 10,
+#         "quantity_total": 1,
+#     }
+#     crud.coupon.create(db, obj_in=schemas.CouponCreate(**data))
 
 
 # @router.post("/resend-seller-order-emails")

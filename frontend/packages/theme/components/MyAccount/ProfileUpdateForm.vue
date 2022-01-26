@@ -31,24 +31,53 @@
           :errorMessage="errors[0]"
         />
       </ValidationProvider>
-      <div class="form__horizontal">
-        <MetamaskButton @click:connect="handleWeb3Connect" @click:disconnect="handleWeb3Disconnect" :is-connected="!!form.publicAddress" :disabled="loading"/>
-        <ValidationProvider rules="" v-slot="{ errors }" class="form__element">
-          <SfInput
-            v-model="form.publicAddress"
-            name="publicAddress"
-            label="Your wallet public address"
-            disabled
-            :valid="!errors[0]"
-            :errorMessage="errors[0]"
-          />
-        </ValidationProvider>
+      <div class="highlighted">
+        <div class="form__horizontal">
+          <MetamaskButton @click:connect="handleWeb3Connect" @click:disconnect="handleWeb3Disconnect" :is-connected="!!form.publicAddress" :disabled="loading"/>
+          <ValidationProvider rules="" v-slot="{ errors }" class="form__element" v-if="!!form.publicAddress">
+            <SfInput
+              v-model="form.publicAddress"
+              name="publicAddress"
+              label="Your wallet public address"
+              disabled
+              :valid="!errors[0]"
+              :errorMessage="errors[0]"
+              style="display: none;"
+            />
+          </ValidationProvider>
+          <SfButton
+            v-if="!!form.publicAddress"
+            class="sf-button--text"
+            @click="copyToClipboard(form.publicAddress)"
+            type="button"
+          >
+            {{form.publicAddress}}
+          </SfButton>
+          <div v-else>
+            No wallet connected
+          </div>
+        </div>
+        <div v-if="error.web3">
+          {{ error.web3 }}
+        </div>
+        <br/>
+        <div class="form__horizontal">
+          <SfButton class="form__button color-secondary" @click="generateKeyPair" type="button">{{ $t('Generate key Pair') }}</SfButton>
+          <div v-if="!!form.publicKey">
+            <SfButton
+              class="sf-button--text"
+              @click="exportKeyPair"
+              type="button"
+            >
+              Export key file
+            </SfButton>
+          </div>
+          <div v-else>
+            No key available
+          </div>
+        </div>
       </div>
-      <div v-if="error.web3">
-        {{ error.web3 }}
-      </div>
-      <SfButton class="form__button" @click="generateKeyPair" type="button">{{ $t('Generate key Pair') }}</SfButton>
-      {{form}}
+      <br/>
       <SfButton class="form__button">{{ $t('Update profile data') }}</SfButton>
     </form>
   </ValidationObserver>
@@ -104,25 +133,72 @@ export default {
     }
   },
   methods: {
+    async copyToClipboard(text) {
+      try {
+        await this.$copyText(text);
+        await this.send({
+          message: 'Value copied',
+          type: 'success',
+          icon: 'check'
+        });
+      } catch (e) {
+        console.error('Copy failed: ', e);
+      }
+    },
+    downloadFile(file, name) {
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style = 'display: none';
+
+      const url = window.URL.createObjectURL(file);
+      a.href = url;
+      a.download = name;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    },
+    async exportKeyPair() {
+      const privateKeyStr = await window.ethereum.request({
+        method: 'eth_decrypt',
+        params: [this.form.encryptedPrivateKey, window.ethereum.selectedAddress]
+      });
+
+      const privateKey = encodeBase64(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))));
+      // eslint-disable-next-line camelcase
+      const keyJson = JSON.stringify({public_key: this.form.publicKey, private_key: privateKey});
+      this.downloadFile(new Blob([keyJson], {type: 'application/json'}), 'numerbay.json');
+    },
     async generateKeyPair() {
+      if (!this.form.publicAddress) {
+        await this.send({
+          message: 'Please connect a MetaMask wallet first',
+          type: 'warning'
+        });
+        return;
+      }
+
       const keyPair = nacl.box.keyPair();
       const privateKeyBytes = keyPair.secretKey;
       const publicKeyBytes = keyPair.publicKey;
 
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
+      let encryptedPrivateKey = null;
+      try {
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
+        });
 
-      const key = await window.ethereum.request({
-        method: 'eth_getEncryptionPublicKey',
-        params: [accounts[0]]
-      });
+        const key = await window.ethereum.request({
+          method: 'eth_getEncryptionPublicKey',
+          params: [accounts[0]]
+        });
 
-      const encryptedPrivateKey = JSON.stringify(encrypt(
-        key,
-        { data: privateKeyBytes.toString('hex') },
-        'x25519-xsalsa20-poly1305'
-      ));
+        encryptedPrivateKey = JSON.stringify(encrypt(
+          key,
+          {data: privateKeyBytes.toString('hex')},
+          'x25519-xsalsa20-poly1305'
+        ));
+      } catch {
+        return;
+      }
 
       await this.updateUser({
         user: {
@@ -303,6 +379,33 @@ export default {
         margin-right: 0;
       }
     }
+  }
+}
+.highlighted {
+  box-sizing: border-box;
+  width: 100%;
+  background-color: var(--c-light);
+  padding: var(--spacer-sm);
+  --property-value-font-size: var(--font-size--base);
+  --property-name-font-size: var(--font-size--base);
+  &:last-child {
+    margin-bottom: 0;
+  }
+  ::v-deep .sf-property__name {
+    white-space: nowrap;
+  }
+  ::v-deep .sf-property__value {
+    text-align: right;
+  }
+  &--total {
+    margin-bottom: var(--spacer-sm);
+  }
+  @include for-desktop {
+    padding: var(--spacer-xl);
+    --property-name-font-size: var(--font-size--lg);
+    --property-name-font-weight: var(--font-weight--medium);
+    --property-value-font-size: var(--font-size--lg);
+    --property-value-font-weight: var(--font-weight--semibold);
   }
 }
 </style>

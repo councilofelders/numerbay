@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="highlighted highlighted--total">
-        <multiple-dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false" :orders="orders"
+        <multiple-dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
           v-on:vdropzone-error="s3UploadError"
           v-on:vdropzone-success="s3UploadSuccess"
           v-on:vdropzone-total-upload-progress="s3TotalUploadProgress"
@@ -79,13 +79,13 @@
 
     <SfTable class="orders">
       <SfTableHeading>
-        <SfTableHeader>Active Order ID</SfTableHeader>
+        <SfTableHeader>Upload for Order</SfTableHeader>
         <SfTableHeader>Buyer</SfTableHeader>
         <SfTableHeader>Files Uploaded</SfTableHeader>
       </SfTableHeading>
       <SfTableRow v-if="orders && orders.length===0">No active order to upload for</SfTableRow>
-      <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)" :class="(getOrderArtifacts(order).length === 0 || getOrderArtifacts(order).length < getMaxOrderArtifactsCount()) ? 'upload-warning' : ''">
-        <SfTableData>{{ orderGetters.getId(order) }}</SfTableData>
+      <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)" :class="isPendingUpload(order) ? 'upload-warning' : ''">
+        <SfTableData><div style="display: flex;"><SfCheckbox @change="toggleUploadOrder(orderGetters.getId(order))" :selected="uploadOrders && uploadOrders.includes(orderGetters.getId(order))" :name="String(orderGetters.getId(order))" :key="orderGetters.getId(order)"></SfCheckbox>&nbsp;{{ orderGetters.getId(order) }}</div></SfTableData>
         <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
         <SfTableData>
           {{getOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import { SfButton, SfIcon, SfInput, SfLoader, SfNotification, SfTable } from '@storefront-ui/vue';
+import { SfButton, SfCheckbox, SfIcon, SfInput, SfLoader, SfNotification, SfTable } from '@storefront-ui/vue';
 import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
 import {
   artifactGetters,
@@ -166,6 +166,7 @@ export default {
   name: 'OrderArtifactPanel',
   components: {
     SfButton,
+    SfCheckbox,
     SfIcon,
     SfInput,
     SfLoader,
@@ -179,6 +180,7 @@ export default {
     // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
     const vm = this;
     return {
+      uploadOrders: [],
       componentKey: 0,
       componentLoading: false,
       gcs: {
@@ -233,7 +235,11 @@ export default {
       default: null
     }
   },
-  // watch: {
+  watch: {
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    orders(orders) {
+      this.resetUploadOrders();
+    }
   //   artifacts(artifacts) {
   //     Logger.debug('artifact changed watch', artifacts);
   //     if (artifacts) {
@@ -247,8 +253,33 @@ export default {
   //       }
   //     }
   //   }
-  // },
+  },
   methods: {
+    filterUploadOrders(orders) {
+      return orders.filter(o=>this.uploadOrders.includes(o.id));
+    },
+    toggleUploadOrder(orderId) {
+      if (this.uploadOrders.includes(orderId)) {
+        this.uploadOrders = this.uploadOrders.filter(id=>id !== orderId);
+      } else {
+        this.uploadOrders.push(orderId);
+      }
+    },
+    resetUploadOrders() {
+      this.uploadOrders = [];
+      for (const order of this.orders) {
+        if (this.isPendingUpload(order)) {
+          // order.isSelected = [String(this.orderGetters.getId(order))];
+          this.uploadOrders.push(this.orderGetters.getId(order));
+        }
+      }
+      if (this.uploadOrders.length === 0) {
+        this.uploadOrders = this.orders.map(o=>this.orderGetters.getId(o));
+      }
+    },
+    isPendingUpload(order) {
+      return this.getOrderArtifacts(order).length === 0 || this.getOrderArtifacts(order).length < this.getMaxOrderArtifactsCount();
+    },
     getOrderArtifacts(order) {
       return this.orders.filter(o=>(o.id === order.id)).map(o=>o.artifacts).flat() || [];
     },
@@ -270,7 +301,7 @@ export default {
           });
           return;
         }
-        for (const order of this.orders) {
+        for (const order of this.filterUploadOrders(this.orders)) {
           if (!order.buyer_public_key) {
             continue;
           }
@@ -344,6 +375,7 @@ export default {
       const response = await this.$root.context.$vsf.$numerbay.api.validateOrderArtifactUpload({artifactId: file.artifactId});
       Logger.debug('response: ', response);
       await this.orderSearch({ role: 'seller', filters: { active: true} });
+      this.resetUploadOrders();
     },
     s3UploadError(errorMessage) {
       Logger.error('s3 error', errorMessage);
@@ -387,7 +419,8 @@ export default {
       }
     }
   },
-  async mounted() {
+  beforeMount() {
+    this.resetUploadOrders();
     // Logger.debug('artifacts', this.artifacts)
     //
     // var file = { size: 123, name: "Icon", type: "image/png" };

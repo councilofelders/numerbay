@@ -2,7 +2,12 @@
   <SfTabs :open-tab="1">
     <SfTab title="My listings">
       <div v-if="currentListing">
-        <SfButton class="sf-button--text all-listings" @click="currentListing = null">All Listings</SfButton>
+        <div class="top-buttons">
+          <SfButton class="sf-button--text all-listings" @click="currentListing = null">All Listings</SfButton>
+          <SfButton class="sf-button color-secondary" @click="refresh" :disabled="productLoading || orderLoading">
+            Refresh
+          </SfButton>
+        </div>
         <OrderArtifactPanel :product="currentListing" :orders="getFilteredOrders(currentListing)" v-if="currentListing && currentListing.use_encryption"></OrderArtifactPanel>
         <ArtifactPanel :product="currentListing" v-else></ArtifactPanel>
       </div>
@@ -13,6 +18,9 @@
           </SfButton>
           <SfButton class="sf-button" v-if="!userGetters.getNumeraiApiKeyPublicId(user)" :class="!userGetters.getNumeraiApiKeyPublicId(user)?'color-primary':'color-secondary'" @click="$router.push('/my-account/numerai-api')" :disabled="numeraiLoading || userLoading">
             {{ !userGetters.getNumeraiApiKeyPublicId(user)?$t('Set Numerai API Key'):$t('Change Numerai API Key') }}
+          </SfButton>
+          <SfButton class="sf-button color-secondary" @click="refresh" :disabled="productLoading || orderLoading" v-else>
+            Refresh
           </SfButton>
         </div>
         <p class="message" v-if="numeraiError.getModels">
@@ -97,6 +105,10 @@ export default {
     OrderArtifactPanel
   },
   methods: {
+    async refresh() {
+      await this.search({filters: { user: { in: [`${this.userGetters.getId(this.user)}`]}}, sort: 'latest'});
+      await this.orderSearch({ role: 'seller', filters: { active: true} });
+    },
     getFilteredOrders(product) {
       if (product) {
         return this.orders.filter((o)=>o?.product?.id === product?.id);
@@ -122,8 +134,8 @@ export default {
     onSSR(async () => {
       await categorySearch(); // {slug: 'all'}
     });
-    const { products, search } = useProduct('products');
-    const { orders, search: orderSearch } = useUserOrder('my-listings');
+    const { products, search, loading: productLoading } = useProduct('products');
+    const { orders, search: orderSearch, loading: orderLoading } = useUserOrder('my-listings');
     const { toggleListingModal } = useUiState();
     const currentListing = ref(null);
 
@@ -160,6 +172,8 @@ export default {
       tableHeaders,
       numeraiLoading,
       userLoading,
+      productLoading,
+      orderLoading,
       getNumeraiModels,
       user: computed(() => user?.value ? user.value : null),
       categories: computed(() => categories?.value ? categories.value : []),
@@ -173,7 +187,9 @@ export default {
       orderGetters,
       currentListing,
       numeraiError,
-      deleteArtifact
+      deleteArtifact,
+      search,
+      orderSearch
     };
   }
 };
