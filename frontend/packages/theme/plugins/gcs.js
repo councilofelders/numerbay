@@ -11,16 +11,14 @@
 // }
 
 // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-export async function generateSignedUrl (signingURL, params, file, includeFile, config) {
-  console.log('file.orderId', file.orderId);
-  const response = await signingURL({
+export function generateSignedUrl(signingURL, params, file) {
+  const response = signingURL({
     orderId: file.orderId,
-    filename: file.upload.filename,
+    filename: file.name,
     filesize: file.size,
     type: file.type,
     ...params
   });
-  // console.log('upload url', response.url)
   return response;
 }
 

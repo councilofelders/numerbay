@@ -11,8 +11,9 @@ let component = {};
 
 if (process.browser) {
   const Dropzone = require('dropzone').Dropzone;
-  const {generateSignedUrl} = require('../../plugins/gcs');
-  const useUiNotification = require('~/composables').useUiNotification;
+  // const {generateSignedUrl} = require('../../plugins/gcs');
+  // const useUiNotification = require('~/composables').useUiNotification;
+  // const extend = require('just-extend');
 
   Dropzone.autoDiscover = false;
   component = {
@@ -63,7 +64,7 @@ if (process.browser) {
       s3DropZoneSettings() {
         const normalSettings = this.dropzoneSettings;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const that = this;
+        // const that = this;
         const s3Settings = {
           method: 'PUT',
           parallelUploads: 1,
@@ -76,30 +77,13 @@ if (process.browser) {
               _send.call(xhr, file);
             };
           },
-          async accept(file, done) {
+          accept(file, done) {
             // eslint-disable-next-line no-use-before-define
             if (vm.isS3) {
               // eslint-disable-next-line no-use-before-define
-              const incFile = vm.awss3.includeFile === true;
-              // eslint-disable-next-line no-use-before-define
               if (file.isSubtask) {
                 // eslint-disable-next-line no-use-before-define
-                const signed = await generateSignedUrl(that.awss3.signingURL, that.awss3.params, file, incFile, vm.awss3);
-                if (signed.error) {
-                  const {send} = useUiNotification();
-                  send({
-                    message: signed.detail,
-                    type: 'danger'
-                  });
-                }
-                // eslint-disable-next-line no-use-before-define
-                vm.setOption('headers', {
-                  'Content-Type': 'application/octet-stream'
-                  // 'x-amz-acl': 'public-read'
-                });
-                file.artifactId = signed.id;
-                // eslint-disable-next-line no-use-before-define
-                vm.setOption('url', signed.url);
+                // vm.setOption('url', signed.url);
                 done();
                 // eslint-disable-next-line no-use-before-define
                 setTimeout(() => vm.dropzone.processFile(file));
@@ -142,12 +126,148 @@ if (process.browser) {
         this.$refs.dropzoneElement,
         this.isS3 ? this.s3DropZoneSettings : this.dropzoneSettings
       );
+
+      const dz = this.dropzone;
+      // eslint-disable-next-line complexity
+      this.dropzone._uploadData = (files, dataBlocks) => {
+        const xhr = new XMLHttpRequest();
+
+        // Put the xhr object in the file objects to be able to reference it later.
+        for (const file of files) {
+          file.xhr = xhr;
+        }
+        if (files[0].upload.chunked) {
+          // Put the xhr object in the right chunk object, so it can be associated
+          // later, and found with _getChunk.
+          files[0].upload.chunks[dataBlocks[0].chunkIndex].xhr = xhr;
+        }
+
+        const method = dz.resolveOption(dz.options.method, files, dataBlocks);
+        dz.resolveOption(dz.options.url, files, dataBlocks).then((url)=>{
+          const extend = require('just-extend').default;
+          xhr.open(method, url, true);
+          // Setting the timeout after open because of IE11 issue: https://gitlab.com/meno/dropzone/issues/8
+          const timeout = dz.resolveOption(dz.options.timeout, files);
+          if (timeout) xhr.timeout = dz.resolveOption(dz.options.timeout, files);
+
+          // Has to be after `.open()`. See https://github.com/enyo/dropzone/issues/179
+          xhr.withCredentials = Boolean(dz.options.withCredentials);
+
+          xhr.onload = (e) => {
+            dz._finishedUploading(files, xhr, e);
+          };
+
+          xhr.ontimeout = () => {
+            dz._handleUploadError(
+              files,
+              xhr,
+              `Request timedout after ${dz.options.timeout / 1000} seconds`
+            );
+          };
+
+          xhr.onerror = () => {
+            dz._handleUploadError(files, xhr);
+          };
+
+          // Some browsers do not have the .upload property
+          // eslint-disable-next-line eqeqeq
+          const progressObj = xhr.upload != null ? xhr.upload : xhr;
+          progressObj.onprogress = (e) =>
+            dz._updateFilesUploadProgress(files, xhr, e);
+
+          const headers = dz.options.defaultHeaders
+            ? {
+              Accept: 'application/json',
+              'Cache-Control': 'no-cache',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+            : {};
+
+          if (dz.options.binaryBody) {
+            headers['Content-Type'] = files[0].type;
+          }
+
+          if (dz.options.headers) {
+            extend(headers, dz.options.headers);
+          }
+
+          for (const headerName in headers) {
+            const headerValue = headers[headerName];
+            if (headerValue) {
+              xhr.setRequestHeader(headerName, headerValue);
+            }
+          }
+
+          if (dz.options.binaryBody) {
+            // Since the file is going to be sent as binary body, it doesn't make
+            // any sense to generate `FormData` for it.
+            for (const file of files) {
+              dz.emit('sending', file, xhr);
+            }
+            if (dz.options.uploadMultiple) {
+              dz.emit('sendingmultiple', files, xhr);
+            }
+            dz.submitRequest(xhr, null, files);
+          } else {
+            const formData = new FormData();
+
+            // Adding all @options parameters
+            if (dz.options.params) {
+              let additionalParams = dz.options.params;
+              if (typeof additionalParams === 'function') {
+                additionalParams = additionalParams.call(
+                  dz,
+                  files,
+                  xhr,
+                  files[0].upload.chunked ? dz._getChunk(files[0], xhr) : null
+                );
+              }
+
+              for (const key in additionalParams) {
+                const value = additionalParams[key];
+                // eslint-disable-next-line max-depth
+                if (Array.isArray(value)) {
+                  // The additional parameter contains an array,
+                  // so lets iterate over it to attach each value
+                  // individually.
+                  // eslint-disable-next-line max-depth
+                  for (let i = 0; i < value.length; i++) {
+                    formData.append(key, value[i]);
+                  }
+                } else {
+                  formData.append(key, value);
+                }
+              }
+            }
+
+            // Let the user add additional data if necessary
+            for (const file of files) {
+              dz.emit('sending', file, xhr, formData);
+            }
+            if (dz.options.uploadMultiple) {
+              dz.emit('sendingmultiple', files, xhr, formData);
+            }
+
+            dz._addFormElementData(formData);
+
+            // Finally add the files
+            // Has to be last because some servers (eg: S3) expect the file to be the last parameter
+            for (let i = 0; i < dataBlocks.length; i++) {
+              const dataBlock = dataBlocks[i];
+              formData.append(dataBlock.name, dataBlock.data, dataBlock.filename);
+            }
+
+            dz.submitRequest(xhr, formData, files);
+          }
+        });
+
+      };
       // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
       const vm = this;
       this.dropzone.on('thumbnail', (file, dataUrl) => {
         vm.$emit('vdropzone-thumbnail', file, dataUrl);
       });
-      this.dropzone.on('addedfile', async (file) => {
+      this.dropzone.on('addedfile', (file) => {
         let isDuplicate = false;
         if (vm.duplicateCheck) {
           if (this.files.length) {
@@ -216,7 +336,7 @@ if (process.browser) {
       this.dropzone.on('maxfilesexceeded', (file) => {
         vm.$emit('vdropzone-max-files-exceeded', file);
       });
-      this.dropzone.on('processing', async (file) => {
+      this.dropzone.on('processing', (file) => {
         vm.$emit('vdropzone-processing', file);
       });
       this.dropzone.on('processingmultiple', (files) => {
@@ -267,40 +387,6 @@ if (process.browser) {
       if (this.destroyDropzone) this.dropzone.destroy();
     },
     methods: {
-      // addFile(file) {
-      //   file.upload = {
-      //     uuid: Dropzone.uuidv4(),
-      //     progress: 0,
-      //     // Setting the total upload size to file.size for the beginning
-      //     // It's actual different than the size to be transmitted.
-      //     total: file.size,
-      //     bytesSent: 0,
-      //     filename: this.dropzone._renameFile(file)
-      //     // Not setting chunking information here, because the acutal data — and
-      //     // thus the chunks — might change if `options.transformFile` is set
-      //     // and does something to the data.
-      //   };
-      //   this.dropzone.files.push(file);
-      //
-      //   file.status = Dropzone.ADDED;
-      //
-      //   this.dropzone.emit('addedfile', file);
-      //
-      //   this.dropzone._enqueueThumbnail(file);
-      //
-      //   this.dropzone.accept(file, (error) => {
-      //     if (error) {
-      //       file.accepted = false;
-      //       this.dropzone._errorProcessing([file], error); // Will set the file.status
-      //     } else {
-      //       file.accepted = true;
-      //       if (this.dropzone.options.autoQueue) {
-      //         this.dropzone.enqueueFile(file);
-      //       } // Will set .accepted = true
-      //     }
-      //     this.dropzone._updateMaxFilesReachedClass();
-      //   });
-      // },
       manuallyAddFile(file, fileUrl) {
         file.manuallyAdded = true;
         this.dropzone.emit('addedfile', file);

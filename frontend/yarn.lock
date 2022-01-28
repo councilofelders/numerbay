@@ -11754,6 +11754,11 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
+just-extend@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/just-extend/-/just-extend-6.0.1.tgz#e56276a36cbc360713612b9445f8753a7c73dd50"
+  integrity sha512-CrwyGHRQ22XObWsZPQdnKlLLuCPj95OQ9HrLYdfjymCsYoYj7HPMFNrgqPW/LJjhK+CnVZAtftVSfo8Wr33RTA==
+
 keccak256@^1.0.0:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/keccak256/-/keccak256-1.0.3.tgz#0a9c0383a9cda753a7351811cf69eaa607043366"

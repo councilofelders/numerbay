@@ -19,7 +19,7 @@
       title=""
       message="You still have active orders for unencrypted sales, files will be not be encrypted for those orders."
       type="warning"
-      v-if="false"
+      v-if="hasUnencryptedOrder()"
     >
       <template #icon>
         <SfIcon
@@ -50,34 +50,7 @@
       <template #close><span></span></template>
     </SfNotification>
 
-    <SfTable class="orders" v-if="getAllOrderArtifacts() && orders && orders.length > 0">
-      <SfTableHeading>
-        <SfTableHeader
-          v-for="tableHeader in ['Order ID', 'File Name', 'State', 'Action']"
-          :key="tableHeader"
-          >{{ tableHeader }}</SfTableHeader>
-      </SfTableHeading>
-      <SfTableRow v-if="getAllOrderArtifacts() && getAllOrderArtifacts().length===0">Please upload artifacts after the round opens</SfTableRow>
-      <SfTableRow v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
-        <SfTableData>{{ artifact.order_id }}</SfTableData>
-        <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
-        <SfTableData><span :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></SfTableData>
-        <SfTableData class="orders__view orders__element--right">
-          <SfLoader :class="{ loader: loading && !!activeArtifact && activeArtifact.id===artifact.id }" :loading="loading && activeArtifact && activeArtifact.id===artifact.id">
-            <span class="artifact-actions">
-              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact && activeArtifact.id===artifact.id" @click="downloadEncrypted(artifact)">
-                {{ $t('Download') }}
-              </SfButton>
-              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && !!activeArtifact && activeArtifact.id===artifact.id" @click="onManualRemoveOrderArtifact(artifact)">
-                {{ $t('Delete') }}
-              </SfButton>
-            </span>
-          </SfLoader>
-        </SfTableData>
-      </SfTableRow>
-    </SfTable>
-
-    <SfTable class="orders">
+    <SfTable class="orders" v-if="artifacts">
       <SfTableHeading>
         <SfTableHeader>Upload for Order</SfTableHeader>
         <SfTableHeader>Buyer</SfTableHeader>
@@ -85,10 +58,59 @@
       </SfTableHeading>
       <SfTableRow v-if="orders && orders.length===0">No active order to upload for</SfTableRow>
       <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)" :class="isPendingUpload(order) ? 'upload-warning' : ''">
-        <SfTableData><div style="display: flex;"><SfCheckbox @change="toggleUploadOrder(orderGetters.getId(order))" :selected="uploadOrders && uploadOrders.includes(orderGetters.getId(order))" :name="String(orderGetters.getId(order))" :key="orderGetters.getId(order)"></SfCheckbox>&nbsp;{{ orderGetters.getId(order) }}</div></SfTableData>
+        <SfTableData>
+          <div style="display: flex;">
+            <SfCheckbox @change="toggleUploadOrder(orderGetters.getId(order))"
+                        :selected="uploadOrders && uploadOrders.includes(orderGetters.getId(order))" :name="String(orderGetters.getId(order))"
+                        :key="orderGetters.getId(order)"></SfCheckbox>&nbsp;{{ orderGetters.getId(order) }}<span v-if="!order.buyer_public_key">&nbsp;(Unencrypted)</span></div>
+        </SfTableData>
         <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
         <SfTableData>
-          {{getOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
+          {{ (!order.buyer_public_key) ? artifacts.total : getOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
+        </SfTableData>
+      </SfTableRow>
+    </SfTable>
+{{activeArtifacts}}
+    <SfTable class="orders" v-if="getAllOrderArtifacts() && orders && orders.length > 0 && artifacts">
+      <SfTableHeading>
+        <SfTableHeader
+          v-for="tableHeader in ['Order ID', 'File Name', 'State', 'Action']"
+          :key="tableHeader"
+          >{{ tableHeader }}</SfTableHeader>
+      </SfTableHeading>
+      <SfTableRow v-if="getAllOrderArtifacts() && getAllOrderArtifacts().length===0 && (!artifacts.data || artifacts.data.length===0)">Please upload artifacts after the round opens</SfTableRow>
+      <SfTableRow v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
+        <SfTableData>{{ artifact.order_id }}</SfTableData>
+        <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
+        <SfTableData><span :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></SfTableData>
+        <SfTableData class="orders__view orders__element--right">
+          <SfLoader :class="{ loader: orderArtifactLoading && isActiveArtifact(artifact) }" :loading="orderArtifactLoading && isActiveArtifact(artifact)">
+            <span class="artifact-actions">
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="downloadEncrypted(artifact)">
+                {{ $t('Download') }}
+              </SfButton>
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="onManualRemoveOrderArtifact(artifact)">
+                {{ $t('Delete') }}
+              </SfButton>
+            </span>
+          </SfLoader>
+        </SfTableData>
+      </SfTableRow>
+      <SfTableRow v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
+        <SfTableData>(Unencrypted)</SfTableData>
+        <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
+        <SfTableData><span :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></SfTableData>
+        <SfTableData class="orders__view orders__element--right">
+          <SfLoader :class="{ loader: loading && isActiveArtifact(artifact) }" :loading="loading && isActiveArtifact(artifact)">
+            <span class="artifact-actions">
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="download(artifact)">
+                {{ $t('Download') }}
+              </SfButton>
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="onManualRemove(artifact)">
+                {{ $t('Delete') }}
+              </SfButton>
+            </span>
+          </SfLoader>
         </SfTableData>
       </SfTableRow>
     </SfTable>
@@ -108,13 +130,13 @@ import {
 import { computed, ref } from '@vue/composition-api';
 import { Logger } from '@vue-storefront/core';
 import MultipleDropzone from '../../components/Molecules/MultipleDropzone';
-import debounce from 'lodash.debounce';
 import { useUiNotification } from '~/composables';
 
 import { encodeBase64 } from 'tweetnacl-util';
 import { encrypt } from 'eth-sig-util';
 
 import 'nuxt-dropzone/dropzone.css';
+import {generateSignedUrl} from '../../plugins/gcs';
 
 extend('url', {
   validate: (value) => {
@@ -184,7 +206,7 @@ export default {
       componentKey: 0,
       componentLoading: false,
       gcs: {
-        // signingURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
+        unencryptedSigningURL: vm.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
         signingURL: vm.$root.context.$vsf.$numerbay.api.getOrderArtifactUploadUrl,
         params: {
           productId: vm.product.id
@@ -200,7 +222,7 @@ export default {
       dropzoneOptions: {
         // paramName: 'file_obj',
         // url: `http://${process.env.VUE_APP_DOMAIN_DEV || 'localhost'}/backend-api/v1/products/15/artifacts`,
-        url: 'https://httpbin.org/post', // placeholder url
+        url: this.generateUploadUrl, // placeholder url
         method: 'put',
         addRemoveLinks: true,
         timeout: 600000,
@@ -239,22 +261,96 @@ export default {
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     orders(orders) {
       this.resetUploadOrders();
+    },
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    artifacts(artifacts) {
+      this.resetUploadOrders();
     }
-  //   artifacts(artifacts) {
-  //     Logger.debug('artifact changed watch', artifacts);
-  //     if (artifacts) {
-  //       // this.$refs.foo.removeAllFiles(true);
-  //       for (const artifact of artifacts.data) {
-  //         if (artifact.object_name) {
-  //           const file = { name: artifact.object_name, artifactId: artifact.id, size: artifact.object_size };
-  //           const url = '';
-  //           this.$refs.foo.manuallyAddFile(file, url);
-  //         }
-  //       }
-  //     }
-  //   }
   },
   methods: {
+    generateUploadUrl(file) {
+      const signedUrlPromise = generateSignedUrl(file[0].isUnencrypted ? this.gcs.unencryptedSigningURL : this.gcs.signingURL, this.gcs.params, file[0]).then((signed)=>{
+        if (signed.error) {
+          const {send} = useUiNotification();
+          send({
+            message: signed.detail,
+            type: 'danger'
+          });
+        }
+        // eslint-disable-next-line no-use-before-define
+        this.$refs.foo.setOption('headers', {
+          'Content-Type': 'application/octet-stream'
+          // 'x-amz-acl': 'public-read'
+        });
+        file[0].artifactId = signed.id;
+        return signed.url;
+      });
+      return signedUrlPromise;
+    },
+    isActiveArtifact(artifact) {
+      return this.activeArtifacts && this.activeArtifacts.includes(artifact.id);
+    },
+    async download(artifact) {
+      if (!artifact.object_name && artifact.url) {
+        window.open(artifact.url, '_blank');
+        return;
+      }
+      this.activeArtifact = artifact;
+      this.activeArtifacts.push(artifact.id);
+      const downloadUrl = await this.downloadArtifact({productId: artifact.product_id, artifactId: artifact.id});
+      this.activeArtifact = null;
+      this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+      if (this.error.downloadArtifact) {
+        this.send({
+          message: this.error.downloadArtifact.message,
+          type: 'danger'
+        });
+        return;
+      }
+
+      const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      link.click();
+      // console.log('downloadUrl', downloadUrl);
+      // axios.get(downloadUrl, { responseType: 'blob', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'} })
+      //   .then(response => {
+      //     const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
+      //     const blob = new Blob([response.data], { type: 'application/pdf' });
+      //     const link = document.createElement('a');
+      //     link.href = URL.createObjectURL(blob);
+      //     link.download = filename;
+      //     link.click();
+      //     URL.revokeObjectURL(link.href);
+      //   }).catch(console.error);
+    },
+    async onManualRemove(artifact) {
+      this.activeArtifact = artifact;
+      this.activeArtifacts.push(artifact.id);
+      this.componentLoading = true;
+      try {
+        this.$refs.foo.disable();
+        await this.deleteArtifact({productId: this.product.id, artifactId: artifact.id}).then(() => {
+          if (this.error.deleteArtifact) {
+            this.send({
+              message: this.error.deleteArtifact.message,
+              type: 'danger'
+            });
+          }
+        });
+        this.componentKey += 1;
+        await this.search({ productId: this.product.id });
+      } finally {
+        this.$refs.foo.enable();
+        this.componentLoading = false;
+        this.activeArtifact = null;
+        this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+      }
+    },
+    hasUnencryptedOrder() {
+      return this.orders.filter(o=>!o.buyer_public_key).length > 0;
+    },
     filterUploadOrders(orders) {
       return orders.filter(o=>this.uploadOrders.includes(o.id));
     },
@@ -278,7 +374,11 @@ export default {
       }
     },
     isPendingUpload(order) {
-      return this.getOrderArtifacts(order).length === 0 || this.getOrderArtifacts(order).length < this.getMaxOrderArtifactsCount();
+      if (order.buyer_public_key) {
+        return (this.getOrderArtifacts(order).length === 0) || this.getOrderArtifacts(order).length < this.getMaxOrderArtifactsCount();
+      } else {
+        return !this.artifacts?.total || this.artifacts?.total < this.getMaxOrderArtifactsCount();
+      }
     },
     getOrderArtifacts(order) {
       return this.orders.filter(o=>(o.id === order.id)).map(o=>o.artifacts).flat() || [];
@@ -291,9 +391,21 @@ export default {
     },
     onFileAdd(file) {
       if (!file.isSubtask) {
-        this.$refs.foo.dropzone.cancelUpload(file);
-        this.$refs.foo.dropzone.files = this.$refs.foo.dropzone.files.filter(f=>(f !== file)).map(f=>f);
-        this.$refs.foo.dropzone.updateTotalUploadProgress();
+        // this.$refs.foo.dropzone.cancelUpload(file);
+        if (file.status === 'uploading') {
+          if (typeof file.xhr !== 'undefined') {
+            file.xhr.abort();
+          }
+        } else if (
+          file.status === 'added' ||
+          file.status === 'queued'
+        ) {
+          file.status = 'canceled';
+        }
+        this.$refs.foo.dropzone.files = this.$refs.foo.dropzone.files.filter((f)=>f !== file).map((f)=>f);
+        // console.log('this.$refs.foo.dropzone.files', JSON.stringify(this.$refs.foo.dropzone.files));
+        // this.$refs.foo.dropzone.updateTotalUploadProgress();
+        this.$refs.foo.dropzone.emit('removedfile', file);
         if (!this.orders || this.orders.length === 0) {
           this.send({
             message: 'Upload cancelled, no active order to upload for',
@@ -301,15 +413,26 @@ export default {
           });
           return;
         }
+        let hasUnencrypted = false;
         for (const order of this.filterUploadOrders(this.orders)) {
-          if (!order.buyer_public_key) {
-            continue;
+          // if (!order.buyer_public_key) {
+          //   continue;
+          // }
+          if (order.buyer_public_key) {
+            encryptfile(file, order.buyer_public_key).then((newFile) => {
+              newFile.isSubtask = true;
+              newFile.orderId = order.id;
+              this.$refs.foo.addFile(newFile);
+            });
+          } else {
+            hasUnencrypted = true;
           }
-          encryptfile(file, order.buyer_public_key).then((newFile)=>{
-            newFile.isSubtask = true;
-            newFile.orderId = order.id;
-            this.$refs.foo.addFile(newFile);
-          });
+        }
+        if (hasUnencrypted) {
+          const newFile = new File([file], file.name);
+          newFile.isSubtask = true;
+          newFile.isUnencrypted = true;
+          this.$refs.foo.addFile(newFile);
         }
       }
     },
@@ -319,8 +442,10 @@ export default {
         return;
       }
       this.activeArtifact = artifact;
+      this.activeArtifacts.push(artifact.id);
       const downloadUrl = await this.downloadOrderArtifact({artifactId: artifact.id});
       this.activeArtifact = null;
+      this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
       if (this.orderArtifactError.downloadArtifact) {
         this.send({
           message: this.orderArtifactError.downloadArtifact.message,
@@ -358,47 +483,69 @@ export default {
     //   // }
     // },
     async s3UploadAllComplete() {
-      if (this.componentLoading) {
-        try {
-          this.$refs.foo.disable();
-          this.componentKey += 1;
-          await this.search({ productId: this.product.id });
-          await this.orderSearch({ role: 'seller', filters: { active: true} });
-        } finally {
-          this.$refs.foo.enable();
-          this.componentLoading = false;
-        }
-      }
+      // if (this.componentLoading) {
+      //   try {
+      //     this.$refs.foo.disable();
+      //     this.componentKey += 1;
+      //     await this.search({ productId: this.product.id });
+      //     await this.orderSearch({ role: 'seller', filters: { active: true} });
+      //   } finally {
+      //     this.$refs.foo.enable();
+      //     this.componentLoading = false;
+      //   }
+      // }
+      this.resetUploadOrders();
     },
     async s3UploadSuccess(file) {
       Logger.debug('Upload success', file.artifactId);
-      const response = await this.$root.context.$vsf.$numerbay.api.validateOrderArtifactUpload({artifactId: file.artifactId});
+      let response = null;
+      if (file.isUnencrypted) {
+        response = await this.$root.context.$vsf.$numerbay.api.validateArtifactUpload({productId: this.product.id, artifactId: file.artifactId});
+      } else {
+        response = await this.$root.context.$vsf.$numerbay.api.validateOrderArtifactUpload({artifactId: file.artifactId});
+      }
       Logger.debug('response: ', response);
+      await this.search({ productId: this.product.id });
       await this.orderSearch({ role: 'seller', filters: { active: true} });
-      this.resetUploadOrders();
+      // this.resetUploadOrders();
     },
-    s3UploadError(errorMessage) {
-      Logger.error('s3 error', errorMessage);
+    s3UploadError(file, message, xhr) {
+      Logger.error('s3 error', file, message, xhr);
     },
-    // async onCancel(file, error, xhr) {
-    //   Logger.debug('onCancel', file, error, xhr);
-    //   await this.deleteArtifact({productId: this.product.id, artifactId: file.artifactId});
-    // },
     async onRemove(file, error, xhr) {
       Logger.debug('onRemove', file, error, xhr);
-      await this.deleteOrderArtifact({artifactId: file.artifactId}).then(() => {
-        if (this.orderArtifactError.deleteArtifact) {
-          this.send({
-            message: this.orderArtifactError.deleteArtifact.message,
-            type: 'danger'
+      if (file.isSubtask) {
+        if (file.isUnencrypted) {
+          await this.deleteArtifact({
+            productId: this.product.id,
+            artifactId: file.artifactId
+          }).then(() => {
+            if (this.error.deleteArtifact) {
+              this.send({
+                message: this.error.deleteArtifact.message,
+                type: 'danger'
+              });
+            }
           });
+          this.componentKey += 1;
+          await this.search({productId: this.product.id});
+        } else {
+          await this.deleteOrderArtifact({artifactId: file.artifactId}).then(() => {
+            if (this.orderArtifactError.deleteArtifact) {
+              this.send({
+                message: this.orderArtifactError.deleteArtifact.message,
+                type: 'danger'
+              });
+            }
+          });
+          this.componentKey += 1;
+          await this.search({productId: this.product.id});
         }
-      });
-      this.componentKey += 1;
-      await this.search({ productId: this.product.id });
+      }
     },
     async onManualRemoveOrderArtifact(artifact) {
       this.activeArtifact = artifact;
+      this.activeArtifacts.push(artifact.id);
       this.componentLoading = true;
       try {
         this.$refs.foo.disable();
@@ -416,6 +563,7 @@ export default {
         this.$refs.foo.enable();
         this.componentLoading = false;
         this.activeArtifact = null;
+        this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
       }
     }
   },
@@ -429,8 +577,8 @@ export default {
   },
   // eslint-disable-next-line no-unused-vars,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unused-vars
   setup(props, { emit, root }) {
-    const { artifacts, search, createArtifact, updateArtifact, downloadArtifact, deleteArtifact, loading, error } = useProductArtifact(`${props.product.id}`);
-    const { downloadArtifact: downloadOrderArtifact, deleteArtifact: deleteOrderArtifact, error: orderArtifactError } = useOrderArtifact(`${props.product.id}`);
+    const { artifacts, search, createArtifact, downloadArtifact, deleteArtifact, loading, error } = useProductArtifact(`${props.product.id}`);
+    const { downloadArtifact: downloadOrderArtifact, deleteArtifact: deleteOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError } = useOrderArtifact(`${props.product.id}`);
     const { search: orderSearch } = useUserOrder('my-listings');
     const { send } = useUiNotification();
 
@@ -438,6 +586,7 @@ export default {
 
     const isManualFormOpen = ref(false);
     const activeArtifact = ref(null);
+    const activeArtifacts = ref([]);
 
     const tableHeaders = [
       'Artifact ID',
@@ -452,31 +601,6 @@ export default {
       description: null
     });
     const form = ref(resetForm());
-
-    const onArtifactEdit = debounce(async (value, product, artifact, onComplete) => {
-      await updateArtifact({
-        productId: product.id,
-        artifactId: artifact.id,
-        description: value
-      }).then(onComplete);
-      // await Promise.all([
-      //   updateArtifact({
-      //     productId: product.id,
-      //     artifactId: artifact.id,
-      //     description: value
-      //   }),
-      //   onComplete()
-      //   // categoriesSearch({
-      //   //   term: term.value,
-      //   // }),
-      // ]);
-
-      //
-      // result.value = {
-      //   products: searchResult.value?.data?.products,
-      //   categories: categoryGetters.getTree(searchResult.value?.data?.categories[0])
-      // };
-    }, 1000);
 
     const getStatusTextClass = (artifact) => {
       const status = artifact?.state;
@@ -498,16 +622,17 @@ export default {
       deleteArtifact,
       deleteOrderArtifact,
       loading,
+      orderArtifactLoading,
       error,
       orderArtifactError,
       send,
       search,
       tableHeaders,
       activeArtifact,
+      activeArtifacts,
       isManualFormOpen,
       form,
       resetForm,
-      onArtifactEdit,
       orderGetters,
       artifactGetters,
       orderSearch,
