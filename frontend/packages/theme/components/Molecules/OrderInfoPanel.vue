@@ -166,13 +166,17 @@
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
-            <span class="artifact-actions">
+            <span class="artifact-actions" v-if="!downloadingArtifacts.includes(artifactGetters.getId(artifact)) && !decryptingArtifacts.includes(artifactGetters.getId(artifact))">
               <SfButton class="sf-button--text action__element" @click="downloadAndDecrypt(artifact)" v-if="order.mode === 'file'">
                 {{ $t('Download') }}
               </SfButton>
               <SfButton class="sf-button--text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name && !!order.submit_model_id">
                 {{ $t('Submit') }}
               </SfButton>
+            </span>
+            <span class="artifact-actions" v-else>
+              <span v-if="downloadingArtifacts.includes(artifactGetters.getId(artifact))" style="display: flex;" class="action__element"><SfLoader class="loader" :loading="true"/>Downloading {{ (downloadingProgress[artifact.id] || 0).toFixed(1)}}%</span>
+              <span v-if="decryptingArtifacts.includes(artifactGetters.getId(artifact))" style="display: flex;" class="action__element"><SfLoader class="loader" :loading="true"/>Decrypting</span>
             </span>
           </SfLoader>
         </SfTableData>
@@ -184,11 +188,12 @@
 <script>
 import { SfButton, SfLink, SfLoader, SfProperty, SfTable } from '@storefront-ui/vue';
 import { artifactGetters, orderGetters, useOrderArtifact, useProductArtifact } from '@vue-storefront/numerbay';
+import { computed, ref } from '@vue/composition-api';
 import axios from 'axios';
-import { computed } from '@vue/composition-api';
 import { decodeBase64 } from 'tweetnacl-util';
-import { decrypt } from 'eth-sig-util';
+import nacl from 'tweetnacl';
 import { useUiNotification } from '~/composables';
+nacl.sealedbox = require('tweetnacl-sealedbox-js');
 
 // decryption
 function readfile(file) {
@@ -198,7 +203,7 @@ function readfile(file) {
     fr.onload = () => {
       resolve(fr.result);
     };
-    fr.readAsBinaryString(file);
+    fr.readAsArrayBuffer(file);
   });
 }
 
@@ -215,6 +220,9 @@ export default {
     order: {
       default: null
     },
+    publicKey: {
+      default: null
+    },
     encryptedPrivateKey: {
       default: null
     },
@@ -222,7 +230,15 @@ export default {
       default: false
     }
   },
+  data() {
+    return {
+      downloadingProgress: {}
+    };
+  },
   methods: {
+    onProgress(artifact, progress) {
+      this.$set(this.downloadingProgress, artifact.id, progress);
+    },
     async copyToClipboard(text) {
       try {
         await this.$copyText(text);
@@ -251,6 +267,38 @@ export default {
       link.download = filename;
       link.click();
     },
+    // async decryptfile(objFile) {
+    //   const cipherbytes = await readfile(objFile)
+    //     .catch((err) => {
+    //       console.error(err);
+    //     });
+    //
+    //   const privateKeyStr = await window.ethereum.request({
+    //     method: 'eth_decrypt',
+    //     params: [this.encryptedPrivateKey, window.ethereum.selectedAddress]
+    //   });
+    //
+    //   const privateKey = (Buffer.from(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))))).toString('hex');
+    //
+    //   const plaintextbytes = decodeBase64(decrypt(
+    //     JSON.parse(cipherbytes),
+    //     privateKey
+    //   ));
+    //
+    //   if (!plaintextbytes) {
+    //     console.log('Error decrypting file.');
+    //   }
+    //
+    //   console.log('ciphertext decrypted');
+    //
+    //   const blob = new Blob([plaintextbytes], {type: 'application/download'});
+    //   const blobUrl = URL.createObjectURL(blob);
+    //
+    //   // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    //   return new Promise((resolve, reject) => {
+    //     resolve(blobUrl);
+    //   });
+    // },
     async decryptfile(objFile) {
       const cipherbytes = await readfile(objFile)
         .catch((err) => {
@@ -262,12 +310,9 @@ export default {
         params: [this.encryptedPrivateKey, window.ethereum.selectedAddress]
       });
 
-      const privateKey = (Buffer.from(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))))).toString('hex');
+      const privateKey = new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item)));
 
-      const plaintextbytes = decodeBase64(decrypt(
-        JSON.parse(cipherbytes),
-        privateKey
-      ));
+      const plaintextbytes = nacl.sealedbox.open(new Uint8Array(cipherbytes), decodeBase64(this.publicKey), privateKey);
 
       if (!plaintextbytes) {
         console.log('Error decrypting file.');
@@ -299,19 +344,40 @@ export default {
         return;
       }
 
-      axios.get(downloadUrl, { responseType: 'blob', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'} })
+      this.downloadingArtifacts.push(artifact.id);
+      axios.get(downloadUrl, {
+        responseType: 'blob',
+        headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/octet-stream'},
+        onDownloadProgress: progressEvent => {
+          const total = parseFloat(progressEvent.total);
+          const current = parseFloat(progressEvent.loaded);
+          const percentCompleted = current / total * 100;
+          this.onProgress(artifact, percentCompleted);
+        }
+      })
         .then(response => {
           const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
           const blob = new Blob([response.data]);
           const file = new File([blob], filename);
+          this.downloadingArtifacts = this.downloadingArtifacts.filter((id)=>id !== artifact.id);
+          this.decryptingArtifacts.push(artifact.id);
           this.decryptfile(file).then((blobUrl) => {
             const link = document.createElement('a');
             link.href = blobUrl;
             link.download = filename;
             link.click();
             URL.revokeObjectURL(link.href);
+          }).catch((e)=>{
+            console.error(e);
+          }).finally(()=>{
+            this.decryptingArtifacts = this.decryptingArtifacts.filter((id)=>id !== artifact.id);
           });
-        }).catch(console.error);
+        }).catch((e)=>{
+          console.error(e);
+        }).finally(()=>{
+          this.downloadingArtifacts = this.downloadingArtifacts.filter((id)=>id !== artifact.id);
+          this.downloadingProgress[artifact.id] = 0;
+        });
     },
     async submit(artifact) {
       await this.submitArtifact({orderId: this.order.id, artifactId: artifact.id});
@@ -332,6 +398,9 @@ export default {
 
     search({ productId: props.order.product.id });
     searchOrderArtifacts({ orderId: props.order.id });
+
+    const downloadingArtifacts = ref([]);
+    const decryptingArtifacts = ref([]);
 
     const tableHeaders = [
       'Artifact ID',
@@ -355,7 +424,9 @@ export default {
       submitArtifact,
       submitOrderArtifact,
       orderGetters,
-      artifactGetters
+      artifactGetters,
+      downloadingArtifacts,
+      decryptingArtifacts
     };
   }
 

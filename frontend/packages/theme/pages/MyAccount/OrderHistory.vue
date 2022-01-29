@@ -3,7 +3,7 @@
     <SfTab title="My orders">
       <div v-if="currentOrder">
         <SfButton class="sf-button--text all-orders" @click="currentOrder = null">All Orders</SfButton>
-        <OrderInfoPanel :order="currentOrder" :encryptedPrivateKey="user.encrypted_private_key" :withCopyButtons="orderGetters.getStatus(currentOrder)==='pending'"/>
+        <OrderInfoPanel :order="currentOrder" :encryptedPrivateKey="user.encrypted_private_key" :publicKey="user.public_key" :withCopyButtons="orderGetters.getStatus(currentOrder)==='pending'"/>
       </div>
       <div v-else>
         <p class="message">

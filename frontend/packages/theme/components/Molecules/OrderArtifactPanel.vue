@@ -70,7 +70,7 @@
         </SfTableData>
       </SfTableRow>
     </SfTable>
-{{activeArtifacts}}
+
     <SfTable class="orders" v-if="getAllOrderArtifacts() && orders && orders.length > 0 && artifacts">
       <SfTableHeading>
         <SfTableHeader
@@ -132,11 +132,12 @@ import { Logger } from '@vue-storefront/core';
 import MultipleDropzone from '../../components/Molecules/MultipleDropzone';
 import { useUiNotification } from '~/composables';
 
-import { encodeBase64 } from 'tweetnacl-util';
-import { encrypt } from 'eth-sig-util';
+import { decodeBase64 } from 'tweetnacl-util';
+import nacl from 'tweetnacl';
+nacl.sealedbox = require('tweetnacl-sealedbox-js');
 
 import 'nuxt-dropzone/dropzone.css';
-import {generateSignedUrl} from '../../plugins/gcs';
+import { generateSignedUrl } from '../../plugins/gcs';
 
 extend('url', {
   validate: (value) => {
@@ -161,17 +162,36 @@ const readfile = (file) => {
   });
 };
 
+// const encryptfile = async (objFile, key) => {
+//   const plaintextbytes = await readfile(objFile)
+//     .catch((err) => {
+//       console.error(err);
+//     });
+//
+//   const cipherbytes = JSON.stringify(encrypt(
+//     key,
+//     { data: encodeBase64(new Uint8Array(plaintextbytes)) },
+//     'x25519-xsalsa20-poly1305'
+//   ));
+//
+//   if (!cipherbytes) {
+//     console.error('Error encrypting file.');
+//   }
+//
+//   const blob = new Blob([cipherbytes], {type: 'application/download'});
+//   // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+//   return new Promise((resolve, reject) => {
+//     resolve(new File([blob], objFile.name));
+//   });
+// };
+
 const encryptfile = async (objFile, key) => {
   const plaintextbytes = await readfile(objFile)
     .catch((err) => {
       console.error(err);
     });
 
-  const cipherbytes = JSON.stringify(encrypt(
-    key,
-    { data: encodeBase64(new Uint8Array(plaintextbytes)) },
-    'x25519-xsalsa20-poly1305'
-  ));
+  const cipherbytes = nacl.sealedbox.seal(new Uint8Array(plaintextbytes), decodeBase64(key));
 
   if (!cipherbytes) {
     console.error('Error encrypting file.');

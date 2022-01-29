@@ -95,6 +95,7 @@ import Web3 from 'web3';
 import { encodeBase64 } from 'tweetnacl-util';
 import { encrypt } from 'eth-sig-util';
 import nacl from 'tweetnacl';
+nacl.sealedbox = require('tweetnacl-sealedbox-js');
 import { useUiNotification } from '~/composables';
 
 extend('email', {

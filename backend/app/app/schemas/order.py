@@ -70,7 +70,6 @@ class Order(OrderInDBBase):
     @validator("artifacts", always=True)
     def validate_artifacts(cls, value, values):  # type: ignore
         value_to_return = []
-        print(f"value: {value}")
         for artifact in value:
             if artifact.state == "active":
                 value_to_return.append(artifact)

@@ -119,6 +119,7 @@ def validate_upload(
 
     blob = bucket.blob(artifact.object_name)
     if not blob.exists():
+        crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
         raise HTTPException(
             status_code=404, detail="Artifact file not uploaded",
         )
@@ -214,8 +215,38 @@ def generate_download_url(
     return url
 
 
+@router.get("/{artifact_id}", response_model=schemas.OrderArtifact)
+def get_order_artifact(
+    *,
+    artifact_id: str,
+    db: Session = Depends(deps.get_db),
+    bucket: Bucket = Depends(deps.get_gcs_bucket),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get an artifact.
+    """
+    artifact = crud.order_artifact.get(db, id=artifact_id)
+
+    if not artifact:
+        raise HTTPException(status_code=404, detail="Artifact not found")
+    if not artifact.object_name:
+        raise HTTPException(status_code=400, detail="Artifact not an upload")
+
+    order = artifact.order
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    is_seller = order.product.owner_id == current_user.id
+    order = validate_buyer(order.product, current_user, selling_round)  # type: ignore
+
+    # owner or buyer
+    if not is_seller and not order:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    return artifact
+
+
 @router.delete("/{artifact_id}", response_model=schemas.OrderArtifact)
-def delete_product_artifact(
+def delete_order_artifact(
     *,
     artifact_id: str,
     db: Session = Depends(deps.get_db),
