@@ -108,6 +108,9 @@ export default {
     async refresh() {
       await this.search({filters: { user: { in: [`${this.userGetters.getId(this.user)}`]}}, sort: 'latest'});
       await this.orderSearch({ role: 'seller', filters: { active: true} });
+      // if (this.currentListing) {
+      //   await this.searchProductArtifact({ productId: this.currentListing.id });
+      // }
     },
     getFilteredOrders(product) {
       if (product) {
@@ -127,6 +130,7 @@ export default {
   setup() {
     const { user, loading: userLoading } = useUser();
     const { deleteArtifact } = useOrderArtifact('my-listings');
+    // const { search: searchProductArtifact } = useProductArtifact('my-listings');
     const { categories, search: categorySearch } = useCategory();
     const { getModels: getNumeraiModels, loading: numeraiLoading, error: numeraiError } = useNumerai('my-listings');
     const { getGlobals } = useGlobals();
@@ -190,6 +194,7 @@ export default {
       deleteArtifact,
       search,
       orderSearch
+      // searchProductArtifact
     };
   }
 };

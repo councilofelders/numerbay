@@ -130,6 +130,8 @@ Get all your orders.
   * id (`int`)
   * product (`dict`)
   * buyer (`dict`)
+  * buyer_public_key (`str`)
+  * artifacts (`list`)
 
 **Example**:
 
@@ -162,17 +164,23 @@ Get all your orders.
   "buyer":{
   "id":2,
   "username":"myusername"
-  }
+  },
+  "buyer_public_key":"yqKFQtzss8vRL7devlvZY70v5WUrS3BfKfPFzTnYit4=",
+  "artifacts":[...]
   }, ...]
   ```
 
 ### get\_my\_sales
 
 ```python
-def get_my_sales() -> List
+def get_my_sales(active_only: bool = False) -> List
 ```
 
 Get all your sales (including pending and expired sales).
+
+**Arguments**:
+
+- `active_only` _bool, optional_ - whether to fetch only active sale orders
 
 **Returns**:
 
@@ -199,6 +207,8 @@ Get all your sales (including pending and expired sales).
   * id (`int`)
   * product (`dict`)
   * buyer (`dict`)
+  * buyer_public_key (`str`)
+  * artifacts (`list`)
 
 **Example**:
 
@@ -231,7 +241,9 @@ Get all your sales (including pending and expired sales).
   "buyer":{
   "id":2,
   "username":"someusername"
-  }
+  },
+  "buyer_public_key":"yqKFQtzss8vRL7devlvZY70v5WUrS3BfKfPFzTnYit4=",
+  "artifacts":[...]
   }, ...]
   ```
 
@@ -371,7 +383,7 @@ Get all your listings.
 ### upload\_artifact
 
 ```python
-def upload_artifact(file_path: str = "predictions.csv", product_id: int = None, product_full_name: str = None, df: pd.DataFrame = None) -> Dict
+def upload_artifact(file_path: str = "predictions.csv", product_id: int = None, product_full_name: str = None, order_id: int = None, df: pd.DataFrame = None) -> Union[List, Dict]
 ```
 
 Upload artifact from file.
@@ -382,12 +394,14 @@ Upload artifact from file.
 - `product_id` _int_ - NumerBay product ID
 - `product_full_name` _str_ - NumerBay product full name (e.g. numerai-predictions-numerbay),
   used for resolving product_id if product_id is not provided
+- `order_id` _int, optional_ - NumerBay order ID, used for encrypted per-order artifact upload
 - `df` _pandas.DataFrame_ - pandas DataFrame to upload, if function is
   given df and file_path, df will be uploaded.
 
 **Returns**:
 
-- `str` - submission_id
+  list or dict: list of artifacts uploaded (for encrypted listing)
+  or the artifact uploaded (for unencrypted listing)
 
 **Example**:
 
@@ -402,7 +416,7 @@ Upload artifact from file.
 ### download\_artifact
 
 ```python
-def download_artifact(filename: str = None, dest_path: str = None, product_id: int = None, product_full_name: str = None, artifact_id: int = None) -> None
+def download_artifact(filename: str = None, dest_path: str = None, product_id: int = None, product_full_name: str = None, order_id: int = None, artifact_id: Union[int, str] = None, key_path: str = None, key_base64: str = None) -> None
 ```
 
 Download artifact file.
@@ -412,11 +426,14 @@ Download artifact file.
 - `filename` _str_ - filename to store as
 - `dest_path` _str, optional_ - complate path where the file should be
   stored, defaults to the same name as the source file
-- `product_id` _int_ - NumerBay product ID
-- `product_full_name` _str_ - NumerBay product full name (e.g. numerai-predictions-numerbay),
+- `product_id` _int, optional_ - NumerBay product ID
+- `product_full_name` _str, optional_ - NumerBay product full name (e.g. numerai-predictions-numerbay),
   used for resolving product_id if product_id is not provided
-- `artifact_id` _str_ - Artifact ID for the file to download,
+- `order_id` _int, optional_ - NumerBay order ID, used for encrypted per-order artifact download
+- `artifact_id` _str or int, optional_ - Artifact ID for the file to download,
   defaults to the first artifact for your active order for the product
+- `key_path` _int, optional_ - path to buyer's exported NumerBay key file
+- `key_base64` _int, optional_ - buyer's NumerBay private key base64 string (used for tests)
 
 **Example**:
 

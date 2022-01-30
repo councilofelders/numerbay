@@ -3,7 +3,7 @@ sidebar_label: utils
 title: utils
 ---
 
-collection of utility functions (from numerapi: https://github.com/uuazed/numerapi)
+collection of utility functions (adapted from numerapi: https://github.com/uuazed/numerapi)
 
 #### parse\_datetime\_string
 
@@ -52,4 +52,20 @@ def post_with_err_handling(url: str, body: str = None, json: str = None, headers
 ```
 
 send `post` request and handle (some) errors that might occur
+
+#### encrypt\_file\_object
+
+```python
+def encrypt_file_object(file: Union[BinaryIO, BytesIO], key: str)
+```
+
+encrypt a file stream
+
+#### decrypt\_file
+
+```python
+def decrypt_file(dest_path: str, key_path: str = None, key_base64: str = None)
+```
+
+decrypt and overwrite a file
 
