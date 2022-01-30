@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Form, HTTPException, status
 from google.api_core.exceptions import NotFound
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.api.dependencies import numerai
 from app.api.dependencies.order_artifacts import (  # send_artifact_emails_for_active_orders,
     get_object_name,
     validate_existing_order_artifact,
@@ -26,6 +27,7 @@ def generate_upload_url(
     *,
     order_id: int = Form(...),
     filename: str = Form(...),
+    is_numerai_direct: str = Form(None),
     filesize: int = Form(None),
     action: str = Form(None),
     filename_suffix: str = Form(None),
@@ -34,6 +36,11 @@ def generate_upload_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    if is_numerai_direct in ["true", "True"]:
+        is_numerai_direct = True  # type: ignore
+    else:
+        is_numerai_direct = False  # type: ignore
+
     order = crud.order.get(db, id=order_id)
     validate_new_order_artifact(
         order=order, current_user=current_user, url=None, filename=filename
@@ -62,18 +69,32 @@ def generate_upload_url(
         raise HTTPException(
             status_code=400, detail="Action type must be either PUT or POST for uploads"
         )
-    blob = bucket.blob(object_name)
-    url = blob.generate_signed_url(
-        expiration=timedelta(minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES),
-        content_type="application/octet-stream",
-        bucket_bound_hostname=(
-            "https://storage.numerbay.ai"
-            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
-            else None
-        ),
-        method=action,
-        version="v4",
-    )
+
+    if is_numerai_direct:
+        # submit to Numerai directly
+        # todo handle stake mode and no submit id
+        submission_auth = numerai.generate_numerai_submission_url(
+            object_name=object_name,
+            model_id=order.submit_model_id,  # type: ignore
+            tournament=order.product.model.tournament,  # type: ignore
+            numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
+            numerai_api_key_secret=order.buyer.numerai_api_key_secret,  # type: ignore
+        )
+        url, object_name = submission_auth["url"], submission_auth["filename"]
+    else:
+        # upload for buyer
+        blob = bucket.blob(object_name)
+        url = blob.generate_signed_url(
+            expiration=timedelta(minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES),
+            content_type="application/octet-stream",
+            bucket_bound_hostname=(
+                "https://storage.numerbay.ai"
+                if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
+                else None
+            ),
+            method=action,
+            version="v4",
+        )
 
     # Create artifact
     artifact_in = schemas.OrderArtifactCreate(
@@ -85,6 +106,7 @@ def generate_upload_url(
         url=None,
         object_name=object_name,
         object_size=filesize,
+        is_numerai_direct=is_numerai_direct,
     )
     artifact = crud.order_artifact.create(db=db, obj_in=artifact_in)
     if not artifact:
@@ -117,12 +139,29 @@ def validate_upload(
             status_code=400, detail="Artifact not an upload object",
         )
 
-    blob = bucket.blob(artifact.object_name)
-    if not blob.exists():
-        crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
-        raise HTTPException(
-            status_code=404, detail="Artifact file not uploaded",
+    if artifact.is_numerai_direct:
+        # validate numerai submission
+        # todo handling everything
+        submission_id = numerai.validate_numerai_submission(
+            object_name=artifact.object_name,
+            model_id=artifact.order.submit_model_id,  # type: ignore
+            tournament=artifact.order.product.model.tournament,  # type: ignore
+            numerai_api_key_public_id=artifact.order.buyer.numerai_api_key_public_id,
+            numerai_api_key_secret=artifact.order.buyer.numerai_api_key_secret,
         )
+        if submission_id is None:
+            crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
+            raise HTTPException(
+                status_code=404, detail="Submission failed",
+            )
+    else:
+        # validate numerbay upload
+        blob = bucket.blob(artifact.object_name)
+        if not blob.exists():
+            crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
+            raise HTTPException(
+                status_code=404, detail="Artifact file not uploaded",
+            )
 
     crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
 
@@ -149,6 +188,7 @@ def validate_upload(
 def list_order_artifacts(
     *,
     order_id: int,
+    active_only: Optional[bool] = False,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -164,7 +204,7 @@ def list_order_artifacts(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     artifacts = crud.order_artifact.get_multi_by_order_round(
-        db, order=order, round_tournament=selling_round
+        db, order=order, round_tournament=selling_round, active_only=active_only
     )
     return {"total": len(artifacts), "data": artifacts}
 
@@ -183,6 +223,10 @@ def generate_download_url(
         raise HTTPException(status_code=404, detail="Artifact not found")
     if not artifact.object_name:
         raise HTTPException(status_code=400, detail="Artifact not an upload")
+    if artifact.is_numerai_direct:
+        raise HTTPException(
+            status_code=400, detail="Download not allowed for this artifact"
+        )
 
     order = artifact.order
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore

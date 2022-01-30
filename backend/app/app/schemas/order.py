@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 from app.schemas.product import Product
 from app.schemas.user import OrderBuyer
@@ -67,13 +67,13 @@ class Order(OrderInDBBase):
     buyer: OrderBuyer
     artifacts: Optional[List] = None
 
-    @validator("artifacts", always=True)
-    def validate_artifacts(cls, value, values):  # type: ignore
-        value_to_return = []
-        for artifact in value:
-            if artifact.state == "active":
-                value_to_return.append(artifact)
-        return value_to_return
+    # @validator("artifacts", always=True)
+    # def validate_artifacts(cls, value, values):  # type: ignore
+    #     value_to_return = []
+    #     for artifact in value:
+    #         if artifact.state == "active":
+    #             value_to_return.append(artifact)
+    #     return value_to_return
 
 
 # Properties properties stored in DB

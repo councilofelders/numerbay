@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -19,5 +19,6 @@ class OrderArtifact(Base):
     object_name = Column(String, index=True, nullable=True)
     object_size = Column(Integer, nullable=True)
     state = Column(String, nullable=False, default="pending", server_default="pending")
+    is_numerai_direct = Column(Boolean, nullable=True)
     order_id = Column(Integer, ForeignKey("order.id"))
     order = relationship("Order", back_populates="artifacts")

@@ -54,6 +54,7 @@
       <SfTableHeading>
         <SfTableHeader>Upload for Order</SfTableHeader>
         <SfTableHeader>Buyer</SfTableHeader>
+        <SfTableHeader>Mode</SfTableHeader>
         <SfTableHeader>Files Uploaded</SfTableHeader>
       </SfTableHeading>
       <SfTableRow v-if="orders && orders.length===0">No active order to upload for</SfTableRow>
@@ -65,8 +66,9 @@
                         :key="orderGetters.getId(order)"></SfCheckbox>&nbsp;{{ orderGetters.getId(order) }}<span v-if="!order.buyer_public_key">&nbsp;(Unencrypted)</span></div>
         </SfTableData>
         <SfTableData>{{ orderGetters.getBuyer(order) }}</SfTableData>
+        <SfTableData>{{ order.mode }}</SfTableData>
         <SfTableData>
-          {{ (!order.buyer_public_key) ? artifacts.total : getOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
+          {{ (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
         </SfTableData>
       </SfTableRow>
     </SfTable>
@@ -74,7 +76,7 @@
     <SfTable class="orders" v-if="getAllOrderArtifacts() && orders && orders.length > 0 && artifacts">
       <SfTableHeading>
         <SfTableHeader
-          v-for="tableHeader in ['Order ID', 'File Name', 'State', 'Action']"
+          v-for="tableHeader in ['Order ID', 'File Name', 'State', 'Recipient', 'Action']"
           :key="tableHeader"
           >{{ tableHeader }}</SfTableHeader>
       </SfTableHeading>
@@ -83,10 +85,11 @@
         <SfTableData>{{ artifact.order_id }}</SfTableData>
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
         <SfTableData><span :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></SfTableData>
+        <SfTableData>{{ artifact.is_numerai_direct ? 'Numerai' : 'Buyer' }}</SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: orderArtifactLoading && isActiveArtifact(artifact) }" :loading="orderArtifactLoading && isActiveArtifact(artifact)">
             <span class="artifact-actions">
-              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="downloadEncrypted(artifact)">
+              <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="downloadEncrypted(artifact)" v-if="!artifact.is_numerai_direct">
                 {{ $t('Download') }}
               </SfButton>
               <SfButton class="sf-button--text action__element" :disabled="(componentLoading || loading) && isActiveArtifact(artifact)" @click="onManualRemoveOrderArtifact(artifact)">
@@ -161,29 +164,6 @@ const readfile = (file) => {
     fr.readAsArrayBuffer(file);
   });
 };
-
-// const encryptfile = async (objFile, key) => {
-//   const plaintextbytes = await readfile(objFile)
-//     .catch((err) => {
-//       console.error(err);
-//     });
-//
-//   const cipherbytes = JSON.stringify(encrypt(
-//     key,
-//     { data: encodeBase64(new Uint8Array(plaintextbytes)) },
-//     'x25519-xsalsa20-poly1305'
-//   ));
-//
-//   if (!cipherbytes) {
-//     console.error('Error encrypting file.');
-//   }
-//
-//   const blob = new Blob([cipherbytes], {type: 'application/download'});
-//   // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-//   return new Promise((resolve, reject) => {
-//     resolve(new File([blob], objFile.name));
-//   });
-// };
 
 const encryptfile = async (objFile, key) => {
   const plaintextbytes = await readfile(objFile)
@@ -393,9 +373,25 @@ export default {
         this.uploadOrders = this.orders.map(o=>this.orderGetters.getId(o));
       }
     },
+    filterActiveArtifacts(artifacts) {
+      if (!artifacts) {
+        return [];
+      }
+      return artifacts.filter(a=>a.state === 'active');
+    },
+    getUniqueActiveOrderArtifacts(order) {
+      if (!order?.artifacts) {
+        return [];
+      }
+      if (order.mode === 'file') {
+        return order.artifacts.filter(a=>!a.is_numerai_direct).filter(a=>a.state === 'active');
+      } else {
+        return order.artifacts.filter(a=>a.state === 'active');
+      }
+    },
     isPendingUpload(order) {
       if (order.buyer_public_key) {
-        return (this.getOrderArtifacts(order).length === 0) || this.getOrderArtifacts(order).length < this.getMaxOrderArtifactsCount();
+        return (this.getOrderArtifacts(order).length === 0) || this.getUniqueActiveOrderArtifacts(order).length < this.getMaxOrderArtifactsCount();
       } else {
         return !this.artifacts?.total || this.artifacts?.total < this.getMaxOrderArtifactsCount();
       }
@@ -404,7 +400,7 @@ export default {
       return this.orders.filter(o=>(o.id === order.id)).map(o=>o.artifacts).flat() || [];
     },
     getMaxOrderArtifactsCount() {
-      return Math.max.apply(null, this.orders.map(o=>o.artifacts?.length));
+      return Math.max.apply(null, this.orders.map(o=>this.getUniqueActiveOrderArtifacts(o)?.length));
     },
     getAllOrderArtifacts() {
       return this.orders.map(o=>o.artifacts).flat();
@@ -439,11 +435,22 @@ export default {
           //   continue;
           // }
           if (order.buyer_public_key) {
-            encryptfile(file, order.buyer_public_key).then((newFile) => {
-              newFile.isSubtask = true;
-              newFile.orderId = order.id;
-              this.$refs.foo.addFile(newFile);
-            });
+            if (order.submit_model_id) {
+              // direct submission to numerai
+              const newFile2 = new File([file], file.name);
+              newFile2.isSubtask = true;
+              newFile2.isNumeraiDirect = true;
+              newFile2.orderId = order.id;
+              this.$refs.foo.addFile(newFile2);
+            }
+
+            if (order.mode === 'file') {
+              encryptfile(file, order.buyer_public_key).then((newFile) => {
+                newFile.isSubtask = true;
+                newFile.orderId = order.id;
+                this.$refs.foo.addFile(newFile);
+              });
+            }
           } else {
             hasUnencrypted = true;
           }
@@ -625,6 +632,8 @@ export default {
     const getStatusTextClass = (artifact) => {
       const status = artifact?.state;
       switch (status) {
+        case 'failed':
+          return 'text-danger';
         case 'pending':
           return 'text-warning';
         case 'active':

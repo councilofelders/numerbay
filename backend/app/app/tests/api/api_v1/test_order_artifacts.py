@@ -133,6 +133,7 @@ def test_read_order_artifact(
         )
         assert r.status_code == 200
         content = r.json()
+
         assert "id" in content
         assert "url" in content
         assert content["url"]

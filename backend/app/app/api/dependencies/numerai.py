@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
 from numerapi import NumerAPI
@@ -452,3 +452,148 @@ def check_user_numerai_api(user: models.User) -> None:
             raise HTTPException(
                 status_code=400, detail="Numerai API Error: Insufficient Permission."
             )
+
+
+def generate_numerai_submission_url(
+    object_name: str,
+    model_id: str,
+    tournament: int = 8,
+    numerai_api_key_public_id: str = None,
+    numerai_api_key_secret: str = None,
+) -> Dict:
+    """
+    Generate Numerai submission URL.
+    """
+    api = NumerAPI(
+        public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
+    )
+
+    if tournament == 8:
+        auth_query = """
+                            query($filename: String!
+                                  $tournament: Int!
+                                  $modelId: String) {
+                                submission_upload_auth(filename: $filename
+                                                       tournament: $tournament
+                                                       modelId: $modelId) {
+                                    filename
+                                    url
+                                }
+                            }
+                            """
+
+        arguments = {
+            "filename": object_name,
+            "tournament": tournament,
+            "modelId": model_id,
+        }
+
+        submission_auth = api.raw_query(auth_query, arguments, authorization=True)[
+            "data"
+        ]["submission_upload_auth"]
+
+    else:
+        auth_query = """
+                    query($filename: String!
+                          $modelId: String) {
+                      submissionUploadSignalsAuth(filename: $filename
+                                                modelId: $modelId) {
+                            filename
+                            url
+                        }
+                    }
+                    """
+
+        arguments = {"filename": object_name, "modelId": model_id}
+
+        submission_auth = api.raw_query(auth_query, arguments, authorization=True)[
+            "data"
+        ]["submissionUploadSignalsAuth"]
+    return submission_auth
+
+
+def validate_numerai_submission(
+    object_name: str,
+    model_id: str,
+    tournament: int = 8,
+    numerai_api_key_public_id: str = None,
+    numerai_api_key_secret: str = None,
+) -> Optional[str]:
+    api = NumerAPI(
+        public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
+    )
+
+    if tournament == 8:
+        # Create submission
+        create_query = """
+                                    mutation($filename: String!
+                                             $tournament: Int!
+                                             $version: Int!
+                                             $modelId: String
+                                             $triggerId: String) {
+                                        create_submission(filename: $filename
+                                                          tournament: $tournament
+                                                          version: $version
+                                                          modelId: $modelId
+                                                          triggerId: $triggerId
+                                                          source: "numerapi") {
+                                            id
+                                        }
+                                    }
+                                    """
+
+        arguments = {
+            "filename": object_name,
+            "tournament": tournament,
+            "version": 1,
+            "modelId": model_id,
+            "triggerId": None,
+        }  # os.getenv('TRIGGER_ID', None)}
+    else:
+        # Create submission
+        create_query = """
+                    mutation($filename: String!
+                             $modelId: String
+                             $triggerId: String) {
+                        createSignalsSubmission(filename: $filename
+                                                modelId: $modelId
+                                                triggerId: $triggerId
+                                                source: "numerapi") {
+                            id
+                            firstEffectiveDate
+                        }
+                    }
+                    """
+
+        arguments = {
+            "filename": object_name,
+            "modelId": model_id,
+            "triggerId": None,
+        }
+
+    try:
+        create = api.raw_query(create_query, arguments, authorization=True)
+    except ValueError:  # try again with new data version
+        print("Retrying upload with version 2")
+        arguments["version"] = 2
+        try:
+            create = api.raw_query(create_query, arguments, authorization=True)
+        except Exception:  # other errors
+            print("Retry failed, marking submission as failed")
+            # mark failed submission
+            return None
+    except Exception:  # other errors
+        print("Submission failed")
+        # mark failed submission
+        return None
+    if create:
+        submission_id = (
+            create["data"]["create_submission"]["id"]
+            if tournament == 8
+            else create["data"]["createSignalsSubmission"]["id"]
+        )
+        print(f"submission_id: {submission_id}")
+        return submission_id
+    else:
+        print("Submission failed")
+        return None

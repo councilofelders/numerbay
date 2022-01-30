@@ -14,6 +14,7 @@
 export function generateSignedUrl(signingURL, params, file) {
   const response = signingURL({
     orderId: file.orderId,
+    isNumeraiDirect: file.isNumeraiDirect,
     filename: file.name,
     filesize: file.size,
     type: file.type,

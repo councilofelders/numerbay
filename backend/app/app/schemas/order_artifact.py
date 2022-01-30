@@ -13,6 +13,7 @@ class OrderArtifactBase(BaseModel):
     object_name: Optional[str] = None
     object_size: Optional[int] = None
     state: Optional[str] = None
+    is_numerai_direct: Optional[bool] = None
 
 
 # Properties to receive on order_artifact creation

@@ -267,38 +267,6 @@ export default {
       link.download = filename;
       link.click();
     },
-    // async decryptfile(objFile) {
-    //   const cipherbytes = await readfile(objFile)
-    //     .catch((err) => {
-    //       console.error(err);
-    //     });
-    //
-    //   const privateKeyStr = await window.ethereum.request({
-    //     method: 'eth_decrypt',
-    //     params: [this.encryptedPrivateKey, window.ethereum.selectedAddress]
-    //   });
-    //
-    //   const privateKey = (Buffer.from(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))))).toString('hex');
-    //
-    //   const plaintextbytes = decodeBase64(decrypt(
-    //     JSON.parse(cipherbytes),
-    //     privateKey
-    //   ));
-    //
-    //   if (!plaintextbytes) {
-    //     console.log('Error decrypting file.');
-    //   }
-    //
-    //   console.log('ciphertext decrypted');
-    //
-    //   const blob = new Blob([plaintextbytes], {type: 'application/download'});
-    //   const blobUrl = URL.createObjectURL(blob);
-    //
-    //   // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    //   return new Promise((resolve, reject) => {
-    //     resolve(blobUrl);
-    //   });
-    // },
     async decryptfile(objFile) {
       const cipherbytes = await readfile(objFile)
         .catch((err) => {

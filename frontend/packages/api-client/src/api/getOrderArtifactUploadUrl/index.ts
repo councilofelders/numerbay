@@ -9,6 +9,7 @@ export default async function getOrderArtifactUploadUrl(context, params, customQ
 
   const postParams = new URLSearchParams();
   postParams.append('order_id', params.orderId);
+  postParams.append('is_numerai_direct', params.isNumeraiDirect);
   postParams.append('filename', params.filename);
   postParams.append('filesize', params.filesize);
   postParams.append('type', params.type);
