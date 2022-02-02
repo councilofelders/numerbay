@@ -1,5 +1,5 @@
 import functools
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ class CRUDOrderArtifact(
         *,
         order: models.Order,
         round_tournament: int,
-        active_only: bool = False
+        active_only: Optional[bool] = False
     ) -> List[OrderArtifact]:
         query_filters = [OrderArtifact.order_id == order.id]
         if order.product.category.is_per_round:

@@ -57,6 +57,14 @@ def parse_sort_option(sort: Optional[str]) -> Any:
             Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
             + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
         )
+    elif sort == "fnc-up":
+        return Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)
+    elif sort == "fnc-down":
+        return desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float))
+    elif sort == "tc-up":
+        return Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    elif sort == "tc-down":
+        return desc(Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float))
     elif sort == "stake-up":
         return Model.nmr_staked
     elif sort == "stake-down":

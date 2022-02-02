@@ -1,15 +1,15 @@
 import {
-  FacetsGetters,
+  AgnosticBreadcrumb,
   AgnosticCategoryTree,
+  AgnosticFacet,
   AgnosticGroupedFacet,
   AgnosticPagination,
   AgnosticSort,
-  AgnosticBreadcrumb,
-  AgnosticFacet
+  FacetsGetters
 } from '@vue-storefront/core';
-import { getProductFiltered } from './productGetters';
+import { buildFacets, reduceForGroupedFacets } from '../useFacet/_utils';
 import { getCategoryTree as buildCategoryTree } from './categoryGetters';
-import {buildFacets, reduceForGroupedFacets} from '../useFacet/_utils';
+import { getProductFiltered } from './productGetters';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getAll = (searchData, criteria?: string[]): AgnosticFacet[] => [];
@@ -29,6 +29,8 @@ const getSortOptions = (searchData): AgnosticSort => {
     { type: 'sort', id: 'mmc-down', value: 'MMC Rep from high to low', count: null },
     { type: 'sort', id: 'corrmmc-down', value: 'CORR+MMC Rep from high to low', count: null },
     { type: 'sort', id: 'corr2mmc-down', value: 'CORR+2xMMC Rep from high to low', count: null },
+    { type: 'sort', id: 'fnc-down', value: 'FNC Rep from high to low', count: null },
+    { type: 'sort', id: 'tc-down', value: 'TC Rep from high to low', count: null },
     { type: 'sort', id: 'name-up', value: 'Name: A to Z', count: null},
     // { type: 'sort', id: 'price-up', value: 'Price from low to high', count: null },
     // { type: 'sort', id: 'price-down', value: 'Price from high to low', count: null },
