@@ -103,6 +103,7 @@
         <SfTableData>(Unencrypted)</SfTableData>
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
         <SfTableData><span :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></SfTableData>
+        <SfTableData></SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading && isActiveArtifact(artifact) }" :loading="loading && isActiveArtifact(artifact)">
             <span class="artifact-actions">

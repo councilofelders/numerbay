@@ -134,20 +134,56 @@
                     <SfRadio
                       name="useEncryption"
                       value="true"
-                      label="Encrypt Artifacts"
-                      details="People will be able to buy this product"
+                      label="Use Client-side Encryption"
+                      details="Upload artifacts for each order and encrypt them in your browser"
                       v-model="form.useEncryption"
                       class="form__radio"
                     />
                     <SfRadio
                       name="useEncryption"
                       value="false"
-                      label="No Encryption"
-                      details="Buy button will be disabled without deleting the product"
+                      label="Without Client-side Encryption"
+                      details="Upload artifacts for product once without client-side encryption"
                       v-model="form.useEncryption"
                       class="form__radio"
                     />
                   </ValidationProvider>
+                  <SfNotification
+                    visible
+                    :persistent="true"
+                    title=""
+                    message="Files will be encrypted for new sale orders, existing active sales will not be affected."
+                    type="success"
+                    v-if="(form.useEncryption === 'true') && !currentListing.use_encryption"
+                  >
+                    <template #icon>
+                      <SfIcon
+                        class="sf-notification__icon"
+                        icon="safety"
+                        size="lg"
+                        color="white"
+                      />
+                    </template>
+                    <template #close><span></span></template>
+                  </SfNotification>
+                  <SfNotification
+                    visible
+                    :persistent="true"
+                    title=""
+                    message="Disabling client-side encryption will affect active sales' downloads. Please make sure you don't have active sales."
+                    type="warning"
+                    v-if="(form.useEncryption !== 'true') && currentListing.use_encryption"
+                  >
+                    <template #icon>
+                      <SfIcon
+                        class="sf-notification__icon"
+                        icon="info_shield"
+                        size="lg"
+                        color="white"
+                      />
+                    </template>
+                    <template #close><span></span></template>
+                  </SfNotification>
                 </div>
 <!--                <SfCheckbox v-model="form.hasFeaturedProducts" name="coupon">
                   <template #label>
@@ -260,9 +296,11 @@ import {
   SfBar,
   SfButton,
   SfCheckbox,
+  SfIcon,
   SfInput,
   SfLoader,
   SfModal,
+  SfNotification,
   SfRadio,
   SfSelect,
   SfTabs
@@ -363,11 +401,13 @@ export default {
   components: {
     SfModal,
     SfTabs,
+    SfIcon,
     SfInput,
     SfSelect,
     SfButton,
     SfLoader,
     SfBar,
+    SfNotification,
     SfRadio,
     SfBadge,
     SfCheckbox,
