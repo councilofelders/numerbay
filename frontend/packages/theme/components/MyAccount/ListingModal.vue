@@ -129,7 +129,7 @@
                     />
                   </ValidationProvider>
                 </div>
-                <div class="form__radio-group">
+                <div class="form__radio-group" v-if="false">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
                       name="useEncryption"
