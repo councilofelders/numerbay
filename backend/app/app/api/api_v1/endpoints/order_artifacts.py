@@ -16,8 +16,9 @@ from app.api.dependencies.order_artifacts import (  # send_artifact_emails_for_a
     validate_new_order_artifact,
 )
 from app.api.dependencies.products import validate_buyer, validate_existing_product
-# from app.core.celery_app import celery_app
+from app.core.celery_app import celery_app
 from app.core.config import settings
+from app.utils import send_failed_artifact_seller_email
 
 router = APIRouter()
 
@@ -150,18 +151,51 @@ def validate_upload(
             numerai_api_key_secret=artifact.order.buyer.numerai_api_key_secret,
         )
         if submission_id is None:
+            if settings.EMAILS_ENABLED:
+                # Send failed artifact email notification to seller
+                if artifact.order.product.owner.email:
+                    send_failed_artifact_seller_email(
+                        email_to=artifact.order.product.owner.email,  # type: ignore
+                        username=artifact.order.product.owner.username,
+                        round_tournament=artifact.round_tournament,  # type: ignore
+                        product=artifact.order.product.sku,
+                        artifact=artifact.object_name,
+                    )
+
             crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
+            crud.order.update(db, db_obj=artifact.order, obj_in={"submit_state": "failed"})  # type: ignore
             raise HTTPException(
                 status_code=404, detail="Submission failed",
             )
+        crud.order.update(
+            db,
+            db_obj=artifact.order,
+            obj_in={"submit_state": "completed", "last_submit_round": selling_round},
+        )  # type: ignore
     else:
         # validate numerbay upload
         blob = bucket.blob(artifact.object_name)
         if not blob.exists():
+            if settings.EMAILS_ENABLED:
+                # Send failed artifact email notification to seller
+                if artifact.order.product.owner.email:
+                    send_failed_artifact_seller_email(
+                        email_to=artifact.order.product.owner.email,  # type: ignore
+                        username=artifact.order.product.owner.username,
+                        round_tournament=artifact.round_tournament,  # type: ignore
+                        product=artifact.order.product.sku,
+                        artifact=artifact.object_name,
+                    )
+
             crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
             raise HTTPException(
                 status_code=404, detail="Artifact file not uploaded",
             )
+
+        celery_app.send_task(
+            "app.worker.send_new_order_artifact_emails_task",
+            kwargs=dict(artifact_id=artifact.id),
+        )
 
     crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
 

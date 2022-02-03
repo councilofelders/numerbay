@@ -157,22 +157,23 @@
     <SfTable class="orders" v-if="orderArtifacts && orderGetters.getStatus(order)=='confirmed' && !!order.buyer_public_key">
       <SfTableHeading>
         <SfTableHeader
-          v-for="tableHeader in ['Name', 'Action']"
+          v-for="tableHeader in ['Name', 'Recipient', 'Action']"
           :key="tableHeader"
           >{{ tableHeader }}</SfTableHeader>
       </SfTableHeading>
       <SfTableRow v-if="orderArtifacts && orderArtifacts.total===0">Please wait for the seller to upload artifacts after the round opens</SfTableRow>
       <SfTableRow v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
         <SfTableData><span style="word-break: break-all;">{{ artifactGetters.getObjectName(artifact) }}</span></SfTableData>
+        <SfTableData>{{ artifact.is_numerai_direct ? 'Numerai' : 'Me' }}</SfTableData>
         <SfTableData class="orders__view orders__element--right">
           <SfLoader :class="{ loader: loading }" :loading="loading">
             <span class="artifact-actions" v-if="!downloadingArtifacts.includes(artifactGetters.getId(artifact)) && !decryptingArtifacts.includes(artifactGetters.getId(artifact))">
-              <SfButton class="sf-button--text action__element" @click="downloadAndDecrypt(artifact)" v-if="order.mode === 'file'">
+              <SfButton class="sf-button--text action__element" @click="downloadAndDecrypt(artifact)" v-if="(order.mode === 'file') && !artifact.is_numerai_direct">
                 {{ $t('Download') }}
               </SfButton>
-              <SfButton class="sf-button--text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name && !!order.submit_model_id">
+<!--              <SfButton class="sf-button&#45;&#45;text action__element" @click="submit(artifact)" v-if="!!artifact && !!artifact.object_name && !!order.submit_model_id">
                 {{ $t('Submit') }}
-              </SfButton>
+              </SfButton>-->
             </span>
             <span class="artifact-actions" v-else>
               <span v-if="downloadingArtifacts.includes(artifactGetters.getId(artifact))" style="display: flex;" class="action__element"><SfLoader class="loader" :loading="true"/>Downloading {{ (downloadingProgress[artifact.id] || 0).toFixed(1)}}%</span>
