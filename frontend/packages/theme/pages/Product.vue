@@ -306,6 +306,15 @@ export default {
         });
         return;
       }
+      if (product.use_encryption && !user.value.public_key) { // if not setup numerai api key and product is in NMR
+        send({
+          message: 'This product requires NumerBay encryption key',
+          type: 'info',
+          action: {text: 'Generate key pair', onClick: ()=>context.root.$router.push('/my-account/my-profile')},
+          persist: true
+        });
+        return;
+      }
       if (!option.is_on_platform && option.third_party_url) { // if third party listing
         window.open(option.third_party_url, '_blank');
       } else {

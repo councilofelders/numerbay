@@ -10,13 +10,20 @@ In order to buy or sell on NumerBay, a NumerBay account with Numerai API key nee
 
 Head to **[numerbay.ai](https://numerbay.ai)**, click the account icon on the top right of the page, and sign up/login via either MetaMask or username:
 
-### Login via MetaMask
+### Login via MetaMask (Recommended)
 <img alt="Sign up MetaMask" src="/img/tutorial/signUpMetaMask.png" width="400"/>
 <img alt="Sign up MetaMask Sign" src="/img/tutorial/signUpMetaMaskSign.png" width="300"/>
 
 ### Username sign up
 If you don't want to use MetaMask, sign up manually by clicking the **Username Login** tab, and click **Register today** to switch to the sign up form.
 <img alt="Sign up Username" src="/img/tutorial/signUpUsername.png" width="400"/>
+
+
+## Generate Key Pair
+In the **[profile update form](https://numerbay.ai/my-account/my-profile)**, click the **Generate Key Pair** button to generate a public-private key pair that will be used to encrypt your purchased artifact files.
+After doing so, click **Export key file** to safe-keep the generated key. The exported key file can be used in the [Python client](/docs/tutorial-extras/api-automation) to download encrypted files.
+
+![Profile](/img/tutorial/profile.png)
 
 
 ## Set up Numerai API Key
@@ -48,15 +55,14 @@ Please check if you are logged in with the correct MetaMask wallet or if you hav
 
 :::
 
+
 ## Update profile
-You can change your username, password and email in the **[profile update form](https://numerbay.ai/my-account/my-profile)**. By default, your Numerai email address is used to receive email notifications.
+You can change your username, password and email in the [profile update form](https://numerbay.ai/my-account/my-profile). By default, your Numerai email address is used to receive email notifications.
 
 :::caution
 
-If you disconnect MetaMask wallet in the profile update form and your account was created with MetaMask login. You need to set a password before logging out, or you might lose access to the account.
+If you disconnect MetaMask wallet in the profile page, and your account was created with MetaMask login (without a password). You need to set a password before logging out, or you might lose access to the account.
 
 NumerBay does not yet allow password recovery, please contact support by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
 
 :::
-
-![Profile](/img/tutorial/profile.png)

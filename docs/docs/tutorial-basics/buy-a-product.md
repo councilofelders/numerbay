@@ -10,6 +10,18 @@ This tutorial walks you through the process of buying a product on NumerBay.
 
 You need to have a [NumerBay account](./set-up-account) with Numerai API Key in order to make purchases on NumerBay.
 
+It is also recommended to [Generate a key pair](/docs/tutorial-basics/set-up-account#generate-key-pair) as 
+some products use client-side encryption.
+
+:::
+
+:::tip
+
+Some products use client-side encryption and are delivered on a per-order basis. It is therefore recommended to buy before
+the tournaments start.
+
+Learn more about [client-side encryption](/updates/encryption).
+
 :::
 
 ## Browse products
@@ -98,16 +110,19 @@ After the deadline the active round will rollover and sale for the next round wi
 
 :::tip Advanced tip
 
-You can also download via the NumerBay Python / Cli Client, head over to the [API Tutorial](/docs/tutorial-extras/ensemble) for examples.
+You can also download via the NumerBay Python / Cli Client, head over to the [API Tutorial](/docs/tutorial-extras/download-automation) for examples.
 
 :::
 
 ![Order List](/img/tutorial/orderList.png)
 
+### Decryption
+If the product you bought uses client-side encryption, you may be prompted by MetaMask to decrypt your NumerBay private key in order to decrypt the file.
+
+![Decrypt](/img/tutorial/decrypt.png)
+
 ## Submission
 If you made your order with auto-submission set up during checkout, submissions will be automatically done for you after tournament round open and after the seller submits their files.
-
-If you did not designate auto-submission lot or auto-submission failed, you can trigger a submission from the artifact list.
 
 ## Manage coupons
 Some sellers may reward you with coupons for your orders. Your coupons are viewable in the **[My coupons](https://numerbay.ai/my-account/my-coupons)** page. 

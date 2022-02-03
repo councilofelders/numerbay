@@ -31,6 +31,7 @@ To create a listing, head to **[My listings](https://numerbay.ai/my-account/my-l
     - This must be an HTTPS URL
 * Active / Inactive: Whether your product will be active for sale immediately affer creation
 * Perpetual / Temporary Listing: Whether (and when) your listing becomes unavailable for sale
+* Client-side Encryption: Whether to encrypt artifact files with buyer's public key, [learn more about encryption](/updates/encryption)
 
 ### Featured products
 ![Listing Featured](/img/tutorial/listingFeatured.png)
@@ -74,21 +75,33 @@ Coupons generated using this reward mechanism are bound to the specific buyers a
 ## Upload artifacts
 :::tip Advanced tip
 
-You can automate this via NumerBay Python / Cli Client, head over to the [API Tutorial](/docs/tutorial-extras/api-automation) for examples.
+You can automate upload via NumerBay Python / Cli Client, head over to the [API Tutorial](/docs/tutorial-extras/api-automation) for examples.
 
 :::
-
-After tournament round opens, you need to upload artifact files to NumerBay to fulfill your active orders. 
-Click the **Artifacts** button on your product in the My listings page for the upload panel.
-
-It is recommended to upload artifacts after tournament round opens and regardless if you have active buyers.
-Once artifacts are uploaded, your product will be tagged with a `Ready` badge in the catalog page which makes it more likely to be purchased.
 
 :::caution
 
 After submitting to NumerBay, you still need to submit your files to Numerai. NumerBay does not forward submissions to Numerai for sellers.
 
 :::
+
+After tournament round opens, you need to upload artifact files to NumerBay to fulfill your active orders. 
+Click the **Artifacts** button on your product in the My listings page for the upload panel.
+
+### For products using client-side encryption
+For encrypted listings, upload is only possible when you have active sale orders.
+Upload is repeated for every active sale order at the time of upload, 
+and the process needs to be repeated for any subsequent sale order. Both the web UI and Python client automates this 
+by repeating the encryption and upload during upload. 
+
+For Stake Only sales and sales where the buyer designates a slot to submit to, any Numerai submission is also done
+during the upload in your browser instead of being automated by the NumerBay backend.
+
+![Listing Order Artifacts](/img/tutorial/listingOrderArtifacts.png)
+
+### For products without client-side encryption
+It is recommended to upload artifacts after tournament round opens and regardless if you have active buyers.
+Once artifacts are uploaded, your product will be tagged with a `Ready` badge in the catalog page which makes it more likely to be purchased.
 
 ![Listing Artifacts](/img/tutorial/listingArtifacts.png)
 

@@ -1,15 +1,9 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 ---
 
-# Automate Submissions (seller)
-As a seller, you can use the Python client, its command line interface or the REST APIs for automating submissions to NumerBay.
-
-:::caution
-
-This tutorial only submits product artifact files to NumerBay. **You still need to submit your files to Numerai** in your own code.
-
-:::
+# Automate Downloads (buyer)
+As a buyer, you can use the Python client, its command line interface or the REST APIs for automating downloads from NumerBay.
 
 ## Using Python Client
 Python client API reference is available at [https://docs.numerbay.ai/docs/reference/numerbay](https://docs.numerbay.ai/docs/reference/numerbay)
@@ -31,18 +25,24 @@ Alternatively, set the env variables in command line for authentication:
 ```commandline
 export NUMERBAY_USERNAME=myusername
 export NUMERBAY_PASSWORD=mypassword
+
+# exported NumerBay key file used for decryption, optional
+export NUMERBAY_KEY_PATH=./numerbay.json
 ```
 
-### Submit
-To submit file to your listing:
+### Download (and Decrypt)
+To download file for your order:
+
 ```python
-artifact = api.upload_artifact(FILE_PATH, product_full_name="numerai-predictions-mymodel")
+api.download_artifact(
+    dest_path=FILE_PATH,
+    product_full_name="numerai-predictions-somemodel",
+    key_path=NUMERBAY_KEY_PATH, 
+    # exported NumerBay key file used for decryption, optional. 
+    # Alternatively, specify the key path in env variables.
+)
 ```
 
-If you have a pandas DataFrame, you can also submit it directly:
-```python
-api.upload_artifact(df=df, product_full_name="numerai-predictions-mymodel")
-```
 
 ## Using Command Line
 To see command Line help message:
@@ -61,11 +61,14 @@ Set the env variables in command line for authentication:
 ```commandline
 export NUMERBAY_USERNAME=myusername
 export NUMERBAY_PASSWORD=mypassword
+
+# exported NumerBay key file used for decryption, optional
+export NUMERBAY_KEY_PATH=./numerbay.json
 ```
 
-### Submit
+### Download (and Decrypt)
 
-To submit file to your listing: 
+To download file for your order: 
 ```commandline
-numerbay submit --product_full_name="numerai-predictions-mymodel" ./predictions.csv
+numerbay download --product_full_name="numerai-predictions-somemodel" --filename=predictions.csv
 ```

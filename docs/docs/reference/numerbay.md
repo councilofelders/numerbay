@@ -394,7 +394,8 @@ Upload artifact from file.
 - `product_id` _int_ - NumerBay product ID
 - `product_full_name` _str_ - NumerBay product full name (e.g. numerai-predictions-numerbay),
   used for resolving product_id if product_id is not provided
-- `order_id` _int, optional_ - NumerBay order ID, used for encrypted per-order artifact upload
+- `order_id` _int, optional_ - NumerBay order ID,
+  used for encrypted per-order artifact upload
 - `df` _pandas.DataFrame_ - pandas DataFrame to upload, if function is
   given df and file_path, df will be uploaded.
 
@@ -427,9 +428,11 @@ Download artifact file.
 - `dest_path` _str, optional_ - complate path where the file should be
   stored, defaults to the same name as the source file
 - `product_id` _int, optional_ - NumerBay product ID
-- `product_full_name` _str, optional_ - NumerBay product full name (e.g. numerai-predictions-numerbay),
+- `product_full_name` _str, optional_ - NumerBay product full name
+  (e.g. numerai-predictions-numerbay),
   used for resolving product_id if product_id is not provided
-- `order_id` _int, optional_ - NumerBay order ID, used for encrypted per-order artifact download
+- `order_id` _int, optional_ - NumerBay order ID,
+  used for encrypted per-order artifact download
 - `artifact_id` _str or int, optional_ - Artifact ID for the file to download,
   defaults to the first artifact for your active order for the product
 - `key_path` _int, optional_ - path to buyer's exported NumerBay key file

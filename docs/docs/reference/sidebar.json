@@ -1,6 +1,5 @@
 {
   "items": [
-    "reference/CHANGELOG",
     "reference/cli",
     "reference/numerbay",
     "reference/utils"

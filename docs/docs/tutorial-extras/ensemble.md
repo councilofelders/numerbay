@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 3
 ---
 
 # Ensemble with NumerBay
@@ -20,7 +20,7 @@ Checkout the **[Python Client Reference](/docs/reference/numerbay)** docs to lea
 ### Install
 If you have not installed the `numerbay` client, install by:
 ```commandline
-pip install numerbay
+pip install -U numerbay
 ```
 
 ### Initialize Python client
@@ -29,6 +29,9 @@ import pandas as pd
 from numerbay import NumerBay
 
 api = NumerBay(username="myusername", password="mypassword")
+
+# exported NumerBay key file used for decryption, optional
+numerbay_key_path = './numerbay.json'
 ```
 
 ### Download predictions from NumerBay
@@ -39,7 +42,7 @@ Assuming you bought two products: `numerai-predictions-numerbay` and `numerai-pr
 products_to_ensemble = ["numerai-predictions-numerbay", "numerai-predictions-numerbay2"]
 
 for product_name in products_to_ensemble:
-    api.download_artifact(f"{product_name}.csv", product_full_name=product_name)
+    api.download_artifact(f"{product_name}.csv", product_full_name=product_name, key_path=numerbay_key_path)
 ```
 
 ### Read downloaded predictions

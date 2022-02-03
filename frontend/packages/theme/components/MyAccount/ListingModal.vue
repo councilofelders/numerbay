@@ -129,7 +129,7 @@
                     />
                   </ValidationProvider>
                 </div>
-                <div class="form__radio-group" v-if="false">
+                <div class="form__radio-group">
                   <ValidationProvider v-slot="{ errors }" class="form__horizontal">
                     <SfRadio
                       name="useEncryption"
@@ -154,7 +154,7 @@
                     title=""
                     message="Files will be encrypted for new sale orders, existing active sales will not be affected."
                     type="success"
-                    v-if="(form.useEncryption === 'true') && !currentListing.use_encryption"
+                    v-if="currentListing && (form.useEncryption === 'true') && !productGetters.getUseEncryption(currentListing)"
                   >
                     <template #icon>
                       <SfIcon
@@ -172,7 +172,7 @@
                     title=""
                     message="Disabling client-side encryption will affect active sales' downloads. Please make sure you don't have active sales."
                     type="warning"
-                    v-if="(form.useEncryption !== 'true') && currentListing.use_encryption"
+                    v-if="currentListing && (form.useEncryption !== 'true') && productGetters.getUseEncryption(currentListing)"
                   >
                     <template #icon>
                       <SfIcon
@@ -659,6 +659,7 @@ export default {
       currentListing,
       toggleListingModal,
       userGetters,
+      productGetters,
       globals,
       numerai: computed(() => numerai ? numerai.value : null),
       numeraiError,
