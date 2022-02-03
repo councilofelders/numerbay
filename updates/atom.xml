@@ -2,18 +2,38 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://docs.numerbay.ai/updates</id>
     <title>NumerBay Blog</title>
-    <updated>2021-12-31T00:00:00.000Z</updated>
+    <updated>2022-02-02T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://docs.numerbay.ai/updates"/>
     <subtitle>NumerBay Blog</subtitle>
     <icon>https://docs.numerbay.ai/img/favicon.ico</icon>
     <entry>
-        <title type="html"><![CDATA[Welcome]]></title>
-        <id>welcome</id>
-        <link href="https://docs.numerbay.ai/updates/welcome"/>
-        <updated>2021-12-31T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[WIP]]></summary>
-        <content type="html"><![CDATA[<p>WIP</p>]]></content>
+        <title type="html"><![CDATA[Client-side Encryption Release]]></title>
+        <id>encryption</id>
+        <link href="https://docs.numerbay.ai/updates/encryption"/>
+        <updated>2022-02-02T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[NumerBay now supports client-side encryption for delivery of artifact files.]]></summary>
+        <content type="html"><![CDATA[<p>NumerBay now supports <strong>client-side encryption</strong> for delivery of artifact files. </p><p>Each file will be uploaded for each active order separately and all files are encrypted in browser / Python client
+with buyer&#x27;s public key before transmission. This is a small first step towards decentralization for NumerBay.</p><p>New listings will default to using encryption, but the legacy option continues to be available.</p><h2>What&#x27;s different</h2><p>The following table outlines the key differences for listings with and without client-side encryption:</p><table><thead><tr><th>Item</th><th align="center">With Client-side Encryption</th><th align="center">Without Client-side Encryption</th></tr></thead><tbody><tr><td>1. One-off Upload</td><td align="center"></td><td align="center">:heavy_check_mark:</td></tr><tr><td>2. Auto Numerai Submission</td><td align="center">:heavy_check_mark:<strong>*</strong></td><td align="center">:heavy_check_mark:</td></tr><tr><td>3. External URL Artifact</td><td align="center"></td><td align="center">:heavy_check_mark:</td></tr><tr><td>4. Requires MetaMask</td><td align="center">:heavy_check_mark:</td><td align="center"></td></tr></tbody></table><ol><li>For encrypted listings, upload is only possible when you have active sale orders.
+Upload is repeated for every active sale order at the time of upload, and
+the process needs to be repeated for any subsequent sale order. Both the web UI and Python client automates this
+by repeating the encryption and upload during upload. In the future, polling listener for Python client
+or browser notification might be added to make automation easier.</li><li>[*]<!-- --> Numerai submission for encrypted artifact is done during seller upload for each order as a separate
+special artifact, instead of being automated by the NumerBay backend. Therefore, for buyers this has reliability
+implication. Soon NumerBay will add reminder emails to sellers for outstanding file delivery and submissions.</li><li>Encrypted listings do not support adding external URLs as artifacts, only file upload is allowed.</li><li>MetaMask connection is required due to the need for generating encryption keys and performing decryption.</li></ol><h2>Q&amp;A</h2><h3>I&#x27;m an existing seller, do I have to change my workflow due to this release?</h3><p>No, you don&#x27;t have to change anything. Encryption is optional at this point.</p><p>You can continue to use the existing mechanism for artifact delivery.
+There is no plan to disable the existing artifact APIs,
+therefore your existing automation pipelines will be compatible with this change.</p><h3>I&#x27;m a seller, how do I start using encryption?</h3><p>In the <a href="https://numerbay.ai/my-account/my-listings">listing edit panel</a> for your product, select the
+<strong>Use Client-side Encryption</strong> option. That&#x27;s it! Files will be encrypted for new sale orders,
+existing active sales will not be affected.
+You can use the <a href="/docs/tutorial-extras/api-automation">Python client</a> to automate encryption and file upload.
+A tutorial for selling is available <a href="/docs/tutorial-basics/sell-a-product#for-products-using-client-side-encryption">here</a>.</p><h3>I&#x27;m a buyer, what do I need to do?</h3><p>An encryption key pair is required for encryption on the seller side and for decryption after you download the files,
+please head to the <a href="https://numerbay.ai/my-account">profile page</a> to generate a key pair. Export the key file for
+safe-keeping and for use with the <a href="/docs/tutorial-extras/download-automation">Python client</a>.
+A tutorial for buying is available <a href="/docs/tutorial-basics/buy-a-product#decryption">here</a>.</p><h3>How does the encryption work?</h3><p>A 32-byte key pair is generated in your browser. Its private key is immediately encrypted with your MetaMask account.
+The encrypted private key together with the public key are stored in your user profile on the NumerBay server. NumerBay
+does not have access to your unencrypted private key.</p><p>When you make an order for an encrypted product, your public key is shared with the seller which they will use to
+encrypt any artifact file that will be delivered to you. </p><p>When downloading a file in browser, file is first downloaded into browser cache. You will then be prompted by MetaMask
+to decrypt your NumerBay private key, and the file is then decrypted with the NumerBay private key and save as a file.</p>]]></content>
         <author>
             <name>ResTrading</name>
             <uri>https://github.com/restrading</uri>
