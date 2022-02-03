@@ -79,7 +79,9 @@ def create_order(
 
     # Encryption key check
     if product.use_encryption and current_user.public_key is None:
-        raise HTTPException(status_code=400, detail="This product requires encryption key")
+        raise HTTPException(
+            status_code=400, detail="This product requires encryption key"
+        )
 
     # Product Option on-platform
     if not product_option.is_on_platform:
