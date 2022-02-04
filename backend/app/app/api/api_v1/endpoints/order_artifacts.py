@@ -172,6 +172,7 @@ def validate_upload(
             db_obj=artifact.order,
             obj_in={"submit_state": "completed", "last_submit_round": selling_round},
         )  # type: ignore
+        artifact = crud.order_artifact.get(db, id=artifact_id)
     else:
         # validate numerbay upload
         blob = bucket.blob(artifact.object_name)
@@ -184,7 +185,7 @@ def validate_upload(
                         username=artifact.order.product.owner.username,
                         round_tournament=artifact.round_tournament,  # type: ignore
                         product=artifact.order.product.sku,
-                        artifact=artifact.object_name,
+                        artifact=artifact.object_name,  # type: ignore
                     )
 
             crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
@@ -197,12 +198,12 @@ def validate_upload(
             kwargs=dict(artifact_id=artifact.id),
         )
 
-    crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
+    crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})  # type: ignore
 
     # mark product as ready
-    if not artifact.order.product.is_ready:
+    if not artifact.order.product.is_ready:  # type: ignore
         crud.product.update(
-            db, db_obj=artifact.order.product, obj_in={"is_ready": True}
+            db, db_obj=artifact.order.product, obj_in={"is_ready": True}  # type: ignore
         )
 
     # validate and fulfill orders immediately

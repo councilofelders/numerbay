@@ -198,6 +198,10 @@ export default {
           'x25519-xsalsa20-poly1305'
         ));
       } catch {
+        await this.send({
+          message: 'Please allow MetaMask to provide the public key',
+          type: 'danger'
+        });
         return;
       }
 

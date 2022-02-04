@@ -56,6 +56,7 @@
         <SfTableHeader>Buyer</SfTableHeader>
         <SfTableHeader>Mode</SfTableHeader>
         <SfTableHeader>Files Uploaded</SfTableHeader>
+        <SfTableHeader>Numerai Submission</SfTableHeader>
       </SfTableHeading>
       <SfTableRow v-if="orders && orders.length===0">No active order to upload for</SfTableRow>
       <SfTableRow v-for="order in orders" :key="orderGetters.getId(order)" :class="isPendingUpload(order) ? 'upload-warning' : ''">
@@ -70,9 +71,10 @@
         <SfTableData>
           {{ (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount()}}
         </SfTableData>
+        <SfTableData><span :class="getSubmissionStatusTextClass(order)">{{ orderGetters.getSubmissionStatus(order) }}</span></SfTableData>
       </SfTableRow>
     </SfTable>
-
+    <br/>
     <SfTable class="orders" v-if="getAllOrderArtifacts() && orders && orders.length > 0 && artifacts">
       <SfTableHeading>
         <SfTableHeader
@@ -644,6 +646,20 @@ export default {
       }
     };
 
+    const getSubmissionStatusTextClass = (order) => {
+      const status = orderGetters.getSubmissionStatus(order);
+      switch (status) {
+        case 'failed':
+          return 'text-danger';
+        case 'queued':
+          return 'text-warning';
+        case 'completed':
+          return 'text-success';
+        default:
+          return '';
+      }
+    };
+
     return {
       artifacts: computed(() => artifacts ? artifacts.value : null),
       createArtifact,
@@ -666,7 +682,8 @@ export default {
       orderGetters,
       artifactGetters,
       orderSearch,
-      getStatusTextClass
+      getStatusTextClass,
+      getSubmissionStatusTextClass
     };
   }
 

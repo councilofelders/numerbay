@@ -131,26 +131,26 @@
 </template>
 <script>
 import {
-  SfHero,
+  SfArrow,
   SfBanner,
+  SfBannerGrid,
+  SfButton,
   SfCallToAction,
   SfCard,
-  SfSection,
   SfCarousel,
-  SfProductCard,
-  SfImage,
-  SfBannerGrid,
   SfHeading,
-  SfArrow,
-  SfButton,
-  SfLoader
+  SfHero,
+  SfImage,
+  SfLoader,
+  SfProductCard,
+  SfSection
 } from '@storefront-ui/vue';
 import InstagramFeed from '~/components/InstagramFeed.vue';
-import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
-import { useGlobals } from '@vue-storefront/numerbay';
 import LazyHydrate from 'vue-lazy-hydration';
+import MobileStoreBanner from '~/components/MobileStoreBanner.vue';
 import axios from 'axios';
 import { onSSR } from '@vue-storefront/core';
+import { useGlobals } from '@vue-storefront/numerbay';
 
 export default {
   name: 'Home',
