@@ -1,7 +1,7 @@
+import { Context, CustomQuery, FactoryParams } from '@vue-storefront/core';
+import { Logger, configureFactoryParams, mask, sharedRef } from '@vue-storefront/core';
 import { Ref, computed } from '@vue/composition-api';
-import { Context, FactoryParams, CustomQuery } from '@vue-storefront/core';
-import { UseUser, UseWeb3User, UseUserErrors } from '../types/composables';
-import { sharedRef, Logger, mask, configureFactoryParams } from '@vue-storefront/core';
+import { UseUser, UseUserErrors, UseWeb3User } from '../types/composables';
 
 export interface UseUserFactoryParams<USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS> extends FactoryParams {
   load: (context: Context, params?: { customQuery: CustomQuery }) => Promise<USER>;
@@ -215,9 +215,9 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
 
       try {
         await _factoryParams.initWeb3Modal({ currentWeb3User: web3User.value });
-        error.value.login = null;
+        error.value.web3 = null;
       } catch (err) {
-        error.value.login = err;
+        error.value.web3 = err;
         Logger.error('useUser/initWeb3Modal', err);
       }
     };
@@ -228,9 +228,9 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
 
       try {
         await _factoryParams.ethereumListener({ currentWeb3User: web3User.value });
-        error.value.login = null;
+        error.value.web3 = null;
       } catch (err) {
-        error.value.login = err;
+        error.value.web3 = err;
         Logger.error('useUser/ethereumListener', err);
       }
     };
@@ -241,9 +241,9 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
 
       try {
         await _factoryParams.connectWeb3Modal({ currentWeb3User: web3User.value });
-        error.value.login = null;
+        error.value.web3 = null;
       } catch (err) {
-        error.value.login = err;
+        error.value.web3 = err;
         Logger.error('useUser/connectWeb3Modal', err);
       }
     };
@@ -254,10 +254,10 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
 
       try {
         await _factoryParams.disconnectWeb3Modal({ currentWeb3User: web3User.value });
-        error.value.login = null;
+        error.value.web3 = null;
         web3User.value = web3UserFactory();
       } catch (err) {
-        error.value.login = err;
+        error.value.web3 = err;
         Logger.error('useUser/disconnectWeb3Modal', err);
       }
     };

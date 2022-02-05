@@ -212,18 +212,22 @@ export default {
         }
       });
       this.form = this.resetForm();
+
+      await this.send({
+        message: 'Key pair generated, please export for safe-keeping',
+        type: 'success',
+        icon: 'check'
+      });
     },
     async handleWeb3Connect() {
       await this.initWeb3Modal();
       await this.ethereumListener();
       await this.connectWeb3Modal();
       await this.publicAddressHandler(this.web3User.activeAccount);
-      console.log('web3User.activeAccount, ', this.web3User.activeAccount);
     },
     async handleWeb3Disconnect() {
       await this.disconnectWeb3Modal();
       await this.publicAddressHandler('');
-      console.log('web3User.activeAccount, ', this.web3User.activeAccount);
     },
     async publicAddressHandler(publicAddress) {
       Logger.debug('profile on publicAddressChange: ', publicAddress);
@@ -231,7 +235,6 @@ export default {
         try {
           // get nonce from backend
           await this.getNonceAuthenticated();
-          console.log('this.web3User', this.web3User);
           const { nonce } = this.web3User.nonce;
 
           // web3 lib instance

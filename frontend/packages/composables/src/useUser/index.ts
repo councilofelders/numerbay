@@ -1,10 +1,10 @@
 /* istanbul ignore file */
 
 import {Context, Logger} from '@vue-storefront/core';
-import { useUserFactory, UseUserFactoryParams } from '../factories/useUserFactory';
+import { UseUserFactoryParams, useUserFactory } from '../factories/useUserFactory';
+import { disconnectWallet, setChainData, setEthersProvider } from './utils';
 import { User } from '../types';
 import Web3Modal from 'web3modal';
-import { setChainData, setEthersProvider, disconnectWallet } from './utils';
 
 const params: UseUserFactoryParams<User, any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -86,41 +86,48 @@ const params: UseUserFactoryParams<User, any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   initWeb3Modal: async (context: Context, { currentWeb3User }) => {
     Logger.debug('initWeb3Modal');
-    const providerOptions = {
-      // MetaMask is enabled by default
-      // Find other providers here: https://github.com/Web3Modal/web3modal/tree/master/docs/providers
-      // burnerconnect: {
-      //   package: BurnerConnectProvider // required
-      // },
-      // authereum: {
-      //   package: Authereum // required
-      // }
-    };
+    try {
+      const providerOptions = {
+        // MetaMask is enabled by default
+        // Find other providers here: https://github.com/Web3Modal/web3modal/tree/master/docs/providers
+        // burnerconnect: {
+        //   package: BurnerConnectProvider // required
+        // },
+        // authereum: {
+        //   package: Authereum // required
+        // }
+      };
 
-    const w3mObject = new Web3Modal({
-      cacheProvider: true, // optional
-      providerOptions // required
-    });
+      const w3mObject = new Web3Modal({
+        cacheProvider: true, // optional
+        providerOptions // required
+      });
 
-    // This will get deprecated soon. Setting it to false removes a warning from the console.
-    window.ethereum.autoRefreshOnNetworkChange = false;
+      // This will get deprecated soon. Setting it to false removes a warning from the console.
+      window.ethereum.autoRefreshOnNetworkChange = false;
 
-    // if the user is flagged as already connected, automatically connect back to Web3Modal
-    if (localStorage.getItem('isConnected') === 'true') {
-      try {
-        const providerW3m = await w3mObject.connect();
-        currentWeb3User.activeAccount = window.ethereum.selectedAddress;
-        setChainData(currentWeb3User, window.ethereum.chainId);
-        setEthersProvider(currentWeb3User, providerW3m);
-        currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
-        // setIsConnected(currentWeb3User, true);
-        // indicate that this is auto login, used for detecting public address change
-        localStorage.setItem('cachedPublicAddress', window.ethereum.selectedAddress);
-      } catch (e) {
-        console.log('Connect Error: ', e);
+      // if the user is flagged as already connected, automatically connect back to Web3Modal
+      if (localStorage.getItem('isConnected') === 'true') {
+        try {
+          const providerW3m = await w3mObject.connect();
+          currentWeb3User.activeAccount = window.ethereum.selectedAddress;
+          setChainData(currentWeb3User, window.ethereum.chainId);
+          await setEthersProvider(currentWeb3User, providerW3m);
+          currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
+          // setIsConnected(currentWeb3User, true);
+          // indicate that this is auto login, used for detecting public address change
+          localStorage.setItem('cachedPublicAddress', window.ethereum.selectedAddress);
+        } catch (e) {
+          console.log('Connect Error: ', e);
+        }
       }
+      currentWeb3User.web3Modal = w3mObject;
+    } catch (err) {
+      Logger.error(err);
+      throw new Error(
+        'Failed to initialize MetaMask. Please make sure it is enabled.'
+      );
     }
-    currentWeb3User.web3Modal = w3mObject;
   },
 
   ethereumListener: async (context: Context, { currentWeb3User }) => {
@@ -128,14 +135,14 @@ const params: UseUserFactoryParams<User, any, any> = {
     window.ethereum.on('accountsChanged', async (accounts) => {
       // if (currentWeb3User.isConnected) {
       currentWeb3User.activeAccount = accounts[0];
-      setEthersProvider(currentWeb3User, currentWeb3User.providerW3m);
+      await setEthersProvider(currentWeb3User, currentWeb3User.providerW3m);
       currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
       // }
     });
 
     window.ethereum.on('chainChanged', async () => {
       setChainData(currentWeb3User, window.ethereum.chainId);
-      setEthersProvider(currentWeb3User, currentWeb3User.providerW3m);
+      await setEthersProvider(currentWeb3User, currentWeb3User.providerW3m);
       currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
     });
   },
@@ -150,7 +157,7 @@ const params: UseUserFactoryParams<User, any, any> = {
       currentWeb3User.web3Modal = w3mObject;
       currentWeb3User.activeAccount = window.ethereum.selectedAddress;
       setChainData(currentWeb3User, window.ethereum.chainId);
-      setEthersProvider(currentWeb3User, providerW3m);
+      await setEthersProvider(currentWeb3User, providerW3m);
       currentWeb3User.activeBalance = await currentWeb3User.providerEthers.getBalance(currentWeb3User.activeAccount);
       // setIsConnected(currentWeb3User, true);
     } catch (e) {
@@ -161,7 +168,7 @@ const params: UseUserFactoryParams<User, any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   disconnectWeb3Modal: async (context: Context, { currentWeb3User }) => {
     Logger.debug('disconnectWeb3Modal');
-    disconnectWallet(currentWeb3User);
+    await disconnectWallet(currentWeb3User);
     // setIsConnected(currentWeb3User, false);
   }
 };

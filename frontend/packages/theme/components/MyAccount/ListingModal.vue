@@ -135,10 +135,17 @@
                       name="useEncryption"
                       value="true"
                       label="Use Client-side Encryption"
-                      details="Upload artifacts for each order and encrypt them in your browser"
+                      details=""
                       v-model="form.useEncryption"
                       class="form__radio"
-                    />
+                    >
+                      <template #details>
+                        <p class="sf-radio__details">
+                          Upload artifacts for each order and encrypt them in your browser<br/>
+                          <SfLink link="https://docs.numerbay.ai/updates/encryption" target="_blank">Learn more about encryption</SfLink>
+                        </p>
+                      </template>
+                    </SfRadio>
                     <SfRadio
                       name="useEncryption"
                       value="false"
@@ -298,6 +305,7 @@ import {
   SfCheckbox,
   SfIcon,
   SfInput,
+  SfLink,
   SfLoader,
   SfModal,
   SfNotification,
@@ -405,6 +413,7 @@ export default {
     SfInput,
     SfSelect,
     SfButton,
+    SfLink,
     SfLoader,
     SfBar,
     SfNotification,

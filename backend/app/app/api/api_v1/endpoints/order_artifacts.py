@@ -201,10 +201,10 @@ def validate_upload(
     crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})  # type: ignore
 
     # mark product as ready
-    if not artifact.order.product.is_ready:  # type: ignore
-        crud.product.update(
-            db, db_obj=artifact.order.product, obj_in={"is_ready": True}  # type: ignore
-        )
+    # if not artifact.order.product.is_ready:  # type: ignore
+    #     crud.product.update(
+    #         db, db_obj=artifact.order.product, obj_in={"is_ready": True}  # type: ignore
+    #     )
 
     # validate and fulfill orders immediately
     # celery_app.send_task(

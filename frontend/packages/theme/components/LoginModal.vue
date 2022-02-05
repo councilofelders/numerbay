@@ -141,15 +141,15 @@
   </SfModal>
 </template>
 <script>
-import { ref, watch, reactive } from '@vue/composition-api';
-import { SfModal, SfTabs, SfInput, SfButton, SfCheckbox, SfLoader, SfBar } from '@storefront-ui/vue';
-import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
-import { required, min } from 'vee-validate/dist/rules';
-import { useUser} from '@vue-storefront/numerbay';
+import { SfBar, SfButton, SfCheckbox, SfInput, SfLoader, SfModal, SfTabs } from '@storefront-ui/vue';
+import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
+import { min, required } from 'vee-validate/dist/rules';
+import { reactive, ref, watch } from '@vue/composition-api';
 import { Logger } from '@vue-storefront/core';
-import { useUiState } from '~/composables';
 import MetamaskButton from './Molecules/MetamaskButton';
 import Web3 from 'web3';
+import { useUiState } from '~/composables';
+import { useUser} from '@vue-storefront/numerbay';
 
 extend('required', {
   ...required,
@@ -183,10 +183,12 @@ export default {
   methods: {
     async handleWeb3Connect() {
       await this.initWeb3Modal();
+      if (this.handleUserErrors()) {
+        return;
+      }
       await this.ethereumListener();
       await this.connectWeb3Modal();
       await this.publicAddressHandler(this.web3User.activeAccount);
-      console.log('web3User.activeAccount, ', this.web3User.activeAccount);
     },
     async publicAddressHandler(publicAddress) {
       Logger.debug('login on publicAddressChange: ', publicAddress);
@@ -194,7 +196,6 @@ export default {
         try {
           // get nonce from backend
           await this.getNonce({ publicAddress: this.web3User.activeAccount });
-          console.log('this.web3User', this.web3User);
           const { nonce } = this.web3User.nonce;
 
           // web3 lib instance
@@ -213,16 +214,20 @@ export default {
                 Logger.debug('Web3 signature: ', signature);
               }
             }
-          );
+          ).catch(()=>{
+            Logger.error('You need to sign the message to be able to log in.');
+          });
 
           // login with the signature
           signaturePromise.then(async (signature)=>{
-            await this.loginWeb3({
-              user: {
-                publicAddress: publicAddress,
-                signature: signature
-              }
-            }).then(() => this.toggleLoginModal());
+            if (signature) {
+              await this.loginWeb3({
+                user: {
+                  publicAddress: publicAddress,
+                  signature: signature
+                }
+              }).then(() => this.toggleLoginModal());
+            }
           });
 
         } catch (err) {
@@ -267,15 +272,22 @@ export default {
       isLogin.value = value;
     };
 
-    const handleForm = (fn) => async () => {
-      resetErrorValues();
-      await fn({ user: form.value });
-
+    const handleUserErrors = () => {
       const hasUserErrors = userError.value.register || userError.value.login || userError.value.web3;
       if (hasUserErrors) {
         error.login = userError.value.login?.message;
         error.web3 = userError.value.web3?.message;
         error.register = userError.value.register?.message;
+        return true;
+      }
+      return false;
+    };
+
+    const handleForm = (fn) => async () => {
+      resetErrorValues();
+      await fn({ user: form.value });
+      const hasErrors = handleUserErrors();
+      if (hasErrors) {
         return;
       }
       toggleLoginModal();
@@ -303,7 +315,8 @@ export default {
       handleLogin,
       handleRegister,
       setIsLoginValue,
-      resetErrorValues
+      resetErrorValues,
+      handleUserErrors
     };
   }
 };
