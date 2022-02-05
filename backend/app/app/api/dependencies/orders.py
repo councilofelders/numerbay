@@ -111,7 +111,8 @@ def on_order_confirmed(db: Session, order_obj: models.Order, transaction: str) -
                 blob = bucket.blob(csv_artifact.object_name)
                 if blob.exists():
                     print(
-                        f"Uploading csv artifact {csv_artifact.object_name} for order {order_obj.id}"
+                        f"Uploading csv artifact {csv_artifact.object_name} "
+                        f"for order {order_obj.id}"
                     )
                     celery_app.send_task(
                         "app.worker.upload_numerai_artifact_task",

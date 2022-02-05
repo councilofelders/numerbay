@@ -129,7 +129,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                 )
             ).update(
                 {
-                    models.StakeSnapshot.model_id: select(models.Model.id)  # type: ignore
+                    models.StakeSnapshot.model_id: select(  # type: ignore
+                        models.Model.id  # type: ignore
+                    )
                     .where(
                         and_(
                             models.Model.name == models.StakeSnapshot.name,

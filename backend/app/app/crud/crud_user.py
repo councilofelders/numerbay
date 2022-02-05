@@ -44,7 +44,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         if isinstance(filters, dict):
             for filter_key, filter_item in filters.items():
                 if filter_key == "numerai_api_key_public_id":
-                    query_filters.append(User.numerai_api_key_public_id.is_not(None))  # type: ignore
+                    query_filters.append(
+                        User.numerai_api_key_public_id.is_not(None)  # type: ignore
+                    )
 
         query = db.query(self.model)
         if len(query_filters) > 0:

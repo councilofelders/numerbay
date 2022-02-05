@@ -72,7 +72,8 @@ def test_generate_download_url(
         assert artifact
 
         r = client.get(
-            f"{settings.API_V1_STR}/products/{product_id}/artifacts/{artifact.id}/generate-download-url",
+            f"{settings.API_V1_STR}/products/{product_id}"
+            f"/artifacts/{artifact.id}/generate-download-url",
             headers=normal_user_token_headers,
         )
         assert r.status_code == 200
@@ -118,7 +119,9 @@ def test_create_product_invalid_artifact(
         db, owner_id=current_user["id"], is_on_platform=True, mode="file"
     ) as product:
         product_id = product.id
-        crud.product_option.update(db, db_obj=product.options[0], obj_in={"mode": "stake"})  # type: ignore
+        crud.product_option.update(
+            db, db_obj=product.options[0], obj_in={"mode": "stake"}
+        )  # type: ignore
 
         url = "http://exmaple.com"
         data = {"url": url}

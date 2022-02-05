@@ -59,7 +59,8 @@ def test_create_product_invalid_inputs(
         "name": product_name,
         "category_id": 3,
         "description": "Description",
-        "options": [{"price": 10, "is_on_platform": False, "currency": "USD"}],  # type: ignore
+        # type: ignore
+        "options": [{"price": 10, "is_on_platform": False, "currency": "USD"}],
     }
     model = crud.model.create(
         db,
@@ -82,8 +83,8 @@ def test_create_product_invalid_inputs(
     )
     assert response.status_code == 400
     assert (
-        response.json()["detail"]
-        == "Invalid product name (should only contain alphabetic characters, numbers, dashes or underscores)"
+        response.json()["detail"] == "Invalid product name (should only contain "
+        "alphabetic characters, numbers, dashes or underscores)"
     )
 
     # negative price
@@ -356,7 +357,8 @@ def test_search_products(client: TestClient, db: Session) -> None:
 #     assert response.status_code == 200
 #     content = response.json()
 #     assert content["name"] == product.name
-#     assert Decimal(str(content["options"][0]["price"])) == product.options[0].price  # type: ignore
+#     assert Decimal(str(content["options"][0]["price"]))
+#     == product.options[0].price  # type: ignore
 #     assert content["id"] == product.id
 #     assert content["owner"]["id"] == product.owner_id
 #

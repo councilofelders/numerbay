@@ -127,11 +127,13 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
         return crud.model.update_model(db, user_json)
     except Exception as e:
         print(
-            f"Error updating model scores for user {user_json['username']}: [{e}], {retries} retries remaining"
+            f"Error updating model scores for user {user_json['username']}: "
+            f"[{e}], {retries} retries remaining"
         )
         if retries > 0:
             print(
-                f"Retrying updating model scores for user {user_json['username']} in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
+                f"Retrying updating model scores for user {user_json['username']} "
+                f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
             )
             celery_app.send_task(
                 "app.worker.update_model_subtask",
@@ -148,7 +150,10 @@ def batch_update_models_task() -> None:
     db = SessionLocal()
     try:
         users = crud.user.search(
-            db, filters={"numerai_api_key_public_id": ["any"]}, limit=None  # type: ignore
+            # type: ignore
+            db,
+            filters={"numerai_api_key_public_id": ["any"]},
+            limit=None,
         )["data"]
         print(f"total: {len(users)}")
         # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
@@ -175,10 +180,14 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
                 db = SessionLocal()
                 try:
                     users = crud.user.search(
-                        db, filters={"numerai_api_key_public_id": ["any"]}, limit=None  # type: ignore
+                        # type: ignore
+                        db,
+                        filters={"numerai_api_key_public_id": ["any"]},
+                        limit=None,
                     )["data"]
                     print(f"total: {len(users)}")
-                    # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
+                    # result = chord([fetch_model_subtask
+                    # .s(jsonable_encoder(user), 0) for user in users],
                     # commit_models_subtask.s(0)).delay()
                     group(
                         [
@@ -192,7 +201,8 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
                     db.close()
             else:
                 print(
-                    f"Numerai pipeline not ready, checking again in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
+                    f"Numerai pipeline not ready, checking again "
+                    f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
                 )
                 celery_app.send_task(
                     "app.worker.batch_update_model_scores_task",
@@ -203,7 +213,8 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
         print(f"Error starting model scores update [{e}], {retries} retries remaining")
         if retries > 0:
             print(
-                f"Retrying starting model scores update in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
+                f"Retrying starting model scores update "
+                f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
             )
             celery_app.send_task(
                 "app.worker.batch_update_model_scores_task",
@@ -246,14 +257,17 @@ def update_active_round() -> None:
 
         active_round_number = active_round["number"]
         print(
-            f"UTC time: {utc_time}, round open: {open_time}, round close: {close_staking_time}, round: {active_round_number}"
+            f"UTC time: {utc_time}, round open: {open_time}, "
+            f"round close: {close_staking_time}, round: {active_round_number}"
         )
 
         if open_time <= utc_time <= close_staking_time:  # new round opened and active
             print(f"Round {active_round_number} opened")
             # update active round
             crud.globals.update(
-                db, db_obj=globals, obj_in={"active_round": active_round_number}  # type: ignore
+                db,
+                db_obj=globals,  # type: ignore
+                obj_in={"active_round": active_round_number},
             )
             # trigger Numerai submissions
             celery_app.send_task("app.worker.batch_submit_numerai_models_task")
@@ -286,14 +300,17 @@ def update_round_rollover() -> None:
 
         active_round_number = active_round["number"]
         print(
-            f"UTC time: {utc_time}, round open: {open_time}, round close: {close_staking_time}, round: {active_round_number}"
+            f"UTC time: {utc_time}, round open: {open_time}, "
+            f"round close: {close_staking_time}, round: {active_round_number}"
         )
 
         if open_time <= utc_time <= close_staking_time:  # new round opened and active
             print("Activities freezed due to round rollover")
             # freeze activities
             crud.globals.update(
-                db, db_obj=globals, obj_in={"is_doing_round_rollover": True}  # type: ignore
+                db,
+                db_obj=globals,  # type: ignore
+                obj_in={"is_doing_round_rollover": True},
             )
 
             # check order stake
@@ -324,7 +341,9 @@ def update_round_rollover() -> None:
                     },
                 )  # update round number and unfreeze
                 # expire old products
-                crud.product.bulk_expire(db, current_round=globals.selling_round)  # type: ignore
+                crud.product.bulk_expire(
+                    db, current_round=globals.selling_round  # type: ignore
+                )
 
                 # mark order artifacts for pruning
                 crud.order_artifact.bulk_mark_for_pruning(
@@ -516,7 +535,9 @@ def upload_numerai_artifact_task(
             db = SessionLocal()
             try:
                 order = crud.order.get(db, id=order_id)
-                crud.order.update(db, db_obj=order, obj_in={"submit_state": "failed"})  # type: ignore
+                crud.order.update(
+                    db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
+                )
             finally:
                 db.close()
                 raise e
@@ -526,7 +547,9 @@ def upload_numerai_artifact_task(
         db = SessionLocal()
         try:
             order = crud.order.get(db, id=order_id)
-            crud.order.update(db, db_obj=order, obj_in={"submit_state": "failed"})  # type: ignore
+            crud.order.update(
+                db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
+            )
         finally:
             db.close()
             raise e
@@ -542,7 +565,16 @@ def upload_numerai_artifact_task(
             db = SessionLocal()
             try:
                 order = crud.order.get(db, id=order_id)
-                crud.order.update(db, db_obj=order, obj_in={"submit_state": "completed", "last_submit_round": crud.globals.get_singleton(db=db).selling_round})  # type: ignore
+                crud.order.update(
+                    db,
+                    db_obj=order,  # type: ignore
+                    obj_in={
+                        "submit_state": "completed",
+                        "last_submit_round": crud.globals.get_singleton(  # type: ignore
+                            db=db
+                        ).selling_round,
+                    },
+                )
             finally:
                 db.close()
         return submission_id
@@ -588,7 +620,8 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
             else:  # Check again later
                 if retry:
                     print(
-                        f"No csv artifact for order [{order_id}], trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                        f"No csv artifact for order [{order_id}], "
+                        f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
                     )
                     celery_app.send_task(
                         "app.worker.submit_numerai_model_subtask",
@@ -601,7 +634,9 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
 
         # Has csv artifact
         csv_artifact = [
-            artifact for artifact in artifacts if artifact.object_name.endswith(".csv")  # type: ignore
+            artifact
+            for artifact in artifacts
+            if artifact.object_name.endswith(".csv")  # type: ignore
         ][-1]
         bucket = deps.get_gcs_bucket()
         blob = bucket.blob(csv_artifact.object_name)
@@ -609,7 +644,8 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
             if retry:
                 # Check again later
                 print(
-                    f"Csv artifact for order [{order_id}] not yet uploaded, trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                    f"Csv artifact for order [{order_id}] not yet uploaded, "
+                    f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
                 )
                 celery_app.send_task(
                     "app.worker.submit_numerai_model_subtask",
@@ -702,10 +738,13 @@ def validate_artifact_upload_task(
                 return None
 
             print(
-                f"Artifact {artifact_id} {artifact.object_name} is valid, searching for orders to upload..."
+                f"Artifact {artifact_id} {artifact.object_name} is valid, "
+                f"searching for orders to upload..."
             )
 
-            selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+            selling_round = crud.globals.get_singleton(  # type: ignore
+                db=db
+            ).selling_round
 
             # Submit for all confirmed orders with submit_model_id regardless if submitted or not
             # orders = crud.order.get_multi_by_state(
@@ -738,7 +777,8 @@ def validate_artifact_upload_task(
                         ),
                     )
 
-            # if artifact.state == "pending":  # artifact not yet validated and notified
+            # if artifact.state == "pending":  # artifact not yet validated and
+            # notified
             print(
                 f"Mark artifact {artifact.id} as active and send out email notifications"
             )
@@ -781,7 +821,9 @@ def batch_validate_numerai_models_stake_task() -> None:
             stake_limit = Decimal(order.stake_limit)  # type: ignore
             if target_stake > stake_limit:
                 print(
-                    f"Order {order.id} model {order.submit_model_name} [user {order.buyer_id}: {order.buyer.username}] exceeded stake limit {target_stake} / {stake_limit}"
+                    f"Order {order.id} model {order.submit_model_name} "
+                    f"[user {order.buyer_id}: {order.buyer.username}] "
+                    f"exceeded stake limit {target_stake} / {stake_limit}"
                 )
                 result = numerai.set_target_stake(
                     public_id=order.buyer.numerai_api_key_public_id,  # type: ignore

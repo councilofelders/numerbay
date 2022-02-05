@@ -53,7 +53,8 @@ class CouponOwner(BaseModel):
 # Properties to return to client
 class Coupon(CouponInDBBase):
     owner: Optional[CouponOwner] = None
-    quantity_remaining: Optional[int] = None  # todo calculate quantity_remaining
+    # todo calculate quantity_remaining
+    quantity_remaining: Optional[int] = None
 
     @root_validator(pre=True)
     def set_quantity_remaining(cls, values):  # type: ignore

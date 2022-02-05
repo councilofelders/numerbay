@@ -159,7 +159,9 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         term: str = None,
         sort: str = None,
     ) -> Any:
-        all_child_categories = crud.category.get_all_subcategories(db, category_id=category_id)  # type: ignore
+        all_child_categories = crud.category.get_all_subcategories(
+            db, category_id=category_id  # type: ignore
+        )
         all_child_category_ids = [c[0] for c in all_child_categories]
 
         query_filters = []

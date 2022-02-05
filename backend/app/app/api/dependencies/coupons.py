@@ -139,7 +139,9 @@ def create_coupon_for_order(
     db: Session, order_obj: models.Order
 ) -> Optional[models.Coupon]:
     if order_obj.coupon and order_obj.coupon_specs:
-        if order_obj.price >= Decimal(order_obj.coupon_specs.get("reward_min_spend", "0")):  # type: ignore
+        if order_obj.price >= Decimal(
+            order_obj.coupon_specs.get("reward_min_spend", "0")  # type: ignore
+        ):
             data = {
                 "date_creation": datetime.utcnow(),
                 "applicability": "specific_products",
@@ -148,13 +150,19 @@ def create_coupon_for_order(
                     "applicable_product_ids", []
                 ),
                 "discount_mode": "percent",
-                "discount_percent": order_obj.coupon_specs.get("discount_percent", 0),  # type: ignore
-                "max_discount": order_obj.coupon_specs.get("max_discount", None),  # type: ignore
+                "discount_percent": order_obj.coupon_specs.get(  # type: ignore
+                    "discount_percent", 0
+                ),
+                "max_discount": order_obj.coupon_specs.get(  # type: ignore
+                    "max_discount", None
+                ),
                 "min_spend": order_obj.coupon_specs.get("min_spend", None),  # type: ignore
                 "quantity_total": 1,
             }
             coupon_obj = crud.coupon.create_with_owner(
-                db, obj_in=schemas.CouponCreate(**data), owner_id=order_obj.buyer_id  # type: ignore
+                db,
+                obj_in=schemas.CouponCreate(**data),
+                owner_id=order_obj.buyer_id,  # type: ignore
             )
 
             send_new_coupon_email_for_coupon(coupon_obj)

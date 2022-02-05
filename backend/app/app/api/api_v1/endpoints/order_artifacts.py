@@ -52,7 +52,8 @@ def generate_upload_url(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     selling_round = globals.selling_round  # type: ignore
@@ -116,7 +117,11 @@ def generate_upload_url(
             detail="Failed to create artifact",
         )
 
-    return {"id": artifact.id, "url": url, "buyer_public_key": order.buyer_public_key}  # type: ignore
+    return {
+        "id": artifact.id,
+        "url": url,
+        "buyer_public_key": order.buyer_public_key,  # type: ignore
+    }
 
 
 @router.post("/{artifact_id}/validate-upload")
@@ -127,8 +132,7 @@ def validate_upload(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    globals = crud.globals.get_singleton(db=db)
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
     artifact = validate_existing_order_artifact(
@@ -163,7 +167,9 @@ def validate_upload(
                     )
 
             crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
-            crud.order.update(db, db_obj=artifact.order, obj_in={"submit_state": "failed"})  # type: ignore
+            crud.order.update(
+                db, db_obj=artifact.order, obj_in={"submit_state": "failed"}
+            )  # type: ignore
             raise HTTPException(
                 status_code=404, detail="Submission failed",
             )
@@ -198,7 +204,9 @@ def validate_upload(
             kwargs=dict(artifact_id=artifact.id),
         )
 
-    crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "active"})  # type: ignore
+    crud.order_artifact.update(
+        db, db_obj=artifact, obj_in={"state": "active"}  # type: ignore
+    )
 
     # mark product as ready
     # if not artifact.order.product.is_ready:  # type: ignore
@@ -340,7 +348,8 @@ def delete_order_artifact(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     selling_round = globals.selling_round  # type: ignore

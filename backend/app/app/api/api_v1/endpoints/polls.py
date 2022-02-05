@@ -116,10 +116,13 @@ def create_poll(
     numerai.check_user_numerai_api(current_user)
 
     # id
-    if poll_in.id is not None and re.match(r"^[\w-]+$", poll_in.id) is None:  # type: ignore
+    if (
+        poll_in.id is not None and re.match(r"^[\w-]+$", poll_in.id) is None
+    ):  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Invalid id (should only contain alphabetic characters, numbers, dashes or underscores)",
+            detail="Invalid id (should only contain "
+            "alphabetic characters, numbers, dashes or underscores)",
         )
 
     if poll_in.id is None or poll_in.id == "":
@@ -189,7 +192,9 @@ def create_poll(
 
     # fill stake basis round if not present, if pre-determined
     if poll_in.stake_basis_round is None and poll_in.is_stake_predetermined:
-        poll_in.stake_basis_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
+        poll_in.stake_basis_round = crud.globals.get_singleton(  # type: ignore
+            db=db
+        ).active_round
 
     # valid min stake
     if poll_in.min_stake is not None and poll_in.min_stake <= 0:

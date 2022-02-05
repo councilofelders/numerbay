@@ -198,7 +198,9 @@ def remove_failed_uploads(
     """
     Remove failed uploads (for db migration only).
     """
-    artifacts = db.query(Artifact).filter(Artifact.object_name.is_not(None))  # type: ignore
+    artifacts = db.query(Artifact).filter(
+        Artifact.object_name.is_not(None)  # type: ignore
+    )
     bucket = deps.get_gcs_bucket()
     for artifact in artifacts:
         blob = bucket.blob(artifact.object_name)

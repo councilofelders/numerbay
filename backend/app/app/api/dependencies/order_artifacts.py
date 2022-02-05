@@ -90,7 +90,9 @@ def send_artifact_emails_for_active_orders(
         # orders = crud.order.get_multi_by_state(
         #     db, state="confirmed", round_order=globals.selling_round  # type: ignore
         # )
-        orders = crud.order.get_active_orders(db, round_order=crud.globals.get_singleton(db=db).selling_round)  # type: ignore
+        orders = crud.order.get_active_orders(
+            db, round_order=crud.globals.get_singleton(db=db).selling_round  # type: ignore
+        )
         for order in orders:
             if order.product_id == artifact.product_id:
                 # Send new artifact email notifications to buyers

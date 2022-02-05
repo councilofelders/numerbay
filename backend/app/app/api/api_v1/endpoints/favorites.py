@@ -46,7 +46,11 @@ def create_favorite(
         )
 
     favorite = crud.favorite.create(
-        db=db, obj_in={"user_id": current_user.id, "product_id": favorite_in.product_id}  # type: ignore
+        db=db,
+        obj_in={  # type: ignore
+            "user_id": current_user.id,
+            "product_id": favorite_in.product_id,
+        },
     )
     return favorite
 

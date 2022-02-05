@@ -121,7 +121,9 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     state_list = [str(i) for i in filter_item["in"]]
                     query_filters.append(Order.state.in_(state_list))
                 if filter_key == "active":
-                    current_round = crud.globals.update_singleton(db).selling_round  # type: ignore
+                    current_round = crud.globals.update_singleton(
+                        db
+                    ).selling_round  # type: ignore
                     query_filters.extend(
                         [
                             Order.round_order > current_round - Order.quantity,  # type: ignore

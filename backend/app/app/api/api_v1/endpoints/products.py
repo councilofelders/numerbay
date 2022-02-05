@@ -151,7 +151,9 @@ def create_product(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    product_in = validate_product_input(db, product_in, category=category, current_user=current_user)  # type: ignore
+    product_in = validate_product_input(  # type: ignore
+        db, product_in, category=category, current_user=current_user
+    )
 
     # Leaf category
     child_categories_count = (
@@ -235,14 +237,17 @@ def update_product(
         db, product_id=id, currend_user_id=current_user.id
     )
 
-    product_in = validate_product_input(db, product_in, category=product.category, current_user=current_user)  # type: ignore
+    product_in = validate_product_input(  # type: ignore
+        db, product_in, category=product.category, current_user=current_user
+    )
 
     # not during round rollover
     globals = crud.globals.get_singleton(db=db)
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     # if hasattr(product_in, 'name') and product_in.name:
@@ -357,7 +362,8 @@ def delete_product(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     # product = crud.product.remove(db=db, id=id)
@@ -391,7 +397,8 @@ def generate_upload_url(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     selling_round = globals.selling_round  # type: ignore
@@ -487,7 +494,10 @@ def validate_upload(
 
     product = crud.product.get(db, id=product_id)
     validate_new_artifact(
-        product=product, current_user=current_user, url=artifact.url, filename=artifact.object_name  # type: ignore
+        product=product,
+        current_user=current_user,
+        url=artifact.url,
+        filename=artifact.object_name,  # type: ignore
     )
 
     if not artifact.object_name:
@@ -547,7 +557,8 @@ async def create_product_artifact(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     selling_round = globals.selling_round  # type: ignore
@@ -595,7 +606,8 @@ async def update_product_artifact(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     selling_round = globals.selling_round  # type: ignore
@@ -607,7 +619,8 @@ async def update_product_artifact(
 
     # object_name = None
     # if file_obj:
-    #     object_name = get_object_name(sku=product.sku, selling_round=selling_round, original_filename=file_obj.filename,
+    #     object_name = get_object_name(sku=product.sku,
+    #     selling_round=selling_round, original_filename=file_obj.filename,
     #                                   override_filename=filename)
     #     upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
     #     if not upload_obj:
@@ -725,7 +738,8 @@ def delete_product_artifact(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     selling_round = globals.selling_round  # type: ignore

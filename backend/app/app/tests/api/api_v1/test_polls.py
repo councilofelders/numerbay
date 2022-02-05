@@ -41,7 +41,10 @@ def test_create_poll(
     assert content["id"] == data["id"]
     assert content["topic"] == data["topic"]
     assert content["is_stake_predetermined"]
-    assert content["stake_basis_round"] == crud.globals.get_singleton(db=db).active_round  # type: ignore
+    assert (
+        content["stake_basis_round"]
+        == crud.globals.get_singleton(db=db).active_round  # type: ignore
+    )
     assert content["options"][0]["text"] == data["options"][0]["text"]  # type: ignore
 
     # crud.poll.remove(db, id=content["id"])
@@ -882,8 +885,8 @@ def test_voting_invalid_inputs(
         )
         assert response.status_code == 400
         assert (
-            response.json()["detail"]
-            == "You are not eligible for this poll: need to have at least one active model for more than 52 weeks"
+            response.json()["detail"] == "You are not eligible for this poll: "
+            "need to have at least one active model for more than 52 weeks"
         )
 
         crud.poll.update(db, db_obj=poll, obj_in={"weight_mode": "equal"})

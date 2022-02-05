@@ -15,10 +15,14 @@ def validate_product_input(
     current_user: Union[schemas.User, models.User],
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
     # Product name
-    if isinstance(product_in, schemas.ProductCreate) and re.match(r"^[\w-]+$", product_in.name) is None:  # type: ignore
+    if (
+        isinstance(product_in, schemas.ProductCreate)
+        and re.match(r"^[\w-]+$", product_in.name) is None
+    ):  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Invalid product name (should only contain alphabetic characters, numbers, dashes or underscores)",
+            detail="Invalid product name (should only contain "
+            "alphabetic characters, numbers, dashes or underscores)",
         )
 
     # Positive expiration round
@@ -97,7 +101,8 @@ def validate_product_input(
                 ):
                     raise HTTPException(
                         status_code=400,
-                        detail=f"{product_option.currency} is not supported for on-platform listing",
+                        detail=f"{product_option.currency} is not supported "
+                        f"for on-platform listing",
                     )
 
                 # On-platform decimal check
@@ -120,7 +125,8 @@ def validate_product_input(
                 if product_option.mode not in ["file", "stake", "stake_with_limit"]:
                     raise HTTPException(
                         status_code=400,
-                        detail="Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']",
+                        detail="Invalid listing mode, must be one of "
+                        "['file', 'stake', 'stake_with_limit']",
                     )
 
                 # On-platform Stake limit check
@@ -175,28 +181,33 @@ def validate_product_input(
                         ]
                     }
 
-                    if "applicable_product_ids" not in product_option.coupon_specs.keys() or not isinstance(
-                        product_option.coupon_specs["applicable_product_ids"], list
+                    coupon_specs_keys = product_option.coupon_specs.keys()
+                    if (
+                        "applicable_product_ids" not in coupon_specs_keys
+                        or not isinstance(
+                            product_option.coupon_specs["applicable_product_ids"], list
+                        )
                     ):
                         raise HTTPException(
                             status_code=400,
-                            detail="List of applicable product IDs must be provided in coupon specs",
+                            detail="List of applicable product IDs "
+                            "must be provided in coupon specs",
                         )
 
-                    if "discount_percent" not in product_option.coupon_specs.keys():
+                    if "discount_percent" not in coupon_specs_keys:
                         raise HTTPException(
                             status_code=400,
                             detail="Discount percentage (0-100) must be provided in coupon specs",
                         )
 
-                    if "max_discount" not in product_option.coupon_specs.keys():
+                    if "max_discount" not in coupon_specs_keys:
                         raise HTTPException(
                             status_code=400,
                             detail="Max discount (in NMR) must be provided in coupon specs",
                         )
 
                     # validate specs
-                    if "reward_min_spend" in product_option.coupon_specs.keys() and not (
+                    if "reward_min_spend" in coupon_specs_keys and not (
                         Decimal(product_option.coupon_specs["reward_min_spend"])
                         >= Decimal("1")
                     ):
@@ -249,7 +260,7 @@ def validate_product_input(
                             status_code=400, detail="Max discount must be positive",
                         )
 
-                    if "min_spend" in product_option.coupon_specs.keys() and Decimal(
+                    if "min_spend" in coupon_specs_keys and Decimal(
                         product_option.coupon_specs["min_spend"]
                     ) < Decimal("1"):
                         raise HTTPException(
@@ -263,7 +274,8 @@ def validate_product_input(
                 ):
                     raise HTTPException(
                         status_code=400,
-                        detail=f"{product_option.currency} is not supported for off-platform listing",
+                        detail=f"{product_option.currency} is not supported "
+                        f"for off-platform listing",
                     )
 
                 # Off-platform decimal check

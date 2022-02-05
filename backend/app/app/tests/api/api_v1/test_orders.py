@@ -193,7 +193,12 @@ def test_create_order_invalid_api_permissions(
         assert response.status_code == 400
 
         # No permission to upload: reject
-        order_data = {"id": product.id, "option_id": product.options[0].id, "quantity": 1, "submit_model_id": "test_model_id"}  # type: ignore
+        order_data = {
+            "id": product.id,
+            "option_id": product.options[0].id,
+            "quantity": 1,
+            "submit_model_id": "test_model_id",
+        }  # type: ignore
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
             headers=superuser_token_headers,
@@ -212,7 +217,12 @@ def test_create_order_invalid_api_permissions(
             db, db_obj=product, obj_in={"mode": "stake_with_limit", "stake_limit": 1}
         )
 
-        order_data = {"id": product.id, "option_id": product.options[0].id, "quantity": 1, "submit_model_id": "test_model_id"}  # type: ignore
+        order_data = {
+            "id": product.id,
+            "option_id": product.options[0].id,
+            "quantity": 1,
+            "submit_model_id": "test_model_id",
+        }  # type: ignore
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
             headers=superuser_token_headers,
@@ -283,7 +293,8 @@ def test_order_artifact(
         assert r.status_code == 403
 
         r = client.get(
-            f"{settings.API_V1_STR}/products/{product.id}/artifacts/{artifact_id}/generate-download-url",
+            f"{settings.API_V1_STR}/products/{product.id}"
+            f"/artifacts/{artifact_id}/generate-download-url",
             headers=superuser_token_headers,
             json=data,
         )
@@ -300,7 +311,8 @@ def test_order_artifact(
         assert r.status_code == 200
 
         r = client.get(
-            f"{settings.API_V1_STR}/products/{product.id}/artifacts/{artifact_id}/generate-download-url",
+            f"{settings.API_V1_STR}/products/{product.id}"
+            f"/artifacts/{artifact_id}/generate-download-url",
             headers=superuser_token_headers,
             json=data,
         )

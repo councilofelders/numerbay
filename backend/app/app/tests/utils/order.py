@@ -24,7 +24,9 @@ def create_random_order(
         buyer = create_random_user(db)
         buyer_id = buyer.id
     crud.user.update(
-        db, db_obj=buyer, obj_in={"numerai_wallet_address": Account.create().address}  # type: ignore
+        db,
+        db_obj=buyer,  # type: ignore
+        obj_in={"numerai_wallet_address": Account.create().address},
     )
 
     product = create_random_product(
@@ -48,7 +50,9 @@ def create_random_order(
         to_address=product_owner.numerai_wallet_address,  # type: ignore
         product_id=product.id,
     )
-    order = crud.order.create_with_buyer(db, obj_in=new_order, buyer_id=buyer_id)  # type: ignore
+    order = crud.order.create_with_buyer(
+        db, obj_in=new_order, buyer_id=buyer_id
+    )  # type: ignore
 
     return order
 

@@ -153,7 +153,8 @@ def create_order(
     if globals.is_doing_round_rollover:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="Round rollover in progress, please try again after the round submission deadline",
+            detail="Round rollover in progress, "
+            "please try again after the round submission deadline",
         )
 
     # todo test

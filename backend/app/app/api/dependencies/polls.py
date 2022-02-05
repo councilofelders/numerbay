@@ -39,7 +39,11 @@ def get_voter_weight(
         elif poll.weight_mode == "log_balance":
             raise HTTPException(status_code=400, detail="Weight mode not yet supported")
 
-        stake_basis_round = poll.stake_basis_round if poll.stake_basis_round is not None else crud.globals.get_singleton(db=db).active_round  # type: ignore
+        stake_basis_round = (
+            poll.stake_basis_round
+            if poll.stake_basis_round is not None
+            else crud.globals.get_singleton(db=db).active_round  # type: ignore
+        )
 
         user_models_snapshots = (
             db.query(models.StakeSnapshot)
@@ -64,7 +68,8 @@ def get_voter_weight(
         if user_nmr_staked <= min_stake:
             raise HTTPException(
                 status_code=400,
-                detail=f"You are not eligible for this poll: need to stake more than {min_stake} NMR",
+                detail=f"You are not eligible for this poll: "
+                f"need to stake more than {min_stake} NMR",
             )
 
         # min rounds requirement
@@ -77,7 +82,8 @@ def get_voter_weight(
             if not is_valid:
                 raise HTTPException(
                     status_code=400,
-                    detail="You are not eligible for this poll: need to have at least one active model for more than 13 weeks",
+                    detail="You are not eligible for this poll: "
+                    "need to have at least one active model for more than 13 weeks",
                 )
 
         if poll.min_rounds == 52:
@@ -89,7 +95,8 @@ def get_voter_weight(
             if not is_valid:
                 raise HTTPException(
                     status_code=400,
-                    detail="You are not eligible for this poll: need to have at least one active model for more than 52 weeks",
+                    detail="You are not eligible for this poll: "
+                    "need to have at least one active model for more than 52 weeks",
                 )
 
         if poll.is_stake_predetermined or override:
