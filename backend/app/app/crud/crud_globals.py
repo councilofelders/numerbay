@@ -25,27 +25,26 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
             return active_round["number"] + 1
         elif utc_time >= open_time:  # new round opened and active
             return active_round["number"]
-        else:  # should not happen
-            return active_round["number"]
+        # should not happen
+        return active_round["number"]
 
     def get_singleton(self, db: Session) -> Optional[Globals]:
         instance = db.query(self.model).filter(self.model.id == 0).one_or_none()
         if instance:
             return instance
-        else:
-            active_round = numerai.get_numerai_active_round()
-            selling_round_number = self.get_selling_round(active_round)
-            instance = Globals(
-                id=0,
-                **{
-                    "active_round": active_round["number"],
-                    "selling_round": selling_round_number,
-                }
-            )
-            db.add(instance)
-            db.commit()
-            db.refresh(instance)
-            return instance
+        active_round = numerai.get_numerai_active_round()
+        selling_round_number = self.get_selling_round(active_round)
+        instance = Globals(
+            id=0,
+            **{
+                "active_round": active_round["number"],
+                "selling_round": selling_round_number,
+            }
+        )
+        db.add(instance)
+        db.commit()
+        db.refresh(instance)
+        return instance
 
     def update_singleton(self, db: Session) -> Globals:
         instance = self.get_singleton(db)

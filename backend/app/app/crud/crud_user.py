@@ -28,12 +28,12 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         self,
         db: Session,
         *,
-        id: int = None,
+        id: int = None,  # pylint: disable=W0622
         skip: int = 0,
         limit: int = None,
         filters: Dict = None,
         term: str = None,
-        sort: str = None,
+        sort: str = None,  # pylint: disable=W0613
     ) -> Any:
         query_filters = []
         if id is not None:
@@ -42,7 +42,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             query_filters.append(User.username.ilike("%{}%".format(term)))
 
         if isinstance(filters, dict):
-            for filter_key, filter_item in filters.items():
+            for filter_key, _ in filters.items():
                 if filter_key == "numerai_api_key_public_id":
                     query_filters.append(
                         User.numerai_api_key_public_id.is_not(None)  # type: ignore
@@ -50,7 +50,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         query = db.query(self.model)
         if len(query_filters) > 0:
-            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query_filter = functools.reduce(and_, query_filters)
             query = query.filter(query_filter)
         count = query.count()
         # query = query.order_by(parse_sort_option(sort))

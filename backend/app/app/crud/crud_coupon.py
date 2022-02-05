@@ -20,7 +20,7 @@ class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
             func.upper(self.model.code) == func.upper(code),
             self.model.state.is_(None),
         ]
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
         return db.query(self.model).filter(query_filter).first()
 
     def create_with_owner(

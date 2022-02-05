@@ -9,7 +9,7 @@ from app.models.poll import Poll
 from app.schemas.poll import PollCreate, PollUpdate
 
 
-def parse_sort_option(sort: Optional[str]) -> Any:
+def parse_sort_option(sort: Optional[str]) -> Any:  # pylint: disable=W0613
     return desc(Poll.id)
 
 
@@ -18,11 +18,11 @@ class CRUDPoll(CRUDBase[Poll, PollCreate, PollUpdate]):
         self,
         db: Session,
         *,
-        id: str = None,
+        id: str = None,  # pylint: disable=W0622
         skip: int = 0,
         limit: int = None,
         filters: Dict = None,
-        term: str = None,
+        term: str = None,  # pylint: disable=W0613
         sort: str = None,
     ) -> Any:
         query_filters = []
@@ -39,7 +39,7 @@ class CRUDPoll(CRUDBase[Poll, PollCreate, PollUpdate]):
 
         query = db.query(self.model)
         if len(query_filters) > 0:
-            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query_filter = functools.reduce(and_, query_filters)
             query = query.filter(query_filter)
         count = query.count()
         query = query.order_by(nulls_last(parse_sort_option(sort)))

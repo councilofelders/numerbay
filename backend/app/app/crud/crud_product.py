@@ -69,8 +69,7 @@ def parse_sort_option(sort: Optional[str]) -> Any:
         return Model.nmr_staked
     elif sort == "stake-down":
         return desc(Model.nmr_staked)
-    else:
-        return Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+    return Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
@@ -151,7 +150,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         self,
         db: Session,
         *,
-        id: int = None,
+        id: int = None,  # pylint: disable=W0622
         category_id: int = None,
         skip: int = 0,
         limit: int = None,
@@ -275,7 +274,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         query = db.query(self.model).join(self.model.model, isouter=True)
         if len(query_filters) > 0:
-            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query_filter = functools.reduce(and_, query_filters)
             query = query.filter(query_filter)
         count = query.count()
         query = query.order_by(nulls_last(parse_sort_option(sort)))
@@ -310,7 +309,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         if category_id is not None:
             agg_filters.append(Product.category_id.in_(all_child_category_ids))
         if len(agg_filters) > 0:
-            agg_filter = functools.reduce(lambda a, b: and_(a, b), agg_filters)
+            agg_filter = functools.reduce(and_, agg_filters)
             agg_query = agg_query.filter(agg_filter)
         agg_stats = agg_query.one()
 

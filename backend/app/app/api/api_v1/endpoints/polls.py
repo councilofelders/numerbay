@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
+from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.polls import (
     generate_voter_id,
     get_voter_weight,
@@ -24,7 +25,7 @@ router = APIRouter()
 )
 def search_polls(
     db: Session = Depends(deps.get_db),
-    id: str = Body(None),
+    id: str = Body(None),  # pylint: disable=W0622
     skip: int = Body(None),
     limit: int = Body(None),
     filters: Dict = Body(None),
@@ -34,10 +35,7 @@ def search_polls(
     """
     Retrieve polls.
     """
-    if skip and skip < 0:
-        raise HTTPException(
-            status_code=400, detail="Skip must be positive",
-        )
+    validate_search_params(skip=skip)
 
     polls = crud.poll.search(
         db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
@@ -61,7 +59,7 @@ def search_polls(
 )
 def search_polls_authenticated(
     db: Session = Depends(deps.get_db),
-    id: str = Body(None),
+    id: str = Body(None),  # pylint: disable=W0622
     skip: int = Body(None),
     limit: int = Body(None),
     filters: Dict = Body(None),
@@ -72,10 +70,7 @@ def search_polls_authenticated(
     """
     Retrieve polls (authenticated).
     """
-    if skip and skip < 0:
-        raise HTTPException(
-            status_code=400, detail="Skip must be positive",
-        )
+    validate_search_params(skip=skip)
 
     polls = crud.poll.search(
         db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
@@ -269,7 +264,7 @@ def create_poll(
 def update_poll(
     *,
     db: Session = Depends(deps.get_db),
-    id: str,
+    id: str,  # pylint: disable=W0622
     poll_in: schemas.PollUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -307,7 +302,7 @@ def update_poll(
 def delete_poll(
     *,
     db: Session = Depends(deps.get_db),
-    id: str,
+    id: str,  # pylint: disable=W0622
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -326,7 +321,7 @@ def delete_poll(
 def close_poll(
     *,
     db: Session = Depends(deps.get_db),
-    id: str,
+    id: str,  # pylint: disable=W0622
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -354,7 +349,7 @@ def close_poll(
 def vote(
     *,
     db: Session = Depends(deps.get_db),
-    id: str,
+    id: str,  # pylint: disable=W0622
     options: List[dict],
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:

@@ -46,7 +46,7 @@ def create_item(
 def update_item(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: int,  # pylint: disable=W0622
     item_in: schemas.ItemUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -66,7 +66,7 @@ def update_item(
 def read_item(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: int,  # pylint: disable=W0622
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -84,7 +84,7 @@ def read_item(
 def delete_item(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: int,  # pylint: disable=W0622
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """

@@ -11,10 +11,9 @@ from app.schemas.review import ReviewCreate, ReviewUpdate
 
 
 def parse_sort_option(sort: Optional[str]) -> Any:
-    if sort == "latest":
-        return desc(Review.id)
-    else:
-        return desc(Review.id)
+    # if sort == "latest":
+    #     return desc(Review.id)
+    return desc(Review.id)
 
 
 class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
@@ -54,7 +53,7 @@ class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
         self,
         db: Session,
         *,
-        id: int = None,
+        id: int = None,  # pylint: disable=W0622
         product_id: int = None,
         skip: int = 0,
         limit: int = None,
@@ -83,7 +82,7 @@ class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
 
         query = db.query(self.model)
         if len(query_filters) > 0:
-            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query_filter = functools.reduce(and_, query_filters)
             query = query.filter(query_filter)
         count = query.count()
         query = query.order_by(nulls_last(parse_sort_option(sort)))

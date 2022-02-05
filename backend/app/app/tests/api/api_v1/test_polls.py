@@ -292,13 +292,9 @@ def test_update_poll(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
     with get_random_poll(db, owner_id=current_user["id"]) as poll:
-        data = dict()  # type: ignore
-
         # update blind
-        data["options"] = [
-            {"value": 0, "text": "Python"},
-            {"value": 1, "text": "R"},
-        ]
+        data = {"options": [{"value": 0, "text": "Python"}, {"value": 1, "text": "R"}]}
+
         response = client.put(
             f"{settings.API_V1_STR}/polls/{poll.id}",
             headers=superuser_token_headers,

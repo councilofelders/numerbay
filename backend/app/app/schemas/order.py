@@ -68,7 +68,7 @@ class Order(OrderInDBBase):
     artifacts: Optional[List] = None
 
     @validator("artifacts", always=True)
-    def validate_artifacts(cls, value, values):  # type: ignore
+    def validate_artifacts(cls, value, values):  # type: ignore  # pylint: disable=W0613
         value_to_return = []
         for artifact in value:
             if artifact.state != "marked_for_pruning":

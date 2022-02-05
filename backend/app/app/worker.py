@@ -1,6 +1,7 @@
 import functools
 import io
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
@@ -41,11 +42,8 @@ def test_celery(word: str) -> str:
 
 @celery_app.task
 def tick(msg: str) -> str:
-    from datetime import datetime
-
     print(f"Tick! The time is: {datetime.now()}, arg: {msg}")
     sys.stdout.flush()
-    import time
 
     time.sleep(2)
     return msg
@@ -56,8 +54,10 @@ def send_email_task(
     email_to: str,
     subject_template: str = "",
     html_template: str = "",
-    environment: Dict[str, Any] = {},
+    environment: Dict = None,
 ) -> None:
+    if environment is None:
+        environment = {}
     send_email(
         email_to=email_to,
         subject_template=subject_template,
@@ -79,6 +79,7 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
             send_artifact_emails_for_active_orders(db, artifact, is_file=True)
         finally:
             db.close()
+    return None
 
 
 @celery_app.task  # (acks_late=True)
@@ -115,6 +116,7 @@ def send_new_order_artifact_emails_task(artifact_id: str) -> None:
                 )
         finally:
             db.close()
+    return None
 
 
 @celery_app.task  # (acks_late=True)
@@ -227,8 +229,9 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
 def update_globals_task() -> None:
     db = SessionLocal()
     try:
-        globals = crud.globals.update_singleton(db)
-        crud.product.bulk_expire(db, current_round=globals.selling_round)
+        crud.product.bulk_expire(
+            db, current_round=crud.globals.update_singleton(db).selling_round
+        )
     finally:
         db.close()
 
@@ -246,8 +249,6 @@ def update_globals_stats_task() -> None:
 def update_active_round() -> None:
     db = SessionLocal()
     try:
-        globals = crud.globals.get_singleton(db)
-
         active_round = numerai.get_numerai_active_round()
         utc_time = datetime.now(timezone.utc)
         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
@@ -266,7 +267,7 @@ def update_active_round() -> None:
             # update active round
             crud.globals.update(
                 db,
-                db_obj=globals,  # type: ignore
+                db_obj=crud.globals.get_singleton(db),  # type: ignore
                 obj_in={"active_round": active_round_number},
             )
             # trigger Numerai submissions
@@ -288,7 +289,7 @@ def update_active_round() -> None:
 def update_round_rollover() -> None:
     db = SessionLocal()
     try:
-        globals = crud.globals.get_singleton(db)
+        site_globals = crud.globals.get_singleton(db)
 
         active_round = numerai.get_numerai_active_round()
         utc_time = datetime.now(timezone.utc)
@@ -309,7 +310,7 @@ def update_round_rollover() -> None:
             # freeze activities
             crud.globals.update(
                 db,
-                db_obj=globals,  # type: ignore
+                db_obj=site_globals,  # type: ignore
                 obj_in={"is_doing_round_rollover": True},
             )
 
@@ -323,8 +324,8 @@ def update_round_rollover() -> None:
             )
         else:  # current round closed for staking, start selling next round, unfreeze activities
             if (
-                globals.active_round == active_round_number  # type: ignore
-                and globals.selling_round == active_round_number + 1  # type: ignore
+                site_globals.active_round == active_round_number  # type: ignore
+                and site_globals.selling_round == active_round_number + 1  # type: ignore
                 # type: ignore
             ):  # active round already up-to-date
                 print("Round already up-to-date, no action")
@@ -333,7 +334,7 @@ def update_round_rollover() -> None:
                 selling_rouind = active_round_number + 1
                 crud.globals.update(
                     db,
-                    db_obj=globals,  # type: ignore
+                    db_obj=site_globals,  # type: ignore
                     obj_in={
                         "active_round": active_round_number,
                         "selling_round": selling_rouind,
@@ -342,12 +343,12 @@ def update_round_rollover() -> None:
                 )  # update round number and unfreeze
                 # expire old products
                 crud.product.bulk_expire(
-                    db, current_round=globals.selling_round  # type: ignore
+                    db, current_round=site_globals.selling_round  # type: ignore
                 )
 
                 # mark order artifacts for pruning
                 crud.order_artifact.bulk_mark_for_pruning(
-                    db, current_round=globals.selling_round  # type: ignore
+                    db, current_round=site_globals.selling_round  # type: ignore
                 )
 
                 # unmark product readiness
@@ -403,8 +404,7 @@ def upload_numerai_artifact_task(
     finally:
         db.close()
 
-    bucket = deps.get_gcs_bucket()
-    blob = bucket.blob(object_name)
+    blob = deps.get_gcs_bucket().blob(object_name)
 
     # Has csv artifact and uploaded
     url = blob.generate_signed_url(
@@ -521,7 +521,6 @@ def upload_numerai_artifact_task(
         submission_auth["url"], data=io.BytesIO(file_stream.content), stream=True
     )
 
-    create = None
     try:
         create = api.raw_query(create_query, arguments, authorization=True)
     except ValueError:  # try again with new data version
@@ -580,7 +579,7 @@ def upload_numerai_artifact_task(
         return submission_id
     else:
         print("Submission failed")
-        return None
+    return None
 
 
 @celery_app.task  # (acks_late=True)
@@ -592,8 +591,8 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
 
         # Get artifacts
         product = crud.product.get(db=db, id=order_json["product_id"])
-        globals = crud.globals.update_singleton(db)
-        selling_round = globals.selling_round  # type: ignore
+        site_globals = crud.globals.update_singleton(db)
+        selling_round = site_globals.selling_round  # type: ignore
 
         artifacts = crud.artifact.get_multi_by_product_round(
             db, product=product, round_tournament=selling_round  # type: ignore
@@ -612,25 +611,25 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
             )
             == 0
         ):
-            if globals.is_doing_round_rollover:  # Round about to close, finish
+            if site_globals.is_doing_round_rollover:  # Round about to close, finish
                 print(
                     f"Submission for order [{order_id}] interrupted due to round closing"
                 )
                 return None
-            else:  # Check again later
-                if retry:
-                    print(
-                        f"No csv artifact for order [{order_id}], "
-                        f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
-                    )
-                    celery_app.send_task(
-                        "app.worker.submit_numerai_model_subtask",
-                        kwargs=dict(order_json=order_json),
-                        countdown=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
-                    )
-                else:
-                    print(f"No csv artifact for order [{order_id}]")
-                return None
+            # Check again later
+            if retry:
+                print(
+                    f"No csv artifact for order [{order_id}], "
+                    f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                )
+                celery_app.send_task(
+                    "app.worker.submit_numerai_model_subtask",
+                    kwargs=dict(order_json=order_json),
+                    countdown=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
+                )
+            else:
+                print(f"No csv artifact for order [{order_id}]")
+            return None
 
         # Has csv artifact
         csv_artifact = [
@@ -683,9 +682,8 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
 def batch_submit_numerai_models_task() -> None:
     db = SessionLocal()
     try:
-        globals = crud.globals.update_singleton(db)
         orders = crud.order.get_pending_submission_orders(
-            db, round_order=globals.selling_round
+            db, round_order=crud.globals.update_singleton(db).selling_round
         )
 
         print(f"total orders to submit: {len(orders)}")
@@ -795,17 +793,19 @@ def validate_artifact_upload_task(
                     crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
     finally:
         db.close()
+    return None
 
 
 @celery_app.task  # (acks_late=True)
 def batch_validate_numerai_models_stake_task() -> None:
     db = SessionLocal()
     try:
-        globals = crud.globals.update_singleton(db)
         # orders = crud.order.get_multi_by_state(
         #     db, state="confirmed", round_order=globals.selling_round
         # )
-        orders = crud.order.get_active_orders(db, round_order=globals.selling_round)
+        orders = crud.order.get_active_orders(
+            db, round_order=crud.globals.update_singleton(db).selling_round
+        )
 
         print(f"total orders to check for stake limit: {len(orders)}")
 
@@ -934,7 +934,7 @@ def batch_prune_storage() -> None:
     db = SessionLocal()
     try:
         query_filters = [Category.is_per_round, Artifact.state != "pruned"]
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
 
         subq = (
             db.query(

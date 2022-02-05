@@ -14,7 +14,9 @@ router = APIRouter()
 @router.post("/test-celery/", response_model=schemas.Msg, status_code=201)
 def test_celery(
     msg: schemas.Msg,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Test Celery worker.
@@ -26,7 +28,9 @@ def test_celery(
 @router.post("/test-email/", response_model=schemas.Msg, status_code=201)
 def test_email(
     email_to: EmailStr,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Test emails.

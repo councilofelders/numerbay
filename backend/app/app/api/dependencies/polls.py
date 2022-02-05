@@ -17,8 +17,7 @@ def generate_voter_id(poll: models.Poll, user: models.User) -> str:
         to_encode = {"poll_id": poll.id, "voter_address": user.numerai_wallet_address}
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
         return encoded_jwt
-    else:
-        return user.numerai_wallet_address  # type: ignore
+    return user.numerai_wallet_address  # type: ignore
 
 
 def get_voter_weight(
@@ -130,12 +129,11 @@ def get_user_from_voter_id(
             .filter(models.User.numerai_wallet_address == voter_address)
             .first()
         )
-    else:
-        return (
-            db.query(models.User)
-            .filter(models.User.numerai_wallet_address == voter_id)
-            .first()
-        )
+    return (
+        db.query(models.User)
+        .filter(models.User.numerai_wallet_address == voter_id)
+        .first()
+    )
 
 
 def take_stake_weight_snapshots(db: Session, poll: models.Poll) -> None:
@@ -150,4 +148,3 @@ def take_stake_weight_snapshots(db: Session, poll: models.Poll) -> None:
             )
     db.commit()
     db.refresh(poll)
-    return None

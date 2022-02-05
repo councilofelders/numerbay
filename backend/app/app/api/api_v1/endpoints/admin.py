@@ -80,7 +80,9 @@ def resubmit_for_order(
     *,
     db: Session = Depends(deps.get_db),
     order_id: int,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     order_obj = crud.order.get(db, id=order_id)
     if order_obj is not None:
@@ -97,7 +99,9 @@ def resend_order_emails(
     *,
     db: Session = Depends(deps.get_db),
     order_id: int,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     order_obj = crud.order.get(db, id=order_id)
     if order_obj is not None:
@@ -110,7 +114,9 @@ def resend_order_emails(
 def fill_numerai_emails(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Fill Numerai emails (for migration only).
@@ -155,7 +161,9 @@ def fill_numerai_emails(
 def refresh_globals_stats(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Calculate global stats for all products (for db migration only).
@@ -168,7 +176,9 @@ def refresh_globals_stats(
 def refresh_sales_stats(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Calculate sales stats for all products (for db migration only).
@@ -176,7 +186,7 @@ def refresh_sales_stats(
     products = db.query(Product).all()
     for product in products:
         query_filters = [Order.product_id == product.id, Order.state == "confirmed"]
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
         orders = db.query(Order).filter(query_filter).order_by(desc(Order.id)).all()
         if orders and len(orders) > 0:
             product.total_num_sales = len(orders)
@@ -193,7 +203,9 @@ def refresh_sales_stats(
 def remove_failed_uploads(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Remove failed uploads (for db migration only).
@@ -217,13 +229,14 @@ def remove_failed_uploads(
 def update_artifact_states(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Update artifact states (for db migration only).
     """
-    globals = crud.globals.update_singleton(db)
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = crud.globals.update_singleton(db).selling_round  # type: ignore
 
     artifacts = db.query(Artifact)
     for artifact in artifacts:

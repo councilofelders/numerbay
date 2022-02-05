@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
+from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
+from app.api.dependencies.orders import validate_existing_order
+from app.api.dependencies.products import validate_existing_product
+from app.api.dependencies.site_globals import validate_not_during_rollover
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import send_new_order_email
@@ -19,7 +23,7 @@ router = APIRouter()
 def search_orders(
     db: Session = Depends(deps.get_db),
     role: str = Body(None),
-    id: int = Body(None),
+    id: int = Body(None),  # pylint: disable=W0622
     skip: int = Body(None),
     limit: int = Body(None),
     filters: Dict = None,
@@ -29,10 +33,7 @@ def search_orders(
     """
     Retrieve orders.
     """
-    if skip and skip < 0:
-        raise HTTPException(
-            status_code=400, detail="Skip must be positive",
-        )
+    validate_search_params(skip=skip)
 
     orders = crud.order.search(
         db,
@@ -51,7 +52,7 @@ def search_orders(
 def create_order(
     *,
     db: Session = Depends(deps.get_db),
-    id: int = Body(...),
+    id: int = Body(...),  # pylint: disable=W0622
     option_id: int = Body(...),
     quantity: int = Body(...),
     submit_model_id: str = Body(None),
@@ -66,9 +67,7 @@ def create_order(
     date_order = datetime.utcnow() - timedelta(minutes=1)
 
     # Product exists
-    product = crud.product.get(db=db, id=id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+    product = validate_existing_product(db, id)
 
     product_option = crud.product_option.get(db=db, id=option_id)
     if not product_option:
@@ -132,8 +131,8 @@ def create_order(
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
     # Duplicate order
-    globals = crud.globals.get_singleton(db=db)
-    selling_round = globals.selling_round  # type: ignore
+    site_globals = validate_not_during_rollover(db)
+    selling_round = site_globals.selling_round  # type: ignore
     existing_order = crud.order.search(
         db,
         role="buyer",
@@ -147,14 +146,6 @@ def create_order(
     if len(existing_order.get("data", [])) > 0:
         raise HTTPException(
             status_code=400, detail="Order for this product this round already exists"
-        )
-
-    # Not during round rollover
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
         )
 
     # todo test
@@ -270,9 +261,8 @@ def submit_artifact(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    order = crud.order.get(db=db, id=order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order = validate_existing_order(db, order_id)
+
     if order.buyer_id != current_user.id and order.product.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if order.state != "confirmed":
@@ -322,69 +312,3 @@ def submit_artifact(
     )
     crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
     return {"msg": "success!"}
-
-
-# @router.put("/{id}", response_model=schemas.Order)
-# def update_order(
-#     *,
-#     db: Session = Depends(deps.get_db),
-#     id: int,
-#     order_in: schemas.OrderUpdate,
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     """
-#     Update an order.
-#     """
-#     order = crud.order.get(db=db, id=id)
-#     if not order:
-#         raise HTTPException(status_code=404, detail="Order not found")
-#     if order.owner_id != current_user.id:
-#         raise HTTPException(status_code=400, detail="Not enough permissions")
-#     order = crud.order.update(db=db, db_obj=order, obj_in=order_in)
-#     return order
-
-
-# @router.get("/{id}", response_model=schemas.Order)
-# def read_order(
-#     *,
-#     db: Session = Depends(deps.get_db),
-#     id: int,
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     """
-#     Get order by ID.
-#     """
-#     order = crud.order.get(db=db, id=id)
-#     if not order:
-#         raise HTTPException(status_code=404, detail="Order not found")
-#     return order
-
-
-# @router.delete("/{id}", response_model=schemas.Order)
-# def delete_order(
-#     *,
-#     db: Session = Depends(deps.get_db),
-#     id: int,
-#     current_user: models.User = Depends(deps.get_current_active_user),
-# ) -> Any:
-#     """
-#     Delete an order.
-#     """
-#     order = crud.order.get(db=db, id=id)
-#     if not order:
-#         raise HTTPException(status_code=404, detail="Order not found")
-#     if order.owner_id != current_user.id:
-#         raise HTTPException(status_code=400, detail="Not enough permissions")
-#     order = crud.order.remove(db=db, id=id)
-#     return order
-
-
-# @router.get("/schedule/", response_model=schemas.Msg, status_code=201)
-# def schedule(
-#     current_user: models.User = Depends(deps.get_current_active_superuser),
-# ) -> Any:
-#     """
-#     Test Celery worker.
-#     """
-#     result = celery_app.send_task("app.worker.test_celery", args=["123"])
-#     return {"msg": result.ready()}

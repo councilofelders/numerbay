@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import Optional
 
 import pandas as pd
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -16,6 +17,13 @@ from app.utils import (
     send_order_confirmed_email,
     send_order_expired_email,
 )
+
+
+def validate_existing_order(db: Session, order_id: int) -> models.Order:
+    order = crud.order.get(db=db, id=order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
 
 
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:
@@ -90,12 +98,14 @@ def on_order_confirmed(db: Session, order_obj: models.Order, transaction: str) -
     )
 
     # Upload csv artifact for order if round open
-    globals = crud.globals.update_singleton(db)
-    selling_round = globals.selling_round  # type: ignore
+    site_globals = crud.globals.update_singleton(db)
+    selling_round = site_globals.selling_round  # type: ignore
     if (
-        selling_round == globals.active_round and order_obj.submit_model_id
+        selling_round == site_globals.active_round and order_obj.submit_model_id
     ):  # if round open
-        print(f"Round {globals.active_round} is open, search for artifact to upload")
+        print(
+            f"Round {site_globals.active_round} is open, search for artifact to upload"
+        )
         artifacts = crud.artifact.get_multi_by_product_round(
             db, product=order_obj.product, round_tournament=selling_round,
         )
@@ -157,7 +167,6 @@ def update_payment(db: Session, order_id: int) -> None:
             order_obj.state = "invalid_currency"
             db.commit()
             db.refresh(order_obj)
-    return
 
 
 def send_order_confirmation_emails(order_obj: models.Order) -> None:

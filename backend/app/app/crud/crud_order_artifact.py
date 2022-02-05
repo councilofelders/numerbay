@@ -26,7 +26,7 @@ class CRUDOrderArtifact(
             query_filters.append(OrderArtifact.round_tournament == round_tournament)
         if active_only:
             query_filters.append(OrderArtifact.state == "active")
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
         return db.query(self.model).filter(query_filter).all()
 
     def bulk_mark_for_pruning(self, db: Session, current_round: int) -> None:

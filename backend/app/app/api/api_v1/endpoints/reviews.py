@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.api.dependencies.commons import validate_search_params
+from app.api.dependencies.products import validate_existing_product
 
 router = APIRouter()
 
@@ -13,7 +15,7 @@ router = APIRouter()
 @router.post("/search", response_model=Dict[str, Union[int, List[schemas.Review]]])
 def search_reviews(
     db: Session = Depends(deps.get_db),
-    id: int = Body(None),
+    id: int = Body(None),  # pylint: disable=W0622
     product_id: int = Body(None),
     skip: int = Body(None),
     limit: int = Body(None),
@@ -23,10 +25,7 @@ def search_reviews(
     """
     Retrieve reviews.
     """
-    if skip and skip < 0:
-        raise HTTPException(
-            status_code=400, detail="Skip must be positive",
-        )
+    validate_search_params(skip=skip)
 
     reviews = crud.review.search(
         db,
@@ -53,9 +52,7 @@ def create_review(
     Create new review.
     """
     # Product exists
-    product = crud.product.get(db=db, id=product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+    product = validate_existing_product(db, product_id)
 
     # Product active
     if not product.is_active:
@@ -107,8 +104,7 @@ def create_review(
         round_review = latest_order.round_order
     else:
         # Not bought product before
-        globals = crud.globals.get_singleton(db=db)
-        selling_round = globals.selling_round  # type: ignore
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
         round_review = selling_round - 1
         existing_reviews = crud.review.search(
             db,

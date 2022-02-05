@@ -328,12 +328,17 @@ def validate_product_input(
     return product_in
 
 
-def validate_existing_product(
-    db: Session, product_id: int, currend_user_id: int
-) -> models.Product:
+def validate_existing_product(db: Session, product_id: int) -> models.Product:
     product = crud.product.get(db=db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+
+def validate_product_owner(
+    db: Session, product_id: int, currend_user_id: int
+) -> models.Product:
+    product = validate_existing_product(db, product_id)
     if product.owner_id != currend_user_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return product

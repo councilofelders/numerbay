@@ -29,9 +29,7 @@ def test_create_category(
     crud.category.remove(db, id=content["id"])
 
 
-def test_read_categories(
-    client: TestClient, superuser_token_headers: dict, db: Session
-) -> None:
+def test_read_categories(client: TestClient) -> None:
     # category = create_random_category(db)
     response = client.get(f"{settings.API_V1_STR}/categories",)
     assert response.status_code == 200
@@ -40,9 +38,7 @@ def test_read_categories(
     # crud.category.remove(db, id=category.id)
 
 
-def test_read_category(
-    client: TestClient, superuser_token_headers: dict, db: Session
-) -> None:
+def test_read_category(client: TestClient, db: Session) -> None:
     category = create_random_category(db)
     response = client.get(f"{settings.API_V1_STR}/categories/{category.id}",)
     assert response.status_code == 200

@@ -373,8 +373,6 @@ def test_update_product(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
     with get_random_product(db, owner_id=current_user["id"]) as product:
-        data = dict()  # type: ignore
-
         # product_name = random_lower_string()
         # data = {
         #     "name": product_name,
@@ -403,12 +401,15 @@ def test_update_product(
         # assert content["name"] == data["name"]
 
         # update price
-        data["options"] = [
-            {
-                "id": product.options[0].id,  # type: ignore
-                "price": 20.5,
-            }
-        ]
+        data = {
+            "options": [
+                {
+                    "id": product.options[0].id,  # type: ignore
+                    "price": 20.5,
+                }
+            ]
+        }
+
         response = client.put(
             f"{settings.API_V1_STR}/products/{product.id}",
             headers=normal_user_token_headers,

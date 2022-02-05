@@ -1,8 +1,10 @@
 import uuid
+from datetime import timedelta
 from pathlib import Path
 from typing import Optional
 
 from fastapi import HTTPException
+from google.cloud.storage import Bucket
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -19,6 +21,28 @@ def get_object_name(
         object_name += f"_{override_filename}"
     object_name += file_ext
     return object_name
+
+
+def generate_gcs_signed_url(
+    bucket: Bucket,
+    object_name: str,
+    action: str = "PUT",
+    expiration_minutes: int = 10,
+    is_upload: bool = True,
+) -> str:
+    blob = bucket.blob(object_name)
+    url = blob.generate_signed_url(
+        expiration=timedelta(minutes=expiration_minutes),
+        content_type="application/octet-stream" if is_upload else None,
+        bucket_bound_hostname=(
+            "https://storage.numerbay.ai"
+            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
+            else None
+        ),
+        method=action,
+        version="v4",
+    )
+    return url
 
 
 def validate_new_order_artifact(

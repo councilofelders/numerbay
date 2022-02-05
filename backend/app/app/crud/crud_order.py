@@ -15,8 +15,7 @@ from app.schemas.order import OrderCreate, OrderUpdate
 def parse_sort_option(sort: Optional[str]) -> Any:
     if sort == "latest":
         return desc(Order.date_order)
-    else:
-        return desc(Order.id)
+    return desc(Order.id)
 
 
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
@@ -35,7 +34,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             self.model.round_order > round_order - self.model.quantity,  # type: ignore
             self.model.state == "confirmed",
         ]
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
         orders = db.query(self.model).filter(query_filter).all()
         return orders
 
@@ -47,7 +46,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 self.model.round_order == round_order,  # type: ignore
                 self.model.state == state,
             ]
-            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query_filter = functools.reduce(and_, query_filters)
         else:
             query_filter = self.model.state == state
         orders = db.query(self.model).filter(query_filter).all()
@@ -65,7 +64,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             ),
             self.model.submit_model_id.is_not(None),  # type: ignore
         ]
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
         orders = db.query(self.model).filter(query_filter).all()
         return orders
 
@@ -75,26 +74,15 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         *,
         role: str = None,
         current_user_id: int = None,
-        id: int = None,
-        # category_id: int = None,
+        id: int = None,  # pylint: disable=W0622
         skip: int = 0,
         limit: int = None,
         filters: Dict = None,
-        # term: str = None,
         sort: str = None,
     ) -> Any:
-        # all_child_categories = crud.category.get_all_subcategories(
-        #     db, category_id=category_id  # type: ignore
-        # )
-        # all_child_category_ids = [c[0] for c in all_child_categories]
-
         query_filters = []
         if id is not None:
             query_filters.append(Order.id == id)
-        # if category_id is not None:
-        #     query_filters.append(Order.category_id.in_(all_child_category_ids))
-        # if term is not None:
-        #     query_filters.append(Order.name.ilike("%{}%".format(term)))
 
         if role == "buyer":
             query_filters.append(Order.buyer_id == current_user_id)
@@ -135,7 +123,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         if role != "buyer":  # to handle filter on Product owner
             query = query.join(self.model.product, isouter=True)
         if len(query_filters) > 0:
-            query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+            query_filter = functools.reduce(and_, query_filters)
             query = query.filter(query_filter)
         count = query.count()
         query = query.order_by(parse_sort_option(sort))

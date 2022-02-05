@@ -33,7 +33,9 @@ def create_category(
     *,
     db: Session = Depends(deps.get_db),
     category_in: schemas.CategoryCreate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Create new category.
@@ -46,9 +48,11 @@ def create_category(
 def update_category(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: int,  # pylint: disable=W0622
     category_in: schemas.CategoryUpdate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Update an category.
@@ -61,7 +65,9 @@ def update_category(
 
 
 @router.get("/{id}", response_model=schemas.Category)
-def read_category(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
+def read_category(
+    *, db: Session = Depends(deps.get_db), id: int,  # pylint: disable=W0622
+) -> Any:
     """
     Get category by ID.
     """
@@ -75,8 +81,10 @@ def read_category(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
 def delete_category(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    id: int,  # pylint: disable=W0622
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
 ) -> Any:
     """
     Delete an category.

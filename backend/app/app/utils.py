@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import emails
 from emails.template import JinjaTemplate
@@ -15,8 +15,10 @@ def send_email(
     email_to: str,
     subject_template: str = "",
     html_template: str = "",
-    environment: Dict[str, Any] = {},
+    environment: Dict = None,
 ) -> None:
+    if environment is None:
+        environment = {}
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     message = emails.Message(
         subject=JinjaTemplate(subject_template),
@@ -157,8 +159,7 @@ def send_new_confirmed_sale_email(
     amount: float,
     currency: str,
 ) -> None:
-    project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - New confirmed sale for {username}"
+    subject = f"{settings.PROJECT_NAME} - New confirmed sale for {username}"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_confirmed_sale.html") as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/sales-history"

@@ -134,7 +134,7 @@ def update_user_me(
 
 @router.get("/me", response_model=schemas.User)
 def read_user_me(
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_db),  # pylint: disable=W0613
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """

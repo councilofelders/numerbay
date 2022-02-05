@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Form, HTTPException, status
@@ -11,11 +11,14 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.order_artifacts import (  # send_artifact_emails_for_active_orders,
+    generate_gcs_signed_url,
     get_object_name,
     validate_existing_order_artifact,
     validate_new_order_artifact,
 )
-from app.api.dependencies.products import validate_buyer, validate_existing_product
+from app.api.dependencies.orders import validate_existing_order
+from app.api.dependencies.products import validate_buyer, validate_product_owner
+from app.api.dependencies.site_globals import validate_not_during_rollover
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import send_failed_artifact_seller_email
@@ -48,15 +51,9 @@ def generate_upload_url(
     )
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    site_globals = validate_not_during_rollover(db)
 
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = site_globals.selling_round
 
     object_name = get_object_name(
         sku=order.product.sku,  # type: ignore
@@ -85,17 +82,12 @@ def generate_upload_url(
         url, object_name = submission_auth["url"], submission_auth["filename"]
     else:
         # upload for buyer
-        blob = bucket.blob(object_name)
-        url = blob.generate_signed_url(
-            expiration=timedelta(minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES),
-            content_type="application/octet-stream",
-            bucket_bound_hostname=(
-                "https://storage.numerbay.ai"
-                if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
-                else None
-            ),
-            method=action,
-            version="v4",
+        url = generate_gcs_signed_url(
+            bucket=bucket,
+            object_name=object_name,
+            action=action,
+            expiration_minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES,
+            is_upload=True,
         )
 
     # Create artifact
@@ -130,7 +122,9 @@ def validate_upload(
     artifact_id: str,
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(
+        deps.get_current_active_user
+    ),  # pylint: disable=W0613
 ) -> Any:
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
@@ -235,9 +229,7 @@ def list_order_artifacts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    order = crud.order.get(db=db, id=order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order = validate_existing_order(db, order_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
@@ -287,17 +279,12 @@ def generate_download_url(
         )
 
     action = "GET"
-    blob = bucket.blob(artifact.object_name)
-    url = blob.generate_signed_url(
-        expiration=timedelta(minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES),
-        # content_type='application/octet-stream',
-        bucket_bound_hostname=(
-            "https://storage.numerbay.ai"
-            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
-            else None
-        ),
-        method=action,
-        version="v4",
+    url = generate_gcs_signed_url(
+        bucket=bucket,
+        object_name=artifact.object_name,
+        action=action,
+        expiration_minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES,
+        is_upload=False,
     )
     return url
 
@@ -307,7 +294,6 @@ def get_order_artifact(
     *,
     artifact_id: str,
     db: Session = Depends(deps.get_db),
-    bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -344,21 +330,15 @@ def delete_order_artifact(
     Delete an artifact.
     """
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    site_globals = validate_not_during_rollover(db)
 
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = site_globals.selling_round
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
     validate_existing_order_artifact(artifact=artifact, selling_round=selling_round)
 
     # product ownership
-    validate_existing_product(
+    validate_product_owner(
         db, product_id=artifact.order.product_id, currend_user_id=current_user.id  # type: ignore
     )
 

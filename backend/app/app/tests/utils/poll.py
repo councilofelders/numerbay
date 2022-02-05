@@ -20,13 +20,13 @@ def create_random_poll(
     if owner_id is None:
         user = create_random_user(db)
         owner_id = user.id
-    id = "zzz" + random_lower_string()
+    poll_id = "zzz" + random_lower_string()
 
     description = random_lower_string()
 
     poll_in = PollCreate(
-        id=id,
-        topic=id,
+        id=poll_id,
+        topic=poll_id,
         description=description,
         date_creation=datetime.datetime.utcnow(),
         date_finish=datetime.date(2032, 12, 31),

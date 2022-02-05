@@ -1,5 +1,3 @@
-import uuid
-from pathlib import Path
 from typing import Optional
 
 from fastapi import HTTPException
@@ -8,17 +6,6 @@ from sqlalchemy.orm import Session
 from app import crud, models
 from app.core.config import settings
 from app.utils import send_new_artifact_email, send_new_artifact_seller_email
-
-
-def get_object_name(
-    sku: str, selling_round: int, original_filename: str, override_filename: str = None
-) -> str:
-    file_ext = Path(original_filename).suffix
-    object_name = f"{sku}_{str(selling_round)}_{uuid.uuid4().hex}"
-    if override_filename:
-        object_name += f"_{override_filename}"
-    object_name += file_ext
-    return object_name
 
 
 def validate_new_artifact(

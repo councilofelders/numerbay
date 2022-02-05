@@ -594,6 +594,5 @@ def validate_numerai_submission(
         )
         print(f"submission_id: {submission_id}")
         return submission_id
-    else:
-        print("Submission failed")
-        return None
+    print("Submission failed")
+    return None

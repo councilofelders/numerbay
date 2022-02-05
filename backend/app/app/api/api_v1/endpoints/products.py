@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, status
@@ -11,17 +11,23 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import (
-    get_object_name,
     send_artifact_emails_for_active_orders,
     validate_existing_artifact,
     validate_new_artifact,
 )
+from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
+from app.api.dependencies.order_artifacts import (
+    generate_gcs_signed_url,
+    get_object_name,
+)
 from app.api.dependencies.products import (
     validate_buyer,
     validate_existing_product,
     validate_product_input,
+    validate_product_owner,
 )
+from app.api.dependencies.site_globals import validate_not_during_rollover
 from app.core.celery_app import celery_app
 from app.core.config import settings
 
@@ -33,23 +39,20 @@ router = APIRouter()
 )
 def search_products(
     db: Session = Depends(deps.get_db),
-    id: int = Body(None),
+    id: int = Body(None),  # pylint: disable=W0622
     category_id: int = Body(None),
     skip: int = Body(None),
     limit: int = Body(None),
     filters: Dict = Body(None),
     term: str = Body(None),
     sort: str = Body(None),
-    coupon: str = Body(None),
+    coupon: str = Body(None),  # pylint: disable=W0613
     qty: int = Body(None),
 ) -> Any:
     """
     Retrieve products.
     """
-    if skip and skip < 0:
-        raise HTTPException(
-            status_code=400, detail="Skip must be positive",
-        )
+    validate_search_params(skip=skip)
 
     products = crud.product.search(
         db,
@@ -85,7 +88,7 @@ def search_products(
 )
 def search_products_authenticated(
     db: Session = Depends(deps.get_db),
-    id: int = Body(None),
+    id: int = Body(None),  # pylint: disable=W0622
     category_id: int = Body(None),
     skip: int = Body(None),
     limit: int = Body(None),
@@ -99,10 +102,7 @@ def search_products_authenticated(
     """
     Retrieve products (authenticated).
     """
-    if skip and skip < 0:
-        raise HTTPException(
-            status_code=400, detail="Skip must be positive",
-        )
+    validate_search_params(skip=skip)
 
     products = crud.product.search(
         db,
@@ -226,29 +226,21 @@ def create_product(
 def update_product(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: int,  # pylint: disable=W0622
     product_in: schemas.ProductUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update a product.
     """
-    product = validate_existing_product(
-        db, product_id=id, currend_user_id=current_user.id
-    )
+    product = validate_product_owner(db, product_id=id, currend_user_id=current_user.id)
 
     product_in = validate_product_input(  # type: ignore
         db, product_in, category=product.category, current_user=current_user
     )
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    validate_not_during_rollover(db)
 
     # if hasattr(product_in, 'name') and product_in.name:
     #     raise HTTPException(
@@ -332,17 +324,6 @@ def update_product(
     return product
 
 
-# @router.get("/{id}", response_model=schemas.Product)
-# def read_product(*, db: Session = Depends(deps.get_db), id: int,) -> Any:
-#     """
-#     Get product by ID.
-#     """
-#     product = crud.product.get(db=db, id=id)
-#     if not product:
-#         raise HTTPException(status_code=404, detail="Product not found")
-#     return product
-
-
 @router.delete("/{id}", response_model=schemas.Product)
 def delete_product(
     *,
@@ -353,18 +334,10 @@ def delete_product(
     """
     Delete a product.
     """
-    product = validate_existing_product(
-        db, product_id=id, currend_user_id=current_user.id
-    )
+    product = validate_product_owner(db, product_id=id, currend_user_id=current_user.id)
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    validate_not_during_rollover(db)
 
     # product = crud.product.remove(db=db, id=id)
     # product = crud.product.get(db, id=id)
@@ -393,15 +366,9 @@ def generate_upload_url(
     )
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    site_globals = validate_not_during_rollover(db)
 
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = site_globals.selling_round
 
     object_name = get_object_name(
         sku=product.sku,  # type: ignore
@@ -416,17 +383,13 @@ def generate_upload_url(
         raise HTTPException(
             status_code=400, detail="Action type must be either PUT or POST for uploads"
         )
-    blob = bucket.blob(object_name)
-    url = blob.generate_signed_url(
-        expiration=timedelta(minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES),
-        content_type="application/octet-stream",
-        bucket_bound_hostname=(
-            "https://storage.numerbay.ai"
-            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
-            else None
-        ),
-        method=action,
-        version="v4",
+
+    url = generate_gcs_signed_url(
+        bucket=bucket,
+        object_name=object_name,
+        action=action,
+        expiration_minutes=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES,
+        is_upload=True,
     )
 
     # Create artifact
@@ -484,8 +447,7 @@ def validate_upload(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    globals = crud.globals.get_singleton(db=db)
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     artifact = crud.artifact.get(db, id=artifact_id)
     artifact = validate_existing_artifact(
@@ -553,15 +515,9 @@ async def create_product_artifact(
         )
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    site_globals = validate_not_during_rollover(db)
 
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = site_globals.selling_round  # type: ignore
 
     # Create artifact
     artifact_in = schemas.ArtifactCreate(
@@ -602,15 +558,9 @@ async def update_product_artifact(
     )
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    site_globals = validate_not_during_rollover(db)
 
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = site_globals.selling_round  # type: ignore
 
     artifact = crud.artifact.get(db, id=artifact_id)
     artifact = validate_existing_artifact(
@@ -628,8 +578,7 @@ async def update_product_artifact(
     #                             detail="File could not be uploaded")
 
     # Update artifact
-    artifact_dict = {}
-    artifact_dict["description"] = description
+    artifact_dict = {"description": description}
     if url:
         artifact_dict["url"] = url
     # if file_obj:
@@ -649,9 +598,7 @@ def list_product_artifacts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    product = crud.product.get(db=db, id=product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+    product = validate_existing_product(db, product_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
@@ -675,9 +622,7 @@ def generate_download_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    product = crud.product.get(db=db, id=product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+    product = validate_existing_product(db, product_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
@@ -701,17 +646,12 @@ def generate_download_url(
         raise HTTPException(status_code=400, detail="Artifact not an upload")
 
     action = "GET"
-    blob = bucket.blob(artifact.object_name)
-    url = blob.generate_signed_url(
-        expiration=timedelta(minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES),
-        # content_type='application/octet-stream',
-        bucket_bound_hostname=(
-            "https://storage.numerbay.ai"
-            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
-            else None
-        ),
-        method=action,
-        version="v4",
+    url = generate_gcs_signed_url(
+        bucket=bucket,
+        object_name=artifact.object_name,
+        action=action,
+        expiration_minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES,
+        is_upload=False,
     )
     return url
 
@@ -729,20 +669,12 @@ def delete_product_artifact(
     Delete an artifact.
     """
     # product ownership
-    validate_existing_product(
-        db, product_id=product_id, currend_user_id=current_user.id
-    )
+    validate_product_owner(db, product_id=product_id, currend_user_id=current_user.id)
 
     # not during round rollover
-    globals = crud.globals.get_singleton(db=db)
-    if globals.is_doing_round_rollover:  # type: ignore
-        raise HTTPException(
-            status_code=400,
-            detail="Round rollover in progress, "
-            "please try again after the round submission deadline",
-        )
+    site_globals = validate_not_during_rollover(db)
 
-    selling_round = globals.selling_round  # type: ignore
+    selling_round = site_globals.selling_round
 
     artifact = crud.artifact.get(db, id=artifact_id)
     validate_existing_artifact(

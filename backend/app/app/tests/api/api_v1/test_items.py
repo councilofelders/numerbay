@@ -7,9 +7,7 @@ from app.tests.utils.item import create_random_item
 
 
 @pytest.mark.skip
-def test_create_item(
-    client: TestClient, superuser_token_headers: dict, db: Session
-) -> None:
+def test_create_item(client: TestClient, superuser_token_headers: dict) -> None:
     data = {"title": "Foo", "description": "Fighters"}
     response = client.post(
         f"{settings.API_V1_STR}/items/", headers=superuser_token_headers, json=data,

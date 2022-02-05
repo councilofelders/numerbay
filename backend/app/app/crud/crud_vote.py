@@ -23,7 +23,7 @@ class CRUDVote(CRUDBase[Vote, VoteCreate, VoteUpdate]):
         if voter_id is not None:
             query_filters.append(Vote.voter_id == voter_id)
 
-        query_filter = functools.reduce(lambda a, b: and_(a, b), query_filters)
+        query_filter = functools.reduce(and_, query_filters)
 
         return db.query(self.model).filter(query_filter).offset(skip).limit(limit).all()
 
