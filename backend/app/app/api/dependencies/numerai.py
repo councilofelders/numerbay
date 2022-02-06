@@ -363,16 +363,15 @@ def set_target_stake(
                 }
             """
 
-    arguments = {"username": model_name}
     api = NumerAPI(public_id=public_id, secret_key=secret_key)
-    models = api.raw_query(query, arguments, authorization=True)["data"]["account"][
-        "models"
-    ]
+    numerai_models = api.raw_query(query, {"username": model_name}, authorization=True)[
+        "data"
+    ]["account"]["models"]
     stake_amount = None
     pending_delta_amount = None
     matched_model = None
 
-    for model in models:
+    for model in numerai_models:
         if model["name"] == model_name and model["tournament"] == tournament:
             matched_model = model
             stake_dict = model["v2Stake"]

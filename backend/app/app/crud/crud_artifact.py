@@ -19,8 +19,7 @@ class CRUDArtifact(CRUDBase[Artifact, ArtifactCreate, ArtifactUpdate]):
                 .filter(Artifact.round_tournament == round_tournament)
                 .all()
             )
-        else:
-            return db.query(self.model).filter(Artifact.product_id == product.id).all()
+        return db.query(self.model).filter(Artifact.product_id == product.id).all()
 
 
 artifact = CRUDArtifact(Artifact)

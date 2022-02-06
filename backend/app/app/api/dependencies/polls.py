@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import HTTPException
 from jose import jwt
@@ -9,6 +9,34 @@ from sqlalchemy.orm import Session
 from app import crud, models
 from app.api.dependencies import numerai
 from app.core.config import settings
+
+
+def validate_active_52_weeks(user_models_snapshots: List) -> None:
+    is_valid = False
+    for model_snapshot in user_models_snapshots:
+        if model_snapshot.return_52_weeks is not None:
+            is_valid = True
+            break
+    if not is_valid:
+        raise HTTPException(
+            status_code=400,
+            detail="You are not eligible for this poll: "
+            "need to have at least one active model for more than 52 weeks",
+        )
+
+
+def validate_active_13_weeks(user_models_snapshots: List) -> None:
+    is_valid = False
+    for model_snapshot in user_models_snapshots:
+        if model_snapshot.return_13_weeks is not None:
+            is_valid = True
+            break
+    if not is_valid:
+        raise HTTPException(
+            status_code=400,
+            detail="You are not eligible for this poll: "
+            "need to have at least one active model for more than 13 weeks",
+        )
 
 
 def generate_voter_id(poll: models.Poll, user: models.User) -> str:
@@ -33,9 +61,7 @@ def get_voter_weight(
     if poll.weight_mode == "equal":
         weight = Decimal("1")
     else:
-        if poll.weight_mode == "log_numerai_balance":
-            raise HTTPException(status_code=400, detail="Weight mode not yet supported")
-        elif poll.weight_mode == "log_balance":
+        if poll.weight_mode in ["log_numerai_balance", "log_balance"]:
             raise HTTPException(status_code=400, detail="Weight mode not yet supported")
 
         stake_basis_round = (
@@ -73,30 +99,10 @@ def get_voter_weight(
 
         # min rounds requirement
         if poll.min_rounds == 13:
-            is_valid = False
-            for model_snapshot in user_models_snapshots:
-                if model_snapshot.return_13_weeks is not None:
-                    is_valid = True
-                    break
-            if not is_valid:
-                raise HTTPException(
-                    status_code=400,
-                    detail="You are not eligible for this poll: "
-                    "need to have at least one active model for more than 13 weeks",
-                )
+            validate_active_13_weeks(user_models_snapshots)
 
         if poll.min_rounds == 52:
-            is_valid = False
-            for model_snapshot in user_models_snapshots:
-                if model_snapshot.return_52_weeks is not None:
-                    is_valid = True
-                    break
-            if not is_valid:
-                raise HTTPException(
-                    status_code=400,
-                    detail="You are not eligible for this poll: "
-                    "need to have at least one active model for more than 52 weeks",
-                )
+            validate_active_52_weeks(user_models_snapshots)
 
         if poll.is_stake_predetermined or override:
             # clip stake

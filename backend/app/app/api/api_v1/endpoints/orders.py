@@ -10,7 +10,10 @@ from app.api.dependencies import numerai
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import validate_existing_order
-from app.api.dependencies.products import validate_existing_product
+from app.api.dependencies.products import (
+    validate_existing_product,
+    validate_existing_product_option,
+)
 from app.api.dependencies.site_globals import validate_not_during_rollover
 from app.core.celery_app import celery_app
 from app.core.config import settings
@@ -68,10 +71,7 @@ def create_order(
 
     # Product exists
     product = validate_existing_product(db, id)
-
-    product_option = crud.product_option.get(db=db, id=option_id)
-    if not product_option:
-        raise HTTPException(status_code=404, detail="Product option not found")
+    product_option = validate_existing_product_option(db, option_id)
 
     if product_option.product_id != product.id:
         raise HTTPException(status_code=400, detail="Invalid product option")

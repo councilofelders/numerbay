@@ -2,7 +2,7 @@ import functools
 import io
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
@@ -12,7 +12,6 @@ from celery import group
 from celery.schedules import crontab
 from fastapi.encoders import jsonable_encoder
 from google.api_core.exceptions import NotFound
-from numerapi import NumerAPI
 from raven import Client
 from sqlalchemy import and_, func, select
 
@@ -20,6 +19,7 @@ from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
+from app.api.dependencies.order_artifacts import generate_gcs_signed_url
 from app.api.dependencies.orders import update_payment
 from app.core.celery_app import celery_app
 from app.core.config import settings
@@ -404,144 +404,57 @@ def upload_numerai_artifact_task(
     finally:
         db.close()
 
-    blob = deps.get_gcs_bucket().blob(object_name)
-
     # Has csv artifact and uploaded
-    url = blob.generate_signed_url(
-        expiration=timedelta(minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES),
-        # content_type='application/octet-stream',
-        bucket_bound_hostname=(
-            "https://storage.numerbay.ai"
-            if settings.GCP_STORAGE_BUCKET == "storage.numerbay.ai"
-            else None
-        ),
-        method="GET",
-        version="v4",
-    )
-
-    api = NumerAPI(
-        public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
+    url = generate_gcs_signed_url(
+        bucket=deps.get_gcs_bucket(),
+        object_name=object_name,
+        action="GET",
+        expiration_minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES,
+        is_upload=False,
     )
 
     # Upload URL
-    if tournament == 8:
-        auth_query = """
-                            query($filename: String!
-                                  $tournament: Int!
-                                  $modelId: String) {
-                                submission_upload_auth(filename: $filename
-                                                       tournament: $tournament
-                                                       modelId: $modelId) {
-                                    filename
-                                    url
-                                }
-                            }
-                            """
-
-        arguments = {
-            "filename": object_name,
-            "tournament": tournament,
-            "modelId": model_id,
-        }
-
-        submission_auth = api.raw_query(auth_query, arguments, authorization=True)[
-            "data"
-        ]["submission_upload_auth"]
-
-        # Create submission
-        create_query = """
-                                    mutation($filename: String!
-                                             $tournament: Int!
-                                             $version: Int!
-                                             $modelId: String
-                                             $triggerId: String) {
-                                        create_submission(filename: $filename
-                                                          tournament: $tournament
-                                                          version: $version
-                                                          modelId: $modelId
-                                                          triggerId: $triggerId
-                                                          source: "numerapi") {
-                                            id
-                                        }
-                                    }
-                                    """
-
-        arguments = {
-            "filename": submission_auth["filename"],
-            "tournament": tournament,
-            "version": version,
-            "modelId": model_id,
-            "triggerId": None,
-        }  # os.getenv('TRIGGER_ID', None)}
-    else:
-        auth_query = """
-                    query($filename: String!
-                          $modelId: String) {
-                      submissionUploadSignalsAuth(filename: $filename
-                                                modelId: $modelId) {
-                            filename
-                            url
-                        }
-                    }
-                    """
-
-        arguments = {"filename": object_name, "modelId": model_id}
-
-        submission_auth = api.raw_query(auth_query, arguments, authorization=True)[
-            "data"
-        ]["submissionUploadSignalsAuth"]
-
-        # Create submission
-        create_query = """
-                    mutation($filename: String!
-                             $modelId: String
-                             $triggerId: String) {
-                        createSignalsSubmission(filename: $filename
-                                                modelId: $modelId
-                                                triggerId: $triggerId
-                                                source: "numerapi") {
-                            id
-                            firstEffectiveDate
-                        }
-                    }
-                    """
-
-        arguments = {
-            "filename": submission_auth["filename"],
-            "modelId": model_id,
-            "triggerId": None,
-        }
-
-    # print(f"Upload url: {submission_auth['url']}")
+    submission_auth = numerai.generate_numerai_submission_url(
+        object_name=object_name,
+        model_id=model_id,
+        tournament=tournament,
+        numerai_api_key_public_id=numerai_api_key_public_id,
+        numerai_api_key_secret=numerai_api_key_secret,
+    )
 
     # Bridge Upload file
     file_stream = requests.get(url, stream=True)
-    # response = requests.put(submission_auth['url'], data=file_stream.iter_content(), stream=True)
     requests.put(
         submission_auth["url"], data=io.BytesIO(file_stream.content), stream=True
     )
 
-    try:
-        create = api.raw_query(create_query, arguments, authorization=True)
-    except ValueError:  # try again with new data version
-        print("Retrying upload with version 2")
-        arguments["version"] = 2
+    # Validate Upload
+    submission_id = numerai.validate_numerai_submission(
+        object_name=object_name,
+        model_id=model_id,
+        tournament=tournament,
+        numerai_api_key_public_id=numerai_api_key_public_id,
+        numerai_api_key_secret=numerai_api_key_secret,
+    )
+
+    if submission_id:
+        # submision successful, mark order submit_state to completed
+        db = SessionLocal()
         try:
-            create = api.raw_query(create_query, arguments, authorization=True)
-        except Exception as e:  # other errors
-            print("Retry failed, marking submission as failed")
-            # mark failed submission
-            db = SessionLocal()
-            try:
-                order = crud.order.get(db, id=order_id)
-                crud.order.update(
-                    db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
-                )
-            finally:
-                db.close()
-                raise e
-    except Exception as e:  # other errors
-        print("Submission failed")
+            order = crud.order.get(db, id=order_id)
+            crud.order.update(
+                db,
+                db_obj=order,  # type: ignore
+                obj_in={
+                    "submit_state": "completed",
+                    "last_submit_round": crud.globals.get_singleton(  # type: ignore
+                        db=db
+                    ).selling_round,
+                },
+            )
+        finally:
+            db.close()
+    else:
         # mark failed submission
         db = SessionLocal()
         try:
@@ -551,35 +464,7 @@ def upload_numerai_artifact_task(
             )
         finally:
             db.close()
-            raise e
-    if create:
-        submission_id = (
-            create["data"]["create_submission"]["id"]
-            if tournament == 8
-            else create["data"]["createSignalsSubmission"]["id"]
-        )
-        print(f"submission_id: {submission_id}")
-        if submission_id:
-            # submision successful, mark order submit_state to completed
-            db = SessionLocal()
-            try:
-                order = crud.order.get(db, id=order_id)
-                crud.order.update(
-                    db,
-                    db_obj=order,  # type: ignore
-                    obj_in={
-                        "submit_state": "completed",
-                        "last_submit_round": crud.globals.get_singleton(  # type: ignore
-                            db=db
-                        ).selling_round,
-                    },
-                )
-            finally:
-                db.close()
-        return submission_id
-    else:
-        print("Submission failed")
-    return None
+    return submission_id
 
 
 @celery_app.task  # (acks_late=True)

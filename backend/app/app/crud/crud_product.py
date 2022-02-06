@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import and_, desc, func, nulls_last  # type: ignore
@@ -13,63 +13,227 @@ from app.models.product import Product
 from app.models.product_option import ProductOption
 from app.schemas.product import ProductCreate, ProductUpdate
 
+_SORT_OPTION_LOOKUP = {
+    "latest": desc(Product.id),
+    # "price-up": Product.price,
+    # "price-down": desc(Product.price),
+    "name-up": Product.name,
+    "name-down": desc(Product.name),
+    "rank-best": Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer),
+    "rank-worst": desc(Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)),
+    "return3m-up": Model.latest_returns.cast(JSON)["threeMonths"]
+    .as_string()
+    .cast(Float),
+    "return3m-down": desc(
+        Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
+    ),
+    "mmc-up": Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
+    "mmc-down": desc(Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)),
+    "corrmmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+    + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
+    "corrmmc-down": desc(
+        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+        + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
+    ),
+    "corr2mmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+    + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
+    "corr2mmc-down": desc(
+        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+        + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
+    ),
+    "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
+    "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
+    "tc-up": Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "tc-down": desc(Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)),
+    "stake-up": Model.nmr_staked,
+    "stake-down": desc(Model.nmr_staked),
+}
+
 
 def parse_sort_option(sort: Optional[str]) -> Any:
-    if sort == "latest":
-        return desc(Product.id)
-    # elif sort == 'price-up':
-    #     return Product.price
-    # elif sort == 'price-down':
-    #     return desc(Product.price)
-    elif sort == "name-up":
-        return Product.name
-    elif sort == "name-down":
-        return desc(Product.name)
-    elif sort == "rank-best":
-        return Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
-    elif sort == "rank-worst":
-        return desc(Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer))
-    elif sort == "return3m-up":
-        return Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
-    elif sort == "return3m-down":
-        return desc(
-            Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
-        )
-    elif sort == "mmc-up":
-        return Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    elif sort == "mmc-down":
-        return desc(Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float))
-    elif sort == "corrmmc-up":
-        return Model.latest_reps.cast(JSON)["corr"].as_string().cast(
-            Float
-        ) + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    elif sort == "corrmmc-down":
-        return desc(
-            Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-            + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-        )
-    elif sort == "corr2mmc-up":
-        return Model.latest_reps.cast(JSON)["corr"].as_string().cast(
-            Float
-        ) + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    elif sort == "corr2mmc-down":
-        return desc(
-            Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-            + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-        )
-    elif sort == "fnc-up":
-        return Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)
-    elif sort == "fnc-down":
-        return desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float))
-    elif sort == "tc-up":
-        return Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    elif sort == "tc-down":
-        return desc(Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float))
-    elif sort == "stake-up":
-        return Model.nmr_staked
-    elif sort == "stake-down":
-        return desc(Model.nmr_staked)
-    return Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+    default_option = Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+    if sort:
+        return _SORT_OPTION_LOOKUP.get(sort, default_option)
+    return default_option
+
+
+def parse_platform_filter(filter_item: Dict) -> Any:
+    with_on_platform = "on-platform" in filter_item["in"]
+    with_off_platform = "off-platform" in filter_item["in"]
+    platform_list = []
+    if with_on_platform:
+        platform_list.append(True)
+    if with_off_platform:
+        platform_list.append(False)
+    if len(platform_list) == 0:
+        platform_list = [True, False]
+    return Product.options.any(ProductOption.is_on_platform.in_(platform_list))
+
+
+def parse_status_filter(filter_item: Dict) -> Any:
+    with_active = "active" in filter_item["in"]
+    with_inactive = "inactive" in filter_item["in"]
+    status_list = []
+    if with_active:
+        status_list.append(True)
+    if with_inactive:
+        status_list.append(False)
+    if len(status_list) == 0:
+        status_list = [True, False]
+    return Product.is_active.in_(status_list)
+
+
+def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
+    try:
+        if len(filter_item["in"]) > 0:
+            rank_range = filter_item["in"][0]
+            if isinstance(rank_range, str):
+                rank_range = rank_range.split(",")
+            rank_from, rank_to = int(rank_range[0]), int(rank_range[1])
+            return and_(
+                Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+                >= rank_from,
+                Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+                <= rank_to,
+            )
+    except Exception as e:
+        print(e)
+    return None
+
+
+def parse_stake_filter(filter_item: Dict, stake_step: float) -> Optional[Any]:
+    try:
+        if len(filter_item["in"]) > 0:
+            stake_range = filter_item["in"][0]
+            if isinstance(stake_range, str):
+                stake_range = stake_range.split(",")
+            stake_from, stake_to = (
+                float(stake_range[0]),
+                float(stake_range[1]),
+            )
+            return and_(
+                Model.nmr_staked >= stake_from - stake_step,
+                Model.nmr_staked <= stake_to + stake_step,
+            )
+    except Exception as e:
+        print(e)
+    return None
+
+
+def parse_return3m_filter(
+    filter_item: Dict, return3m_step: Union[int, float]
+) -> Optional[Any]:
+    try:
+        if len(filter_item["in"]) > 0:
+            return3m_range = filter_item["in"][0]
+            if isinstance(return3m_range, str):
+                return3m_range = return3m_range.split(",")
+            return3m_from, return3m_to = (
+                float(return3m_range[0]),
+                float(return3m_range[1]),
+            )
+            return and_(
+                Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
+                >= return3m_from - return3m_step,
+                Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
+                <= return3m_to + return3m_step,
+            )
+
+    except Exception as e:
+        print(e)
+    return None
+
+
+def parse_filters(
+    filters: Optional[Dict] = None,
+    query_filters: Optional[List] = None,
+    stake_step: Union[int, float] = 1,
+    return3m_step: float = 0.01,
+) -> List:
+    if not isinstance(query_filters, list):
+        query_filters = []
+
+    if not isinstance(filters, dict):
+        return query_filters
+
+    for filter_key, filter_item in filters.items():
+        if filter_key == "id":
+            id_list = [int(i) for i in filter_item["in"]]
+            query_filters.append(Product.id.in_(id_list))
+        if filter_key == "platform":
+            query_filters.append(parse_platform_filter(filter_item))
+        if filter_key == "status":
+            query_filters.append(parse_status_filter(filter_item))
+        if filter_key == "user":
+            user_id_list = [int(i) for i in filter_item["in"]]
+            query_filters.append(Product.owner_id.in_(user_id_list))
+        if filter_key == "rank":
+            query_filters.append(parse_rank_filter(filter_item))
+        if filter_key == "stake":
+            query_filters.append(parse_stake_filter(filter_item, stake_step))
+        if filter_key == "return3m":
+            query_filters.append(parse_return3m_filter(filter_item, return3m_step))
+
+    return query_filters
+
+
+def generate_aggregations(
+    agg_stats: Any, return3m_step: Union[int, float], stake_step: float
+) -> List:
+    aggregations = [
+        {
+            "attribute_code": "status",
+            "count": None,
+            "label": "Status",
+            "options": [
+                {"label": "active", "value": True},
+                {"label": "inactive", "value": False},
+            ],
+        },
+        {
+            "attribute_code": "platform",
+            "count": None,
+            "label": "Platform",
+            "options": [
+                {"label": "on-platform", "value": True},
+                {"label": "off-platform", "value": False},
+            ],
+        },
+        {
+            "attribute_code": "rank",
+            "count": None,
+            "label": "Rank",
+            "options": [
+                {"label": "from", "value": agg_stats.min_rank},
+                {"label": "to", "value": agg_stats.max_rank},
+                {"label": "step", "value": 1},
+                {"label": "decimals", "value": 0},
+            ],
+        },
+        {
+            "attribute_code": "stake",
+            "count": None,
+            "label": "NMR Stake",
+            "options": [
+                {"label": "from", "value": agg_stats.min_stake},
+                {"label": "to", "value": agg_stats.max_stake},
+                {"label": "step", "value": stake_step},
+                {"label": "decimals", "value": 2},
+            ],
+        },
+        {
+            "attribute_code": "return3m",
+            "count": None,
+            "label": "3M Return",
+            "options": [
+                {"label": "from", "value": agg_stats.min_return3m},
+                {"label": "to", "value": agg_stats.max_return3m},
+                {"label": "step", "value": return3m_step},
+                {"label": "decimals", "value": 2},
+            ],
+        },
+    ]
+    return aggregations
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
@@ -174,103 +338,12 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         stake_step = 1
         return3m_step = 0.01
 
-        if isinstance(filters, dict):
-            for filter_key, filter_item in filters.items():
-                if filter_key == "id":
-                    id_list = [int(i) for i in filter_item["in"]]
-                    query_filters.append(Product.id.in_(id_list))
-                if filter_key == "platform":
-                    with_on_platform = "on-platform" in filter_item["in"]
-                    with_off_platform = "off-platform" in filter_item["in"]
-                    platform_list = []
-                    if with_on_platform:
-                        platform_list.append(True)
-                    if with_off_platform:
-                        platform_list.append(False)
-                    if len(platform_list) == 0:
-                        platform_list = [True, False]
-                    query_filters.append(
-                        Product.options.any(
-                            ProductOption.is_on_platform.in_(platform_list)
-                        )
-                    )
-                if filter_key == "status":
-                    with_active = "active" in filter_item["in"]
-                    with_inactive = "inactive" in filter_item["in"]
-                    status_list = []
-                    if with_active:
-                        status_list.append(True)
-                    if with_inactive:
-                        status_list.append(False)
-                    if len(status_list) == 0:
-                        status_list = [True, False]
-                    query_filters.append(Product.is_active.in_(status_list))
-                if filter_key == "user":
-                    user_id_list = [int(i) for i in filter_item["in"]]
-                    query_filters.append(Product.owner_id.in_(user_id_list))
-                if filter_key == "rank":
-                    try:
-                        if len(filter_item["in"]) > 0:
-                            rank_range = filter_item["in"][0]
-                            if isinstance(rank_range, str):
-                                rank_range = rank_range.split(",")
-                            rank_from, rank_to = int(rank_range[0]), int(rank_range[1])
-                            query_filters.append(
-                                and_(
-                                    Model.latest_ranks.cast(JSON)["corr"]
-                                    .as_string()
-                                    .cast(Integer)
-                                    >= rank_from,
-                                    Model.latest_ranks.cast(JSON)["corr"]
-                                    .as_string()
-                                    .cast(Integer)
-                                    <= rank_to,
-                                )
-                            )
-                    except Exception as e:
-                        print(e)
-                if filter_key == "stake":
-                    try:
-                        if len(filter_item["in"]) > 0:
-                            stake_range = filter_item["in"][0]
-                            if isinstance(stake_range, str):
-                                stake_range = stake_range.split(",")
-                            stake_from, stake_to = (
-                                float(stake_range[0]),
-                                float(stake_range[1]),
-                            )
-                            query_filters.append(
-                                and_(
-                                    Model.nmr_staked >= stake_from - stake_step,
-                                    Model.nmr_staked <= stake_to + stake_step,
-                                )
-                            )
-                    except Exception as e:
-                        print(e)
-                if filter_key == "return3m":
-                    try:
-                        if len(filter_item["in"]) > 0:
-                            return3m_range = filter_item["in"][0]
-                            if isinstance(return3m_range, str):
-                                return3m_range = return3m_range.split(",")
-                            return3m_from, return3m_to = (
-                                float(return3m_range[0]),
-                                float(return3m_range[1]),
-                            )
-                            query_filters.append(
-                                and_(
-                                    Model.latest_returns.cast(JSON)["threeMonths"]
-                                    .as_string()
-                                    .cast(Float)
-                                    >= return3m_from - return3m_step,
-                                    Model.latest_returns.cast(JSON)["threeMonths"]
-                                    .as_string()
-                                    .cast(Float)
-                                    <= return3m_to + return3m_step,
-                                )
-                            )
-                    except Exception as e:
-                        print(e)
+        query_filters = parse_filters(
+            filters=filters,
+            query_filters=query_filters,
+            stake_step=stake_step,
+            return3m_step=return3m_step,
+        )
 
         query = db.query(self.model).join(self.model.model, isouter=True)
         if len(query_filters) > 0:
@@ -313,59 +386,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             agg_query = agg_query.filter(agg_filter)
         agg_stats = agg_query.one()
 
-        aggregations = [
-            {
-                "attribute_code": "status",
-                "count": None,
-                "label": "Status",
-                "options": [
-                    {"label": "active", "value": True},
-                    {"label": "inactive", "value": False},
-                ],
-            },
-            {
-                "attribute_code": "platform",
-                "count": None,
-                "label": "Platform",
-                "options": [
-                    {"label": "on-platform", "value": True},
-                    {"label": "off-platform", "value": False},
-                ],
-            },
-            {
-                "attribute_code": "rank",
-                "count": None,
-                "label": "Rank",
-                "options": [
-                    {"label": "from", "value": agg_stats.min_rank},
-                    {"label": "to", "value": agg_stats.max_rank},
-                    {"label": "step", "value": 1},
-                    {"label": "decimals", "value": 0},
-                ],
-            },
-            {
-                "attribute_code": "stake",
-                "count": None,
-                "label": "NMR Stake",
-                "options": [
-                    {"label": "from", "value": agg_stats.min_stake},
-                    {"label": "to", "value": agg_stats.max_stake},
-                    {"label": "step", "value": stake_step},
-                    {"label": "decimals", "value": 2},
-                ],
-            },
-            {
-                "attribute_code": "return3m",
-                "count": None,
-                "label": "3M Return",
-                "options": [
-                    {"label": "from", "value": agg_stats.min_return3m},
-                    {"label": "to", "value": agg_stats.max_return3m},
-                    {"label": "step", "value": return3m_step},
-                    {"label": "decimals", "value": 2},
-                ],
-            },
-        ]
+        aggregations = generate_aggregations(agg_stats, return3m_step, stake_step)
         return {"total": count, "data": data, "aggregations": aggregations}
 
 

@@ -1,7 +1,7 @@
 import random
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -20,6 +20,16 @@ def generate_promo_code(num_chars: int) -> str:
     return code
 
 
+def return_or_raise(
+    value_to_return: Any, exception_msg: str, raise_exceptions: bool = True
+) -> Any:
+    if raise_exceptions:
+        raise HTTPException(
+            status_code=400, detail=exception_msg,
+        )
+    return value_to_return
+
+
 def calculate_option_price(
     option: schemas.ProductOption,
     coupon: Optional[str] = None,
@@ -31,90 +41,81 @@ def calculate_option_price(
     option.price *= qty
     option.quantity *= qty  # type: ignore
 
-    if coupon:
-        if coupon_obj:
-            # user
-            if not user:
-                option.error = "Not authenticated"
-                if raise_exceptions:
-                    raise HTTPException(
-                        status_code=400, detail="Not authenticated",
-                    )
-                return option
+    if not coupon:
+        return option
 
-            # check expiration
-            # todo coupon expiration
-            if coupon_obj.date_expiration:
-                if coupon_obj.date_expiration <= datetime.utcnow():
-                    option.error = "Coupon expired"
-                    if raise_exceptions:
-                        raise HTTPException(
-                            status_code=400, detail="Coupon expired",
-                        )
-                    return option
+    if coupon_obj:
+        # user
+        if not user:
+            option.error = "Not authenticated"
+            return return_or_raise(
+                option, "Not authenticated", raise_exceptions=raise_exceptions
+            )
 
-            # todo check state, ownership
-            # check ownership
-            if not coupon_obj.is_owned_by_seller and coupon_obj.owner_id != user.id:
-                option.error = "Coupon invalid"
-                if raise_exceptions:
-                    raise HTTPException(
-                        status_code=400, detail="Coupon invalid",
-                    )
-                return option
-
-            # check product applicability
-            if (
-                coupon_obj.applicable_product_ids
-                and option.product_id not in coupon_obj.applicable_product_ids
-            ):
-                option.error = "Coupon invalid"
-                if raise_exceptions:
-                    raise HTTPException(
-                        status_code=400, detail="Coupon invalid",
-                    )
-                return option
-
-            # check remaining
-            if coupon_obj.quantity_total is not None:
-                quantity_remaining = crud.coupon.calculate_quantity_remaining(
-                    db_obj=coupon_obj
+        # check expiration
+        # todo coupon expiration
+        if coupon_obj.date_expiration:
+            if coupon_obj.date_expiration <= datetime.utcnow():
+                option.error = "Coupon expired"
+                return return_or_raise(
+                    option, "Coupon expired", raise_exceptions=raise_exceptions
                 )
-                if quantity_remaining <= 0:  # type: ignore
-                    option.error = "Coupon used up"
-                    if raise_exceptions:
-                        raise HTTPException(
-                            status_code=400, detail="Coupon used up",
-                        )
-                    return option
 
-            # check min spend
-            if coupon_obj.min_spend:
-                if option.price < coupon_obj.min_spend:
-                    option.error = f"Requires min spend of {coupon_obj.min_spend} NMR"
-                    if raise_exceptions:
-                        raise HTTPException(
-                            status_code=400,
-                            detail=f"Coupon requires min spend of {coupon_obj.min_spend} NMR",
-                        )
-                    return option
+        # todo check state, ownership
+        # check ownership
+        if not coupon_obj.is_owned_by_seller and coupon_obj.owner_id != user.id:
+            option.error = "Coupon invalid"
+            return return_or_raise(
+                option, "Coupon invalid", raise_exceptions=raise_exceptions
+            )
 
-            if coupon_obj.discount_mode == "percent":
-                discount = option.price * coupon_obj.discount_percent / 100  # type: ignore
+        # check product applicability
+        if (
+            coupon_obj.applicable_product_ids
+            and option.product_id not in coupon_obj.applicable_product_ids
+        ):
+            option.error = "Coupon invalid"
+            return return_or_raise(
+                option, "Coupon invalid", raise_exceptions=raise_exceptions
+            )
 
-                # clip max discount
-                if coupon_obj.max_discount:
-                    discount = min(discount, Decimal(coupon_obj.max_discount))
+        # check remaining
+        if coupon_obj.quantity_total is not None:
+            quantity_remaining = crud.coupon.calculate_quantity_remaining(
+                db_obj=coupon_obj
+            )
+            if quantity_remaining <= 0:  # type: ignore
+                option.error = "Coupon used up"
+                return return_or_raise(
+                    option, "Coupon used up", raise_exceptions=raise_exceptions
+                )
 
-                if discount > 0:
-                    option.special_price = option.price - discount
-                    option.applied_coupon = coupon_obj.code
-        else:
-            # coupon not found
-            option.error = "Coupon not found"
-            if raise_exceptions:
-                raise HTTPException(status_code=400, detail="Coupon not found")
-            return option
+        # check min spend
+        if coupon_obj.min_spend:
+            if option.price < coupon_obj.min_spend:
+                option.error = f"Requires min spend of {coupon_obj.min_spend} NMR"
+                return return_or_raise(
+                    option,
+                    f"Coupon requires min spend of {coupon_obj.min_spend} NMR",
+                    raise_exceptions=raise_exceptions,
+                )
+
+        if coupon_obj.discount_mode == "percent":
+            discount = option.price * coupon_obj.discount_percent / 100  # type: ignore
+
+            # clip max discount
+            if coupon_obj.max_discount:
+                discount = min(discount, Decimal(coupon_obj.max_discount))
+
+            if discount > 0:
+                option.special_price = option.price - discount
+                option.applied_coupon = coupon_obj.code
+    else:
+        # coupon not found
+        option.error = "Coupon not found"
+        return return_or_raise(
+            option, "Coupon not found", raise_exceptions=raise_exceptions
+        )
     return option
 
 
