@@ -153,11 +153,10 @@ def send_new_confirmed_sale_email(
     date_order: datetime,
     product: str,
     buyer: str,
-    from_address: str,
-    to_address: str,
     transaction_hash: str,
     amount: float,
     currency: str,
+    use_encryption: bool,
 ) -> None:
     subject = f"{settings.PROJECT_NAME} - New confirmed sale for {username}"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_confirmed_sale.html") as f:
@@ -176,12 +175,11 @@ def send_new_confirmed_sale_email(
                 "date_order": date_order,
                 "product": product,
                 "buyer": buyer,
-                "from_address": from_address,
-                "to_address": to_address,
                 "transaction_hash": transaction_hash,
                 "amount": amount,
                 "currency": currency,
                 "link": link,
+                "use_encryption": use_encryption,
             },
         ),
     )

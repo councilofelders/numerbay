@@ -181,11 +181,10 @@ def send_order_confirmation_emails(order_obj: models.Order) -> None:
                 date_order=order_obj.date_order,
                 product=product.sku,
                 buyer=order_obj.buyer.username,
-                from_address=order_obj.from_address,  # type: ignore
-                to_address=order_obj.to_address,  # type: ignore
                 transaction_hash=order_obj.transaction_hash,  # type: ignore
                 amount=order_obj.price,
                 currency=order_obj.currency,  # type: ignore
+                use_encryption=(order_obj.buyer_public_key is not None),  # type: ignore
             )
 
         # Send buyer email

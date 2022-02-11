@@ -14,10 +14,12 @@
         <mj-text font-size="16px" color="#555">Time of Order: {{ date_order }}</mj-text>
         <mj-text font-size="16px" color="#555">Product: <b>{{ product }}</b></mj-text>
         <mj-text font-size="16px" color="#555">Buyer: <b>{{ buyer }}</b></mj-text>
-        <mj-text font-size="16px" color="#555">Buyer Address: {{ from_address }}</mj-text>
-        <mj-text font-size="16px" color="#555">Seller Address: {{ to_address }}</mj-text>
         <mj-text font-size="16px" color="#555">Transaction Hash: <a href="https://etherscan.io/tx/{{ transaction_hash }}" class="link-nostyle" target="_blank">{{ transaction_hash }}</a></mj-text>
         <mj-text font-size="16px" color="#555">Amount: <b>{{ amount }} {{ currency }}</b></mj-text>
+        <mj-raw>{% if use_encryption %}</mj-raw>
+        <mj-text font-size="16px" color="#555"></mj-text>
+        <mj-text font-size="16px" color="#555"><b>This order uses client-side encryption, please remember to upload artifacts for it.</b></mj-text>
+        <mj-raw>{% endif %}</mj-raw>
         <mj-button padding="50px 0px" href="{{ link }}">Go to My Sales</mj-button>
         <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the <a href="https://community.numer.ai/channel/numerbay" class="link-nostyle" target="_blank">#numerbay</a> channel on Numerai RocketChat.</mj-text>
         <mj-divider border-color="#555" border-width="2px" />
