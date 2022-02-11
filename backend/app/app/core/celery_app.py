@@ -8,6 +8,7 @@ celery_app.conf.task_routes = {
     "app.worker.send_email_task": "main-queue",
     "app.worker.send_new_artifact_emails_task": "main-queue",
     "app.worker.send_new_order_artifact_emails_task": "main-queue",
+    "app.worker.send_order_artifact_upload_reminder_emails_task": "main-queue",
     "app.worker.update_model_subtask": "beat-queue",
     # "app.worker.commit_models_subtask": "beat-queue",
     "app.worker.batch_update_models_task": "beat-queue",

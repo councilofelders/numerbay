@@ -30,6 +30,7 @@ from app.utils import (
     send_failed_artifact_seller_email,
     send_new_artifact_email,
     send_new_artifact_seller_email,
+    send_order_artifact_upload_reminder_email,
 )
 
 client_sentry = Client(settings.SENTRY_DSN)
@@ -116,6 +117,53 @@ def send_new_order_artifact_emails_task(artifact_id: str) -> None:
                 )
         finally:
             db.close()
+    return None
+
+
+@celery_app.task  # (acks_late=True)
+def send_order_artifact_upload_reminder_emails_task() -> None:
+    if not settings.EMAILS_ENABLED:
+        return None
+    db = SessionLocal()
+    try:
+        selling_round = crud.globals.get_singleton(  # type: ignore
+            db=db
+        ).selling_round
+
+        orders = crud.order.get_active_orders(db, round_order=selling_round)
+        orders_to_remind = []
+        for order in orders:
+            requires_numerai_submission = order.submit_model_id is not None
+            requires_file = order.mode == "file"
+            has_numerai_submission = False
+            has_file = False
+            if not isinstance(order.artifacts, list):
+                continue
+            for artifact in order.artifacts:  # type: ignore
+                if artifact.state == "active":
+                    if artifact.is_numerai_direct:
+                        has_numerai_submission = True
+                    else:
+                        has_file = True
+
+            if (requires_numerai_submission and not has_numerai_submission) or (
+                requires_file and not has_file
+            ):
+                orders_to_remind.append(order)
+
+        for order in orders_to_remind:
+            # Send new artifact email notification to seller
+            if order.product.owner.email:
+                send_order_artifact_upload_reminder_email(
+                    email_to=order.product.owner.email,
+                    username=order.product.owner.username,
+                    order_id=order.round_order,  # type: ignore
+                    round_order=order.round_order,  # type: ignore
+                    product=order.product.sku,
+                    buyer=order.buyer.username,  # type: ignore
+                )
+    finally:
+        db.close()
     return None
 
 
@@ -908,6 +956,14 @@ def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
         "batch_prune_storage": {
             "task": "app.worker.batch_prune_storage",
             "schedule": crontab(day_of_week="wed", hour=0, minute=0),
+        },
+        "batch_send_order_artifact_upload_reminder_emails_1": {
+            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+            "schedule": crontab(day_of_week="sun", hour=18, minute=00),
+        },
+        "batch_send_order_artifact_upload_reminder_emails_2": {
+            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+            "schedule": crontab(day_of_week="mon", hour=12, minute=00),
         },
     }
     sender.add_periodic_task(

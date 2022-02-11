@@ -155,3 +155,15 @@ def add_job_prune_storage(
     celery_app.send_task("app.worker.batch_prune_storage")
 
     return {"msg": "success!"}
+
+
+@router.post("/artifact-reminder")
+def add_job_artifact_reminder(
+    *,
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
+) -> Any:
+    celery_app.send_task("app.worker.send_order_artifact_upload_reminder_emails_task")
+
+    return {"msg": "success!"}
