@@ -1,3 +1,5 @@
+""" Database model for item (placeholder, not used) """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, ForeignKey, Integer, String

@@ -1,3 +1,5 @@
+""" Data schema for user """
+
 from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr

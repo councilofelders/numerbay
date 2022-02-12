@@ -1,3 +1,5 @@
+""" Dependencies for multiple endpoints """
+
 from fastapi import HTTPException
 
 

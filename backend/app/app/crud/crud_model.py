@@ -1,3 +1,5 @@
+""" CRUD for Numerai model """
+
 import asyncio
 import sys
 from datetime import datetime

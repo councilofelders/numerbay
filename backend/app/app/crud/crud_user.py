@@ -1,3 +1,5 @@
+""" CRUD for user """
+
 import functools
 from typing import Any, Dict, Optional, Union
 

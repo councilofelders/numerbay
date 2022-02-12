@@ -1,3 +1,5 @@
+""" Data schema for product option """
+
 from decimal import Decimal
 from typing import Dict, Optional
 

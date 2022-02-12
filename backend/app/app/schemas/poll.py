@@ -1,3 +1,5 @@
+""" Data schema for poll """
+
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Dict, List, Optional

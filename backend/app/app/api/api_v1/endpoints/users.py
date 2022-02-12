@@ -1,3 +1,5 @@
+""" Users endpoints """
+
 import secrets
 from typing import Any
 

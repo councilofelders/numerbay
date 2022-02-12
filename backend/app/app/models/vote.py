@@ -1,3 +1,5 @@
+""" Database model for vote """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (

@@ -1,3 +1,5 @@
+""" App security functions """
+
 from datetime import datetime, timedelta
 from typing import Any, Union
 

@@ -1,3 +1,5 @@
+""" Polls endpoints """
+
 import re
 import secrets
 from datetime import datetime

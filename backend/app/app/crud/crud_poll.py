@@ -1,3 +1,5 @@
+""" CRUD for poll """
+
 import functools
 from typing import Any, Dict, Optional
 

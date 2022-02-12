@@ -1,3 +1,5 @@
+""" Dependencies for order artifacts endpoints """
+
 import uuid
 from datetime import timedelta
 from pathlib import Path

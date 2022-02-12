@@ -1,3 +1,5 @@
+""" Database model for stake snapshot """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (

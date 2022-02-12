@@ -1,3 +1,5 @@
+""" Login endpoints """
+
 import secrets
 from datetime import timedelta
 from typing import Any

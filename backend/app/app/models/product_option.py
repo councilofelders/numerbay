@@ -1,3 +1,5 @@
+""" Database model for product option """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, Numeric, String

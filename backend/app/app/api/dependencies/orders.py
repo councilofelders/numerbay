@@ -1,3 +1,5 @@
+""" Dependencies for orders endpoints """
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Optional

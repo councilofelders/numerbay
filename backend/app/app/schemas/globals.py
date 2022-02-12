@@ -1,3 +1,5 @@
+""" Data schema for globals """
+
 from decimal import Decimal
 from typing import Optional
 

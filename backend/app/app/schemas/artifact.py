@@ -1,3 +1,5 @@
+""" Data schema for artifact """
+
 from datetime import datetime
 from typing import Optional
 

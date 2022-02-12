@@ -1,3 +1,5 @@
+""" CRUD for globals """
+
 from datetime import datetime, timezone
 from typing import Dict, Optional
 

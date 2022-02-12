@@ -1,3 +1,5 @@
+""" Data schema for favorite """
+
 from pydantic import BaseModel
 
 from app.schemas.product import Product

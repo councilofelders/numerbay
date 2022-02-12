@@ -1,3 +1,5 @@
+""" Database model for order artifact """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String

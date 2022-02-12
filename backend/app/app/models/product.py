@@ -1,3 +1,5 @@
+""" Database model for product """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (

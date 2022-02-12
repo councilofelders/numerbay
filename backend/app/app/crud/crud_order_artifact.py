@@ -1,3 +1,5 @@
+""" CRUD for order artifact """
+
 import functools
 from typing import List, Optional
 

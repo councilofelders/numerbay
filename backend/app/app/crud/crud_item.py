@@ -1,3 +1,5 @@
+""" CRUD for item (placeholder, not used) """
+
 from typing import List
 
 from fastapi.encoders import jsonable_encoder

@@ -1,3 +1,5 @@
+""" CRUD for coupon """
+
 import functools
 from typing import Optional
 

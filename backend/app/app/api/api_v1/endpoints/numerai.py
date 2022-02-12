@@ -1,3 +1,5 @@
+""" Numerai-related endpoints """
+
 from decimal import Decimal
 from typing import Any, Dict, List
 

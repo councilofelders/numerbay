@@ -1,3 +1,5 @@
+""" Database models """
+
 from .artifact import Artifact
 from .category import Category
 from .coupon import Coupon

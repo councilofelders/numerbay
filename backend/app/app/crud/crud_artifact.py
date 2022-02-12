@@ -1,3 +1,5 @@
+""" CRUD for artifact """
+
 from typing import List
 
 from sqlalchemy.orm import Session

@@ -1,3 +1,5 @@
+""" Database model for Numerai model """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, Integer, Numeric, String

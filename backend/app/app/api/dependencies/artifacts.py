@@ -1,3 +1,5 @@
+""" Dependencies for artifacts endpoints """
+
 from typing import Optional
 
 from fastapi import HTTPException

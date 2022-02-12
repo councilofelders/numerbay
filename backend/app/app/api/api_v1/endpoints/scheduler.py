@@ -1,3 +1,5 @@
+""" Scheduler endpoints (admin only) """
+
 from typing import Any
 
 from fastapi import APIRouter, Depends

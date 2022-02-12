@@ -1,3 +1,5 @@
+""" Data schema for order artifact """
+
 from datetime import datetime
 from typing import Optional
 

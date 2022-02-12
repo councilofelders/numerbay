@@ -1,3 +1,5 @@
+""" Dependencies for product endpoints """
+
 import re
 from decimal import Decimal
 from typing import Optional, Union

@@ -1,3 +1,5 @@
+""" Database model for user """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, Integer, String

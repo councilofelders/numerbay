@@ -1,3 +1,5 @@
+""" Dependencies for globals endpoints """
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 

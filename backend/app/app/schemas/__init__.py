@@ -1,3 +1,5 @@
+""" Data schemas """
+
 from .artifact import Artifact, ArtifactCreate, ArtifactInDB, ArtifactUpdate
 from .category import Category, CategoryCreate, CategoryInDB, CategoryUpdate
 from .coupon import Coupon, CouponCreate, CouponInDB, CouponUpdate

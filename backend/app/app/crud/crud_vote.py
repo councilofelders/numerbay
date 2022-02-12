@@ -1,3 +1,5 @@
+""" CRUD for vote """
+
 import functools
 from typing import List
 

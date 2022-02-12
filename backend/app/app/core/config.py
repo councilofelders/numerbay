@@ -1,3 +1,5 @@
+""" App configs """
+
 import secrets
 from typing import Any, Dict, List, Optional, Union
 

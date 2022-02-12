@@ -1,3 +1,5 @@
+""" Dependencies for coupons endpoints """
+
 import random
 from datetime import datetime
 from decimal import Decimal

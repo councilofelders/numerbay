@@ -1,3 +1,5 @@
+""" Products endpoints """
+
 from datetime import datetime
 from typing import Any, Dict, List, Union
 

@@ -1,3 +1,5 @@
+""" Injection dependencies for endpoints """
+
 import json
 from typing import Generator
 

@@ -1,3 +1,5 @@
+""" Data schema for item (placeholder, not used) """
+
 from typing import Optional
 
 from pydantic import BaseModel

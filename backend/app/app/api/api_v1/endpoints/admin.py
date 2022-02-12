@@ -1,3 +1,6 @@
+""" Admin endpoints (admin only) """
+
+
 import functools
 from typing import Any
 

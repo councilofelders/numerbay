@@ -1,3 +1,5 @@
+""" Database model for artifact """
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String

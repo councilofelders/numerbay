@@ -1,3 +1,5 @@
+""" Data schema for category """
+
 from typing import List, Optional
 
 from pydantic import BaseModel

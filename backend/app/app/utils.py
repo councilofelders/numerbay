@@ -1,3 +1,5 @@
+""" App util functions """
+
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path

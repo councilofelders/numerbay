@@ -1,3 +1,5 @@
+""" Data schema for review """
+
 from datetime import datetime
 from typing import Optional
 

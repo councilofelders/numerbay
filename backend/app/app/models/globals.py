@@ -1,3 +1,5 @@
+""" Database model for globals """
+
 from sqlalchemy import Boolean, Column, Integer, Numeric
 
 from app.db.base_class import Base

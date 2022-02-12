@@ -1,3 +1,5 @@
+""" CRUD for favorite """
+
 from typing import List, Optional
 
 from sqlalchemy import and_
