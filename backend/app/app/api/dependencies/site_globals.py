@@ -8,6 +8,12 @@ from app.models import Globals
 
 
 def validate_not_during_rollover(db: Session) -> Globals:
+    """
+    Validate not during rollover
+
+    Returns:
+        models.Globals: globals
+    """
     site_globals = crud.globals.get_singleton(db=db)
     if site_globals is None:
         raise HTTPException(

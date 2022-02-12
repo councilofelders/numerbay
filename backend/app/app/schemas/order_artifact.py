@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 # Shared properties
 class OrderArtifactBase(BaseModel):
+    """ Base data schema for order artifact """
+
     date: Optional[datetime] = None
     round_tournament: Optional[int] = None
     description: Optional[str] = None
@@ -20,29 +22,33 @@ class OrderArtifactBase(BaseModel):
 
 # Properties to receive on order_artifact creation
 class OrderArtifactCreate(OrderArtifactBase):
+    """ Create data schema for order artifact """
+
     id: str
     order_id: int
 
 
 # Properties to receive on order_artifact update
 class OrderArtifactUpdate(OrderArtifactBase):
-    pass
+    """ Update data schema for order artifact """
 
 
 # Properties shared by models stored in DB
 class OrderArtifactInDBBase(OrderArtifactBase):
+    """ Base database data schema for order artifact """
+
     id: str
     order_id: int
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Properties to return to client
 class OrderArtifact(OrderArtifactInDBBase):
-    pass
+    """ API data schema for order artifact """
 
 
 # Properties properties stored in DB
 class OrderArtifactInDB(OrderArtifactInDBBase):
-    pass
+    """ Database data schema for order artifact """

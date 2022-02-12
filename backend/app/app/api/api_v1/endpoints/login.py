@@ -34,7 +34,7 @@ def login_access_token(
     user = crud.user.authenticate(
         db, username=form_data.username, password=form_data.password
     )
-    if not user:
+    if not user:  # pylint: disable=no-else-raise
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     elif not crud.user.is_active(user):
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -70,7 +70,7 @@ def login_access_token_web3(
         if not user.is_active:
             user_update["is_active"] = True  # type: ignore
         user = crud.user.update(db, db_obj=user, obj_in=user_update)
-    if not user:
+    if not user:  # pylint: disable=no-else-raise
         raise HTTPException(status_code=400, detail="Incorrect signature")
     elif not crud.user.is_active(user):
         raise HTTPException(status_code=400, detail="Inactive user")

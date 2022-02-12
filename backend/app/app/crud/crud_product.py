@@ -53,6 +53,7 @@ _SORT_OPTION_LOOKUP = {
 
 
 def parse_sort_option(sort: Optional[str]) -> Any:
+    """ Parse sort option """
     default_option = Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
     if sort:
         return _SORT_OPTION_LOOKUP.get(sort, default_option)
@@ -60,6 +61,7 @@ def parse_sort_option(sort: Optional[str]) -> Any:
 
 
 def parse_platform_filter(filter_item: Dict) -> Any:
+    """ Parse platform filter """
     with_on_platform = "on-platform" in filter_item["in"]
     with_off_platform = "off-platform" in filter_item["in"]
     platform_list = []
@@ -73,6 +75,7 @@ def parse_platform_filter(filter_item: Dict) -> Any:
 
 
 def parse_status_filter(filter_item: Dict) -> Any:
+    """ Parse status filter """
     with_active = "active" in filter_item["in"]
     with_inactive = "inactive" in filter_item["in"]
     status_list = []
@@ -86,6 +89,7 @@ def parse_status_filter(filter_item: Dict) -> Any:
 
 
 def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
+    """ Parse rank filter """
     try:
         if len(filter_item["in"]) > 0:
             rank_range = filter_item["in"][0]
@@ -98,12 +102,13 @@ def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
                 Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
                 <= rank_to,
             )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         print(e)
     return None
 
 
 def parse_stake_filter(filter_item: Dict, stake_step: float) -> Optional[Any]:
+    """ Parse stake filter """
     try:
         if len(filter_item["in"]) > 0:
             stake_range = filter_item["in"][0]
@@ -117,7 +122,7 @@ def parse_stake_filter(filter_item: Dict, stake_step: float) -> Optional[Any]:
                 Model.nmr_staked >= stake_from - stake_step,
                 Model.nmr_staked <= stake_to + stake_step,
             )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         print(e)
     return None
 
@@ -125,6 +130,7 @@ def parse_stake_filter(filter_item: Dict, stake_step: float) -> Optional[Any]:
 def parse_return3m_filter(
     filter_item: Dict, return3m_step: Union[int, float]
 ) -> Optional[Any]:
+    """ Parse 3M return filter """
     try:
         if len(filter_item["in"]) > 0:
             return3m_range = filter_item["in"][0]
@@ -141,7 +147,7 @@ def parse_return3m_filter(
                 <= return3m_to + return3m_step,
             )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         print(e)
     return None
 
@@ -152,6 +158,7 @@ def parse_filters(
     stake_step: Union[int, float] = 1,
     return3m_step: float = 0.01,
 ) -> List:
+    """ Parse filters """
     if not isinstance(query_filters, list):
         query_filters = []
 
@@ -182,6 +189,7 @@ def parse_filters(
 def generate_aggregations(
     agg_stats: Any, return3m_step: Union[int, float], stake_step: float
 ) -> List:
+    """ Generate aggregations """
     aggregations = [
         {
             "attribute_code": "status",
@@ -239,6 +247,8 @@ def generate_aggregations(
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
+    """ CRUD for product """
+
     def create_with_owner(
         self,
         db: Session,
@@ -249,6 +259,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         model_id: Optional[str] = None,
         tournament: Optional[int] = 8,
     ) -> Product:
+        """ Create product with owner """
         obj_in_data = jsonable_encoder(obj_in)
 
         if model_id is None:
@@ -267,11 +278,13 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         return db_obj
 
     def get_by_sku(self, db: Session, *, sku: str) -> Product:
+        """ Get product by sku """
         return db.query(self.model).filter(Product.sku == sku).first()
 
     def get_multi_by_owner(
         self, db: Session, *, owner_id: int, skip: int = 0, limit: int = None
     ) -> List[Product]:
+        """ Get multiple products by owner """
         return (
             db.query(self.model)
             .filter(Product.owner_id == owner_id)
@@ -283,6 +296,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
     def get_multi_by_category(
         self, db: Session, *, category_id: int, skip: int = 0, limit: int = None
     ) -> List[Product]:
+        """ Get multiple products by category """
         all_child_categories = crud.category.get_all_subcategories(
             db, category_id=category_id
         )
@@ -296,23 +310,25 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         )
 
     def bulk_expire(self, db: Session, current_round: int) -> None:
+        """ Bulk expire products """
         products_to_expire = (
             db.query(self.model).filter(Product.expiration_round < current_round).all()
         )
-        for product in products_to_expire:
-            product.is_active = False
+        for product_obj in products_to_expire:
+            product_obj.is_active = False
 
         db.commit()
 
     def bulk_unmark_is_ready(self, db: Session) -> None:
+        """ Bulk unmark product readiness flag"""
         products_to_unmark = db.query(self.model).filter(Product.is_ready).all()
-        for product in products_to_unmark:
-            if product.category.is_per_round:
-                product.is_ready = False
+        for product_obj in products_to_unmark:
+            if product_obj.category.is_per_round:
+                product_obj.is_ready = False
 
         db.commit()
 
-    def search(
+    def search(  # pylint: disable=too-many-locals
         self,
         db: Session,
         *,
@@ -324,6 +340,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         term: str = None,
         sort: str = None,
     ) -> Any:
+        """ Search products """
         all_child_categories = crud.category.get_all_subcategories(
             db, category_id=category_id  # type: ignore
         )
@@ -335,7 +352,11 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         if category_id is not None:
             query_filters.append(Product.category_id.in_(all_child_category_ids))
         if term is not None:
-            query_filters.append(Product.name.ilike("%{}%".format(term)))
+            query_filters.append(
+                Product.name.ilike(
+                    "%{}%".format(term)  # pylint: disable=consider-using-f-string
+                )
+            )
 
         stake_step = 1
         return3m_step = 0.01

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.api_v1.endpoints import (  # items,
+from app.api.api_v1.endpoints import (  # pylint: disable=redefined-builtin
     admin,
     categories,
     favorites,

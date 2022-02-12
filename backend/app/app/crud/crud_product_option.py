@@ -12,9 +12,13 @@ from app.schemas.product_option import ProductOptionCreate, ProductOptionUpdate
 class CRUDProductOption(
     CRUDBase[ProductOption, ProductOptionCreate, ProductOptionUpdate]
 ):
+    """ CRUD for product option """
+
     def get_multi_by_product(
         self, db: Session, *, product_id: int, skip: int = 0, limit: int = None
     ) -> List[ProductOption]:
+        """ Get multiple product options by product """
+
         return (
             db.query(self.model)
             .filter(ProductOption.product_id == product_id)

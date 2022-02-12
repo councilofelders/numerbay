@@ -11,6 +11,8 @@ from app.schemas.item import ItemCreate, ItemUpdate
 
 
 class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
+    """ CRUD for item (placeholder, not used) """
+
     def create_with_owner(
         self, db: Session, *, obj_in: ItemCreate, owner_id: int
     ) -> Item:

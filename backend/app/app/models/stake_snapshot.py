@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 
 
 class StakeSnapshot(Base):
+    """ Database model for stake snapshot """
+
     __table_args__ = (
         UniqueConstraint(
             "round_tournament",

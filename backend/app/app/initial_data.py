@@ -1,3 +1,5 @@
+""" Seed initial data """
+
 import logging
 
 from app.db.init_db import init_db
@@ -8,11 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 def init() -> None:
+    """ Init db """
     db = SessionLocal()
     init_db(db)
 
 
 def main() -> None:
+    """ Main init function """
     logger.info("Creating initial data")
     init()
     logger.info("Initial data created")

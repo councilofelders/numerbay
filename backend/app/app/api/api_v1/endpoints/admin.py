@@ -79,7 +79,7 @@ router = APIRouter()
 
 
 @router.post("/resubmit-for-order")
-def resubmit_for_order(
+def resubmit_for_order(  # pylint: disable=missing-function-docstring
     *,
     db: Session = Depends(deps.get_db),
     order_id: int,
@@ -98,7 +98,7 @@ def resubmit_for_order(
 
 
 @router.post("/resend-order-emails")
-def resend_order_emails(
+def resend_order_emails(  # pylint: disable=missing-function-docstring
     *,
     db: Session = Depends(deps.get_db),
     order_id: int,
@@ -154,7 +154,7 @@ def fill_numerai_emails(
             )
             account = api.raw_query(query, authorization=True)["data"]["account"]
             user.email = account["email"]
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             continue
     db.commit()
     return {"msg": "success!"}

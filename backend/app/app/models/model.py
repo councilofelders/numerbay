@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class Model(Base):
+    """ Database model for Numerai model """
+
     id = Column(String, primary_key=True, index=True)
     last_updated = Column(
         TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp()

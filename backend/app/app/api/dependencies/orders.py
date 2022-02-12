@@ -22,6 +22,7 @@ from app.utils import (
 
 
 def validate_existing_order(db: Session, order_id: int) -> models.Order:
+    """ Validate existing order """
     order = crud.order.get(db=db, id=order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -29,6 +30,7 @@ def validate_existing_order(db: Session, order_id: int) -> models.Order:
 
 
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:
+    """ Match transaction for order """
     matched_transaction = None
     try:
         numerai_wallet_transactions = numerai.get_numerai_wallet_transactions(
@@ -66,12 +68,13 @@ def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optiona
                 ):
                     matched_transaction = transaction["txHash"]
                     break
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         pass
     return matched_transaction
 
 
 def on_order_confirmed(db: Session, order_obj: models.Order, transaction: str) -> None:
+    """ On order confirmed """
     # update order
     # order_obj.transaction_hash = transaction
     # order_obj.state = "confirmed"
@@ -143,6 +146,7 @@ def on_order_confirmed(db: Session, order_obj: models.Order, transaction: str) -
 
 
 def update_payment(db: Session, order_id: int) -> None:
+    """ Update payment for order """
     order_obj = crud.order.get(db, id=order_id)
     if order_obj:
         if order_obj.currency == "NMR":
@@ -172,6 +176,7 @@ def update_payment(db: Session, order_id: int) -> None:
 
 
 def send_order_confirmation_emails(order_obj: models.Order) -> None:
+    """ Send order confirmation emails """
     if settings.EMAILS_ENABLED:
         product = order_obj.product
         # Send seller email
@@ -206,6 +211,7 @@ def send_order_confirmation_emails(order_obj: models.Order) -> None:
 
 
 def send_order_expired_emails(order_obj: models.Order) -> None:
+    """ Send order expired emails """
     if settings.EMAILS_ENABLED:
         # Send buyer email
         product = order_obj.product

@@ -1,10 +1,12 @@
+""" gunicorn configs """
+
 import json
 import multiprocessing
 import os
 
 workers_per_core_str = os.getenv("WORKERS_PER_CORE", "1")
 max_workers_str = os.getenv("MAX_WORKERS")
-use_max_workers = None
+use_max_workers = None  # pylint: disable=invalid-name
 if max_workers_str:
     use_max_workers = int(max_workers_str)
 web_concurrency_str = os.getenv("WEB_CONCURRENCY", None)
@@ -41,7 +43,7 @@ loglevel = use_loglevel
 workers = web_concurrency
 bind = use_bind
 errorlog = use_errorlog
-worker_tmp_dir = "/dev/shm"
+worker_tmp_dir = "/dev/shm"  # pylint: disable=invalid-name
 accesslog = use_accesslog
 graceful_timeout = int(graceful_timeout_str)
 timeout = int(timeout_str)

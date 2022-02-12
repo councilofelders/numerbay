@@ -12,16 +12,20 @@ from app.models.review import Review
 from app.schemas.review import ReviewCreate, ReviewUpdate
 
 
-def parse_sort_option(sort: Optional[str]) -> Any:
+def parse_sort_option(sort: Optional[str]) -> Any:  # pylint: disable=unused-argument
+    """ Parse sort option """
     # if sort == "latest":
     #     return desc(Review.id)
     return desc(Review.id)
 
 
 class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
+    """ CRUD for review """
+
     def create_with_reviewer(
         self, db: Session, *, obj_in: ReviewCreate, reviewer_id: int,
     ) -> Review:
+        """ Create review with reviewer """
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, reviewer_id=reviewer_id)
         db.add(db_obj)
@@ -32,6 +36,7 @@ class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
     def get_multi_by_reviewer(
         self, db: Session, *, reviewer_id: int, skip: int = 0, limit: int = None
     ) -> List[Review]:
+        """ Get multiple reviews by reviewer """
         return (
             db.query(self.model)
             .filter(Review.reviewer_id == reviewer_id)
@@ -43,6 +48,7 @@ class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
     def get_multi_by_product(
         self, db: Session, *, product_id: int, skip: int = 0, limit: int = None
     ) -> List[Review]:
+        """ Get multiple reviews by product """
         return (
             db.query(self.model)
             .filter(Review.product_id == product_id)
@@ -51,7 +57,7 @@ class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
             .all()
         )
 
-    def search(
+    def search(  # pylint: disable=too-many-locals
         self,
         db: Session,
         *,
@@ -63,6 +69,7 @@ class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
         # term: str = None,
         sort: str = None,
     ) -> Any:
+        """ Search reviews """
         query_filters = []
         if id is not None:
             query_filters.append(Review.id == id)

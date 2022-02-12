@@ -15,15 +15,19 @@ from app.schemas.order import OrderCreate, OrderUpdate
 
 
 def parse_sort_option(sort: Optional[str]) -> Any:
+    """ Parse sort option """
     if sort == "latest":
         return desc(Order.date_order)
     return desc(Order.id)
 
 
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
+    """ CRUD for order """
+
     def create_with_buyer(
         self, db: Session, *, obj_in: OrderCreate, buyer_id: int
     ) -> Order:
+        """ Create order with buyer """
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, buyer_id=buyer_id)
         db.add(db_obj)
@@ -32,6 +36,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         return db_obj
 
     def get_active_orders(self, db: Session, *, round_order: int) -> List[Order]:
+        """ Get active orders for tournament round """
         query_filters = [
             self.model.round_order > round_order - self.model.quantity,  # type: ignore
             self.model.state == "confirmed",
@@ -43,6 +48,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def get_multi_by_state(
         self, db: Session, *, state: str, round_order: Optional[int] = None
     ) -> List[Order]:
+        """ Get multiple orders by state """
         if round_order:
             query_filters = [
                 self.model.round_order == round_order,  # type: ignore
@@ -57,6 +63,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def get_pending_submission_orders(
         self, db: Session, *, round_order: int
     ) -> List[Order]:
+        """ Get pendin submission orders by tournament round """
         query_filters = [
             self.model.round_order > round_order - self.model.quantity,  # type: ignore
             self.model.state == "confirmed",
@@ -70,7 +77,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         orders = db.query(self.model).filter(query_filter).all()
         return orders
 
-    def search(
+    def search(  # pylint: disable=too-many-locals
         self,
         db: Session,
         *,
@@ -82,6 +89,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         filters: Dict = None,
         sort: str = None,
     ) -> Any:
+        """ Search orders """
         query_filters = []
         if id is not None:
             query_filters.append(Order.id == id)

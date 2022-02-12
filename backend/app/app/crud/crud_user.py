@@ -14,12 +14,16 @@ from app.schemas.user import UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
+    """ CRUD for user """
+
     def get_by_username(self, db: Session, *, username: str) -> Optional[User]:
+        """ Get user by username """
         return db.query(self.model).filter(self.model.username == username).first()
 
     def get_by_public_address(
         self, db: Session, *, public_address: str
     ) -> Optional[User]:
+        """ Get user by public address """
         return (
             db.query(self.model)
             .filter(self.model.public_address == public_address)
@@ -37,11 +41,16 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         term: str = None,
         sort: str = None,  # pylint: disable=W0613
     ) -> Any:
+        """ Search users """
         query_filters = []
         if id is not None:
             query_filters.append(User.id == id)
         if term is not None:
-            query_filters.append(User.username.ilike("%{}%".format(term)))
+            query_filters.append(
+                User.username.ilike(
+                    "%{}%".format(term)  # pylint: disable=consider-using-f-string
+                )
+            )
 
         if isinstance(filters, dict):
             for filter_key, _ in filters.items():
@@ -60,9 +69,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return {"total": count, "data": data}
 
-    def create(
+    def create(  # pylint: disable=arguments-differ
         self, db: Session, *, obj_in: UserCreate, is_superuser: bool = False
     ) -> User:
+        """ Create user """
         db_obj = User(  # type: ignore
             username=obj_in.username,
             hashed_password=get_password_hash(obj_in.password),  # type: ignore
@@ -80,6 +90,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def update(
         self, db: Session, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
     ) -> User:
+        """ Update user """
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
@@ -97,30 +108,35 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def authenticate(
         self, db: Session, *, username: str, password: str
     ) -> Optional[User]:
-        user = self.get_by_username(db, username=username)
-        if not user:
+        """ Authenticate user """
+        user_obj = self.get_by_username(db, username=username)
+        if not user_obj:
             return None
-        if not verify_password(password, user.hashed_password):  # type: ignore
+        if not verify_password(password, user_obj.hashed_password):  # type: ignore
             return None
-        return user
+        return user_obj
 
     def authenticate_web3(
         self, db: Session, *, public_address: str, signature: str
     ) -> Optional[User]:
-        user = self.get_by_public_address(db, public_address=public_address)
-        if not user:
+        """ Authenticate web3 user """
+        user_obj = self.get_by_public_address(db, public_address=public_address)
+        if not user_obj:
             return None
-        if not verify_signature(public_address, user.nonce, signature):  # type: ignore
+        if not verify_signature(public_address, user_obj.nonce, signature):  # type: ignore
             return None
-        return user
+        return user_obj
 
-    def is_active(self, user: User) -> bool:
+    def is_active(self, user: User) -> bool:  # pylint: disable=redefined-outer-name
+        """ Check user active """
         return user.is_active
 
-    def is_superuser(self, user: User) -> bool:
+    def is_superuser(self, user: User) -> bool:  # pylint: disable=redefined-outer-name
+        """ Check superuser """
         return user.is_superuser
 
     def update_numerai_api(self, db: Session, user_json: Dict) -> bool:
+        """ Update Numerai API key """
         if (
             "numerai_api_key_secret" not in user_json
             or user_json["numerai_api_key_secret"] is None
@@ -157,12 +173,12 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 "numerai_wallet_address": account["walletAddress"],
             }
 
-            user = self.get(db, user_json["id"])
+            user_obj = self.get(db, user_json["id"])
 
-            if not user.email:  # type: ignore
+            if not user_obj.email:  # type: ignore
                 user_update_json["email"] = account["email"]
 
-            self.update(db, db_obj=user, obj_in=user_update_json)  # type: ignore
+            self.update(db, db_obj=user_obj, obj_in=user_update_json)  # type: ignore
             return True
         except ValueError as e:
             if "invalid or has expired" in str(e):  # invalid API keys

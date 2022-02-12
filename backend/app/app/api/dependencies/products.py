@@ -16,6 +16,7 @@ def validate_product_input(
     category: Union[schemas.Category, models.Category],
     current_user: Union[schemas.User, models.User],
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
+    """ Validate product input """
     # Product name
     if (
         isinstance(product_in, schemas.ProductCreate)
@@ -48,7 +49,7 @@ def validate_product_input(
     # todo options validation
 
     # At least one option
-    if (
+    if (  # pylint: disable=too-many-boolean-expressions
         isinstance(product_in, schemas.ProductCreate)
         and (product_in.options is None or len(product_in.options) == 0)
     ) or (
@@ -106,13 +107,14 @@ def validate_product_input(
     return product_in
 
 
-def validate_product_option_input(
+def validate_product_option_input(  # pylint: disable=too-many-branches
     db: Session,
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate],
     current_user: Union[schemas.User, models.User],
 ) -> None:
+    """ Validate product option input """
     # Positive price
-    validate_product_option_price_posive(product_option)
+    validate_product_option_price_positive(product_option)
 
     # Positive quantity
     validate_product_option_quantity_positive(product_option)
@@ -224,6 +226,7 @@ def validate_product_option_coupon_specs(
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate],
     current_user: Union[schemas.User, models.User],
 ) -> None:
+    """ Validate product option coupon specs """
     if not product_option.coupon:
         return None
 
@@ -326,6 +329,7 @@ def validate_product_option_coupon_specs(
 def validate_product_option_quantity_positive(
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate]
 ) -> None:
+    """ Validate product option quantity positive """
     if product_option.quantity is not None:
         if product_option.quantity <= 0:
             raise HTTPException(
@@ -333,9 +337,10 @@ def validate_product_option_quantity_positive(
             )
 
 
-def validate_product_option_price_posive(
+def validate_product_option_price_positive(
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate]
 ) -> None:
+    """ Validate product option price positive """
     if product_option.price is not None:
         if product_option.price <= 0:
             raise HTTPException(
@@ -344,6 +349,7 @@ def validate_product_option_price_posive(
 
 
 def validate_existing_product(db: Session, product_id: int) -> models.Product:
+    """ Validate existing product """
     product = crud.product.get(db=db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -353,6 +359,7 @@ def validate_existing_product(db: Session, product_id: int) -> models.Product:
 def validate_product_owner(
     db: Session, product_id: int, currend_user_id: int
 ) -> models.Product:
+    """ Validate product owner """
     product = validate_existing_product(db, product_id)
     if product.owner_id != currend_user_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -362,6 +369,7 @@ def validate_product_owner(
 def validate_buyer(
     product: models.Product, current_user: models.User, selling_round: int
 ) -> Optional[models.Order]:
+    """ Validate buyer """
     for order in current_user.orders:  # type: ignore
         if (
             order.round_order > selling_round - order.quantity
@@ -375,6 +383,7 @@ def validate_buyer(
 def validate_existing_product_option(
     db: Session, option_id: int
 ) -> models.ProductOption:
+    """ Validate existing product option """
     product_option = crud.product_option.get(db=db, id=option_id)
     if not product_option:
         raise HTTPException(status_code=404, detail="Product option not found")

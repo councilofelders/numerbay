@@ -12,6 +12,8 @@ from app.schemas.user import OrderBuyer
 
 # Shared properties
 class OrderBase(BaseModel):
+    """ Base data schema for order """
+
     date_order: Optional[datetime] = None
     round_order: Optional[int] = None
     quantity: Optional[int] = None
@@ -35,6 +37,8 @@ class OrderBase(BaseModel):
 
 # Properties to receive on order creation
 class OrderCreate(OrderBase):
+    """ Create data schema for order """
+
     quantity: Optional[int] = 1
     price: Decimal
     currency: str
@@ -47,11 +51,15 @@ class OrderCreate(OrderBase):
 
 # Properties to receive on order update
 class OrderUpdate(OrderBase):
+    """ Update data schema for order """
+
     product_id: Optional[int]
 
 
 # Properties shared by models stored in DB
 class OrderInDBBase(OrderBase):
+    """ Base database data schema for order """
+
     id: int
     date_order: datetime
     round_order: int
@@ -60,17 +68,20 @@ class OrderInDBBase(OrderBase):
     chain: str
     product: Product
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Properties to return to client
 class Order(OrderInDBBase):
+    """ API data schema for order """
+
     buyer: OrderBuyer
     artifacts: Optional[List] = None
 
     @validator("artifacts", always=True)
     def validate_artifacts(cls, value, values):  # type: ignore  # pylint: disable=W0613
+        """ Filter non-pruned artifacts """
         value_to_return = []
         for artifact in value:
             if artifact.state != "marked_for_pruning":
@@ -80,4 +91,6 @@ class Order(OrderInDBBase):
 
 # Properties properties stored in DB
 class OrderInDB(OrderInDBBase):
+    """ Database data schema for order """
+
     buyer_id: int

@@ -29,7 +29,7 @@ router = APIRouter()
 
 
 @router.post("/generate-upload-url")
-def generate_upload_url(
+def generate_upload_url(  # pylint: disable=too-many-locals
     *,
     order_id: int = Form(...),
     filename: str = Form(...),
@@ -42,7 +42,11 @@ def generate_upload_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    if is_numerai_direct in ["true", "True"]:
+    """ Generate upload URL """
+    if is_numerai_direct in [  # pylint: disable=simplifiable-if-statement
+        "true",
+        "True",
+    ]:
         is_numerai_direct = True  # type: ignore
     else:
         is_numerai_direct = False  # type: ignore
@@ -128,6 +132,7 @@ def validate_upload(
         deps.get_current_active_user
     ),  # pylint: disable=W0613
 ) -> Any:
+    """ Validate upload """
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
@@ -231,6 +236,7 @@ def list_order_artifacts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ List order artifacts """
     order = validate_existing_order(db, order_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
@@ -254,6 +260,7 @@ def generate_download_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Generate download URL """
     artifact = crud.order_artifact.get(db, id=artifact_id)
 
     if not artifact:

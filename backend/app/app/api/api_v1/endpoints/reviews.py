@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post("/search", response_model=Dict[str, Union[int, List[schemas.Review]]])
-def search_reviews(
+def search_reviews(  # pylint: disable=too-many-arguments
     db: Session = Depends(deps.get_db),
     id: int = Body(None),  # pylint: disable=W0622
     product_id: int = Body(None),
@@ -42,7 +42,7 @@ def search_reviews(
 
 
 @router.post("/", response_model=schemas.Review)
-def create_review(
+def create_review(  # pylint: disable=too-many-locals
     *,
     db: Session = Depends(deps.get_db),
     product_id: int = Body(...),

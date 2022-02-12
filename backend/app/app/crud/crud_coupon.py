@@ -13,9 +13,12 @@ from app.schemas.coupon import CouponCreate, CouponUpdate
 
 
 class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
+    """ CRUD for coupon """
+
     def get_by_code(
         self, db: Session, *, code: Optional[str] = None
     ) -> Optional[Coupon]:
+        """ Get coupon by coupon code """
         if not code:
             return None
         query_filters = [
@@ -28,6 +31,7 @@ class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
     def create_with_owner(
         self, db: Session, *, obj_in: CouponCreate, owner_id: int
     ) -> Coupon:
+        """ Create coupon with owner """
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, owner_id=owner_id)
         db.add(db_obj)
@@ -36,6 +40,7 @@ class CRUDCoupon(CRUDBase[Coupon, CouponCreate, CouponUpdate]):
         return db_obj
 
     def calculate_quantity_remaining(self, db_obj: Coupon) -> Optional[int]:
+        """ Calculate remaining quantity of coupon """
         redemption_count = 0
         for redemption in db_obj.redemptions:  # type: ignore
             if redemption.state != "expired":  # pending+confirmed

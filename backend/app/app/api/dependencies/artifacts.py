@@ -16,6 +16,7 @@ def validate_new_artifact(
     url: str = None,
     filename: str = None,
 ) -> None:
+    """ Validate new artifacts """
     # Product exists
     if not product:
         raise HTTPException(
@@ -67,6 +68,7 @@ def validate_new_artifact(
 def validate_existing_artifact(
     artifact: Optional[models.Artifact], product_id: int, selling_round: int
 ) -> models.Artifact:
+    """ Validate existing artifact """
     # artifact exists
     if not artifact:
         raise HTTPException(
@@ -93,6 +95,7 @@ def validate_existing_artifact(
 def send_artifact_emails_for_active_orders(
     db: Session, artifact: models.Artifact, is_file: bool = True
 ) -> None:
+    """ Send artifact emails for active orders """
     if settings.EMAILS_ENABLED:
         # orders = crud.order.get_multi_by_state(
         #     db, state="confirmed", round_order=globals.selling_round  # type: ignore

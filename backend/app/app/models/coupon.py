@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 
 
 class Coupon(Base):
+    """ Database model for coupon """
+
     id = Column(Integer, primary_key=True, index=True)
     date_creation = Column(DateTime, index=True, nullable=False)
     date_expiration = Column(DateTime, index=True)

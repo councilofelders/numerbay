@@ -25,7 +25,7 @@ router = APIRouter()
 @router.post(
     "/search", response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]]
 )
-def search_polls(
+def search_polls(  # pylint: disable=too-many-arguments
     db: Session = Depends(deps.get_db),
     id: str = Body(None),  # pylint: disable=W0622
     skip: int = Body(None),
@@ -59,7 +59,7 @@ def search_polls(
     "/search-authenticated",
     response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]],
 )
-def search_polls_authenticated(
+def search_polls_authenticated(  # pylint: disable=too-many-arguments,too-many-locals
     db: Session = Depends(deps.get_db),
     id: str = Body(None),  # pylint: disable=W0622
     skip: int = Body(None),
@@ -100,7 +100,7 @@ def search_polls_authenticated(
 
 
 @router.post("/", response_model=schemas.Poll)
-def create_poll(
+def create_poll(  # pylint: disable=too-many-branches
     *,
     db: Session = Depends(deps.get_db),
     poll_in: schemas.PollCreate,
@@ -348,7 +348,7 @@ def close_poll(
 @router.post(
     "/{id}", response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]],
 )
-def vote(
+def vote(  # pylint: disable=too-many-locals
     *,
     db: Session = Depends(deps.get_db),
     id: str,  # pylint: disable=W0622
@@ -372,7 +372,7 @@ def vote(
 
     # Valid number of options
     n_options = len(options)
-    if (
+    if (  # pylint: disable=too-many-boolean-expressions
         n_options < 1
         or (not poll.is_multiple and n_options != 1)
         or (poll.is_multiple and n_options > len(poll.options))  # type: ignore

@@ -27,6 +27,8 @@ if TYPE_CHECKING:
 
 
 class Product(Base):
+    """ Database model for product """
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     sku = Column(String, index=True, nullable=False, unique=True)

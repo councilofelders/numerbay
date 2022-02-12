@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
 
 class Vote(Base):
+    """ Database model for vote """
+
     __table_args__ = (
         UniqueConstraint(
             "poll_id", "voter_id", "option", name="uix_vote_poll_voter_option"

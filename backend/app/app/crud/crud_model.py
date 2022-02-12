@@ -18,9 +18,12 @@ from app.schemas.model import ModelCreate, ModelUpdate
 
 
 class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
+    """ CRUD for Numerai model """
+
     def get_by_name(
         self, db: Session, *, name: str, tournament: int
     ) -> Optional[Model]:
+        """ Get Numerai model by name """
         return (
             db.query(self.model)
             .filter(and_(self.model.name == name, self.model.tournament == tournament))
@@ -30,6 +33,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     def create_with_owner(
         self, db: Session, *, obj_in: ModelCreate, owner_id: int
     ) -> Model:
+        """ Create Numerai model with owner """
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, owner_id=owner_id)
         db.add(db_obj)
@@ -40,6 +44,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     def get_multi_by_owner(
         self, db: Session, *, owner_id: int, skip: int = 0, limit: int = None
     ) -> List[Model]:
+        """ Get multiple Numerai models by owner """
         return (
             db.query(self.model)
             .filter(Model.owner_id == owner_id)
@@ -49,6 +54,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         )
 
     def update_model(self, db: Session, user_json: Dict) -> Optional[str]:
+        """ Update Numerai model """
         if (
             "numerai_api_key_secret" not in user_json
             or user_json["numerai_api_key_secret"] is None
@@ -64,31 +70,34 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
             db_models = {}
 
-            for model in numerai_models:
+            for numerai_model in numerai_models:
                 model_performance = numerai.get_numerai_model_performance(
-                    tournament=int(model["tournament"]), model_name=model["name"]
+                    tournament=int(numerai_model["tournament"]),
+                    model_name=numerai_model["name"],
                 )
-                model["model_performance"] = model_performance
+                numerai_model["model_performance"] = model_performance
 
-                db_models[model["id"]] = models.Model(  # type: ignore
-                    id=model["id"],
-                    name=model["name"],
-                    tournament=int(model["tournament"]),
+                db_models[numerai_model["id"]] = models.Model(  # type: ignore
+                    id=numerai_model["id"],
+                    name=numerai_model["name"],
+                    tournament=int(numerai_model["tournament"]),
                     owner_id=int(user_json["id"]),
-                    nmr_staked=Decimal(model["model_performance"]["nmrStaked"])
-                    if model["model_performance"].get("nmrStaked", None)
+                    nmr_staked=Decimal(numerai_model["model_performance"]["nmrStaked"])
+                    if numerai_model["model_performance"].get("nmrStaked", None)
                     else 0,
-                    start_date=model["model_performance"].get("startDate", None),
-                    latest_ranks=model["model_performance"]
+                    start_date=numerai_model["model_performance"].get(
+                        "startDate", None
+                    ),
+                    latest_ranks=numerai_model["model_performance"]
                     .get("modelPerformance", {})
                     .get("latestRanks", {}),
-                    latest_reps=model["model_performance"]
+                    latest_reps=numerai_model["model_performance"]
                     .get("modelPerformance", {})
                     .get("latestReps", {}),
-                    latest_returns=model["model_performance"]
+                    latest_returns=numerai_model["model_performance"]
                     .get("modelPerformance", {})
                     .get("latestReturns", {}),
-                    round_model_performances=model["model_performance"]
+                    round_model_performances=numerai_model["model_performance"]
                     .get("modelPerformance", {})
                     .get("roundModelPerformances", []),
                 )
@@ -158,6 +167,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return None
 
     def batch_update_models(self, db: Session) -> bool:
+        """ Batch update Numerai models """
         try:
             print(f"{datetime.utcnow()} Running batch_update_models...")
             loop = asyncio.new_event_loop()
@@ -176,32 +186,34 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             db_models = {}
             for user_models in all_user_models:
                 try:
-                    for model in user_models.get("models", []):
-                        db_models[model["id"]] = Model(  # type: ignore
-                            id=model["id"],
-                            name=model["name"],
-                            tournament=int(model["tournament"]),
+                    for user_model in user_models.get("models", []):
+                        db_models[user_model["id"]] = Model(  # type: ignore
+                            id=user_model["id"],
+                            name=user_model["name"],
+                            tournament=int(user_model["tournament"]),
                             owner_id=int(user_models["id"]),
-                            nmr_staked=Decimal(model["model_performance"]["nmrStaked"])
-                            if model["model_performance"].get("nmrStaked", None)
+                            nmr_staked=Decimal(
+                                user_model["model_performance"]["nmrStaked"]
+                            )
+                            if user_model["model_performance"].get("nmrStaked", None)
                             else 0,
-                            start_date=model["model_performance"].get(
+                            start_date=user_model["model_performance"].get(
                                 "startDate", None
                             ),
-                            latest_ranks=model["model_performance"]
+                            latest_ranks=user_model["model_performance"]
                             .get("modelPerformance", {})
                             .get("latestRanks", {}),
-                            latest_reps=model["model_performance"]
+                            latest_reps=user_model["model_performance"]
                             .get("modelPerformance", {})
                             .get("latestReps", {}),
-                            latest_returns=model["model_performance"]
+                            latest_returns=user_model["model_performance"]
                             .get("modelPerformance", {})
                             .get("latestReturns", {}),
-                            round_model_performances=model["model_performance"]
+                            round_model_performances=user_model["model_performance"]
                             .get("modelPerformance", {})
                             .get("roundModelPerformances", []),
                         )
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-except
                     print(e)
                 continue
 
@@ -218,7 +230,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             print(f"{datetime.utcnow()} Finished batch_update_models")
         finally:
             sys.stdout.flush()
-            return True
+            return True  # pylint: disable=lost-exception
             # db.close()
 
 

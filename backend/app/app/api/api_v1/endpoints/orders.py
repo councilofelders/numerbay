@@ -25,7 +25,7 @@ router = APIRouter()
 
 
 @router.post("/search", response_model=Dict[str, Union[int, List[schemas.Order]]])
-def search_orders(
+def search_orders(  # pylint: disable=too-many-arguments
     db: Session = Depends(deps.get_db),
     role: str = Body(None),
     id: int = Body(None),  # pylint: disable=W0622
@@ -54,7 +54,7 @@ def search_orders(
 
 
 @router.post("/", response_model=schemas.Order)
-def create_order(
+def create_order(  # pylint: disable=too-many-locals,too-many-branches
     *,
     db: Session = Depends(deps.get_db),
     id: int = Body(...),  # pylint: disable=W0622
@@ -263,9 +263,13 @@ def submit_artifact(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Submit artifact """
     order = validate_existing_order(db, order_id)
 
-    if order.buyer_id != current_user.id and order.product.owner_id != current_user.id:
+    if (
+        order.buyer_id != current_user.id  # pylint: disable=consider-using-in
+        and order.product.owner_id != current_user.id
+    ):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if order.state != "confirmed":
         raise HTTPException(status_code=403, detail="Order not confirmed")

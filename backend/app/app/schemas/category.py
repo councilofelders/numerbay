@@ -7,6 +7,8 @@ from pydantic import BaseModel
 
 # Shared properties
 class CategoryBase(BaseModel):
+    """ Base data schema for category """
+
     name: Optional[str] = None
     slug: Optional[str] = None
     tournament: Optional[int] = None
@@ -16,24 +18,28 @@ class CategoryBase(BaseModel):
 
 # Properties to receive on category creation
 class CategoryCreate(CategoryBase):
+    """ Create data schema for category """
+
     name: str
     slug: str
 
 
 # Properties to receive on category update
 class CategoryUpdate(CategoryBase):
-    pass
+    """ Update data schema for category """
 
 
 # Properties shared by models stored in DB
 class CategoryInDBBase(CategoryBase):
+    """ Base database data schema for category """
+
     id: int
     name: str
     slug: str
     # parent: Optional['CategoryInDBBase']
     items: Optional[List["CategoryInDBBase"]]
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
@@ -42,10 +48,14 @@ CategoryInDBBase.update_forward_refs()
 
 # Properties to return to client
 class CategoryIntermediate(CategoryInDBBase):
+    """ Nested API data schema for category """
+
     parent: Optional[CategoryInDBBase]
 
 
 class Category(CategoryInDBBase):
+    """ API data schema for category """
+
     parent: Optional[CategoryIntermediate]
 
 
@@ -54,4 +64,4 @@ Category.update_forward_refs()
 
 # Properties properties stored in DB
 class CategoryInDB(CategoryInDBBase):
-    pass
+    """ Database data schema for category """

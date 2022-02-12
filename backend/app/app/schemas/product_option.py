@@ -8,6 +8,8 @@ from pydantic import BaseModel, HttpUrl
 
 # Shared properties
 class ProductOptionBase(BaseModel):
+    """ Base data schema for product option """
+
     id: Optional[int] = None
     is_on_platform: Optional[bool] = None
     third_party_url: Optional[HttpUrl] = None
@@ -26,6 +28,8 @@ class ProductOptionBase(BaseModel):
 
 # Properties to receive on product_option creation
 class ProductOptionCreate(ProductOptionBase):
+    """ Create data schema for product option """
+
     is_on_platform: bool
     quantity: Optional[int] = 1
     price: Decimal
@@ -36,23 +40,27 @@ class ProductOptionCreate(ProductOptionBase):
 
 # Properties to receive on product_option update
 class ProductOptionUpdate(ProductOptionBase):
-    pass
+    """ Update data schema for product option """
 
 
 # Properties shared by models stored in DB
 class ProductOptionInDBBase(ProductOptionBase):
+    """ Base database data schema for product option """
+
     id: int
     is_on_platform: bool
     price: Decimal
     currency: str
     chain: Optional[str] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Properties to return to client
 class ProductOption(ProductOptionInDBBase):
+    """ API data schema for product option """
+
     special_price: Optional[Decimal] = None
     applied_coupon: Optional[str] = None
     error: Optional[str] = None
@@ -61,4 +69,4 @@ class ProductOption(ProductOptionInDBBase):
 
 # Properties properties stored in DB
 class ProductOptionInDB(ProductOptionInDBBase):
-    pass
+    """ Database data schema for product option """

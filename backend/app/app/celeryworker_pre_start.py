@@ -1,3 +1,5 @@
+""" Celery worker pre-start script """
+
 import logging
 
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
@@ -7,8 +9,8 @@ from app.db.session import SessionLocal
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-max_tries = 60 * 5  # 5 minutes
-wait_seconds = 1
+max_tries = 60 * 5  # 5 minutes  # pylint: disable=invalid-name
+wait_seconds = 1  # pylint: disable=invalid-name
 
 
 @retry(
@@ -18,6 +20,8 @@ wait_seconds = 1
     after=after_log(logger, logging.WARN),
 )
 def init() -> None:
+    """ Init db """
+
     try:
         # Try to create session to check if DB is awake
         db = SessionLocal()
@@ -28,6 +32,8 @@ def init() -> None:
 
 
 def main() -> None:
+    """ Main init function """
+
     logger.info("Initializing service")
     init()
     logger.info("Service finished initializing")

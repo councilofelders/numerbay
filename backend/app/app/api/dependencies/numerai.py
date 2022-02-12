@@ -38,6 +38,7 @@ def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
 
 
 def get_numerai_models(public_id: str, secret_key: str) -> Any:
+    """ Get Numerai models """
     query = """
               query {
                 account {
@@ -92,6 +93,7 @@ def get_numerai_wallet_transactions(public_id: str, secret_key: str) -> Any:
 
 
 def normalize_data(data: Dict, tournament: int = 8) -> Dict:
+    """ Normalize Numerai data """
     normalized_data = {"rounds": data["rounds"], "modelPerformance": {}}
     if tournament == 8:
         normalized_data["modelPerformance"] = data["v3UserProfile"]
@@ -138,6 +140,7 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
 
 
 def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
+    """ Get Numerai model performance """
     numerai_query = """
             query($username: String!) {
               rounds(tournament: 8, number: 0) {
@@ -227,6 +230,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
 
 
 def get_leaderboard(tournament: int) -> Any:
+    """ Get Numerai Leaderboard """
     numerai_query = """
             query {
               v2Leaderboard {
@@ -263,6 +267,7 @@ def get_leaderboard(tournament: int) -> Any:
 
 
 def get_numerai_pipeline_status(tournament: int) -> Any:
+    """ Get Numerai pipeline status """
     query = """
             query($date: String!, $tournament: String!) {
               pipelineStatus(date: $date, tournament: $tournament) {
@@ -288,6 +293,7 @@ def get_numerai_pipeline_status(tournament: int) -> Any:
 def get_target_stake(
     public_id: str, secret_key: str, tournament: int, model_name: str
 ) -> Decimal:
+    """ Get target stake for Numerai model"""
     query = """
               query {
                   account {
@@ -315,10 +321,10 @@ def get_target_stake(
 
     arguments = {"username": model_name}
     api = NumerAPI(public_id=public_id, secret_key=secret_key)
-    models = api.raw_query(query, arguments, authorization=True)["data"]["account"][
-        "models"
-    ]
-    for model in models:
+    numerai_models = api.raw_query(query, arguments, authorization=True)["data"][
+        "account"
+    ]["models"]
+    for model in numerai_models:
         if model["name"] == model_name and model["tournament"] == tournament:
             stake_dict = model["v2Stake"]
             stake_amount = Decimal(stake_dict["latestValueSettled"])
@@ -333,13 +339,14 @@ def get_target_stake(
     raise ValueError("No Matching Model.")
 
 
-def set_target_stake(
+def set_target_stake(  # pylint: disable=too-many-locals
     public_id: str,
     secret_key: str,
     tournament: int,
     model_name: str,
     target_stake_amount: Decimal,
 ) -> Dict:
+    """ Set target stake for Numerai model"""
     query = """
               query {
                   account {
@@ -382,7 +389,9 @@ def set_target_stake(
             if pending_stake_change and pending_stake_change["status"] == "pending":
                 pending_delta_amount = Decimal(pending_stake_change["requestedAmount"])
                 if pending_stake_change["type"] == "decrease":
-                    pending_delta_amount = -pending_delta_amount
+                    pending_delta_amount = (
+                        -pending_delta_amount  # pylint: disable=invalid-unary-operand-type
+                    )
     if matched_model is None or stake_amount is None:
         raise ValueError("No Matching Model.")
 
@@ -426,7 +435,8 @@ def get_numerai_active_round() -> Dict:
 
 
 async def fetch_single_user_models(user: models.User) -> Dict:
-    from app.api.api_v1.endpoints.numerai import (
+    """ Fetch single user models """
+    from app.api.api_v1.endpoints.numerai import (  # pylint: disable=import-outside-toplevel
         get_numerai_models_endpoint,
         get_numerai_model_performance_endpoint,
     )
@@ -441,6 +451,7 @@ async def fetch_single_user_models(user: models.User) -> Dict:
 
 
 def check_user_numerai_api(user: models.User) -> None:
+    """ Check user Numerai API key """
     if not user.is_superuser:
         try:
             if not user.numerai_api_key_public_id or not user.numerai_api_key_secret:
@@ -520,6 +531,7 @@ def validate_numerai_submission(
     numerai_api_key_public_id: str = None,
     numerai_api_key_secret: str = None,
 ) -> Optional[str]:
+    """ Validate Numerai submission """
     api = NumerAPI(
         public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
     )
@@ -579,11 +591,11 @@ def validate_numerai_submission(
         arguments["version"] = 2
         try:
             create = api.raw_query(create_query, arguments, authorization=True)
-        except Exception:  # other errors
+        except Exception:  # other errors  # pylint: disable=broad-except
             print("Retry failed, marking submission as failed")
             # mark failed submission
             return None
-    except Exception:  # other errors
+    except Exception:  # other errors  # pylint: disable=broad-except
         print("Submission failed")
         # mark failed submission
         return None

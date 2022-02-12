@@ -11,6 +11,8 @@ from .model import ModelMinimal
 
 
 class UserBase(BaseModel):
+    """ Base data schema for user """
+
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
@@ -20,6 +22,8 @@ class UserBase(BaseModel):
 
 # Properties to receive via API on creation
 class UserCreate(BaseModel):
+    """ Create data schema for user """
+
     username: str
     password: str
     email: Optional[EmailStr] = None
@@ -30,7 +34,9 @@ class UserCreate(BaseModel):
 
 
 # Properties to receive via API on update
-class UserUpdate(UserBase):
+class UserUpdate(UserBase):  # pylint: disable=too-many-instance-attributes
+    """ Update data schema for user """
+
     password: Optional[str] = None
     signature: Optional[str] = None
     nonce: Optional[str] = None
@@ -41,14 +47,18 @@ class UserUpdate(UserBase):
 
 
 class UserInDBBase(UserBase):
+    """ Base database data schema for user """
+
     id: Optional[int] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Additional properties to return via API
 class User(UserInDBBase):
+    """ API data schema for user """
+
     numerai_api_key_public_id: Optional[str] = None
     numerai_api_key_can_upload_submission: Optional[bool] = None
     numerai_api_key_can_stake: Optional[bool] = None
@@ -63,6 +73,8 @@ class User(UserInDBBase):
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
+    """ Database data schema for user """
+
     hashed_password: str
     nonce: Optional[str] = None
     numerai_api_key_public_id: Optional[str] = None
@@ -70,16 +82,20 @@ class UserInDB(UserInDBBase):
 
 
 class GenericOwner(BaseModel):
+    """ API data schema for generic owner """
+
     id: Optional[int] = None
     username: Optional[str] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 class OrderBuyer(BaseModel):
+    """ API data schema for order buyer """
+
     id: Optional[int] = None
     username: Optional[str] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True

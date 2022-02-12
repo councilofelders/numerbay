@@ -9,6 +9,8 @@ from pydantic import BaseModel
 
 # Shared properties
 class ModelBase(BaseModel):
+    """ Base data schema for Numerai model """
+
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None
@@ -22,6 +24,8 @@ class ModelBase(BaseModel):
 
 # Properties to receive on model creation
 class ModelCreate(ModelBase):
+    """ Create data schema for Numerai model """
+
     id: str
     name: str
     tournament: int
@@ -30,43 +34,49 @@ class ModelCreate(ModelBase):
 
 # Properties to receive on model update
 class ModelUpdate(ModelBase):
-    pass
+    """ Update data schema for Numerai model """
 
 
 # Properties shared by models stored in DB
 class ModelInDBBase(ModelBase):
+    """ Base database data schema for Numerai model """
+
     id: str
     name: str
     tournament: int
     owner_id: int
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Properties to return to client
 class Model(ModelInDBBase):
-    pass
+    """ API data schema for Numerai model """
 
 
 # Properties properties stored in DB
 class ModelInDB(ModelInDBBase):
-    pass
+    """ Database data schema for Numerai model """
 
 
 # Minimal model information
 class ModelMinimal(BaseModel):
+    """ Minimal API data schema for Numerai model """
+
     id: str
     name: Optional[str] = None
     tournament: Optional[int] = None
     start_date: Optional[datetime] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Summary model performance for products
 class ModelSummary(BaseModel):
+    """ API data schema for Numerai model summary """
+
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None
@@ -75,5 +85,5 @@ class ModelSummary(BaseModel):
     latest_returns: Optional[Dict] = None
     start_date: Optional[datetime] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True

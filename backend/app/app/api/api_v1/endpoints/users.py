@@ -67,7 +67,7 @@ def create_user(
 
 
 @router.put("/me", response_model=schemas.User)
-def update_user_me(
+def update_user_me(  # pylint: disable=too-many-locals
     *,
     db: Session = Depends(deps.get_db),
     username: str = Body(None),

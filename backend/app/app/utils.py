@@ -19,6 +19,15 @@ def send_email(
     html_template: str = "",
     environment: Dict = None,
 ) -> None:
+    """
+    Generic function for sending emails
+
+    Args:
+        email_to (str): recipient email
+        subject_template (str): email subject
+        html_template (str): email template
+        environment (dict): env variables for email template
+    """
     if environment is None:
         environment = {}
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
@@ -39,9 +48,17 @@ def send_email(
 
 
 def send_test_email(email_to: str) -> None:
+    """
+    Send test email
+
+    Args:
+        email_to (str): recipient email
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Test email"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     send_email(
         email_to=email_to,
@@ -52,9 +69,19 @@ def send_test_email(email_to: str) -> None:
 
 
 def send_reset_password_email(email_to: str, email: str, token: str) -> None:
+    """
+    Send reset password email (placeholder, not used)
+
+    Args:
+        email_to (str): recipient email
+        email (str): account email
+        token (str): password reset token
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Password recovery for {email}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "reset_password.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "reset_password.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     server_host = settings.SERVER_HOST
     link = f"{server_host}/reset-password?token={token}"
@@ -92,7 +119,7 @@ def send_reset_password_email(email_to: str, email: str, token: str) -> None:
 #     )
 
 
-def send_new_order_email(
+def send_new_order_email(  # pylint: disable=too-many-arguments
     email_to: str,
     username: str,
     timeout: int,
@@ -104,9 +131,26 @@ def send_new_order_email(
     amount: float,
     currency: str,
 ) -> None:
+    """
+    Send new order email
+
+    Args:
+        email_to (str): recipient email
+        username (str): buyer username
+        timeout (int): timeout for sending email
+        round_order (int): tournament round for order
+        date_order (datetime): datetime for order
+        product (str): product full name
+        from_address (str): buyer wallet address
+        to_address (str): seller wallet address
+        amount (float): order price amount
+        currency (str): order currency
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - New order for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_order.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "new_order.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/order-history"
     celery_app.send_task(
@@ -148,7 +192,7 @@ def send_new_order_email(
     # )
 
 
-def send_new_confirmed_sale_email(
+def send_new_confirmed_sale_email(  # pylint: disable=too-many-arguments
     email_to: str,
     username: str,
     round_order: int,
@@ -160,8 +204,25 @@ def send_new_confirmed_sale_email(
     currency: str,
     use_encryption: bool,
 ) -> None:
+    """
+    Send new confirmed sale email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        round_order (int): tournament round for order
+        date_order (datetime): datetime for order
+        product (str): product full name
+        buyer (str): buyer username
+        transaction_hash (str): transaction hash
+        amount (float): order price amount
+        currency (str): order currency
+        use_encryption (bool): whether the order uses client-side encryption
+    """
     subject = f"{settings.PROJECT_NAME} - New confirmed sale for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_confirmed_sale.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "new_confirmed_sale.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/sales-history"
     celery_app.send_task(
@@ -187,7 +248,7 @@ def send_new_confirmed_sale_email(
     )
 
 
-def send_order_confirmed_email(
+def send_order_confirmed_email(  # pylint: disable=too-many-arguments
     email_to: str,
     username: str,
     round_order: int,
@@ -199,9 +260,26 @@ def send_order_confirmed_email(
     amount: float,
     currency: str,
 ) -> None:
+    """
+    Send order confirmed email
+
+    Args:
+        email_to (str): recipient email
+        username (str): buyer username
+        round_order (int): tournament round for order
+        date_order (datetime): datetime for order
+        product (str): product full name
+        from_address (str): buyer wallet address
+        to_address (str): seller wallet address
+        transaction_hash (str): transaction hash
+        amount (float): order price amount
+        currency (str): order currency
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Order confirmed for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "order_confirmed.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "order_confirmed.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/order-history"
     celery_app.send_task(
@@ -227,7 +305,7 @@ def send_order_confirmed_email(
     )
 
 
-def send_order_expired_email(
+def send_order_expired_email(  # pylint: disable=too-many-arguments
     email_to: str,
     username: str,
     round_order: int,
@@ -238,9 +316,25 @@ def send_order_expired_email(
     amount: float,
     currency: str,
 ) -> None:
+    """
+    Send order expired email
+
+    Args:
+        email_to (str): recipient email
+        username (str): buyer username
+        round_order (int): tournament round for order
+        date_order (datetime): datetime for order
+        product (str): product full name
+        from_address (str): buyer wallet address
+        to_address (str): seller wallet address
+        amount (float): order price amount
+        currency (str): order currency
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Order expired for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "order_expired.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "order_expired.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/order-history"
     celery_app.send_task(
@@ -273,9 +367,22 @@ def send_new_artifact_email(
     order_id: int,
     artifact: str,
 ) -> None:
+    """
+    Send new artifact email
+
+    Args:
+        email_to (str): recipient email
+        username (str): buyer username
+        round_order (int): tournament round for order
+        product (str): product full name
+        order_id (int): order id
+        artifact (str): artifact name
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - New artifact for order for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/order-history"
     celery_app.send_task(
@@ -300,9 +407,21 @@ def send_new_artifact_email(
 def send_new_artifact_seller_email(
     email_to: str, username: str, round_tournament: int, product: str, artifact: str,
 ) -> None:
+    """
+    Send new artifact seller email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        round_tournament (int): tournament round
+        product (str): product full name
+        artifact (str): artifact name
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - New artifact added for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact_seller.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact_seller.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/my-listings"
     celery_app.send_task(
@@ -323,7 +442,7 @@ def send_new_artifact_seller_email(
     )
 
 
-def send_new_coupon_email(
+def send_new_coupon_email(  # pylint: disable=too-many-arguments
     email_to: str,
     username: str,
     code: str,
@@ -334,9 +453,25 @@ def send_new_coupon_email(
     discount_percent: int,
     quantity_total: int,
 ) -> None:
+    """
+    Send new coupon email
+
+    Args:
+        email_to (str): recipient email
+        username (str): coupon owner username
+        code (str): coupon code
+        date_expiration (datetime): coupon expiration date
+        applicable_product_ids (list): list of applicable product ids for coupon
+        min_spend (float, optional): minimum spend for coupon
+        max_discount (float, optional): maximum discount amount for coupon
+        discount_percent (int): discount percentage (0-100) for coupon
+        quantity_total (int): coupon total quantity
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - New coupon available for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_coupon.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "new_coupon.html", encoding="utf8"
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/my-coupons"
     celery_app.send_task(
@@ -364,9 +499,22 @@ def send_new_coupon_email(
 def send_failed_artifact_seller_email(
     email_to: str, username: str, round_tournament: int, product: str, artifact: str,
 ) -> None:
+    """
+    Send failed artifact seller email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        round_tournament (int): tournament round
+        product (str): product full name
+        artifact (str): artifact name
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Failed artifact upload for {username}"
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "failed_artifact_seller.html") as f:
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "failed_artifact_seller.html",
+        encoding="utf8",
+    ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/my-listings"
     celery_app.send_task(
@@ -395,10 +543,22 @@ def send_order_artifact_upload_reminder_email(
     product: str,
     buyer: str,
 ) -> None:
+    """
+    Send order artifact upload reminder email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        order_id (int): order id
+        round_order (int): tournament round for order
+        product (str): product full name
+        buyer (str): buyer username
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Reminder to upload for {buyer}'s order"
     with open(
-        Path(settings.EMAIL_TEMPLATES_DIR) / "order_artifact_upload_reminder.html"
+        Path(settings.EMAIL_TEMPLATES_DIR) / "order_artifact_upload_reminder.html",
+        encoding="utf8",
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/my-account/my-listings"
@@ -422,6 +582,15 @@ def send_order_artifact_upload_reminder_email(
 
 
 def generate_password_reset_token(email: str) -> str:
+    """
+    Generate password reset token (placeholder, not used)
+
+    Args:
+        email (str): account email
+
+    Returns:
+        str: password reset token
+    """
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
     now = datetime.utcnow()
     expires = now + delta
@@ -433,6 +602,15 @@ def generate_password_reset_token(email: str) -> str:
 
 
 def verify_password_reset_token(token: str) -> Optional[str]:
+    """
+    Verify password reset token (placeholder, not used)
+
+    Args:
+        token (str): password reset token
+
+    Returns:
+        str: decoded token
+    """
     try:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         return decoded_token["email"]

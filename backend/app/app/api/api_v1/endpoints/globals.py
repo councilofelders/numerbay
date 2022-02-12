@@ -13,4 +13,5 @@ router = APIRouter()
 
 @router.get("/")
 def get_globals(db: Session = Depends(deps.get_db)) -> Any:
+    """ Get globals """
     return crud.globals.get_singleton(db)

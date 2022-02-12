@@ -1,3 +1,5 @@
+""" Celery worker tasks """
+
 import functools
 import io
 import sys
@@ -38,11 +40,25 @@ client_sentry = Client(settings.SENTRY_DSN)
 
 @celery_app.task(acks_late=True)
 def test_celery(word: str) -> str:
+    """
+    Test celery task
+
+    Args:
+        word (str): message to send
+    """
+
     return f"test task return {word}"
 
 
 @celery_app.task
 def tick(msg: str) -> str:
+    """
+    Simple tick task
+
+    Args:
+        msg (str): message to send
+    """
+
     print(f"Tick! The time is: {datetime.now()}, arg: {msg}")
     sys.stdout.flush()
 
@@ -57,6 +73,16 @@ def send_email_task(
     html_template: str = "",
     environment: Dict = None,
 ) -> None:
+    """
+    Generic task for sending emails
+
+    Args:
+        email_to (str): recipient email
+        subject_template (str): email subject
+        html_template (str): email template
+        environment (dict): env variables for email template
+    """
+
     if environment is None:
         environment = {}
     send_email(
@@ -69,6 +95,12 @@ def send_email_task(
 
 @celery_app.task  # (acks_late=True)
 def send_new_artifact_emails_task(artifact_id: int) -> None:
+    """
+    Send new artifact email task
+
+    Args:
+        artifact_id (int): artifact id
+    """
     if settings.EMAILS_ENABLED:
         db = SessionLocal()
         try:
@@ -85,6 +117,12 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
 
 @celery_app.task  # (acks_late=True)
 def send_new_order_artifact_emails_task(artifact_id: str) -> None:
+    """
+    Send new order artifact email task
+
+    Args:
+        artifact_id (str): order artifact id
+    """
     if settings.EMAILS_ENABLED:
         db = SessionLocal()
         try:
@@ -122,6 +160,7 @@ def send_new_order_artifact_emails_task(artifact_id: str) -> None:
 
 @celery_app.task  # (acks_late=True)
 def send_order_artifact_upload_reminder_emails_task() -> None:
+    """ Send order artifact upload reminder emails task """
     if not settings.EMAILS_ENABLED:
         return None
     db = SessionLocal()
@@ -169,13 +208,20 @@ def send_order_artifact_upload_reminder_emails_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
+    """
+    Update individual user's Numerai models subtask
+
+    Args:
+        user_json (dict): dict of user information
+        retries (int): number of retries
+    """
     db = SessionLocal()
     try:
         # Update user info
         crud.user.update_numerai_api(db, user_json)
         # Update user models
         return crud.model.update_model(db, user_json)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         print(
             f"Error updating model scores for user {user_json['username']}: "
             f"[{e}], {retries} retries remaining"
@@ -197,6 +243,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_models_task() -> None:
+    """ Batch upload Numerai models task """
     db = SessionLocal()
     try:
         users = crud.user.search(
@@ -222,6 +269,12 @@ def batch_update_models_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_model_scores_task(retries: int = 0) -> None:
+    """
+    Batch update Numerai models scores task
+
+    Args:
+        retries (int): number of tries
+    """
     try:
         pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
         if pipeline_status["isScoringDay"]:
@@ -259,7 +312,7 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
                     countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
                     kwargs=dict(retries=retries),
                 )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         print(f"Error starting model scores update [{e}], {retries} retries remaining")
         if retries > 0:
             print(
@@ -275,6 +328,7 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_globals_task() -> None:
+    """ Update globals task """
     db = SessionLocal()
     try:
         crud.product.bulk_expire(
@@ -286,6 +340,7 @@ def update_globals_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_globals_stats_task() -> None:
+    """ Update global stats task """
     db = SessionLocal()
     try:
         crud.globals.update_stats(db)
@@ -295,6 +350,7 @@ def update_globals_stats_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_active_round() -> None:
+    """ Update active round task """
     db = SessionLocal()
     try:
         active_round = numerai.get_numerai_active_round()
@@ -335,6 +391,7 @@ def update_active_round() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_round_rollover() -> None:
+    """ Update round rollover task """
     db = SessionLocal()
     try:
         site_globals = crud.globals.get_singleton(db)
@@ -410,6 +467,12 @@ def update_round_rollover() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_payment_subtask(order_id: int) -> None:
+    """
+    Update payment subtask
+
+    Args:
+        order_id (int): order id
+    """
     db = SessionLocal()
     try:
         # Update order payment
@@ -420,6 +483,7 @@ def update_payment_subtask(order_id: int) -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_payments_task() -> None:
+    """ Batch update payments task """
     db = SessionLocal()
     try:
         orders = crud.order.get_multi_by_state(db, state="pending")
@@ -430,15 +494,27 @@ def batch_update_payments_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def upload_numerai_artifact_task(
+def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
     order_id: int,
     object_name: str,
     model_id: str,
     numerai_api_key_public_id: str,
     numerai_api_key_secret: str,
     tournament: int = 8,
-    version: int = 1,
+    version: int = 1,  # pylint: disable=unused-argument
 ) -> Optional[Any]:
+    """
+    Upload Numerai artifact task
+
+    Args:
+        order_id (int): order id
+        object_name (str): object name
+        model_id (str): Numerai model id
+        numerai_api_key_public_id (str): Numerai API key public ID
+        numerai_api_key_secret (str): Numerai API key secret
+        tournament (int): Tournament ID
+        version (int): Data version (placeholder, not used)
+    """
     db = SessionLocal()
     try:
         order = crud.order.get(db=db, id=order_id)
@@ -517,6 +593,16 @@ def upload_numerai_artifact_task(
 
 @celery_app.task  # (acks_late=True)
 def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Optional[Any]:
+    """
+    Submit Numerai model subtask
+
+    Args:
+        order_json (dict): dict of order information
+        retry (bool): whether to retry on failure
+
+    Returns:
+
+    """
     db = SessionLocal()
     try:
         order_id = order_json["id"]
@@ -613,6 +699,7 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
 
 @celery_app.task  # (acks_late=True)
 def batch_submit_numerai_models_task() -> None:
+    """ Batch submit Numerai models task """
     db = SessionLocal()
     try:
         orders = crud.order.get_pending_submission_orders(
@@ -632,9 +719,16 @@ def batch_submit_numerai_models_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def validate_artifact_upload_task(
+def validate_artifact_upload_task(  # pylint: disable=too-many-branches
     artifact_id: int, skip_if_active: bool = True
 ) -> None:
+    """
+    Validate artifact upload task
+
+    Args:
+        artifact_id (int): artifact ID
+        skip_if_active (bool): whether to skip validation if artifact has already been validated
+    """
     db = SessionLocal()
     try:
         artifact = crud.artifact.get(db, id=artifact_id)
@@ -731,6 +825,7 @@ def validate_artifact_upload_task(
 
 @celery_app.task  # (acks_late=True)
 def batch_validate_numerai_models_stake_task() -> None:
+    """ batch validate Numerai models stake task """
     db = SessionLocal()
     try:
         # orders = crud.order.get_multi_by_state(
@@ -774,6 +869,7 @@ def batch_validate_numerai_models_stake_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_stake_snapshots() -> None:
+    """ Batch update stake snapshots task """
     db = SessionLocal()
     try:
         # Connect existing stake snapshots
@@ -813,7 +909,7 @@ def batch_update_stake_snapshots() -> None:
                 return_13_weeks=model["return13Weeks"],
                 return_52_weeks=model["return52Weeks"],
             )
-            if model["username"] in db_models_dict.keys():
+            if model["username"] in db_models_dict:
                 new_snapshot.model_id = db_models_dict[model["username"]].id
             db_stake_snapshots_dict[model["username"]] = new_snapshot
         db.add_all(db_stake_snapshots_dict.values())
@@ -837,7 +933,7 @@ def batch_update_stake_snapshots() -> None:
                 return_13_weeks=model["return13Weeks"],
                 return_52_weeks=model["return52Weeks"],
             )
-            if model["username"] in db_models_dict.keys():
+            if model["username"] in db_models_dict:
                 new_snapshot.model_id = db_models_dict[model["username"]].id
             db_stake_snapshots_dict[model["username"]] = new_snapshot
         db.add_all(db_stake_snapshots_dict.values())
@@ -848,6 +944,7 @@ def batch_update_stake_snapshots() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_polls() -> None:
+    """ Batch update polls task """
     db = SessionLocal()
     try:
         date_now = datetime.utcnow()
@@ -864,6 +961,7 @@ def batch_update_polls() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_prune_storage() -> None:
+    """ Batch prune storage task """
     db = SessionLocal()
     try:
         query_filters = [Category.is_per_round, Artifact.state != "pruned"]
@@ -912,7 +1010,12 @@ def batch_prune_storage() -> None:
 
 
 @celery_app.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs) -> None:  # type: ignore
+def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
+    sender,  # type: ignore
+    **kwargs,
+) -> None:
+    """ Setup celery scheduled tasks """
+
     print("Setup Cron Tasks")
     sender.conf.beat_schedule = {
         "test_tick": {

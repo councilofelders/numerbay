@@ -39,7 +39,7 @@ router = APIRouter()
 @router.post(
     "/search", response_model=Dict[str, Union[int, List[schemas.Product], List, Dict]]
 )
-def search_products(
+def search_products(  # pylint: disable=too-many-arguments
     db: Session = Depends(deps.get_db),
     id: int = Body(None),  # pylint: disable=W0622
     category_id: int = Body(None),
@@ -88,7 +88,7 @@ def search_products(
     "/search-authenticated",
     response_model=Dict[str, Union[int, List[schemas.Product], List, Dict]],
 )
-def search_products_authenticated(
+def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-arguments
     db: Session = Depends(deps.get_db),
     id: int = Body(None),  # pylint: disable=W0622
     category_id: int = Body(None),
@@ -225,7 +225,7 @@ def create_product(
 
 
 @router.put("/{id}", response_model=schemas.Product)
-def update_product(
+def update_product(  # pylint: disable=too-many-branches
     *,
     db: Session = Depends(deps.get_db),
     id: int,  # pylint: disable=W0622
@@ -330,7 +330,7 @@ def update_product(
 def delete_product(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
+    id: int,  # pylint: disable=redefined-builtin
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -350,7 +350,7 @@ def delete_product(
 
 
 @router.post("/{product_id}/artifacts/generate-upload-url")
-def generate_upload_url(
+def generate_upload_url(  # pylint: disable=too-many-locals
     *,
     product_id: int,
     filename: str = Form(...),
@@ -362,6 +362,7 @@ def generate_upload_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Generate upload URL """
     product = crud.product.get(db, id=product_id)
     validate_new_artifact(
         product=product, current_user=current_user, url=None, filename=filename
@@ -449,6 +450,7 @@ def validate_upload(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Validate upload """
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     artifact = crud.artifact.get(db, id=artifact_id)
@@ -502,6 +504,7 @@ async def create_product_artifact(
     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Create product artifact """
     product = crud.product.get(db, id=product_id)
 
     validate_new_artifact(
@@ -554,6 +557,7 @@ async def update_product_artifact(
     # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Update product artifact """
     product = crud.product.get(db, id=product_id)
     validate_new_artifact(
         product=product, current_user=current_user, url=url, filename=filename
@@ -600,6 +604,7 @@ def list_product_artifacts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ List product artifacts """
     product = validate_existing_product(db, product_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
@@ -624,6 +629,7 @@ def generate_download_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """ Generate download URL """
     product = validate_existing_product(db, product_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore

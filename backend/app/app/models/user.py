@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 
 
 class User(Base):
+    """ Database model for user """
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     public_address = Column(String, index=True, nullable=True, unique=True)

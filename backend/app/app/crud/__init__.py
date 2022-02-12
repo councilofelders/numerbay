@@ -1,8 +1,10 @@
+""" CRUD modules """
+
 from .crud_artifact import artifact
 from .crud_category import category
 from .crud_coupon import coupon
 from .crud_favorite import favorite
-from .crud_globals import globals
+from .crud_globals import globals  # pylint: disable=redefined-builtin
 from .crud_item import item
 from .crud_model import model
 from .crud_order import order

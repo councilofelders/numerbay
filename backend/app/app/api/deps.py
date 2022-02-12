@@ -23,6 +23,8 @@ reusable_oauth2 = OAuth2PasswordBearer(
 
 
 def get_db() -> Generator:
+    """ Get db session """
+
     try:
         db = SessionLocal()
         yield db
@@ -33,6 +35,16 @@ def get_db() -> Generator:
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> models.User:
+    """
+    Get current user
+
+    Args:
+        db (Session): db session
+        token: auth token
+
+    Returns:
+        models.User: current user
+    """
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
@@ -52,6 +64,16 @@ def get_current_user(
 def get_current_active_user(
     current_user: models.User = Depends(get_current_user),
 ) -> models.User:
+    """
+    Get current active user
+
+    Args:
+        current_user (models.User): current user
+
+    Returns:
+        models.User: current active user
+    """
+
     if not crud.user.is_active(current_user):
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
@@ -60,6 +82,15 @@ def get_current_active_user(
 def get_current_active_superuser(
     current_user: models.User = Depends(get_current_user),
 ) -> models.User:
+    """
+    Get current active superuser
+
+    Args:
+        current_user (models.User): current user
+
+    Returns:
+        models.User: current active superuser
+    """
     if not crud.user.is_superuser(current_user):
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
@@ -77,6 +108,7 @@ def get_current_active_superuser(
 
 
 def get_gcs_bucket() -> Bucket:
+    """ Get GCS bucket """
     service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
     credentials = service_account.Credentials.from_service_account_info(
         service_account_info

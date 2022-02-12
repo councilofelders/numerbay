@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class Artifact(Base):
+    """ Database model for artifact """
+
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, index=True, nullable=False)
     round_tournament = Column(Integer, index=True)

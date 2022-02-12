@@ -8,6 +8,8 @@ from pydantic import BaseModel, root_validator
 
 
 class CouponBase(BaseModel):
+    """ Base data schema for coupon """
+
     date_expiration: Optional[date] = None
     applicability: Optional[str] = None
     applicable_product_ids: Optional[List[int]] = None
@@ -20,6 +22,8 @@ class CouponBase(BaseModel):
 
 # Properties to receive on coupon creation
 class CouponCreate(CouponBase):
+    """ Create data schema for coupon """
+
     date_creation: Optional[datetime] = None
     applicability: str
     code: Optional[str] = None
@@ -28,11 +32,13 @@ class CouponCreate(CouponBase):
 
 # Properties to receive on coupon update
 class CouponUpdate(CouponBase):
-    pass
+    """ Update data schema for coupon """
 
 
 # Properties shared by models stored in DB
 class CouponInDBBase(CouponBase):
+    """ Base database data schema for coupon """
+
     id: int
     date_creation: datetime
     code: str
@@ -40,26 +46,31 @@ class CouponInDBBase(CouponBase):
     state: Optional[str] = None
     is_owned_by_seller: bool
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 class CouponOwner(BaseModel):
+    """ API data schema for coupon owner """
+
     id: Optional[int] = None
     username: Optional[str] = None
 
-    class Config:
+    class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True
 
 
 # Properties to return to client
 class Coupon(CouponInDBBase):
+    """ API data schema for coupon """
+
     owner: Optional[CouponOwner] = None
     # todo calculate quantity_remaining
     quantity_remaining: Optional[int] = None
 
     @root_validator(pre=True)
     def set_quantity_remaining(cls, values):  # type: ignore
+        """ Set coupon remaining quantity """
         values_to_return = dict(**values)
         if values["quantity_total"] is not None:
             redemption_count = 0
@@ -74,4 +85,6 @@ class Coupon(CouponInDBBase):
 
 # Properties properties stored in DB
 class CouponInDB(CouponInDBBase):
+    """ Database data schema for coupon """
+
     owner_id: int

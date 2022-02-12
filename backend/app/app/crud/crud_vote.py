@@ -12,6 +12,8 @@ from app.schemas.vote import VoteCreate, VoteUpdate
 
 
 class CRUDVote(CRUDBase[Vote, VoteCreate, VoteUpdate]):
+    """ CRUD for vote """
+
     def get_multi_by_poll(
         self,
         db: Session,
@@ -21,6 +23,7 @@ class CRUDVote(CRUDBase[Vote, VoteCreate, VoteUpdate]):
         skip: int = 0,
         limit: int = None
     ) -> List[Vote]:
+        """ Get multiple votes by poll """
         query_filters = [Vote.poll_id == poll_id]
         if voter_id is not None:
             query_filters.append(Vote.voter_id == voter_id)
