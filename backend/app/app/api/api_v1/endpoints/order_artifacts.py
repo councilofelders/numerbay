@@ -31,13 +31,15 @@ router = APIRouter()
 @router.post("/generate-upload-url")
 def generate_upload_url(  # pylint: disable=too-many-locals
     *,
-    order_id: int = Form(...),
-    filename: str = Form(...),
-    is_numerai_direct: str = Form(None),
-    filesize: int = Form(None),
-    action: str = Form(None),
-    filename_suffix: str = Form(None),
-    description: str = Form(None),
+    order_id: int = Form(..., description="order ID"),
+    filename: str = Form(..., description="file name"),
+    is_numerai_direct: str = Form(
+        None, description="whether this is direct Numerai submission"
+    ),
+    filesize: int = Form(None, description="file size"),
+    action: str = Form(None, description="method for upload"),
+    filename_suffix: str = Form(None, description="file name suffix"),
+    description: str = Form(None, description="order artifact description"),
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
