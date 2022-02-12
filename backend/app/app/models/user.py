@@ -9,7 +9,6 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .favorite import Favorite  # noqa: F401
-    from .item import Item  # noqa: F401
     from .product import Product  # noqa: F401
     from .model import Model  # noqa: F401
     from .order import Order  # noqa: F401
@@ -39,7 +38,6 @@ class User(Base):
     numerai_wallet_address = Column(String, nullable=True, unique=True)
     public_key = Column(String)
     encrypted_private_key = Column(String)
-    items = relationship("Item", back_populates="owner")
     products = relationship("Product", back_populates="owner")
     models = relationship("Model", back_populates="owner")
     orders = relationship("Order", back_populates="buyer")

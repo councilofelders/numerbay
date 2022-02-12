@@ -5,7 +5,6 @@ from .crud_category import category
 from .crud_coupon import coupon
 from .crud_favorite import favorite
 from .crud_globals import globals  # pylint: disable=redefined-builtin
-from .crud_item import item
 from .crud_model import model
 from .crud_order import order
 from .crud_order_artifact import order_artifact
@@ -16,11 +15,3 @@ from .crud_review import review
 from .crud_stake_snapshot import stake_snapshot
 from .crud_user import user
 from .crud_vote import vote
-
-# For a new basic set of CRUD operations you could just do
-
-# from .base import CRUDBase
-# from app.models.item import Item
-# from app.schemas.item import ItemCreate, ItemUpdate
-
-# item = CRUDBase[Item, ItemCreate, ItemUpdate](Item)

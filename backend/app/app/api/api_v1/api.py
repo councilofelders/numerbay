@@ -33,7 +33,6 @@ api_router.include_router(
 api_router.include_router(numerai.router, prefix="/numerai", tags=["numerai"])
 api_router.include_router(polls.router, prefix="/polls", tags=["polls"])
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
-# api_router.include_router(items.router, prefix="/items", tags=["items"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(scheduler.router, prefix="/scheduler", tags=["scheduler"])
 api_router.include_router(globals.router, prefix="/globals", tags=["globals"])

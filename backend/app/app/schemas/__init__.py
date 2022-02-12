@@ -5,7 +5,6 @@ from .category import Category, CategoryCreate, CategoryInDB, CategoryUpdate
 from .coupon import Coupon, CouponCreate, CouponInDB, CouponUpdate
 from .favorite import Favorite, FavoriteCreate, FavoriteInDB, FavoriteUpdate
 from .globals import Globals, GlobalsCreate, GlobalsInDB, GlobalsUpdate
-from .item import Item, ItemCreate, ItemInDB, ItemUpdate
 from .model import Model, ModelCreate, ModelInDB, ModelUpdate
 from .msg import Msg
 from .order import Order, OrderCreate, OrderInDB, OrderUpdate
