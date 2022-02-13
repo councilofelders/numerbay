@@ -26,7 +26,15 @@ from app.api.dependencies.orders import update_payment
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.models import Artifact, Category, Model, Poll, Product, StakeSnapshot
+from app.models import (
+    Artifact,
+    Category,
+    Model,
+    OrderArtifact,
+    Poll,
+    Product,
+    StakeSnapshot,
+)
 from app.utils import (
     send_email,
     send_failed_artifact_seller_email,
@@ -950,6 +958,7 @@ def batch_update_polls() -> None:
 @celery_app.task  # (acks_late=True)
 def batch_prune_storage() -> None:
     """ Batch prune storage task """
+    # prune artifacts
     db = SessionLocal()
     try:
         query_filters = [Category.is_per_round, Artifact.state != "pruned"]
@@ -992,6 +1001,31 @@ def batch_prune_storage() -> None:
                     pass
 
             artifact.state = "pruned"
+        db.commit()
+    finally:
+        db.close()
+
+    # prune order artifacts
+    db = SessionLocal()
+    try:
+        order_artifacts_to_prune = (
+            db.query(OrderArtifact)
+            .filter(OrderArtifact.state == "marked_for_pruning")
+            .all()
+        )
+        print(f"{len(order_artifacts_to_prune)} order artifacts to prune")
+
+        bucket = deps.get_gcs_bucket()
+        for order_artifact in order_artifacts_to_prune:
+            object_name = order_artifact.object_name
+            if object_name:
+                try:
+                    blob = bucket.blob(object_name)
+                    blob.delete()
+                except NotFound:
+                    pass
+
+            order_artifact.state = "pruned"
         db.commit()
     finally:
         db.close()

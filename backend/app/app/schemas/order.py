@@ -84,7 +84,7 @@ class Order(OrderInDBBase):
         """ Filter non-pruned artifacts """
         value_to_return = []
         for artifact in value:
-            if artifact.state != "marked_for_pruning":
+            if artifact.state not in ["marked_for_pruning", "pruned"]:
                 value_to_return.append(artifact)
         return value_to_return
 
