@@ -550,7 +550,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
 
     # Validate Upload
     submission_id = numerai.validate_numerai_submission(
-        object_name=object_name,
+        object_name=submission_auth["filename"],
         model_id=model_id,
         tournament=tournament,
         numerai_api_key_public_id=numerai_api_key_public_id,
