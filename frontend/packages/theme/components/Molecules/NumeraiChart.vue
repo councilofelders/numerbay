@@ -19,6 +19,13 @@ export default {
       default: () => ({
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          yAxes: [{
+            ticks: {
+              suggestedMin: 0
+            }
+          }]
+        },
         tooltips: {
           callbacks: {
             title(tooltipItem, data) {
