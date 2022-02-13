@@ -46,8 +46,6 @@ def validate_product_input(
             status_code=400, detail="Avatar image must be a HTTPS URL",
         )
 
-    # todo options validation
-
     # At least one option
     if (  # pylint: disable=too-many-boolean-expressions
         isinstance(product_in, schemas.ProductCreate)

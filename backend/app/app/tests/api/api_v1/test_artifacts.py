@@ -14,7 +14,7 @@ def test_generate_upload_url(
 
     with get_random_product(
         db, owner_id=current_user["id"], is_on_platform=True, mode="file"
-    ) as product:  # todo check on-platform
+    ) as product:
         product_id = product.id
         artifact_data = {
             "filename": "test.txt",

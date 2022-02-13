@@ -869,7 +869,6 @@ def test_voting_invalid_inputs(
 
         # not enough active rounds
         poll = crud.poll.update(db, db_obj=poll, obj_in={"min_rounds": 52})
-        # todo why is crud not working?
         stake_snapshot.nmr_staked = 2
         stake_snapshot.return_13_weeks = 0.5
         db.commit()

@@ -68,7 +68,6 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     Create new order.
     """
     # record time immediately to prevent timing issue
-    # todo resolve timing issue
     date_order = datetime.utcnow() - timedelta(minutes=1)
 
     # Product exists
@@ -108,7 +107,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         )
 
     # Product active
-    if not product.is_active:  # todo handle expired api keys
+    if not product.is_active:
         raise HTTPException(
             status_code=400, detail="This product is not available for sale"
         )
@@ -150,7 +149,6 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             status_code=400, detail="Order for this product this round already exists"
         )
 
-    # todo test
     # Compulsory submit model for non-file modes
     if product_option.mode != "file" and submit_model_id is None:
         raise HTTPException(
@@ -192,7 +190,6 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         )
 
     if product:
-        # todo test coupon
         coupon_obj = crud.coupon.get_by_code(db, code=coupon)
         product_option_obj = schemas.ProductOption.from_orm(product_option)
         product_option_obj = calculate_option_price(

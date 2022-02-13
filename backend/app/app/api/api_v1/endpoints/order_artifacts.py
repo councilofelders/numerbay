@@ -79,7 +79,12 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 
     if is_numerai_direct:
         # submit to Numerai directly
-        # todo handle stake mode and no submit id
+        if not order.submit_model_id:  # type: ignore
+            raise HTTPException(
+                status_code=400,
+                detail="The order did not designate a Numerai submission slot",
+            )
+
         submission_auth = numerai.generate_numerai_submission_url(
             object_name=object_name,
             model_id=order.submit_model_id,  # type: ignore
@@ -89,6 +94,11 @@ def generate_upload_url(  # pylint: disable=too-many-locals
         )
         url, object_name = submission_auth["url"], submission_auth["filename"]
     else:
+        if order.mode != "file":  # type: ignore
+            raise HTTPException(
+                status_code=400,
+                detail="Uploading for buyer is not allowed for stake mode order",
+            )
         # upload for buyer
         url = generate_gcs_signed_url(
             bucket=bucket,
@@ -149,7 +159,6 @@ def validate_upload(
 
     if artifact.is_numerai_direct:
         # validate numerai submission
-        # todo handling everything
         submission_id = numerai.validate_numerai_submission(
             object_name=artifact.object_name,
             model_id=artifact.order.submit_model_id,  # type: ignore
@@ -210,20 +219,6 @@ def validate_upload(
     crud.order_artifact.update(
         db, db_obj=artifact, obj_in={"state": "active"}  # type: ignore
     )
-
-    # mark product as ready
-    # if not artifact.order.product.is_ready:  # type: ignore
-    #     crud.product.update(
-    #         db, db_obj=artifact.order.product, obj_in={"is_ready": True}  # type: ignore
-    #     )
-
-    # validate and fulfill orders immediately
-    # celery_app.send_task(
-    #     "app.worker.validate_artifact_upload_task",
-    #     kwargs=dict(artifact_id=artifact.id, skip_if_active=False),
-    # )
-
-    # todo email notification
 
     return artifact
 

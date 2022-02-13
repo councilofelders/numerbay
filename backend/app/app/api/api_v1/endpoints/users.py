@@ -127,7 +127,6 @@ def update_user_me(  # pylint: disable=too-many-locals
         user_in.public_address = public_address
         user_in.signature = signature
     if public_key is not None and encrypted_private_key is not None:
-        # todo validate key
         user_in.public_key = public_key
         user_in.encrypted_private_key = encrypted_private_key
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)

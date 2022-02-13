@@ -65,7 +65,6 @@ class Coupon(CouponInDBBase):
     """ API data schema for coupon """
 
     owner: Optional[CouponOwner] = None
-    # todo calculate quantity_remaining
     quantity_remaining: Optional[int] = None
 
     @root_validator(pre=True)

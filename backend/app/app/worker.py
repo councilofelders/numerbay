@@ -327,18 +327,6 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def update_globals_task() -> None:
-    """ Update globals task """
-    db = SessionLocal()
-    try:
-        crud.product.bulk_expire(
-            db, current_round=crud.globals.update_singleton(db).selling_round
-        )
-    finally:
-        db.close()
-
-
-@celery_app.task  # (acks_late=True)
 def update_globals_stats_task() -> None:
     """ Update global stats task """
     db = SessionLocal()
@@ -1032,10 +1020,6 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
             "schedule": crontab(day_of_week="tue-sat", hour=14, minute=0),
             "kwargs": dict(retries=10),
         },
-        # "update_globals_task": {
-        #     "task": "app.worker.update_globals_task",
-        #     "schedule": crontab(day_of_week="sat", hour=18, minute=5),
-        # },
         "update_globals_stats_task": {
             "task": "app.worker.update_globals_stats_task",
             "schedule": crontab(hour=0, minute=0),

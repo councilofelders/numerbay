@@ -355,10 +355,3 @@ def test_search_seller_orders(
         content = response.json()
         assert content["total"] > 0
         assert order.product.name == content["data"][0]["product"]["name"]
-
-        # todo soft delete
-        # response = client.delete(
-        #     f"{settings.API_V1_STR}/products/{order.product_id}",
-        #     headers=normal_user_token_headers,
-        # )
-        # assert response.status_code == 200

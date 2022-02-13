@@ -451,11 +451,3 @@ def test_update_product(
         )
         content = response.json()
         assert content["category"]["id"] == 3
-
-        # todo soft delete
-        # response = client.delete(
-        #     f"{settings.API_V1_STR}/products/{content['id']}",
-        #     headers=normal_user_token_headers,
-        #     json=data,
-        # )
-        # assert response.status_code == 200

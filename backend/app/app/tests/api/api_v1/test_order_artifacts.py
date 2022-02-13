@@ -86,7 +86,7 @@ def test_generate_download_url(
     with get_random_order(db, owner_id=current_user["id"]) as order:
         artifact_data = {
             "order_id": order.id,
-            "filename": "test.txt",  # todo file format requirements
+            "filename": "test.txt",
             "action": "PUT",
         }
 

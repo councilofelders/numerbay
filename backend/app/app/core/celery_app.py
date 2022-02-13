@@ -15,8 +15,6 @@ celery_app.conf.task_routes = {
     # "app.worker.commit_models_subtask": "beat-queue",
     "app.worker.batch_update_models_task": "beat-queue",
     "app.worker.batch_update_model_scores_task": "beat-queue",
-    # todo deprecate old global update to new rollover
-    "app.worker.update_globals_task": "beat-queue",
     "app.worker.update_globals_stats_task": "beat-queue",
     "app.worker.update_active_round": "beat-queue",
     "app.worker.update_round_rollover": "beat-queue",
