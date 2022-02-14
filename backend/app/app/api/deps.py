@@ -98,15 +98,6 @@ def get_current_active_superuser(
     return current_user
 
 
-# def get_cloud_storage_driver() -> StorageDriver:
-#     from libcloud.storage.drivers.google_storage import GoogleStorageDriver
-#     driver = GoogleStorageDriver(
-#         key=settings.GCP_SERVICE_ACCOUNT_EMAIL,
-#         secret=settings.GCP_SERVICE_ACCOUNT_KEY.encode().decode('unicode-escape'),
-#         project=settings.GCP_PROJECT)
-#     return driver
-
-
 def get_gcs_bucket() -> Bucket:
     """ Get GCS bucket """
     service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore

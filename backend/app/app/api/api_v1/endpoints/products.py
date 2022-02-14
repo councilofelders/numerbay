@@ -501,7 +501,6 @@ async def create_product_artifact(
     description: str = Body(None),
     # filename: str = Body(None),
     db: Session = Depends(deps.get_db),
-    # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """ Create product artifact """
@@ -554,7 +553,6 @@ async def update_product_artifact(
     url: str = Body(None),
     filename: str = Body(None),
     db: Session = Depends(deps.get_db),
-    # driver: StorageDriver = Depends(deps.get_cloud_storage_driver),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """ Update product artifact """

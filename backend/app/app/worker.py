@@ -180,12 +180,14 @@ def send_order_artifact_upload_reminder_emails_task() -> None:
         orders = crud.order.get_active_orders(db, round_order=selling_round)
         orders_to_remind = []
         for order in orders:
+            if order.buyer_public_key is None:  # skip for non per-order artifacts
+                continue
             requires_numerai_submission = order.submit_model_id is not None
             requires_file = order.mode == "file"
             has_numerai_submission = False
             has_file = False
-            if not isinstance(order.artifacts, list):
-                continue
+            # if not isinstance(order.artifacts, list):
+            #     continue
             for artifact in order.artifacts:  # type: ignore
                 if artifact.state == "active":
                     if artifact.is_numerai_direct:
