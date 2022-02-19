@@ -1,6 +1,9 @@
 # Changelog
 Notable changes to this project.
 
+## [0.2.1] - 2022-02-19
+- added install dependency for nacl
+
 ## [0.2.0] - 2022-02-02
 - added support for per-order artifact upload and encryption
 - added support for per-order artifact download and decryption
