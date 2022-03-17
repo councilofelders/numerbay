@@ -1,0 +1,251 @@
+/* Button */
+.btn {
+  @include transition(0.3s);
+  @include border-radius(0.375rem);
+  font-weight: $fw-medium;
+  padding: 10px 14px;
+  font-size: $fs-14;
+  &-full {
+    width: 100%;
+    text-align: left;
+    &::after {
+      position: absolute;
+      right: 20px;
+    }
+  }
+  &-primary {
+    color: $white;
+    background-color: $primary;
+    border-color: $primary;
+    &:focus {
+      @include box-shadow(none!important);
+    }
+    &:focus,
+    &:hover {
+      color: $white;
+      background-color: $primary-2;
+      border-color: $primary-2;
+    }
+  }
+  &-black {
+    color: $white;
+    background-color: $headding-color;
+    border-color: $headding-color;
+    &:focus {
+      @include box-shadow(none!important);
+    }
+    &:focus,
+    &:hover {
+      color: $white;
+      background-color: $primary;
+      border-color: $primary;
+    }
+  }
+  &-danger {
+    color: $white;
+    &:focus {
+      @include box-shadow(none!important);
+    }
+    &:hover {
+      color: $white;
+    }
+  }
+  &-outline {
+    &-dark {
+      color: $headding-color;
+      border-color: $headding-color;
+      &:focus {
+        @include box-shadow(none!important);
+      }
+    }
+    &-secondary {
+      border-color: rgba($base-color, 0.2);
+      &:focus {
+        @include box-shadow(none!important);
+      }
+      &:hover {
+        color: $white;
+      }
+    }
+    &-light {
+      color: $headding-color;
+    }
+  }
+  &-link {
+    font-weight: $fw-semibold;
+    color: $headding-color;
+    &-s1 {
+      position: relative;
+      &::after {
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        width: 100%;
+        height: 1px;
+        background-color: $headding-color;
+        content: "";
+        @include transition(0.2s);
+      }
+      &:hover {
+        &::after {
+          background-color: $primary;
+        }
+      }
+    }
+    &:hover {
+      color: $primary;
+    }
+  }
+  &-lg {
+    padding: 7px 14px;
+    font-size: $fs-15;
+  }
+  &-sm {
+    padding: 5px 15px;
+    font-size: 14px;
+  }
+  &-light {
+    &:hover {
+      background-color: $primary;
+      color: $white;
+      border-color: $primary;
+    }
+  }
+  &-grad {
+    background-image: linear-gradient(to right, $accent-color 0%,$accent-color-3 100%);
+    @include transition(0.5s);
+    background-size: 200% auto;
+    color: $white;
+    border-left: transparent;
+    border-right: transparent;
+    &:hover {
+      background-position: right center;
+      color: $white;
+    }   
+  }
+  &.g-btn {
+    &:hover {
+      background-color: $red!important;
+      color: $white!important;
+    }
+  }
+  &.f-btn {
+    &:hover {
+      background-color: $blue!important;
+      color: $white!important;
+    }
+  }
+  &.t-btn {
+    &:hover {
+      background-color: $cyan!important;
+      color: $white!important;
+    }
+  }
+}
+
+//Btns group
+.btns {
+  &-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: -7px;
+    >* {
+      padding: 7px;
+    }
+    &-full-mobile {
+      >* {
+        width: 100%;
+        .btn {
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+.btn {
+  &-group {
+    &-s1 {
+      .btn {
+        margin-right: 15px;
+        @include border-radius(6px!important);
+        font-size: 14px;
+        padding: 8px 20px;
+      }
+    }
+  }
+}
+// button bg dim
+.bg {
+  &-dark-dim {
+    background-color: $black-200;
+    &:focus {
+      @include box-shadow(none!important);
+    }
+    &:hover {
+      background-color: $headding-color;
+      color: $white;
+    }
+  }
+  &-danger-dim {
+    background-color: $red-100;
+    color: $red;
+    &:focus {
+      @include box-shadow(none!important);
+    }
+    &:hover {
+      background-color: $red;
+      color: $white;
+    }
+  }
+}
+.menu-toggler-user-open,
+.menu-toggler-user-close {
+  > * {
+    pointer-events: none;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .btn {
+    padding: 10px 24px;
+    font-size: $fs-14;
+    &-lg {
+      padding: 0.75rem 1.875rem;
+      font-size: $fs-14;
+    }
+    &-sm {
+      padding: 5px 15px;
+      font-size: 14px;
+    }
+  }
+  .btns {
+    &-group {
+      &-full-mobile {
+        >* {
+          width: auto;
+          .btn {
+            display: inline-block;
+          }
+        }
+      }
+    }
+  }
+}
+@include media-breakpoint-up(xl) {
+  .btns {
+    &-group {
+      margin: -9px;
+      >* {
+        padding: 9px;
+      }
+      &-2 {
+        margin: -5px;
+        >* {
+          padding: 5px;
+        }
+      }
+    }
+  }
+}

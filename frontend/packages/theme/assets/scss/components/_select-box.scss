@@ -1,0 +1,127 @@
+.generic {
+    &-select {
+        .vs {
+            &__dropdown-toggle {
+                border-color: rgba($base-color, 0.2);
+                padding-bottom: 8px;
+                @include border-radius(0.375rem);
+            }
+            &__selected {
+                margin-top: 11px;
+                margin-right: 0;
+                margin-left: 10px;
+                font-size: 14px;
+                position: relative!important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: block;
+                color: $headding-color;
+                &-options {
+                    overflow: hidden;
+                    flex-wrap: inherit;
+                }
+            }
+            &__actions {
+                padding-top: 7px;
+                padding-right: 10px;
+                &:after{
+                    position: relative;
+                    content: $ni-chevron-down;
+                    font-family: $ni-font;
+                    font-size: 22px;
+                    color: $secondary;
+                }
+            }
+            &__search {
+                margin-top: 11px;
+                padding-right: 12px;
+                padding-left: 12px;
+            }
+            &__clear {
+                position: absolute;
+                right: 36px;
+                top: 10px;
+                margin-right: 0;
+                z-index: 4;
+                &:after{
+                    position: relative;
+                    content: $ni-cross;
+                    font-family: $ni-font;
+                    font-size: 14px;
+                    color: $secondary;
+                }
+                svg {
+                    display: none;
+                }
+            }
+            &__open-indicator {
+                display: none;
+            }
+            &__dropdown-menu {
+                border-color: rgba($base-color, 0.2);
+                li {
+                    font-size: $fs-16;
+                    color: $secondary;
+                    padding: 8px 20px;
+                    @include transition(0.3s);
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    position: relative;
+                    &::after {
+                        position: absolute;
+                        top: 50%;
+                        right: 15px;
+                        @include transform(translateY(-50%));
+                        content: $ni-check;
+                        font-family: "Nioicon";
+                        color: $primary;
+                        font-weight: $fw-semibold;
+                        opacity: 0;
+                    }
+                    &.vs__dropdown-option--highlight,
+                    &:hover {
+                        background-color: $base-100;
+                        color: $headding-color;
+                        &::after{
+                            opacity: 1;
+                        }
+                    }
+                }
+            }
+        }
+        &.vs--open {
+            .vs {
+                &__dropdown-toggle {
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+                &__selected {
+                    opacity: 1;
+                    color: $secondary;
+                }
+                &__actions {
+                    &::after {
+                        @include transform(rotate(-180deg));
+                    }
+                }
+            }
+        }
+        &-s3 {
+            width: 180px;
+        }
+    }
+}
+@include media-breakpoint-up(lg) {
+    .generic {
+        &-select {
+            &-s2 {
+                width: 280px;
+            }
+            &-s3 {
+                width: 200px;
+            }
+        }
+    }
+}

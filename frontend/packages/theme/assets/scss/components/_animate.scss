@@ -1,0 +1,23 @@
+.animated .slider-full-screen .card-title,
+.animated .slider-full-screen .card-text,
+.animated .slider-full-screen .btns-group {
+    position: relative;
+    top: 100px;
+    opacity: 0;
+}
+.animated .slider-full-screen .card-title {
+    @include transition(0.6s);
+}
+.animated .slider-full-screen .card-text {
+    @include transition(0.9s); 
+}
+.animated .slider-full-screen .btns-group {
+    @include transition(1.1s);
+}
+
+.animated .swiper-slide-active .card-title,
+.animated .swiper-slide-active .card-text,
+.animated .swiper-slide-active .btns-group {
+    top: 0;
+    opacity: 1;
+}

@@ -1,6 +1,7 @@
 
 export default async ({ app, redirect }) => {
-  if (!app.$cookies.get('nb-token')) {
+  const token = app.$cookies.get('nb-token');
+  if (!token || token === 'undefined') {
     return redirect('/');
   }
 };

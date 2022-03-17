@@ -10,6 +10,7 @@ from sqlalchemy.types import JSON, Float, Integer
 
 from app import crud
 from app.crud.base import CRUDBase
+from app.models import Category
 from app.models.model import Model
 from app.models.product import Product
 from app.models.product_option import ProductOption
@@ -338,6 +339,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         limit: int = None,
         filters: Dict = None,
         term: str = None,
+        name: str = None,
+        category_slug: str = None,
         sort: str = None,
     ) -> Any:
         """ Search products """
@@ -357,6 +360,10 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     "%{}%".format(term)  # pylint: disable=consider-using-f-string
                 )
             )
+        if name is not None:
+            query_filters.append(Product.name == name)
+        if category_slug is not None:
+            query_filters.append(Category.slug == category_slug)
 
         stake_step = 1
         return3m_step = 0.01
@@ -368,7 +375,11 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             return3m_step=return3m_step,
         )
 
-        query = db.query(self.model).join(self.model.model, isouter=True)
+        query = (
+            db.query(self.model)
+            .join(self.model.category)
+            .join(self.model.model, isouter=True)
+        )
         if len(query_filters) > 0:
             query_filter = functools.reduce(and_, query_filters)
             query = query.filter(query_filter)

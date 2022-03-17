@@ -1,0 +1,35 @@
+.section {
+    &-head {
+        padding-bottom: 34px;
+        &-sm {
+            padding-bottom: 34px;
+        }
+        &-md {
+            padding-bottom: 50px;
+        }
+        br {
+            display: none;
+        }
+    }
+    &-meta {
+        font-weight: $fw-semibold;
+        letter-spacing: 2px;
+        font-size: $fs-15;
+    }
+}
+// Responsive breakpoint
+@include media-breakpoint-up(lg) {
+    .section {
+        &-head {
+            &.text-center {
+                padding-bottom: 45px;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            br {
+                display: inline-block;
+            }
+        }
+    }
+}

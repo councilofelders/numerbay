@@ -1,0 +1,89 @@
+.list {
+    &-item {
+        li {
+            margin-bottom: 5px;
+            a {
+                color: $secondary;
+                @include transition(0.3s);
+                &:hover {
+                    color: $primary;
+                }
+            }
+            &:last-child {
+                margin-bottom: 0;
+            }
+            .icon {
+                &-wbg {
+                    background-color: rgba($primary, 0.1);
+                    color: $primary;
+                }
+            }
+        }
+        &-inline {
+            li {
+                display: inline-block;
+                &:not(:last-child) {
+                    margin-right: 15px;
+                }
+            }
+        }
+        &-s1 {
+            li {
+                margin-bottom: 7px;
+                a {
+                    position: relative;
+                    display: inline-block;
+                    &::after {
+                        width: 100%;
+                        height: 1px;
+                        position: absolute;
+                        content: "";
+                        left: 0;
+                        bottom: -2px;
+                        background-color: $primary;
+                        @include transition(0.1s);
+                        opacity: 0;
+                        visibility: hidden;
+                    }
+                    &:hover {
+                        &::after {
+                            bottom: 0;
+                            opacity: 1;
+                            visibility: visible;
+                        }
+                    }
+                }
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+        &-icon {
+            li {
+                margin-bottom: 10px;
+                display: flex;
+                align-items: baseline;
+                .icon {
+                    margin-right: 8px;
+                    flex-shrink: 0;
+                }
+            }
+        }
+        &-hero {
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+    }
+}
+.total-bid-list {
+    li {
+        display: flex;
+        justify-content: space-between;
+        line-height: 30px;
+        font-size: $fs-15;
+        span + span {
+            color: $headding-color;
+            font-weight: $fw-medium;
+        }
+    }
+}

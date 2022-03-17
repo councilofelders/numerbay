@@ -1,0 +1,339 @@
+.dark-mode {
+    background-color: $black;
+    color: $white-3;
+    hr {
+        background-color: rgba($white, 0.6);
+    }
+    .header-main,
+    .header-menu,
+    .form-control,
+    .form-select,
+    .header-main.has-fixed.is-transparent,
+    .sidebar-user-mobile {
+        background-color: $black;
+    }
+    .bg-white {
+        background-color: $black!important;
+    }
+    .shadow-sm {
+        box-shadow: inset 0 0 0 #777,0 5px 7px rgba(58,58,58,.6)!important; 
+    }
+    .header-main.has-fixed{
+        box-shadow: inset 0 0 0 #777,0 5px 7px rgba(58,58,58,.5);
+    }
+    .header-main.is-transparent{
+        background: transparent;
+    }
+    .header-main.has-fixed.bg-transparent {
+        background-color: $black!important;
+    }
+    .theme-toggler {
+        &-show {
+            display: none;
+        }
+        &-hide {
+            display: block;
+        }
+    }
+    .logo {
+        &-dark {
+            opacity: 0;
+        }
+        &-light {
+            opacity: 1;
+        }
+    }
+    .menu-sub,
+    .btn-light,
+    .card,
+    .icon-wbg,
+    .modal-content,
+    .user-nav li.active a,
+    .user-nav li a:hover,
+    .table-s1 thead th,
+    .pagination-s1 .page-item:not(.active) .page-link:hover,
+    .nav-tabs-s3 .nav-link,
+    .social-links li a,
+    .client-logo-item,
+    .generic-select .vs__dropdown-menu,
+    .nav-pills-s1 .nav-link.active,
+    .card-hiw-s2 {
+        background-color: $black-5;
+    }
+    .menu-sub .menu-link:hover,
+    .nav-tabs-s2 .nav-link.active,
+    .generic-select .vs__dropdown-menu li.vs__dropdown-option--highlight,
+    .filter-btn.active,
+    .card-hiw-number,
+    .card-creator-v-wbg {
+        background-color: $black-2;
+    }
+    .menu-toggler,
+    .menu-toggler-user,
+    .card-generic,
+    .icon-btn,
+    .social-links li a:hover,
+    .styled-icon .icon,
+    .tag-link,
+    .btn-dark,
+    .list-item li .icon-wbg {
+        background-color: $black-3;
+    }
+    .card-generic-item:hover {
+        background-color: $black-4;
+    }
+    .counter-box{
+        background-color: $black-5!important;
+    }
+    .bg-gray {
+        background-color: $black-6!important;
+    }
+    .bg-gradient,
+    .bg-gradient-2 {
+        background: $black !important;
+        background: linear-gradient(to bottom, $black 0%, $black 100%) !important;
+    }
+    .alert-danger {
+        background-color: $red-200;
+        border-color: $red-200;
+    }
+    .alert-info {
+        background-color: $blue-200;
+        border-color: $blue-200;
+        color: $blue-300;
+    }
+    .menu-link,
+    h1, h2, h3, .h1, .h2, .h3, h4, .h4, h5, h6, .h5, .h6,
+    .countdown-amount,
+    .menu-sub .menu-link:hover,
+    .bg-dark-dim,
+    .icon-btn,
+    .menu-toggler,
+    .menu-toggler-user,
+    .form-control,
+    .form-select,
+    .btn,
+    .card-title a,
+    .btn-link,
+    .card-generic-item,
+    .card-generic-item.active::after,
+    .nav-tabs-s1 .nav-link:not(.active),
+    .table,
+    .pagination-s1 .page-link,
+    .nav-tabs-s3 .nav-link,
+    .nav-tabs-s2 .nav-link:not(.active),
+    .user-nav li a,
+    .copy-input,
+    .copy-text,
+    .social-links li a,
+    .form-label,
+    .posts-title a,
+    .list-item li a,
+    .card-media-body a:not(.btn-primary),
+    .styled-icon .icon,
+    .tag-link,
+    .card-credit .card-header span,
+    .breadcrumb-s1 .breadcrumb-item a,
+    .modal-body strong,
+    .total-bid-list li span + span,
+    .nav-tabs-s2 .nav-link.active,
+    .card-price-wrap .card-price-number,
+    .card-author .author-link,
+    .author-username,
+    .generic-select .vs__search,
+    .generic-select .vs__dropdown-menu li.vs__dropdown-option--highlight,
+    .nav-pills-s1 .nav-link,
+    .list-item li .icon-wbg,
+    .card-title {
+        color: $white;
+    }
+    .card,
+    .client-logo-item {
+        border: 1px solid $black-2;
+    }
+    .card-text,
+    .footer-list li a,
+    p,
+    span {
+        color: $white-3;
+    }
+    .btn-light,
+    .form-control,
+    .form-select,
+    .generic-select .vs__dropdown-toggle,
+    .btn-dark {
+        border-color: $black-3;
+    }
+    .text-dark-gray {
+        color: $black-8!important;
+    }
+    .generic-select .vs__selected {
+        color: #6c757d;
+    }
+    .text-black,
+    .text-secondary,
+    .menu-toggler.active {
+        color: $white-2!important;
+    }
+    .bg-dark-dim {
+        background-color: $black-4!important;
+    }
+    .bg-dark-dim:hover,
+    .theme-toggler {
+        background-color: $white-2!important;
+        color: $headding-color;
+    }
+    .bg-danger-dim {
+        background-color: $red-900 !important;
+    }
+    .bg-danger-dim:hover {
+        background-color: $red!important;
+    }
+    .bg-dark {
+        background-color: $black-5!important;
+    }
+    .border-gray,
+    .border,
+    .table-s2 {
+        border-color: $black-5!important;
+    }
+    .card-media,
+    .card-border,
+    .btn-outline-secondary,
+    .avatar-group a,
+    .nav-pills-s1 .nav-link.active,
+    .nav-pills-s1 .nav-link {
+        border-color: $black-5;
+    }
+    .card-title a:hover,
+    .alert a,
+    .posts-title a:hover,
+    .list-item li a:hover,
+    .btn-link:hover,
+    .card-media-body a:hover:not(.btn-primary),
+    .icon-btn:hover,
+    .theme-toggler span {
+        color: $primary;
+    }
+    .btn-primary {
+        border-color: $white-2;
+        background-color: $white-2;
+        color: $headding-color;
+    }
+    .btn-link-s1::after {
+        background-color: $white-2;
+    }
+    .btn-link-s1:hover::after {
+        background-color: $primary
+    }
+    .btn-primary:hover,
+    .btn-outline-dark:hover,
+    .btn-light:hover,
+    .nav-tabs-s3 .nav-link.active,
+    .styled-icon .icon:hover,
+    .tag-link:hover,
+    .btn-dark:hover {
+        background-color: $primary;
+        border-color: $primary;
+        color: $white;
+    }
+    .btn-outline-dark,
+    .filter-btn,
+    .form-control:focus,
+    .form-select:focus,
+    .file-upload-wrap {
+        border-color: $black-4;
+    }
+    .nav-tabs-s2 .nav-link {
+        border-color: $white-2;
+    }
+    .footer-list li a::after,
+    .swiper-pagination-bullet {
+        background-color: $white-3;
+    }
+    .nav-tabs-s1,
+    .table-s1 th, .table-s1 td,
+    .history-panel,
+    .modal-header,
+    .card-credit .card-header,
+    .user-panel-title-box {
+        border-bottom-color: $black-2;
+    }
+    .card-credit .card-footer {
+        border-top-color: $black-2;
+    }
+    .nav-tabs-s2 .nav-link {
+        border-color: rgba(255,255,255,.2);
+    }
+    .nav-tabs-s2 .nav-link:hover {
+        border-color: rgba(255,255,255,.4);
+    }
+    .nav-tabs-s2 .nav-link img {
+        filter: brightness(100);
+    }
+    .bg-pattern::after,
+    .bg-pattern-2::after, 
+    .bg-pattern-3::after {
+         filter: brightness(100);
+     }
+     .login-section .nav-tabs-s2 .nav-link img {
+        filter: brightness(100%);
+    }
+    .g-btn {
+        background-color: $red-900!important;
+    }
+    .f-btn {
+        background-color: $blue-700!important;
+    }
+    .t-btn {
+        background-color: $cyan-900!important;
+    }
+
+    .list-item-s1 li a:hover {
+        color: $white-2;
+    }
+    .card-cat {
+        background-color: $black-2;
+        .icon{
+            color: currentColor;
+            position: relative;
+            overflow: hidden;
+            &::after{
+                position: absolute;
+                content: '';
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                opacity: .1;
+                background: currentColor;
+            }
+        }
+        &:hover {
+            background-color:currentColor;
+            .icon {
+                background-color: $white;
+            }
+            .card-cat-title {
+                color: $white;
+            }
+        }
+    }
+    .table-s2 {
+        th,
+        td {
+            border-bottom-color: $black-2!important;
+        }
+    }
+   
+    // Responsive breakpoint
+    @include media-breakpoint-up(xl){
+        .header-menu {
+            background: transparent;
+        }
+        .on-dark:not(.has-fixed) .menu-sub .menu-item:hover > .menu-link,
+        .on-dark:not(.has-fixed) .menu-sub .menu-link{
+            color: $white-2;
+        }
+    }
+}

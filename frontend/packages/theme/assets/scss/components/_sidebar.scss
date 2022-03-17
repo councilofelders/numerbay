@@ -1,0 +1,107 @@
+.sidebar {
+    &-widget{
+        margin-bottom: 32px;
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+    &-text,
+    &-btn-link {
+        font-size: 15px;
+    }
+    &-btn-wrap {
+        display: block;
+    }
+    &-user-mobile {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       z-index: 1025;
+       background-color: rgba($black, 0.9);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       @include transition(0.2s);
+       opacity: 0;
+       visibility: hidden;
+       .user-nav {
+           background-color: $white;
+           padding: 30px;
+           @include border-radius(6px);
+       }
+       &.active {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+    &-drop {
+        .card-generic {
+            padding: 20px;
+        }
+        .nav {
+            &-tabs {
+                flex-direction: column;
+            }
+            &-item,
+            &-link {
+                width: 100%;
+                text-align: left;
+            }
+        }
+    }
+}
+.menu-toggler-user-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 20px;
+    margin-right: 20px;
+}
+// Responsive breakpoint
+@include media-breakpoint-up(sm) {
+    .sidebar {
+        &-user-mobile {
+            .user-nav {
+                min-width: 320px;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(lg) {
+    .sidebar {
+        &-head {
+            &-btn {
+                display: none;
+            }
+        }
+        &-drop {
+            display: none;
+        }
+        &-btn-wrap {
+            display: none;
+        }
+        &-user-mobile {
+            position: relative;
+            top: auto;
+            left: auto;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-color: transparent;
+            display: block;
+            opacity: 1;
+            visibility: visible;
+            .user-nav {
+                background-color: transparent;
+                padding: 0;
+                @include border-radius(0);
+                min-width: inherit;
+            }
+        }
+    }
+    .menu-toggler-user-close {
+        display: none;
+    }
+}

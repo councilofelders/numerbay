@@ -1,0 +1,201 @@
+.styled-icon {
+    li {
+        display: inline-block;
+        &:not(:last-child) {
+            margin-right: 0.375rem;
+        }
+    }
+    .icon {
+        color: $headding-color;
+        width: 2.188rem;
+        height: 2.188rem;
+        line-height: 2.313rem;
+        @include border-radius(50%);
+        background-color: $white;
+        display: block;
+        @include box-shadow(0 2px 5px rgba(0,0,0, 0.1));
+        text-align: center;
+        @include transition(0.3s);
+        &:hover {
+            background-color: $primary;
+            color: $white;
+        }
+    }
+   &-s1 {
+       li {
+           &:not(:last-child) {
+               margin-right: 20px;
+           }
+       }
+       .icon {
+           width: 3.75rem;
+           height: 3.75rem;
+           line-height: 4.063rem;
+           font-size: 1.375rem;
+       }
+       span {
+           font-size: $fs-15;
+       }
+   }
+    
+}
+
+.icon-btn {
+    height: 33px;
+    width: 33px;
+    display: grid;
+    place-items: center;
+    font-size: $fs-15;
+    @include border-radius(100%);
+    @include box-shadow($box-shadow-2);
+    background-color: $white;
+    opacity: 1;
+    color: $headding-color;
+    text-align: center;
+    @include transition(0.2s);
+    border: 0;
+    &-s1 {
+        width: 34px;
+        height: 34px;
+        font-size: $fs-13;
+    }
+    &-size-2 {
+        width: 50px;
+        height: 50px;
+        font-size: $fs-9;
+    }
+    &:hover {
+        opacity: 1;
+        color: $primary;
+    }
+}
+/* social links */
+.social-links {
+    li {
+        margin-bottom: 10px;
+        .icon {
+            font-size: 18px;
+            position: absolute;
+            top: 12px;
+            left: 20px;
+        }
+        a {
+            font-weight: $fw-semibold;
+            color: $headding-color;
+            display: block;
+            padding: 8px 20px 8px 45px;
+            background-color: $base-100;
+            @include border-radius(6px);
+            @include transition(0.3s);
+            position: relative;
+            word-wrap: break-word;
+            font-size: $fs-16;
+            &:hover {
+                background-color: $base-400;
+            }
+        }
+    }
+}
+// theme toggler
+.theme-toggler {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $white;
+    @include box-shadow($box-shadow-2);
+    position: relative;
+    @include border-radius(0.375rem);
+    font-weight: $fw-medium;
+    color: $headding-color;
+    padding: 10px 14px;
+    span {
+        color: $headding-color;
+    }
+    &-text {
+        margin-left: 5px;
+    }
+    &-hide {
+        display: none;
+    }
+}
+
+.icon{
+    &-wbg {
+        background-color: $white;
+        display: inline-grid;
+        place-items:center;
+    }
+    &-circle{
+        @include border-radius(50%);
+    }
+    &-rounded{
+        @include border-radius(12px);
+    }
+    &-xs {
+        height: 18px;
+        width: 18px;
+        font-size: $fs-18;
+    }
+    &-sm {
+        height: 38px;
+        width: 38px;
+        font-size: $fs-14;
+    }
+    &-md{
+        height: 54px;
+        width: 54px;
+        font-size: $fs-9;
+    }
+    &-lg{
+        height: 50px;
+        width: 50px;
+        font-size: $fs-9;
+    }
+}
+@include media-breakpoint-up(sm) {
+    .icon-btn {
+        height: 2.5rem;
+        width: 2.5rem;
+        font-size: $fs-12;
+        &-s1 {
+            width: 2.813rem;
+            height: 2.813rem;
+            line-height: 2.813rem;
+        }
+        &-size-2 {
+            width: 70px;
+            height: 70px;
+            font-size: $fs-7;
+        }
+    }
+    .icon{
+        &-lg{
+            height: 70px;
+            width: 70px;
+            font-size: $fs-7;
+        }
+    }
+    .social-links {
+        li {
+            a {
+                font-size: $fs-14;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(lg) {
+    // theme toggler
+    .theme-toggler {
+        width: 45px;
+        height: 45px;
+        &-text {
+            display: none;
+        }
+        .icon {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+}

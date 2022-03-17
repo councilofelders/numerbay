@@ -1,0 +1,204 @@
+//nioicon variables
+@import 'bundles/nioicon/variables';
+
+//Nioicon
+$ni-font:          "Nioicon";
+
+// Fonts path
+$font-path: '../fonts/';
+
+//Theme font
+$theme-font:               'Poppins', sans-serif;
+
+//Logo
+$logo-height:               29px;
+$logo-height-sm:            28px;
+$logo-height-lg:            60px;
+
+$header-main-gap-y:         0.5rem;
+
+//Menu gap
+$menu-item-gap-x:           1.5rem;
+$menu-item-gap-y:           0.5rem;
+$menu-item-gap-x-desk:      1rem;
+$menu-item-gap-y-desk:      1rem;
+$menu-sub-gap-y:            0.75rem;
+$menu-sub-gap-x:            $menu-sub-gap-y;
+
+$header-main-gap-y:         14px;
+$header-main-border-width:  1px;
+$header-height:             ($header-main-gap-y*2 + $logo-height + $header-main-border-width);
+
+//font weight
+$fw-light:                  300;
+$fw-regular:                400;
+$fw-medium:                 500;
+$fw-semibold:               600;
+$fw-bold:                   700;
+
+/* theme font size */
+
+$fs-3:  3.125rem; // 50px
+$fs-4:  2.813rem;// 45px
+$fs-5:  2.5rem; //40px
+$fs-6:  2.188rem; // 35px
+$fs-7:  1.875rem; // 30px
+$fs-8:  1.625rem; // 26px
+$fs-9:  1.5rem; // 24px
+$fs-10:  1.438rem; // 23px
+$fs-11:  1.25rem; // 20px
+$fs-12:  1.125rem; // 18px
+$fs-13:  1.063rem; // 17px
+$fs-14:  1rem; //16px
+$fs-15:  0.938rem; // 15px
+$fs-16:  0.875rem; //14px
+$fs-17:  0.813rem; //13px
+$fs-18:  0.75rem; //12px
+$fs-19:  0.688rem; //11px
+
+
+$white:                    #ffffff;
+$white-2:                  #e3e3e3;
+$white-3:                  #c1c1c1;
+$white-4:                  #f8f9fa;
+$black:                    #000000;
+$black-2:                  #252525;
+$black-3:                  #3a3a3a;
+$black-4:                  #464646;
+$black-5:                  #202020;
+$black-6:                  #1c1c1c;
+$black-7:                  #5b6678;
+$black-8:                  #7e8899;
+
+$dark:                      #1c2b46;
+$black-100:                 #8091a7;
+$black-200:                 #d9e1ef ;
+
+$green:                     #08dd67;
+$red:                       #dc3545;
+$red-100:                   #f8d7da;
+$red-200:                   #2c0b0e;
+$red-300:                   #ffe7e5;
+$red-900:                   #463335;
+
+
+$blue-100:                  #cfe2ff;
+$blue-200:                  #374446;
+$blue-300:                  #4e8995;
+$blue-400:                  #dae5fb;
+$blue-500:                  #e2f4ff;
+$blue-600:                  #4e525c;
+$blue-700:                  #2e3940;
+
+// Base color
+$base-100:                  #f8f9fa;
+$base-200:                  #fbfbfb;
+$base-300:                  #F5F5F5;
+$base-400:                  #d9dbde;
+$base-500:                  #fcf9fd;
+$base-600:                  #f2eef7;;
+$base-color:                #415076;
+//colors
+$blue:                      #0d6efd;
+$indigo:                    #6610f2;
+$purple:                    #6f42c1;
+$pink:                      #d63384;
+$orange:                    #fd7e14;
+$yellow:                    #ffc107;
+$green:                     #198754;
+$teal:                      #20c997;
+$cyan:                      #0dcaf0;
+
+
+
+$purple-100:                #e2d9f3;
+$indigo-100:                #e0cffc;
+$pink-100:                  #f7d6e6;
+$orange-100:                #ffe5d0;
+$yellow-100:                #fff3cd;
+$green-100:                 #d1e7dd;
+$cyan-100:                  #cff4fc;
+$cyan-900:                  #032830;
+$teal-100:                  #d2f4ea;
+$primary-50:                #ece6f4;
+$primary-100:               #C7A1FF;
+
+$headding-color:            $dark;
+$paragraph-color:           $base-color;
+
+
+
+//accent colors
+$accent-color:              #7952b3;
+$accent-color-2:            #9371c7;
+$accent-color-3:            #bfabdf;
+$accent-color-4:            #4A2283;
+$accent-color-5:            #3C1971;
+
+$primary:                    $accent-color;
+$primary-2:                  $accent-color-2;
+$primary-3:                  $accent-color-4;
+$primary-4:                  $accent-color-5;
+$secondary:                  $black-100;
+
+$border-radius:             6px;
+
+//gutter-width
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/mixins";
+
+// Grid breakpoints
+// Define the minimum dimensions at which your layout will change,
+// adapting to different screen sizes, for use in media queries.
+
+// scss-docs-start grid-breakpoints
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px
+);
+
+// scss-docs-end grid-breakpoints
+@include _assert-ascending($grid-breakpoints, "$grid-breakpoints");
+@include _assert-starts-at-zero($grid-breakpoints, "$grid-breakpoints");
+
+
+// Grid containers
+//
+// Define the maximum width of `.container` for different screen sizes.
+
+// scss-docs-start container-max-widths
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1170px
+);
+// scss-docs-end container-max-widths
+
+@include _assert-ascending($container-max-widths, "$container-max-widths");
+
+$spacer: 1rem !default;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,
+  2: $spacer * .5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+  gs: $spacer * 2,
+
+);
+
+$grid-gutter-width:           2rem;
+
+$enable-negative-margins: true;
+
+/*======= Responsive variables =========*/
+$laptop-lg: '(min-width: 1441px)';
+$laptop-1: '(min-width: 1201px)';
+$laptop-2: '(min-width: 1025px)';
+$mobile-s: '(min-width: 321px)';
+

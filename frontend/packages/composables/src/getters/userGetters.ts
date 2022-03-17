@@ -14,6 +14,8 @@ export const getNumeraiApiKeyPublicId = (user: User): string => user?.numerai_ap
 
 export const getNonce = (user: User): string => user?.nonce || '';
 
+export const getPublicKey = (user: User): string => user?.public_key || null;
+
 export const getModels = (user: User, tournament: number = null, sortDate = true): any[] => {
   let models = user?.models;
   if (tournament) {
@@ -32,6 +34,7 @@ const userGetters: UserGetters<User> = {
   getPublicAddress: getPublicAddress,
   getNumeraiApiKeyPublicId: getNumeraiApiKeyPublicId,
   getNonce: getNonce,
+  getPublicKey: getPublicKey,
   getModels: getModels
 };
 

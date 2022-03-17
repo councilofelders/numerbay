@@ -32,9 +32,9 @@
   "exclude": [
     "node_modules"
   ],
-  "include": [
-    "tests/e2e/**/*.ts",
-    "tests/e2e/plugins/index.js",
-    "tests/e2e/support/index.js"
-  ]
+//  "include": [
+//    "tests/e2e/**/*.ts",
+//    "tests/e2e/plugins/index.js",
+//    "tests/e2e/support/index.js"
+//  ]
 }

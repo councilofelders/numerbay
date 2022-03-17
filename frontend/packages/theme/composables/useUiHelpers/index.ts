@@ -23,6 +23,8 @@ const getFiltersDataFromUrl = (context, onlyFilters) => {
 const useUiHelpers = () => {
   const instance = getInstance();
   const getFacetsFromURL = () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const { query, params } = instance.$router.history.current;
     const categorySlug = Object.keys(params).reduce((prev, curr) => params[curr] || prev, params.slug_1);
 
@@ -33,18 +35,19 @@ const useUiHelpers = () => {
       sort: query.sort || 'rank-best',
       filters: getFiltersDataFromUrl(instance, true),
       itemsPerPage: parseInt(query.itemsPerPage, 10) || 20,
-      phrase: query.phrase
+      term: query.term
     };
   };
 
   // eslint-disable-next-line
   const getCatLink = (category): string => {
-    return `/c/${category.slug}`;
+    return `/explore/${category.slug}`;
   };
 
   // eslint-disable-next-line
   const changeSorting = (sort) => {
     // eslint-disable-next-line
+    // @ts-ignore
     const { query } = instance.$router.history.current;
     instance.$router.push({ query: { ...query, sort } });
   };

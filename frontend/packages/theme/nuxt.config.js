@@ -41,7 +41,10 @@ export default {
   },
   loading: { color: '#fff' },
   plugins: [
-    { src: 'plugins/nuxt-poll-plugin', ssr: false },
+    { src: 'plugins/theme-components', ssr: true },
+    { src: 'plugins/theme-components-client', ssr: false, mode: 'client' },
+    { src: 'plugins/wallet', ssr: false },
+    // { src: 'plugins/nuxt-poll-plugin', ssr: false },
     { src: 'plugins/nuxt-star-rating-plugin', ssr: false },
     { src: 'plugins/nuxt-multiselect-plugin', ssr: false },
     { src: 'plugins/nuxt-quill-plugin', ssr: false },
@@ -75,20 +78,6 @@ export default {
         ]
       }
     }],
-    // @core-development-only-start
-    ['@vue-storefront/nuxt-theme', {
-      generate: {
-        replace: {
-          apiClient: '@vue-storefront/numerbay-api',
-          composables: '@vue-storefront/numerbay'
-        }
-      }
-      // routes: false
-    }],
-    // @core-development-only-end
-    /* project-only-start
-    ['@vue-storefront/nuxt-theme'],
-    project-only-end */
     ['@vue-storefront/numerbay/nuxt', {
       i18n: {
         useNuxtI18nConfig: true
@@ -129,10 +118,6 @@ export default {
     countries: [
       { name: 'US',
         label: 'United States'
-        // states: [
-        //   'California',
-        //   'Nevada'
-        // ]
       },
       { name: 'AT',
         label: 'Austria' },
@@ -189,7 +174,6 @@ export default {
     }
   },
   styleResources: {
-    scss: [require.resolve('@storefront-ui/shared/styles/_helpers.scss', { paths: [process.cwd()] })]
   },
   build: {
     transpile: [
@@ -214,7 +198,6 @@ export default {
       }
     },
     extendRoutes(routes) {
-      // getRoutes(moduleOptions.generate ? projectLocalThemeDir : this.options.rootDir).forEach(route => routes.unshift(route));
       getRoutes(`${__dirname}`).forEach((route) => routes.unshift(route));
     }
   }

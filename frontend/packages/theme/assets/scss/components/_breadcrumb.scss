@@ -1,0 +1,19 @@
+.breadcrumb {
+    &-s1 {
+        .breadcrumb-item {
+            a {
+                color: $headding-color;
+                &:hover {
+                    color: $primary;
+                    text-decoration: underline;
+                }
+            }
+            + .breadcrumb-item {
+                &::before {
+                    content: "\e9d3";
+                    font-family: $ni-font;
+                }
+            }
+        }
+    }
+}

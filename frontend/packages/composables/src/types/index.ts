@@ -8,6 +8,7 @@ import {
 import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
+import {getPublicKey} from '../getters/userGetters';
 
 export type Address = Record<string, unknown>;
 
@@ -126,6 +127,7 @@ export interface UserGetters<USER> {
     getPublicAddress: (customer: USER) => string;
     getNumeraiApiKeyPublicId: (customer: USER) => string;
     getNonce: (customer: USER) => string;
+    getPublicKey: (customer: USER) => string;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     getModels: (customer: USER, tournament: number, sortDate: boolean) => any[];

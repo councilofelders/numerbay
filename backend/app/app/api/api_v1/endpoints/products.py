@@ -47,6 +47,8 @@ def search_products(  # pylint: disable=too-many-arguments
     limit: int = Body(None),
     filters: Dict = Body(None),
     term: str = Body(None),
+    name: str = Body(None),
+    category_slug: str = Body(None),
     sort: str = Body(None),
     coupon: str = Body(None),  # pylint: disable=W0613
     qty: int = Body(None),
@@ -64,6 +66,8 @@ def search_products(  # pylint: disable=too-many-arguments
         limit=limit,
         filters=filters,
         term=term,
+        name=name,
+        category_slug=category_slug,
         sort=sort,
     )
 
@@ -96,6 +100,8 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
     limit: int = Body(None),
     filters: Dict = Body(None),
     term: str = Body(None),
+    name: str = Body(None),
+    category_slug: str = Body(None),
     sort: str = Body(None),
     coupon: str = Body(None),
     qty: int = Body(None),
@@ -114,6 +120,8 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
         limit=limit,
         filters=filters,
         term=term,
+        name=name,
+        category_slug=category_slug,
         sort=sort,
     )
 

@@ -1,0 +1,9 @@
+.fun-fact-section {
+    padding-top: 70px;
+    padding-bottom: 100px;
+}
+@include media-breakpoint-up(xl) {
+    .fun-fact-section {
+        padding-top: 100px;
+    }
+}

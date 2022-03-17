@@ -1,0 +1,130 @@
+/* bg */
+.bg {
+    &-gradient {
+        background: $base-100 !important;
+        background: linear-gradient(to bottom, $base-100 0%, $white 100%) !important;
+        &-2 {
+            background: $base-500 !important;
+            background: linear-gradient(to bottom, $base-500 0%, $white 100%) !important;
+        }
+        &-primary {
+            background: linear-gradient(111.06deg, #5A3394 37.17%, #50278B 61.34%);
+        }
+    }
+    &-gray {
+        background: $base-200!important;
+    }
+    &-dark {
+        background: $headding-color !important;
+        &-transparent {
+            background: linear-gradient(to bottom, transparent 5%, $headding-color 100%)!important;
+        }
+    }
+    &-white-slim {
+        background-color: rgba($white, 0.2)!important;
+    }
+    &-pattern,
+    &-pattern-2,
+    &-pattern-3 {
+        background-size: cover;
+        position: relative;
+        z-index: 1;
+        &::after {
+            position: absolute;
+            content: "";
+            top: 0;
+            left: 0; 
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+    }
+    &-pattern {
+        background-position: center;
+        &::after {
+            background-image: url("../../images/thumb/bg-transparent.png");
+        }
+        &-2 {
+            &::after {
+                background-image: url("../../images/thumb/banner.png");
+            }
+        }
+        &-3 {
+            &::after {
+                background-image: url("../../images/thumb/shape.png");
+            }
+        }
+    }
+    &-primary {
+        &-dark {
+            background-color: $primary-3;
+        }
+        &-darker {
+            background-color: $primary-4;
+        }
+        &-50 {
+            background-color: $primary-50!important;
+        }
+    }
+    &-red {
+        background-color: $red!important;
+        &-100 {
+            background-color: $red-100 !important;
+        }
+    }
+    &-blue {
+        background-color: $blue!important;
+        &-100 {
+            background-color: $blue-100 !important;
+        }
+    }
+    &-purple {
+        background-color: $purple!important;
+        &-100 {
+            background-color: $purple-100 !important;
+        }
+    }
+    &-indigo {
+        background-color: $indigo!important;
+        &-100 {
+            background-color: $indigo-100 !important;
+        }
+    }
+    &-pink {
+        background-color: $pink!important;
+        &-100 {
+            background-color: $pink-100 !important;
+        }
+    }
+    &-orange {
+        background-color: $orange!important;
+        &-100 {
+            background-color: $orange-100 !important;
+        }
+    }
+    &-yellow {
+        background-color: $yellow!important;
+        &-100 {
+            background-color: $yellow-100 !important;
+        }
+    }
+    &-green {
+        background-color: $green!important;
+        &-100 {
+            background-color: $green-100 !important;
+        }
+    }
+    &-teal {
+        background-color: $teal!important;
+        &-100 {
+            background-color: $teal-100 !important;
+        }
+    }
+    &-cyan {
+        background-color: $cyan!important;
+        &-100 {
+            background-color: $cyan-100 !important;
+        }
+    }
+}

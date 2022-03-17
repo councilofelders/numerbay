@@ -63,6 +63,10 @@ export const getFormatted = (value: number, decimals = 4): string => value ? Num
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getNumeraiCorrMmcChartData = (numerai: any) => {
+  if (!numerai?.modelInfo) {
+    return {};
+  }
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
@@ -94,6 +98,10 @@ export const getNumeraiCorrMmcChartData = (numerai: any) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getNumeraiTcChartData = (numerai: any) => {
+  if (!numerai?.modelInfo) {
+    return {};
+  }
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(

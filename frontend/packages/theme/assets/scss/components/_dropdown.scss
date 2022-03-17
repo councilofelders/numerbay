@@ -1,0 +1,10 @@
+.dropdown-toggle {
+    &::after {
+        content: $ni-chevron-down;
+        font-family: $ni-font;
+        border-top: 0;
+        border-right: 0;
+        vertical-align: inherit;
+        border-left: 0;
+    }
+}

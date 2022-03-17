@@ -60,7 +60,10 @@ export const getProductId = (product: ProductVariant): string => (product as any
 
 export const getProductOptions = (product: ProductVariant): any[] => (product as any)?.options || [];
 
-export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.slice().sort((a, b) => parseFloat(a.id) - parseFloat(b.id)) : [];
+export const getProductOrderedOptions = (product: ProductVariant): any[] => (product as any)?.options ? (product as any)?.options.slice().sort((a, b) => parseFloat(a.id) - parseFloat(b.id)).map((o, i) => {
+  o.index = i;
+  return o;
+}) : [];
 
 export const getProductOptionById = (product: ProductVariant, optionId: number): any => {
   const options = (product as any)?.options?.filter((o)=>parseInt(o.id) === parseInt(String(optionId))) || [];

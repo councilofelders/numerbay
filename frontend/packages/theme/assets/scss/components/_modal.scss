@@ -1,0 +1,44 @@
+.modal {
+    &-header {
+        border-bottom-color: $base-100;
+        padding-left: 1.563rem;
+        padding-right: 1.563rem;
+        .btn-close {
+            margin-right: -0.1rem;
+            padding: 0;
+            &:focus {
+                @include box-shadow(0 2px 5px rgba(28, 43, 70, 0.1));
+            }
+        }
+    }
+    &-body {
+        padding: 1.563rem;
+        p {
+            font-size: $fs-15;
+            &.small {
+                font-size: $fs-16;
+            }
+        }
+        strong {
+            color: $headding-color;
+            font-weight: $fw-semibold;
+        }
+    }
+    &-footer {
+        border-top-color: rgba(128, 137, 150, 0.1);
+        padding-left: 1.563rem;
+        padding-right: 1.563rem;
+    }
+    &-text {
+        font-size: $fs-15;
+        a {
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+    .btn-close {
+        background-image: none;
+    }
+}
+

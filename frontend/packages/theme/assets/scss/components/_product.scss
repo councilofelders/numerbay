@@ -1,0 +1,34 @@
+.item-detail {
+    &-text {
+        &-meta {
+            font-weight: $fw-medium;
+            font-size: $fs-17;
+        }
+    }
+    &-section {
+        padding-top: 50px;
+    }
+}
+
+.trending {
+    &-section {
+        &.bg {
+            &-primary {
+                &-2 {
+                    .section-head {
+                        h2 {
+                            color: $white;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@include media-breakpoint-up(md){
+    .item-detail {
+        &-section {
+            padding-top: 70px;
+        }
+    }
+}

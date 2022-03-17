@@ -1,0 +1,26 @@
+.single {
+    &-entry-text {
+        font-size: $fs-15;
+    }
+}
+.posts {
+    >li {
+        margin-bottom: 15px;
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+    &-title {
+        font-size: $fs-16;
+        a {
+            color: $headding-color;
+            @include transition(0.2s);
+            &:hover {
+                color: $primary;
+            }
+        }
+    }
+    &-meta {
+        font-size: $fs-17;
+    }
+}

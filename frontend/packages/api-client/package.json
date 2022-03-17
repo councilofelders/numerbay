@@ -14,7 +14,7 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@vue-storefront/core": "^2.3.0",
+    "@vue-storefront/core": "2.3.0",
     "axios": "^0.21.2"
   },
   "files": [

@@ -1,0 +1,49 @@
+/* Font sizes */
+.fs-3 {
+    font-size: $fs-3 !important;
+}
+.fs-4 {
+    font-size: $fs-7 !important;
+}
+.fs-5 {
+    font-size: $fs-5 !important;
+}
+.fs-6 {
+    font-size: $fs-6 !important;
+}
+.fs-7 {
+    font-size: $fs-7 !important;
+}
+.fs-8 {
+    font-size: $fs-8 !important;
+}
+.fs-9 {
+    font-size: $fs-9 !important;
+}
+.fs-10 {
+    font-size: $fs-10 !important;
+}
+.fs-11 {
+    font-size: $fs-11 !important;
+}
+.fs-12 {
+    font-size: $fs-12 !important;
+}
+.fs-13 {
+    font-size: $fs-16 !important;
+}
+.fs-14 {
+    font-size: $fs-15 !important;
+}
+.fs-15 {
+    font-size: $fs-17 !important;
+}
+.smaller {
+    font-size: $fs-18;
+}
+// Responsive breakpoint
+@include media-breakpoint-up(lg) {
+    .fs-4 {
+        font-size: $fs-4 !important;
+    }
+}

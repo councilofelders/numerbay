@@ -1,0 +1,9 @@
+.blockquote {
+    border-left: 3px solid $base-400;
+    padding-left: 1.25rem;
+    font-size: $fs-12;
+    padding: 0.625rem 1.563rem;
+    p {
+        font-style: italic;
+    }
+}

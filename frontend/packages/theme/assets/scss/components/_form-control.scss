@@ -1,0 +1,212 @@
+/* Form */
+.form {
+    &-select,
+    &-control-s1 {
+        font-size: $fs-16;
+        @include border-radius(0.375rem);
+        border-color: rgba($base-color, 0.2);
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        color: $headding-color;
+        &:not(textarea) {
+            line-height: 2.298;
+        }
+        &:focus {
+            @include box-shadow(none);
+            border-color: $primary;
+        }
+    }
+    &-check-input,
+    &-select {
+        cursor: pointer;
+    }
+    &-select {
+        padding-right: 1.95rem;
+    }
+    &-switch-s1 {
+        .form-check-input {
+            width: 3em;
+            height: 1.5em;
+        }
+    }
+    &-label {
+        color: $headding-color;
+        font-weight: $fw-semibold;
+        font-size: $fs-15;
+    }
+    &-text,
+    &-forget-password {
+        font-size: $fs-15;
+    }
+    &-forget-password {
+        font-weight: $fw-regular;
+        color: $secondary;
+    }
+    &-floating {
+        label {
+            font-size: $fs-15;
+        }
+        .form-control {
+            border-color: rgba($base-color, 0.2);
+            font-size: $fs-16;
+            &:focus {
+                @include box-shadow(none);
+                border-color: $primary;
+            }
+        }
+        > .form-control,
+        > label {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+        textarea {
+            &.form-control {
+                height: 150px;
+            }
+        }
+    }
+    &-check-label {
+        cursor: pointer;
+        &-s1 {
+            font-size: $fs-15;
+        }
+    }
+}
+
+textarea.form-control.form-textarea-s1 {
+    height: 50px;
+    padding-top: 12px;
+}
+
+.copy {
+    &-input {
+        border: 0;
+        max-width: 135px;
+        font-size: 15px;
+        color: $headding-color;
+        background-color: transparent;
+        outline: none;
+        &-s1 {
+            max-width: 100%;
+            width: 100%;
+            padding-right: 20px;
+        }
+    }
+    &-text {
+        background-color: transparent;
+        border: 0;
+    }
+    &:focus {
+        outline: none;
+    }
+}
+
+.input {
+    &-label {
+         cursor: pointer;
+    }
+    &-group-text {
+        border-color: rgba(128, 137, 150, 0.1);
+    }
+    &-group {
+        .btn {
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+
+.modal-body {
+    .input {
+        &-group {
+            >.form-control {
+                width: 100%;
+                border-top-right-radius: 0.375rem!important;
+                border-bottom-right-radius: 0.375rem!important;
+                margin-bottom: 10px;
+            }
+            >.btn {
+                margin-left: 0;
+                border-top-left-radius: 0.375rem!important;
+                border-bottom-left-radius: 0.375rem!important;
+            }
+        }
+    }
+}
+
+.file-upload-wrap {
+    padding: 50px;
+    @include border-radius(6px);
+    border: dashed 3px $base-400!important;
+    text-align: center;
+    position: relative;
+}
+.switch {
+    &-content-unlock {
+        display: none;
+        &.is-shown {
+            display: block;
+        }
+    }
+}
+
+.password{
+    &-toggle {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        @include transform(translateY(-50%));
+        cursor: pointer;
+        padding: 0.938rem 1.25rem;
+        &.is-shown {
+            .password-hidden {
+                opacity: 1;
+            }
+            .password-shown {
+                opacity: 0;
+            }
+        }
+    }
+    &-hidden {
+        &:not(:first-child){
+            position: absolute;
+            left: 50%;
+            top: 47%;
+            @include transform(translate(-50%, -50%));
+            opacity: 0;
+        }
+    }
+}
+
+textarea {
+    &.form-control {
+        height: 150px;
+    }
+}
+
+.iti {
+    display: block;
+    &__country {
+        color: $headding-color;
+    }
+}
+@include media-breakpoint-up(sm) {
+    .modal-body {
+        .input {
+            &-group {
+                >.form-control {
+                    width: 1%;
+                    border-top-right-radius: 0!important;
+                    border-bottom-right-radius: 0!important;
+                    margin-bottom: 0;
+                }
+                >.btn {
+                    margin-left: -1px;
+                    border-top-left-radius: 0!important;
+                    border-bottom-left-radius: 0!important;
+                    border-left: transparent;
+                }
+            }
+        }
+    }
+}

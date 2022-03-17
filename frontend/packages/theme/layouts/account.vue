@@ -1,55 +1,15 @@
 <template>
-  <div>
-    <TopBar class="desktop-only" />
-    <div id="layout" >
-      <AppHeader />
-      <nuxt />
-      <BottomNavigation />
-      <CartSidebar />
-      <LoginModal />
-      <ListingModal />
-      <PollModal />
-    </div>
-  </div>
+  <div class="page-wrap">
+    <!-- header  -->
+    <header class="header-section has-header-main bg-pattern-3">
+        <!-- Header main -->
+        <HeaderMain></HeaderMain>
+        <!-- hero -->
+        <AuthorHero avatarSize="avatar-3"></AuthorHero>
+    </header>
+    <Nuxt :key="$route.fullPath"/>
+    <Notification/>
+    <!-- Footer  -->
+    <Footer classname="bg-dark on-dark"></Footer>
+  </div><!-- end page-wrap -->
 </template>
-
-<script>
-import AppHeader from '~/components/AppHeader.vue';
-import BottomNavigation from '~/components/BottomNavigation.vue';
-import TopBar from '~/components/TopBar.vue';
-import CartSidebar from '~/components/CartSidebar.vue';
-import LoginModal from '~/components/LoginModal.vue';
-import ListingModal from '../components/MyAccount/ListingModal.vue';
-import PollModal from '../components/MyAccount/PollModal.vue';
-
-export default {
-  name: 'AccountLayout',
-
-  components: {
-    TopBar,
-    AppHeader,
-    BottomNavigation,
-    CartSidebar,
-    LoginModal,
-    ListingModal,
-    PollModal
-  }
-};
-</script>
-
-<style lang="scss">
-@import "~@storefront-ui/vue/styles";
-
-body {
-  padding: 0;
-  margin: 0;
-}
-
-#layout {
-  box-sizing: border-box;
-  @include for-desktop {
-    max-width: 1240px;
-    margin: auto;
-  }
-}
-</style>

@@ -16,6 +16,9 @@ export default async function getProduct(context, params, customQuery?: CustomQu
     skip: params.offset,
     filters: params.filters,
     term: params.term,
+    name: params.name,
+    // eslint-disable-next-line camelcase
+    category_slug: params.categorySlug,
     sort: params.sort,
     coupon: params.coupon,
     qty: params.qty

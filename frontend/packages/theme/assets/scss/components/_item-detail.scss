@@ -1,0 +1,42 @@
+.item-detail {
+    &-title {
+        font-size: $fs-9;
+    }
+    &-content {
+        height: 100%;
+    }
+    &-img-full {
+        height: 100%;
+        img {
+            height: 100%;
+            max-width: 269px;
+            max-height: 269px;
+            object-fit: cover;
+        }
+    }
+    &-metrics-table {
+        > :not(caption) > * > * {
+            border-bottom-width: 0px;
+            padding: 0;
+            font-size: $fs-17;
+        }
+        .stats {
+            text-align: right;
+        }
+    }
+}
+
+@include media-breakpoint-up(md) {
+    .item-detail {
+        &-title {
+            font-size: $fs-7;
+        }
+    }
+}
+@include media-breakpoint-up(xl) {
+    .item-detail {
+        &-title {
+            font-size: $fs-9;
+        }
+    }
+}

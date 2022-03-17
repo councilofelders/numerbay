@@ -1,0 +1,113 @@
+.filter {
+    &-box {
+        &-filter {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: -5px;
+            &-item {
+                padding: 5px;
+                .generic-select {
+                    .vs{
+                        &__selected,
+                        &__dropdown-menu li {
+                            text-transform: capitalize;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    &-result-text {
+        font-size: $fs-16;
+    }
+    &-box-sort-text {
+        font-size: 14px;
+        font-weight: $fw-bold;
+    }
+    &-btn {
+        border: 1px solid rgba(128, 137, 150, 0.2);
+        font-weight: $fw-semibold;
+        color: $headding-color;
+        &:hover {
+            color: $primary;
+        }
+        &.active {
+            background-color: $headding-color;
+            color: $white;
+            border-color: $headding-color;
+            pointer-events: none;
+        }
+        &:focus {
+            @include box-shadow(none!important);
+        }
+        &-s1 {
+            border: 0;
+            padding-right: 0;
+            padding-left: 0;
+        }
+        &-s2 {
+            min-width: 160px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        &-group {
+            margin: -6px;
+            >* {
+                margin: 6px;
+            }
+            &-s1 {
+                margin: -8px;
+                >* {
+                    margin: 8px;
+                    display: block;
+                    text-align: left;
+                }
+            }
+        }
+    }
+}
+
+.quicksearch-wrap,
+.filter-btn-wrap {
+    display: none;
+}
+.filter-mobile-action {
+    display: flex;
+}
+
+@include media-breakpoint-up(lg) {
+    .filter {
+        &-btn {
+            font-size: $fs-15;
+        }
+        &-result-text {
+            font-size: $fs-14;
+        }
+        &-box {
+            &-filter {
+                margin: -10px;
+                &-item {
+                    padding: 10px;
+                }
+            }
+        }
+        &-button {
+            &-group {
+                .button {
+                    padding: 6px 20px;
+                    margin: 6px;
+                }
+            }
+        }
+    }
+    .quicksearch-wrap,
+    .filter-btn-wrap {
+        display: block;
+    }
+    .filter-mobile-action {
+        display: none;
+    }
+}

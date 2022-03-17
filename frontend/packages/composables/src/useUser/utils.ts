@@ -1,4 +1,4 @@
-import {ethers} from 'ethers';
+// import {ethers} from 'ethers';
 
 export const setChainData = (state, chainId) => {
   state.chainId = chainId;
@@ -31,7 +31,7 @@ export const setChainData = (state, chainId) => {
 
 export const setEthersProvider = async (state, providerW3m) => {
   state.providerW3m = providerW3m;
-  state.providerEthers = new ethers.providers.Web3Provider(providerW3m);
+  // state.providerEthers = new ethers.providers.Web3Provider(providerW3m);
 };
 
 export const setIsConnected = (state, isConnected) => {

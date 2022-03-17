@@ -1,0 +1,36 @@
+.comments {
+    ul {
+        margin-top: 1.563rem;
+        padding-top: 1.563rem;
+        border-top: 1px solid rgba(128,137,150,.1);
+        margin-left: 25px;
+    }
+    li {
+        &:not(:last-child) {
+            border-bottom: 1px solid rgba(128,137,150,.1);
+            padding-bottom: 1.563rem;
+            margin-bottom: 1.563rem;
+        }
+    }
+}
+
+.comment {
+    display: flex;
+    -ms-flex-align: start;
+    align-items: flex-start;
+    text-align: left;
+    &-meta,
+    &-replay-btn,
+    &-desc {
+        font-size: $fs-15;
+    }
+}
+// Responsive breakpoint
+@include media-breakpoint-up(sm) {
+    .comments {
+        ul {
+            margin-left: 65px;
+        }
+    }
+    
+}
