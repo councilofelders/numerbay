@@ -18,6 +18,7 @@
                         </tr>
                     </thead>
                     <tbody class="fs-13">
+                        <tr v-if="!displayedOrders || displayedOrders.length === 0"><td colspan="3" class="text-secondary">You have not made any purchase</td></tr>
                         <tr v-for="order in displayedOrders" :key="order.id">
                             <th scope="row"><a href="javascript:void(0);" @click="toggleInfoModal(order)" title="Click for details">{{ orderGetters.getId(order) }}</a></th>
                           <td><router-link class="btn-link" :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`">{{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}</router-link></td>

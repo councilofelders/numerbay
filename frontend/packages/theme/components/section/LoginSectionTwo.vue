@@ -74,23 +74,38 @@ export default {
         this.connecting = true;
         await this.$wallet.connect().then(async ()=>{
           const publicAddress = this.$wallet.account;
-          await this.getNonce({ publicAddress: publicAddress });
+          if (this.authenticated) {
+            await this.getNonceAuthenticated();
+          } else {
+            await this.getNonce({ publicAddress: publicAddress });
+          }
           const { nonce } = this.web3User.nonce;
           const signer = this.$wallet.provider.getSigner();
           const signaturePromise = signer.signMessage(`I am signing my one-time nonce: ${nonce}`);
 
+          const onLoginSuccess = async () => {
+            console.log('login success');
+            this.connecting = false;
+            await this.$router.push('/account');
+          };
+
           signaturePromise.then(async (signature)=>{
             if (signature) {
-              await this.loginWeb3({
-                user: {
-                  publicAddress: publicAddress,
-                  signature: signature
-                }
-              }).then(async () => {
-                console.log('login success');
-                this.connecting = false;
-                await this.$router.push('/account');
-              });
+              if (this.authenticated) {
+                await this.updateUser({
+                  user: {
+                    publicAddress: publicAddress,
+                    signature: signature
+                  }
+                }).then(onLoginSuccess);
+              } else {
+                await this.loginWeb3({
+                  user: {
+                    publicAddress: publicAddress,
+                    signature: signature
+                  }
+                }).then(onLoginSuccess);
+              }
             }
           }).catch(()=>{
             console.log('login fail');
@@ -117,14 +132,23 @@ export default {
     //   this.user = null;
     // }
   },
+  mounted() {
+    if (this.isAuthenticated && this.user?.username && !this.authenticated) {
+      this.$router.push('/account');
+    }
+  },
   setup() {
-    const { register, login, loading, setUser, error: userError,
-      web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, getNonce, loginWeb3 } = useUser();
+    const { isAuthenticated, user, register, login, loading, setUser, updateUser, error: userError,
+      web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, getNonce, getNonceAuthenticated, loginWeb3 } = useUser();
 
     return {
+      isAuthenticated,
+      user,
       web3User,
       getNonce,
-      loginWeb3
+      getNonceAuthenticated,
+      loginWeb3,
+      updateUser
     };
   }
 };

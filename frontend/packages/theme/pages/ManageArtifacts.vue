@@ -44,6 +44,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="fs-13">
+                                    <tr v-if="!orders || orders.length===0"><td colspan="3" class="text-secondary">No active sale order to upload for</td></tr>
                                     <tr v-for="order in orders" :key="orderGetters.getId(order)">
                                         <th scope="row">
                                           <div class="form-check form-switch form-switch-s1">
@@ -77,6 +78,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="fs-13">
+                                    <tr v-if="(!getAllOrderArtifacts() || getAllOrderArtifacts().length===0) && (!artifacts.data || artifacts.data.length===0)"><td colspan="3" class="text-secondary">Please upload artifacts after the round opens</td></tr>
                                     <tr v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
                                         <th scope="row">{{ artifact.order_id }}</th>
                                       <td><span class="text-break" style="white-space: normal;"><a href="javascript:void(0);" title="Download not available">{{ artifactGetters.getObjectName(artifact) }}</a></span></td>
@@ -175,6 +177,9 @@ const encryptfile = async (objFile, key) => {
 
 export default {
   name: 'ManageArtifacts',
+  middleware: [
+    'is-authenticated'
+  ],
   components: {
     MultipleDropzone
   },

@@ -15,7 +15,7 @@ const SectionData = {
   // Hero data Six
   heroDataSix: {
     title: 'Buy and sell anything Numerai',
-    content: 'The easy way to help building the world\'s last hedge fund with NumerBay - the Numerai community marketplace.'
+    content: 'The easy way to help build the world\'s last hedge fund with NumerBay - the Numerai community marketplace.'
   },
   // Breadcrumb data
   breadcrumbData: {

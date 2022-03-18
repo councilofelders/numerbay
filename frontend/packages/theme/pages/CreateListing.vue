@@ -43,7 +43,7 @@
                         <div class="form-item mb-4">
                             <div class="mb-4">
                                 <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Avatar</label>
-                                <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Https URL to an image" v-model="form.avatar" @change="encodeURL">
+                                <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Https URL to an image (optional)" v-model="form.avatar" @change="encodeURL">
                                 <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                             </div>
                           <object v-if="Boolean(form.avatar)" :data="form.avatar" type="image/png" class="col-xs-12 col-md-3 rounded-3" style="max-width: 100%">
@@ -198,7 +198,7 @@
 import SectionData from '@/store/store.js';
 
 // Composables
-import {computed, ref} from '@vue/composition-api';
+import { computed, ref } from '@vue/composition-api';
 import { onSSR } from '@vue-storefront/core';
 import {
   productGetters,
@@ -209,6 +209,7 @@ import {
   useUser,
   userGetters
 } from '@vue-storefront/numerbay';
+import { useUiNotification } from '~/composables';
 import axios from 'axios';
 import _ from 'lodash';
 import {extend} from 'vee-validate';
@@ -227,6 +228,9 @@ extend('secureUrl', {
 
 export default {
   name: 'CreateListing',
+  middleware: [
+    'is-authenticated'
+  ],
   data () {
     return {
       SectionData,
@@ -433,6 +437,7 @@ export default {
     const { categories, search: categorySearch } = useCategory();
     const { products, search: productSearch, createProduct, updateProduct, deleteProduct, loading: productLoading, error: productError } = useProduct('products');
     const { numerai, getModels: getNumeraiModels, error: numeraiError } = useNumerai('my-listings');
+    const { send } = useUiNotification();
 
     const currentListing = ref(null);
 
@@ -478,10 +483,14 @@ export default {
     const handleForm = (fn) => async () => {
       // resetErrorValues();
       await fn({ id: currentListing.value ? currentListing.value.id : null, product: form.value });
-
       const hasProductErrors = productError.value.listingModal;
       if (hasProductErrors) {
         // error.listingModal = productError.value.listingModal?.message;
+        send({
+          message: productError.value.listingModal?.message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
         return;
       }
 
