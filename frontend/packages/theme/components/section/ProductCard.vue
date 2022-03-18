@@ -159,7 +159,8 @@ export default {
         corr: this.productGetters.getModelRank(this.product, 'corr'),
         mmc: this.productGetters.getModelRank(this.product, 'mmc'),
         fnc: this.productGetters.getModelRank(this.product, 'fnc'),
-        tc: this.productGetters.getModelRank(this.product, 'tc')
+        tc: this.productGetters.getModelRank(this.product, 'tc'),
+        ic: this.productGetters.getModelRank(this.product, 'ic')
       };
     },
     latestReps() {
@@ -167,7 +168,8 @@ export default {
         corr: this.productGetters.getModelRep(this.product, 'corr'),
         mmc: this.productGetters.getModelRep(this.product, 'mmc'),
         fnc: this.productGetters.getModelRep(this.product, 'fnc'),
-        tc: this.productGetters.getModelRep(this.product, 'tc')
+        tc: this.productGetters.getModelRep(this.product, 'tc'),
+        ic: this.productGetters.getModelRep(this.product, 'ic')
       };
     },
     latestReturns() {
