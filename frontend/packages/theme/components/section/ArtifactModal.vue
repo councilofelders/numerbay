@@ -13,6 +13,7 @@
                 </tr>
             </thead>
             <tbody>
+                <tr v-if="!artifacts || artifacts.total===0"><td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round opens</td></tr>
                 <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
                     <td>
                       <span class="text-break" style="white-space: normal;">
@@ -40,6 +41,7 @@
                 </tr>
             </thead>
             <tbody>
+                <tr v-if="!orderArtifacts || orderArtifacts.total===0"><td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round opens</td></tr>
                 <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
                     <td>
                       <span class="text-break" style="white-space: normal;">
@@ -142,9 +144,9 @@ export default {
           productId: this.order.product.id,
           artifactId: artifact.id
         });
-        if (this.orderArtifactError.downloadArtifact) {
+        if (this.error.downloadArtifact) {
           this.send({
-            message: this.orderArtifactError.downloadArtifact.message,
+            message: this.error.downloadArtifact.message,
             type: 'bg-danger',
             icon: 'ni-alert-circle'
           });
@@ -199,9 +201,9 @@ export default {
       const downloadUrl = await this.downloadOrderArtifact({artifactId: artifact.id});
       this.activeArtifact = null;
       this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
-      if (this.error.downloadArtifact) {
+      if (this.orderArtifactError.downloadArtifact) {
         this.send({
-          message: this.error.downloadArtifact.message,
+          message: this.orderArtifactError.downloadArtifact.message,
           type: 'bg-danger',
           icon: 'ni-alert-circle'
         });

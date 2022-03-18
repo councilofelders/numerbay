@@ -242,6 +242,7 @@ export interface NumeraiGetters<NUMERAI> {
     getFormatted: (value: number, decimals: number) => string,
     getNumeraiCorrMmcChartData: (numerai: NUMERAI) => any,
     getNumeraiTcChartData: (numerai: NUMERAI) => any,
+    getNumeraiIcChartData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }
 

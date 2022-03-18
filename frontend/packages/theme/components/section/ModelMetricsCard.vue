@@ -61,6 +61,12 @@
                       </td>
                       <td class="stats">{{ latestReps.tc }}</td>
                   </tr>
+                  <tr v-if="show.ic" >
+                      <td>
+                          IC Reputation
+                      </td>
+                      <td class="stats">{{ latestReps.ic }}</td>
+                  </tr>
               </tbody>
             </table>
           </div>
@@ -93,6 +99,12 @@
                       </td>
                       <td class="stats">{{ latestRanks.tc }}</td>
                   </tr>
+                  <tr v-if="show.ic">
+                      <td>
+                          IC Rank
+                      </td>
+                      <td class="stats">{{ latestRanks.ic }}</td>
+                  </tr>
               </tbody>
             </table>
           </div>
@@ -124,7 +136,8 @@ export default {
       type: Object,
       default: () =>({
         fnc: true,
-        tc: true
+        tc: true,
+        ic: false
       })
     }
   },

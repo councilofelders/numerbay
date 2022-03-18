@@ -25,7 +25,7 @@
                         :latest-returns="latestReturns"
                         :latest-reps="latestReps"
                         :latest-ranks="latestRanks"
-                        :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8}"
+                        :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
                       ></ModelMetricsCard>
                   </div><!-- end dropdown-menu -->
                 </div>
@@ -50,10 +50,12 @@
                 latestRankMmc: productGetters.getModelRank(product, 'mmc'),
                 latestRankFnc: productGetters.getModelRank(product, 'fnc'),
                 latestRankTc: productGetters.getModelRank(product, 'tc'),
+                latestRankIc: productGetters.getModelRank(product, 'ic'),
                 latestRepCorr: productGetters.getModelRep(product, 'corr'),
                 latestRepMmc: productGetters.getModelRep(product, 'mmc'),
                 latestRepFnc: productGetters.getModelRep(product, 'fnc'),
                 latestRepTc: productGetters.getModelRep(product, 'tc'),
+                latestRepIc: productGetters.getModelRep(product, 'ic'),
 
                 title: productGetters.getName(product).toUpperCase(),
                 metaText: product.metaText,

@@ -549,7 +549,7 @@ export default {
   },
   setup(props, context) {
     const id = parseInt(context.root.$route.params.id);
-    const { products, search: productSearch } = useProduct('products');
+    const { products, search: productSearch } = useProduct(`manage-artifacts-${id}`);
     const { artifacts, search: productArtifactSearch, createArtifact, downloadArtifact, deleteArtifact, loading: productArtifactLoading, error } = useProductArtifact(`${id}`);
     const { downloadArtifact: downloadOrderArtifact, deleteArtifact: deleteOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError } = useOrderArtifact(`${id}`);
     const { orders, search: orderSearch, loading: orderLoading } = useUserOrder(`${id}`);

@@ -123,6 +123,33 @@ export const getNumeraiTcChartData = (numerai: any) => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getNumeraiIcChartData = (numerai: any) => {
+  if (!numerai?.modelInfo) {
+    return {};
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
+    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
+  ));
+
+  return {
+    labels: transposed.roundNumber,
+    datasets: [
+      {
+        label: 'IC',
+        borderColor: '#acacac',
+        fill: false,
+        lineTension: 0,
+        data: transposed.ic,
+        data1: transposed.icPercentile
+      }
+    ]
+  };
+};
+
 const numeraiGetters: NumeraiGetters<Numerai> = {
   getCorrRank,
   getMmcRank,
@@ -141,7 +168,8 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getWokeDate,
   getFormatted,
   getNumeraiCorrMmcChartData,
-  getNumeraiTcChartData
+  getNumeraiTcChartData,
+  getNumeraiIcChartData
 };
 
 export default numeraiGetters;

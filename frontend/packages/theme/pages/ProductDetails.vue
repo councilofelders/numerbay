@@ -81,7 +81,7 @@
                               :latest-returns="latestReturns"
                               :latest-reps="latestReps"
                               :latest-ranks="latestRanks"
-                              :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8}"
+                              :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
                             ></ModelMetricsCard>
                         </div><!-- end item-detail-content -->
                     </div><!-- end col -->
@@ -94,6 +94,7 @@
                                   <div class="item-detail-list">
                                     <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrMmcChartData"></NumeraiChart>
                                     <NumeraiChart v-if="productGetters.getCategory(product).tournament==8" class="numerai-chart" :chartdata="numeraiTcChartData"></NumeraiChart>
+                                    <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" class="numerai-chart" :chartdata="numeraiIcChartData"></NumeraiChart>
                                   </div>
                                 </div><!-- end card-body -->
                               </div><!-- end card-border -->
@@ -199,7 +200,7 @@
                   </div>
                   <ValidationProvider rules="required" v-slot="{ errors }" v-if="autoSubmit" slim>
                   <div class="mb-3">
-                      <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Select a submission slot</label>{{submitSlot}}
+                      <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Select a submission slot</label>
                       <v-select class="generic-select generic-select-s1" :class="!errors[0] ? '' : 'is-invalid'" ref="slotDropdown" v-model="submitSlot" v-if="!!product && !numeraiLoading" label="name"
             :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)" :reduce="model => model.id" :clearable=true></v-select>
                       <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
@@ -357,7 +358,8 @@ export default {
         corr: this.$route.params.latestRankCorr || this.productGetters.getModelRank(this.product, 'corr'),
         mmc: this.$route.params.latestRankMmc || this.productGetters.getModelRank(this.product, 'mmc'),
         fnc: this.$route.params.latestRankFnc || this.productGetters.getModelRank(this.product, 'fnc'),
-        tc: this.$route.params.latestRankTc || this.productGetters.getModelRank(this.product, 'tc')
+        tc: this.$route.params.latestRankTc || this.productGetters.getModelRank(this.product, 'tc'),
+        ic: this.$route.params.latestRankIc || this.productGetters.getModelRank(this.product, 'ic')
       };
     },
     latestReps() {
@@ -365,7 +367,8 @@ export default {
         corr: this.$route.params.latestRepCorr || this.productGetters.getModelRep(this.product, 'corr'),
         mmc: this.$route.params.latestRepMmc || this.productGetters.getModelRep(this.product, 'mmc'),
         fnc: this.$route.params.latestRepFnc || this.productGetters.getModelRep(this.product, 'fnc'),
-        tc: this.$route.params.latestRepTc || this.productGetters.getModelRep(this.product, 'tc')
+        tc: this.$route.params.latestRepTc || this.productGetters.getModelRep(this.product, 'tc'),
+        ic: this.$route.params.latestRepIc || this.productGetters.getModelRep(this.product, 'ic')
       };
     },
     latestReturns() {
@@ -554,6 +557,7 @@ export default {
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p)=>parseInt(p.id) !== parseInt(id))),
       numeraiCorrMmcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrMmcChartData(numerai.value)),
       numeraiTcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcChartData(numerai.value)),
+      numeraiIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiIcChartData(numerai.value)),
       numerai,
       numeraiLoading,
       globals,

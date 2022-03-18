@@ -266,7 +266,7 @@ def generate_download_url(
         raise HTTPException(status_code=400, detail="Artifact not an upload")
     if artifact.is_numerai_direct:
         raise HTTPException(
-            status_code=400, detail="Download not allowed for this artifact"
+            status_code=400, detail="Direct Numerai submission cannot be downloaded"
         )
 
     order = artifact.order
@@ -341,7 +341,14 @@ def delete_order_artifact(
     selling_round = site_globals.selling_round
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
+
     validate_existing_order_artifact(artifact=artifact, selling_round=selling_round)
+
+    # not numerai direct submission
+    if artifact.is_numerai_direct:  # type: ignore
+        raise HTTPException(
+            status_code=400, detail="Direct Numerai submission cannot be deleted",
+        )
 
     # product ownership
     validate_product_owner(
