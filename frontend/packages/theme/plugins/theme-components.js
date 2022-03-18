@@ -57,6 +57,7 @@ import AccountSection from '../components/section/AccountSection.vue';
 import NumeraiSettingSection from '../components/section/NumeraiSettingSection.vue';
 import Notification from '../components/common/Notification.vue';
 import ThemeSwitcher from '../components/common/ThemeSwitcher.vue';
+import LazyHydrate from 'vue-lazy-hydration';
 
 // Global page components register
 Vue.component('HeaderMain', HeaderMain);
@@ -105,6 +106,7 @@ Vue.component('AccountSection', AccountSection);
 Vue.component('NumeraiSettingSection', NumeraiSettingSection);
 Vue.component('Notification', Notification);
 Vue.component('ThemeSwitcher', ThemeSwitcher);
+Vue.component('LazyHydrate', LazyHydrate);
 
 // vee-validate
 import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';

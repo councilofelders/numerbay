@@ -25,7 +25,31 @@
         </div><!-- end filter-box-filter -->
       </div><!-- end filter-box -->
       <!-- Product -->
-      <div class="row g-gs">
+      <div class="row g-gs" v-if="loading">
+        <div class="col-lg-6" v-for="index in 10" :key="index">
+          <div class="card card-full flex-sm-row product-s2">
+              <div class="card-image">
+                  <img src="https://numer.ai/img/profile_picture_light.jpg" class="product-img" alt="avatar image">
+              </div>
+              <div class="card-body card-justified p-4">
+                  <h5 class="card-title text-truncate mb-0 placeholder-glow"><span class="placeholder col-8"></span></h5>
+                  <div class="card-author d-flex align-items-center justify-content-between placeholder-glow"><span class="placeholder col-6"></span></div>
+                  <div style="vertical-align: bottom">
+                  <hr>
+                  <div class="card-price-wrap d-flex align-items-center justify-content-between">
+                      <div class="me-5 me-sm-2 placeholder-glow">
+                          <span class="card-price-title">Price</span>
+                          <span class="card-price-number placeholder col-12"></span>
+                      </div>
+                      <span class="btn btn-sm btn-dark disabled placeholder col-3"></span>
+                  </div><!-- end card-price-wrap -->
+                  </div>
+              </div><!-- end card-body -->
+              <a class="details"></a>
+          </div><!-- end card -->
+        </div>
+      </div><!-- end placeholder row -->
+      <div class="row g-gs" v-else>
         <div class="col-lg-6" v-for="product in products" :key="product.id">
           <ProductCard :product="product"></ProductCard>
         </div>
@@ -46,7 +70,7 @@ import Pagination from 'vue-pagination-2';
 import ProductCard from '@/components/section/ProductCard';
 
 // Composables
-import {onSSR} from '@vue-storefront/core';
+// import {onSSR} from '@vue-storefront/core';
 import {facetGetters, productGetters, useCart, useFacet, useUser, useWishlist} from '@vue-storefront/numerbay';
 import {useUiHelpers, useUiNotification, useUiState} from '~/composables';
 import {computed} from '@vue/composition-api';
@@ -117,9 +141,6 @@ export default {
   },
   mounted() {
     this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || 'rank-best'));
-    // this.getActiveClass(this.activeId = this.activeCategory);
-    // console.log('this.$route', this.$route.path.split('/')[1]);
-    // console.log('activeCategory', );
   },
   watch: {
     async $route(to, from) {
@@ -128,13 +149,7 @@ export default {
       // this.getActiveClass(this.activeId = this.activeCategory);
     }
   },
-  // beforeRouteUpdate(to, from, next) {
-  //   // react to route changes...
-  //   // don't forget to call next()
-  //   this.search(this.th.getFacetsFromURL());
-  //   next();
-  // },
-  setup(props, context) {
+  setup() {
     const {
       route
     } = useVueRouter();
@@ -162,22 +177,25 @@ export default {
       return category?.id || items[0].id;
     });
 
-    onSSR(async () => {
-      await search(th.getFacetsFromURL());
+    // onSSR(async () => {
+    //   await search(th.getFacetsFromURL());
+    //
+    //   // if (facets.value.length > 0) {
+    //   //   selectedFilters.value = facets.value.reduce((prev, curr) => ({
+    //   //     ...prev,
+    //   //     [curr.id]: curr.options
+    //   //       .filter(o => o.selected)
+    //   //       .map(o => o.id)
+    //   //   }), {});
+    //   // }
+    // });
 
-      // if (facets.value.length > 0) {
-      //   selectedFilters.value = facets.value.reduce((prev, curr) => ({
-      //     ...prev,
-      //     [curr.id]: curr.options
-      //       .filter(o => o.selected)
-      //       .map(o => o.id)
-      //   }), {});
-      // }
-    });
+    search(th.getFacetsFromURL());
 
     return {
       sortBy,
       facets,
+      loading,
       pagination,
       products,
       categoryTree,
@@ -197,10 +215,5 @@ export default {
   width: 100%;
   height: 100%;
   z-index: 1;
-}
-
-.author-link {
-  z-index: 2;
-  position: relative;
 }
 </style>

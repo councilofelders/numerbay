@@ -1,7 +1,7 @@
 <template>
     <div class="card card-full flex-sm-row product-s2">
         <div class="card-image">
-            <img :src="productGetters.getCoverImage(product)" class="product-img" alt="art image">
+            <img :src="productGetters.getCoverImage(product)" class="product-img" alt="avatar image">
         </div>
         <div class="card-body card-justified p-4">
             <h5 class="card-title text-truncate mb-0">{{ productGetters.getName(product).toUpperCase() }}</h5>

@@ -87,14 +87,17 @@
                     </div><!-- end col -->
                     <div class="col-lg-9 ms-auto">
                         <div class="item-detail-content">
-                            <div class="item-detail-chart-container mb-4" v-if="isNumeraiChartReady">
+                            <div class="item-detail-chart-container mb-4">
                               <div class="card-border card-full">
                                 <div class="card-body card-body-s1">
                                   <h5 class="mb-3">Recent Performance</h5>
-                                  <div class="item-detail-list">
+                                  <div class="item-detail-list" v-if="isNumeraiChartReady">
                                     <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrMmcChartData"></NumeraiChart>
                                     <NumeraiChart v-if="productGetters.getCategory(product).tournament==8" class="numerai-chart" :chartdata="numeraiTcChartData"></NumeraiChart>
                                     <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" class="numerai-chart" :chartdata="numeraiIcChartData"></NumeraiChart>
+                                  </div>
+                                  <div class="item-detail-list placeholder-glow" v-else>
+                                    <svg class="bd-placeholder-img placeholder" width="100%" height="480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#868e96"></rect></svg>
                                   </div>
                                 </div><!-- end card-body -->
                               </div><!-- end card-border -->
@@ -524,16 +527,6 @@ export default {
           await getModelInfo({tournament: product.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value?.name});
         }
         await getGlobals();
-
-        // Update page data
-        // pageData.imgLg = product.value?.avatar;
-        // pageData.title = product.value?.name;
-        // pageData.metaText = product.value?.metaText;
-        // pageData.metaTextTwo = product.value?.metaTextTwo;
-        // pageData.metaTextThree = product.value?.metaTextThree;
-        // pageData.content = product.value?.content;
-        //
-        // console.log('pageData.title', pageData.title)
       });
     });
 
