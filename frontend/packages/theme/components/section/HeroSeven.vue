@@ -51,19 +51,19 @@ export default {
       countItemData: computed(() => globals ? [
         {
           id: 1,
-          title: `${globals.value.total_num_products}`,
+          title: `${globals.value.total_num_products || 0}`,
           text: 'Products Available',
           className: 'col-6'
         },
         {
           id: 2,
-          title: `${globals.value.total_num_sales}`,
+          title: `${globals.value.total_num_sales || 0}`,
           text: 'Product Sales',
           className: 'col-6'
         },
         {
           id: 3,
-          title: `${globals.value.total_sales_nmr} NMR`,
+          title: `${globals.value.total_sales_nmr || 0} NMR`,
           text: 'Sales Value'
         }
       ] : [])

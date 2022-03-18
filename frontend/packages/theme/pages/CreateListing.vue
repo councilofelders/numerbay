@@ -402,7 +402,7 @@ export default {
     onProductsLoaded(products) {
       this.currentListing = products?.data?.find((p)=>p.id === parseInt(this.id));
       this.form = this.resetForm(this.currentListing);
-      this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts));
+      this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts) && this.form.featuredProducts.length>0);
     }
   },
   watch: {
