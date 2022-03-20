@@ -77,6 +77,68 @@
           </div>
       </div><!-- end form-item -->
       </ValidationProvider>
+      <div class="form-item mb-4">
+          <div class="mb-4">
+              <div class="d-flex align-items-center justify-content-between">
+                  <div class="me-2">
+                      <h5 class="mb-1">Reward coupons to buyers</h5>
+                  </div>
+                  <div class="form-check form-switch form-switch-s1">
+                      <input class="form-check-input" type="checkbox" v-model="coupon">
+                  </div><!-- end form-check -->
+              </div><!-- end d-flex -->
+              <div v-if="coupon">
+                <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" key="rewardMinSpend" slim>
+                <div class="form-item mb-4">
+                    <div class="mb-4">
+                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Min spend for reward</label>
+                        <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="(Optional) Min Spend on This Product (in NMR) for Rewarding Coupon" min="0" v-model="couponSpecs.reward_min_spend">
+                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    </div>
+                </div><!-- end form-item -->
+                </ValidationProvider>
+                <div class="form-item mb-4">
+                  <label class="mb-2 form-label">Applicable products</label>
+                  <client-only>
+                    <multiselect ref="couponMultiSelect" placeholder="Applicable Products (in Addition to This Product)" v-model="couponSpecs.applicable_products" class="coupon-multiselect"
+                         :options="groupedProducts" :multiple="true" :close-on-select="false" group-values="products" group-label="category" :group-select="true" track-by="id" label="sku"
+                    >
+                      <template slot="option" slot-scope="props">
+                        <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
+                      </template>
+                    </multiselect>
+                  </client-only>
+                </div>
+                <ValidationProvider rules="required|integer|min_value:1|max_value:100" v-slot="{ errors }" key="discountPercent" slim>
+                <div class="form-item mb-4">
+                    <div class="mb-4">
+                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Discount %</label>
+                        <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Coupon Discount % (0-100, 100 being free)" min="1" v-model="couponSpecs.discount_percent">
+                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    </div>
+                </div><!-- end form-item -->
+                </ValidationProvider>
+                <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }" key="maxDiscount" slim>
+                <div class="form-item mb-4">
+                    <div class="mb-4">
+                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Max discount</label>
+                        <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Coupon Max Discount (in NMR)" min="0" v-model="couponSpecs.max_discount">
+                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    </div>
+                </div><!-- end form-item -->
+                </ValidationProvider>
+                <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" key="minSpend" slim>
+                <div class="form-item mb-4">
+                    <div class="mb-4">
+                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Min spend for redemption</label>
+                        <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="(Optional) Min Spend (in NMR) for Redeeming Coupon" min="0" v-model="couponSpecs.min_spend">
+                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    </div>
+                </div><!-- end form-item -->
+                </ValidationProvider>
+              </div>
+          </div>
+      </div><!-- end form-item -->
     </div>
     <div v-else>
       <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" key="offPlatformQuantity" slim>
@@ -401,5 +463,34 @@ export default {
 };
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
+.coupon-multiselect::v-deep {
+  .multiselect__select {
+    &:before{
+        top: 30%;
+        border-style: none;
+        position: relative;
+        content: "\e9c5";
+        font-family: "Nioicon";
+        font-size: 22px;
+        color: #8091a7;
+    }
+  }
+  .multiselect__tag {
+    color: var(--vs-selected-color);
+    background: var(--vs-selected-bg);
+    border: var(--vs-selected-border-width) var(--vs-selected-border-style) var(--vs-selected-border-color);
+  }
+  .multiselect__option {
+    color: #8091a7;
+    &--highlight {
+      color: #1c2b46;
+      background: var(--vs-selected-bg);
+    }
+    &--highlight:after {
+      color: #1c2b46;
+      background: var(--vs-selected-bg);
+    }
+  }
+}
 </style>
