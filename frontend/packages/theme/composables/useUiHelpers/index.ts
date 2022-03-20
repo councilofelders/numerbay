@@ -54,10 +54,14 @@ const useUiHelpers = () => {
 
   // eslint-disable-next-line
   const changeFilters = (filters) => {
+    const reducedFilters = Object.keys(filters).reduce((acc, elem) => {
+      if (filters[elem]?.length >0) acc[elem] = filters[elem]
+      return acc
+    }, {});
     instance.$router.push({
       query: {
         ...getFiltersDataFromUrl(instance, false),
-        ...filters
+        ...reducedFilters
       }
     });
   };

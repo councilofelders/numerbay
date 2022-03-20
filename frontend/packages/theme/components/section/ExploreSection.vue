@@ -27,7 +27,7 @@
           </div><!-- end filter-box-filter-item -->
         </div><!-- end filter-box-filter -->
         <transition name="fade">
-        <div class="justify-content-between align-items-center mt-2 filter-btn-wrap" v-if="isFilterSidebarOpen">
+        <div class="justify-content-between align-items-center mt-2 filter-btn-wrap" v-show="isFilterSidebarOpen">
           <div class="row">
           <div class="col-9">
             <div class="row">
@@ -101,7 +101,7 @@
               </div>
             </div>
           </div>
-          <div class="col-3 pe-0">
+          <div class="col-3">
             <div class="float-end">
             <button class="btn btn-dark" @click="applyFilters">Apply</button>
             <button class="btn filter-btn" @click="clearFilters">Clear</button>
@@ -177,14 +177,7 @@ export default {
       SectionData,
       category: 'all',
       name: '',
-      activeId: 1,
-      options: [
-        'all',
-        'art',
-        'music',
-        'games',
-        'collectibles'
-      ]
+      activeId: 1
     };
   },
   methods: {
@@ -229,6 +222,23 @@ export default {
   },
   mounted() {
     this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || 'rank-best'));
+
+    // Set filters from URL
+    // const filters = this.th.getFacetsFromURL().filters;
+    // Object.keys(filters).forEach((filter) => {
+    //   if (filter === 'status' || filter === 'platform') {
+    //     this.selectedFilters[filter] = filters[filter];
+    //   } else {
+    //     if (!this.selectedFilters[filter]) {
+    //       Vue.set(this.selectedFilters, filter, []);
+    //     }
+    //     if (typeof filters[filter][0] === 'string') {
+    //       this.selectedFilters[filter] = [filters[filter][0].split(',').map(Number)]
+    //     } else {
+    //       this.selectedFilters[filter] = [filters[filter][0]];
+    //     }
+    //   }
+    // });
   },
   watch: {
     async $route(to, from) {
@@ -294,6 +304,22 @@ export default {
       }), {});
     }
 
+    const filters = th.getFacetsFromURL().filters;
+    Object.keys(filters).forEach((filter) => {
+      if (filter === 'status' || filter === 'platform') {
+        selectedFilters.value[filter] = filters[filter];
+      } else {
+        if (!selectedFilters.value[filter]) {
+          Vue.set(selectedFilters.value, filter, []);
+        }
+        if (typeof filters[filter][0] === 'string') {
+          selectedFilters.value[filter] = [filters[filter][0].split(',').map(Number)]
+        } else {
+          selectedFilters.value[filter] = [filters[filter][0]];
+        }
+      }
+    });
+
     const isFilterSelected = (facet, option) => (selectedFilters.value[facet.id] || []).includes(option.id);
 
     const selectFilter = (facet, option) => {
@@ -316,7 +342,7 @@ export default {
     };
 
     const applyFilters = () => {
-      toggleFilterSidebar();
+      // toggleFilterSidebar();
       changeFilters(selectedFilters.value);
     };
 
@@ -352,6 +378,7 @@ export default {
       search,
       th,
       isFilterSidebarOpen,
+      selectedFilters,
       isFacetCheckbox,
       isFilterSelected,
       toggleFilterSidebar,
