@@ -225,7 +225,6 @@ export default {
           const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
           const blob = new Blob([response.data]);
           const file = new File([blob], filename);
-          console.log('file', file);
           this.downloadingArtifacts = this.downloadingArtifacts.filter((id)=>id !== artifact.id);
           this.decryptingArtifacts.push(artifact.id);
           this.decryptfile(file).then((blobUrl) => {

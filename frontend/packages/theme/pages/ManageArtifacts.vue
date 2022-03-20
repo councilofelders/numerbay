@@ -369,7 +369,7 @@ export default {
         // console.log('this.$refs.foo.dropzone.files', JSON.stringify(this.$refs.foo.dropzone.files));
         // this.$refs.foo.dropzone.updateTotalUploadProgress();
         this.$refs.foo.dropzone.emit('removedfile', file);
-        if (!this.orders || this.orders.length === 0) {
+        if (this.productGetters.getUseEncryption(this.product) && (!this.orders || this.orders.length === 0)) {
           this.send({
             message: 'Upload cancelled, no active order to upload for',
             type: 'bg-warning',
@@ -377,7 +377,7 @@ export default {
           });
           return;
         }
-        let hasUnencrypted = false;
+        let hasUnencrypted = !this.productGetters.getUseEncryption(this.product);
         for (const order of this.filterUploadOrders(this.orders)) {
           // if (!order.buyer_public_key) {
           //   continue;

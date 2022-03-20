@@ -174,6 +174,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getOwner: (product: PRODUCT) => string;
     getModelUrl: (product: PRODUCT) => string;
     getIsAvailable: (product: PRODUCT, optionIdx: number) => boolean;
+    getTotalSales: (product: PRODUCT) => number;
     [getterName: string]: any;
 }
 

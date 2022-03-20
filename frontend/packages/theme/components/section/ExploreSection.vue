@@ -8,6 +8,9 @@
             <v-select class="generic-select generic-select-s2" label="value" v-model="selectedSortBy"
                       :options="sortBy.options" :clearable=false @input="onChangeSorting"></v-select>
           </div><!-- end filter-box-filter-item -->
+<!--          <div class="filter-box-filter-item">
+            <button class="icon-btn icon-btn-s1" @click="toggleFilterSidebar" :class="isFilterSidebarOpen ? 'text-primary':''"><em class="ni ni-filter"></em></button>
+          </div>&lt;!&ndash; end filter-box-filter-item &ndash;&gt;-->
           <div class="filter-box-filter-item ms-lg-auto filter-btn-wrap">
             <div class="filter-btn-group">
               <div class="menu-item d-inline-block" v-for="subcategory in getSubcategories(categoryTree)" :key="subcategory.id">
@@ -23,6 +26,48 @@
             </div>
           </div><!-- end filter-box-filter-item -->
         </div><!-- end filter-box-filter -->
+<!--        <transition name="fade">
+        <div class="filter-box-filter justify-content-between align-items-center mt-2" v-if="isFilterSidebarOpen">
+          <div v-for="(facet, i) in facets" :key="i">
+            <h4>{{ facet.label }}</h4>
+            <div
+              v-if="isFacetCheckbox(facet)"
+              class="filters__colors"
+              :key="`${facet.id}-colors`"
+            >
+              <SfFilter
+                v-for="option in facet.options"
+                :key="`${facet.id}-${option.value}`"
+                :label="option.id + `${option.count ? ` (${option.count})` : ''}`"
+                :selected="isFilterSelected(facet, option)"
+                class="filters__item"
+                @change="() => selectFilter(facet, option)"
+              />
+            </div>
+            <div v-else>
+              <SfRange
+                :id="facet.id"
+                :disabled="false"
+                :value="getSelectedRangeFilterValue(facet)"
+                :config='{
+                  "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
+                  "range":{
+                    "min":getRangeFilterOption(facet.options, "from"),
+                    "max":getRangeFilterOption(facet.options, "to")
+                  },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
+                  "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
+                  format: {
+                    to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
+                    from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
+                  }
+                }'
+                class="filters__item"
+                @change="(values) => updateRangeFilter(facet, values)"
+              />
+            </div>
+          </div>
+        </div>&lt;!&ndash; end filter-box-filter &ndash;&gt;
+        </transition>-->
       </div><!-- end filter-box -->
       <!-- Product -->
       <div class="row g-gs" v-if="loading">
@@ -73,7 +118,7 @@ import ProductCard from '@/components/section/ProductCard';
 // import {onSSR} from '@vue-storefront/core';
 import {facetGetters, productGetters, useCart, useFacet, useUser, useWishlist} from '@vue-storefront/numerbay';
 import {useUiHelpers, useUiNotification, useUiState} from '~/composables';
-import {computed} from '@vue/composition-api';
+import {computed, ref} from '@vue/composition-api';
 import {useVueRouter} from '~/helpers/hooks/useVueRouter';
 
 export default {
@@ -177,6 +222,11 @@ export default {
       return category?.id || items[0].id;
     });
 
+    const { changeFilters, isFacetCheckbox } = useUiHelpers();
+    const { isFilterSidebarOpen, toggleFilterSidebar } = useUiState();
+    const selectedFilters = ref({});
+
+
     // onSSR(async () => {
     //   await search(th.getFacetsFromURL());
     //
@@ -192,6 +242,30 @@ export default {
 
     search(th.getFacetsFromURL());
 
+    if (facets.value.length > 0) {
+      selectedFilters.value = facets.value.reduce((prev, curr) => ({
+        ...prev,
+        [curr.id]: curr.options
+          .filter(o => o.selected)
+          .map(o => o.id)
+      }), {});
+    }
+
+    const isFilterSelected = (facet, option) => (selectedFilters.value[facet.id] || []).includes(option.id);
+
+    const getRangeFilterOption = (options, tag) => {
+      return options.filter(o=>o.id === tag) ? Number(options.filter(o=>o.id === tag)[0].value) : 0;
+    };
+
+    const getSelectedRangeFilterValue = (facet) => {
+      const selectedValue = selectedFilters.value[facet.id] ? selectedFilters.value[facet.id][0] : [];
+      if (selectedValue) {
+        return selectedValue.map(Number);
+      }
+      return selectedValue;
+    };
+
+
     return {
       sortBy,
       facets,
@@ -201,13 +275,20 @@ export default {
       categoryTree,
       activeCategory,
       search,
-      th
+      th,
+      isFilterSidebarOpen,
+      isFacetCheckbox,
+      isFilterSelected,
+      toggleFilterSidebar,
+      changeFilters,
+      getRangeFilterOption,
+      getSelectedRangeFilterValue,
     };
   }
 };
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
 .details {
   position: absolute;
   top: 0;
@@ -215,5 +296,17 @@ export default {
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+
+.fade {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.25s linear;
+  }
+  &-enter,
+  &-leave,
+  &-leave-to {
+    opacity: 0;
+  }
 }
 </style>

@@ -190,6 +190,8 @@ export const getProductIsAvailable = (product: ProductVariant, optionIdx: number
   return getProductIsActive(product) && !(!getOptionUrl(getProductOrderedOption(product, optionIdx)) && !getOptionIsOnPlatform(getProductOrderedOption(product, optionIdx)));
 };
 
+export const getProductTotalSales = (product: ProductVariant): number => (product as any)?.total_num_sales || 0;
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -228,7 +230,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getExpirationRound: getProductExpirationRound,
   getOwner: getProductOwner,
   getModelUrl: getProductModelUrl,
-  getIsAvailable: getProductIsAvailable
+  getIsAvailable: getProductIsAvailable,
+  getTotalSales: getProductTotalSales
 };
 
 export default productGetters;

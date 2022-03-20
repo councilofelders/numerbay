@@ -15,11 +15,11 @@
                             </div><!-- end col -->
                           <h1 class="item-detail-title mb-2 text-break"><a :href="modelUrl" class="" target="_blank">{{ title }}</a></h1>
                             <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
-                                <span class="item-detail-text-meta">Round {{ globals.selling_round }}</span>
+                                <span class="item-detail-text-meta">Round <span class="text-primary fw-semibold">{{ globals.selling_round }}</span></span>
                                 <span class="dot-separeted"></span>
                                 <span class="item-detail-text-meta">{{ category }}</span>
                                 <span class="dot-separeted"></span>
-                                <span class="item-detail-text-meta" v-html="metaTextThree"></span>
+                                <span class="item-detail-text-meta">Past sales <span class="text-primary fw-semibold">{{ productGetters.getTotalSales(product) }}</span></span>
                             </div>
                             <div class="item-credits">
                                 <div class="row g-4">

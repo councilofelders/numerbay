@@ -39,7 +39,7 @@
                     <div class="custom-tooltip-wrap">
                         <div class="card-author-by-2">
                           <span class="item-detail-text-meta">{{ productGetters.getCategory(product).slug }}</span>
-                          <span class="badge fw-medium bg-success" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Ready</span>
+                          <span class="badge fw-medium bg-success" v-if="product.is_ready" title="Artifact files are available for immediate download/submission">Instant</span>
                         </div>
 <!--                        <span class="card-author-by card-author-by-2 fw-regular">Owned by</span>-->
                         <a href="javascript:void(0);" class="custom-tooltip author-link" v-show="!!productGetters.getCategory(product).tournament">Metrics...</a>
