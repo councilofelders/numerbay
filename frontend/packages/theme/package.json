@@ -49,6 +49,7 @@
     "swiper-vue2": "^1.0.6",
     "vue-select": "^3.18.2",
     "vue-tel-input": "^5.6.3",
+    "nouislider": "^15.2.0",
 
     "node-sass": "^4.13.1",
     "sass-loader": "^8.0.2",

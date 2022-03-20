@@ -8,9 +8,9 @@
             <v-select class="generic-select generic-select-s2" label="value" v-model="selectedSortBy"
                       :options="sortBy.options" :clearable=false @input="onChangeSorting"></v-select>
           </div><!-- end filter-box-filter-item -->
-<!--          <div class="filter-box-filter-item">
+          <div class="filter-box-filter-item filter-btn-wrap">
             <button class="icon-btn icon-btn-s1" @click="toggleFilterSidebar" :class="isFilterSidebarOpen ? 'text-primary':''"><em class="ni ni-filter"></em></button>
-          </div>&lt;!&ndash; end filter-box-filter-item &ndash;&gt;-->
+          </div><!-- end filter-box-filter-item -->
           <div class="filter-box-filter-item ms-lg-auto filter-btn-wrap">
             <div class="filter-btn-group">
               <div class="menu-item d-inline-block" v-for="subcategory in getSubcategories(categoryTree)" :key="subcategory.id">
@@ -26,48 +26,90 @@
             </div>
           </div><!-- end filter-box-filter-item -->
         </div><!-- end filter-box-filter -->
-<!--        <transition name="fade">
-        <div class="filter-box-filter justify-content-between align-items-center mt-2" v-if="isFilterSidebarOpen">
-          <div v-for="(facet, i) in facets" :key="i">
-            <h4>{{ facet.label }}</h4>
-            <div
-              v-if="isFacetCheckbox(facet)"
-              class="filters__colors"
-              :key="`${facet.id}-colors`"
-            >
-              <SfFilter
-                v-for="option in facet.options"
-                :key="`${facet.id}-${option.value}`"
-                :label="option.id + `${option.count ? ` (${option.count})` : ''}`"
-                :selected="isFilterSelected(facet, option)"
-                class="filters__item"
-                @change="() => selectFilter(facet, option)"
-              />
-            </div>
-            <div v-else>
-              <SfRange
-                :id="facet.id"
-                :disabled="false"
-                :value="getSelectedRangeFilterValue(facet)"
-                :config='{
-                  "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
-                  "range":{
-                    "min":getRangeFilterOption(facet.options, "from"),
-                    "max":getRangeFilterOption(facet.options, "to")
-                  },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
-                  "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
-                  format: {
-                    to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
-                    from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
-                  }
-                }'
-                class="filters__item"
-                @change="(values) => updateRangeFilter(facet, values)"
-              />
+        <transition name="fade">
+        <div class="justify-content-between align-items-center mt-2 filter-btn-wrap" v-if="isFilterSidebarOpen">
+          <div class="row">
+          <div class="col-9">
+            <div class="row">
+              <div v-for="(facet, i) in facets" :key="i" class="col-4">
+                <h5>{{ facet.label }}</h5>
+                <div
+                  v-if="isFacetCheckbox(facet)"
+                  class="d-flex"
+                  :key="`${facet.id}-colors`"
+                >
+                  <div v-for="option in facet.options" :key="`${facet.id}-${option.value}`" class="d-flex me-2">
+                  <input class="form-check-input me-1" type="checkbox" :id="`${facet.id}-${option.value}`" :checked="isFilterSelected(facet, option)" @change="() => selectFilter(facet, option)">
+                  <label class="form-check-label form-check-label-s1" :for="`${facet.id}-${option.value}`"> {{ option.id + `${option.count ? ` (${option.count})` : ''}` }} </label>
+                  </div>
+    <!--              <SfFilter
+                    v-for="option in facet.options"
+                    :key="`${facet.id}-${option.value}`"
+                    :label="option.id + `${option.count ? ` (${option.count})` : ''}`"
+                    :selected="isFilterSelected(facet, option)"
+                    class="filters__item"
+                    @change="() => selectFilter(facet, option)"
+                  />-->
+                </div>
+                <div v-else>
+    <!--              <input class="form-range" type="range" :id="facet.id"
+                         :value="getSelectedRangeFilterValue(facet)"
+                         :min="getRangeFilterOption(facet.options, 'from')"
+                         :max="getRangeFilterOption(facet.options, 'to')"
+                         :setp="getRangeFilterOption(facet.options, 'step')"
+                  >-->
+                  <Range
+                    :id="facet.id"
+                    :disabled="false"
+                    :value="getSelectedRangeFilterValue(facet)"
+                    :config='{
+                      "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
+                      "range":{
+                        "min":getRangeFilterOption(facet.options, "from"),
+                        "max":getRangeFilterOption(facet.options, "to")
+                      },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
+                      "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
+                      format: {
+                        to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
+                        from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
+                      }
+                    }'
+                    class="form-range"
+                    @change="(values) => updateRangeFilter(facet, values)"
+                  />
+    <!--              <label class="form-check-label form-check-label-s1" :for="facet.id"> {{ option.id + `${option.count ? ` (${option.count})` : ''}` }} </label>-->
+    <!--              <SfRange
+                    :id="facet.id"
+                    :disabled="false"
+                    :value="getSelectedRangeFilterValue(facet)"
+                    :config='{
+                      "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
+                      "range":{
+                        "min":getRangeFilterOption(facet.options, "from"),
+                        "max":getRangeFilterOption(facet.options, "to")
+                      },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
+                      "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
+                      format: {
+                        to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
+                        from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
+                      }
+                    }'
+                    class="filters__item"
+                    @change="(values) => updateRangeFilter(facet, values)"
+                  />-->
+                </div>
+              </div>
             </div>
           </div>
-        </div>&lt;!&ndash; end filter-box-filter &ndash;&gt;
-        </transition>-->
+          <div class="col-3 pe-0">
+            <div class="float-end">
+            <button class="btn btn-dark" @click="applyFilters">Apply</button>
+            <button class="btn filter-btn" @click="clearFilters">Clear</button>
+            </div>
+          </div>
+          </div>
+        </div><!-- end filter-box-filter -->
+        </transition>
       </div><!-- end filter-box -->
       <!-- Product -->
       <div class="row g-gs" v-if="loading">
@@ -116,6 +158,7 @@ import ProductCard from '@/components/section/ProductCard';
 
 // Composables
 // import {onSSR} from '@vue-storefront/core';
+import Vue from 'vue';
 import {facetGetters, productGetters, useCart, useFacet, useUser, useWishlist} from '@vue-storefront/numerbay';
 import {useUiHelpers, useUiNotification, useUiState} from '~/composables';
 import {computed, ref} from '@vue/composition-api';
@@ -253,6 +296,30 @@ export default {
 
     const isFilterSelected = (facet, option) => (selectedFilters.value[facet.id] || []).includes(option.id);
 
+    const selectFilter = (facet, option) => {
+      if (!selectedFilters.value[facet.id]) {
+        Vue.set(selectedFilters.value, facet.id, []);
+      }
+
+      if (selectedFilters.value[facet.id].find(f => f === option.id)) {
+        selectedFilters.value[facet.id] = selectedFilters.value[facet.id].filter(f => f !== option.id);
+        return;
+      }
+
+      selectedFilters.value[facet.id].push(option.id);
+    };
+
+    const clearFilters = () => {
+      toggleFilterSidebar();
+      selectedFilters.value = {};
+      changeFilters(selectedFilters.value);
+    };
+
+    const applyFilters = () => {
+      toggleFilterSidebar();
+      changeFilters(selectedFilters.value);
+    };
+
     const getRangeFilterOption = (options, tag) => {
       return options.filter(o=>o.id === tag) ? Number(options.filter(o=>o.id === tag)[0].value) : 0;
     };
@@ -263,6 +330,14 @@ export default {
         return selectedValue.map(Number);
       }
       return selectedValue;
+    };
+
+    const updateRangeFilter = (facet, values) => {
+      if (!selectedFilters.value[facet.id]) {
+        Vue.set(selectedFilters.value, facet.id, []);
+      }
+
+      selectedFilters.value[facet.id] = [values];
     };
 
 
@@ -280,9 +355,13 @@ export default {
       isFacetCheckbox,
       isFilterSelected,
       toggleFilterSidebar,
+      selectFilter,
+      clearFilters,
+      applyFilters,
       changeFilters,
       getRangeFilterOption,
       getSelectedRangeFilterValue,
+      updateRangeFilter
     };
   }
 };
