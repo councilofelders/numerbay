@@ -53,6 +53,111 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             .all()
         )
 
+    def update_model_unauthenticated(
+        self, db: Session, user_json: Dict
+    ) -> Optional[str]:
+        """ Update Numerai model without auth """
+        numerai_models = self.get_multi_by_owner(db, owner_id=user_json["id"])
+
+        try:
+            db_models = {}
+
+            for numerai_model in numerai_models:
+                try:
+                    model_performance = numerai.get_numerai_model_performance(
+                        tournament=int(numerai_model.tournament),  # type: ignore
+                        model_name=numerai_model.name,  # type: ignore
+                    )
+                except TypeError as e:
+                    # continue if model does not exist
+                    if "NoneType" in str(e):
+                        print(f"Skip update for model {numerai_model.name}")
+                        continue
+
+                db_models[numerai_model.id] = models.Model(  # type: ignore
+                    id=numerai_model.id,
+                    name=numerai_model.name,
+                    tournament=int(numerai_model.tournament),  # type: ignore
+                    owner_id=int(user_json["id"]),
+                    nmr_staked=Decimal(model_performance["nmrStaked"])
+                    if model_performance.get("nmrStaked", None)
+                    else 0,
+                    start_date=model_performance.get("startDate", None),
+                    latest_ranks=model_performance.get("modelPerformance", {}).get(
+                        "latestRanks", {}
+                    ),
+                    latest_reps=model_performance.get("modelPerformance", {}).get(
+                        "latestReps", {}
+                    ),
+                    latest_returns=model_performance.get("modelPerformance", {}).get(
+                        "latestReturns", {}
+                    ),
+                    round_model_performances=model_performance.get(
+                        "modelPerformance", {}
+                    ).get("roundModelPerformances", []),
+                )
+
+            for db_model in (
+                db.query(models.Model)
+                .filter(models.Model.id.in_(db_models.keys()))
+                .all()
+            ):
+                # Updates
+                db.merge(db_models.pop(db_model.id))
+
+            # Inserts
+            db.add_all(db_models.values())
+            db.commit()
+
+            # Connect stake snapshots
+            db.query(models.StakeSnapshot).filter(
+                or_(
+                    and_(
+                        models.StakeSnapshot.name.in_(
+                            [
+                                model.name
+                                for model in numerai_models
+                                if int(model.tournament) == 8  # type: ignore
+                            ]
+                        ),
+                        models.StakeSnapshot.tournament == 8,
+                    ),
+                    and_(
+                        models.StakeSnapshot.name.in_(
+                            [
+                                model.name
+                                for model in numerai_models
+                                if int(model.tournament) == 11  # type: ignore
+                            ]
+                        ),
+                        models.StakeSnapshot.tournament == 11,
+                    ),
+                )
+            ).update(
+                {
+                    models.StakeSnapshot.model_id: select(  # type: ignore
+                        models.Model.id  # type: ignore
+                    )
+                    .where(
+                        and_(
+                            models.Model.name == models.StakeSnapshot.name,
+                            models.Model.tournament == models.StakeSnapshot.tournament,
+                        )
+                    )
+                    .scalar_subquery()
+                },
+                synchronize_session=False,
+            )
+            db.commit()
+
+            print(f"Updated user (no auth): {user_json['username']}")
+            return user_json["username"]
+        except Exception as e:
+            print(
+                f"Update model (no auth) failed for user {user_json['username']}: {e}"
+            )
+            raise e
+
     def update_model(self, db: Session, user_json: Dict) -> Optional[str]:
         """ Update Numerai model """
         if (
@@ -60,7 +165,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             or user_json["numerai_api_key_secret"] is None
             or user_json["numerai_api_key_secret"] == ""
         ):
-            print(f"Update failed user (API Key): {user_json['username']}")
+            print(
+                f"Update model failed for user {user_json['username']}: No Numerai API key"
+            )
             return None
         try:
             numerai_models = numerai.get_numerai_models(
@@ -162,7 +269,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                 print(f"Invalid API key for user {user_json['username']}: {e}")
                 return None
         except Exception as e:
-            print(f"Update failed user (Exception): {user_json['username']}: {e}")
+            print(f"Update model failed for user {user_json['username']}: {e}")
             raise e
         return None
 

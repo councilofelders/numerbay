@@ -113,7 +113,7 @@ export const getNumeraiTcChartData = (numerai: any) => {
     datasets: [
       {
         label: 'TC',
-        borderColor: '#acacac',
+        borderColor: '#a278dc',
         fill: false,
         lineTension: 0,
         data: transposed.tc,

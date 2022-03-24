@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import numerai
 from app.core.security import get_password_hash, verify_password, verify_signature
 from app.crud.base import CRUDBase
+from app.models.product import Product
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 
@@ -135,6 +136,17 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         """ Check superuser """
         return user.is_superuser
 
+    def delist_all(self, db: Session, username: str) -> None:
+        user = self.get_by_username(db, username=username)
+
+        products_to_delist = (
+            db.query(Product).filter(Product.owner_id == user.id).all()  # type: ignore
+        )
+        for product_obj in products_to_delist:
+            product_obj.is_active = False
+
+        db.commit()
+
     def update_numerai_api(self, db: Session, user_json: Dict) -> bool:
         """ Update Numerai API key """
         if (
@@ -183,6 +195,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         except ValueError as e:
             if "invalid or has expired" in str(e):  # invalid API keys
                 print(f"Invalid API key for user {user_json['username']}: {e}")
+                self.delist_all(db, user_json["username"])
+                print(f"Delisted all products for user {user_json['username']}")
                 return False
         except Exception as e:
             print(f"Update failed user (Exception): {user_json['username']}: {e}")

@@ -226,11 +226,20 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
         retries (int): number of retries
     """
     db = SessionLocal()
+
     try:
         # Update user info
-        crud.user.update_numerai_api(db, user_json)
+        user_has_valid_numerai_api = crud.user.update_numerai_api(db, user_json)
+
         # Update user models
-        return crud.model.update_model(db, user_json)
+        updated_username = None
+        if user_has_valid_numerai_api:
+            updated_username = crud.model.update_model(db, user_json)
+
+        # Handled users that failed authenticated updates
+        if updated_username is None:
+            print(f"Trying to update user {user_json['username']} without auth")
+            crud.model.update_model_unauthenticated(db, user_json)
     except Exception as e:  # pylint: disable=broad-except
         print(
             f"Error updating model scores for user {user_json['username']}: "
