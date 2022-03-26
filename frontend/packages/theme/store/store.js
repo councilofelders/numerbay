@@ -247,28 +247,34 @@ const SectionData = {
         path: 'account'
       },
       {
-        id: 1,
+        id: 2,
         icon: 'ni-cart',
         title: 'Purchases',
         path: 'purchases'
       },
       {
-        id: 1,
+        id: 3,
         icon: 'ni-money',
         title: 'Sales',
         path: 'sales'
       },
       {
-        id: 1,
+        id: 4,
         icon: 'ni-list-index',
         title: 'My Listings',
         path: 'listings'
       },
       {
-        id: 3,
+        id: 5,
         icon: 'ni-setting',
         title: 'Numerai Settings',
         path: 'numerai-settings'
+      },
+      {
+        id: 6,
+        icon: 'ni-bar-c',
+        title: 'My Polls',
+        path: 'polls'
       }
     ]
   },

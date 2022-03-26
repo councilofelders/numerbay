@@ -89,6 +89,27 @@ export function getRoutes(themeDir = __dirname) {
       path: '/numerai-settings',
       name: 'numerai-settings',
       component: path.resolve(themeDir, 'pages/NumeraiSettings.vue')
-    }
+    },
+    {
+      path: '/polls',
+      name: 'polls',
+      component: path.resolve(themeDir, 'pages/Polls.vue')
+    },
+    {
+      path: '/create-poll',
+      name: 'create-poll',
+      component: path.resolve(themeDir, 'pages/CreatePoll.vue')
+    },
+    {
+      path: '/edit-poll/:id',
+      name: 'edit-poll',
+      component: path.resolve(themeDir, 'pages/CreatePoll.vue'),
+      props: true
+    },
+    {
+      path: '/vote/:id',
+      name: 'vote',
+      component: path.resolve(themeDir, 'pages/Vote.vue')
+    },
   ];
 }

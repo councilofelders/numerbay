@@ -48,7 +48,8 @@ export default {
     { src: 'plugins/nuxt-star-rating-plugin', ssr: false },
     { src: 'plugins/nuxt-multiselect-plugin', ssr: false },
     { src: 'plugins/nuxt-quill-plugin', ssr: false },
-    { src: 'plugins/nuxt-clipboard2', ssr: false }
+    { src: 'plugins/nuxt-clipboard2', ssr: false },
+    { src: 'plugins/nuxt-poll-plugin', ssr: false }
   ],
   css: [
     'quill/dist/quill.core.css',
