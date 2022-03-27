@@ -83,13 +83,6 @@ export default {
       perPage: 6
     };
   },
-  computed: {
-    displayedOrders() {
-      const startIndex = this.perPage * (this.page - 1);
-      const endIndex = startIndex + this.perPage;
-      return this.orders?.slice(startIndex, endIndex);
-    }
-  },
   setup() {
     const { user, loading: userLoading } = useUser();
 

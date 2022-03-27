@@ -111,5 +111,10 @@ export function getRoutes(themeDir = __dirname) {
       name: 'vote',
       component: path.resolve(themeDir, 'pages/Vote.vue')
     },
+    {
+      path: '/coupons',
+      name: 'coupons',
+      component: path.resolve(themeDir, 'pages/Coupons.vue')
+    },
   ];
 }

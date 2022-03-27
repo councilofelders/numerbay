@@ -272,6 +272,12 @@ const SectionData = {
       },
       {
         id: 6,
+        icon: 'ni-gift',
+        title: 'My Coupons',
+        path: 'coupons'
+      },
+      {
+        id: 7,
         icon: 'ni-bar-c',
         title: 'My Polls',
         path: 'polls'

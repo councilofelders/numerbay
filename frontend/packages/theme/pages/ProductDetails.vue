@@ -195,7 +195,7 @@
                       <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                   </div>
                   </ValidationProvider>
-                  <div class="d-flex flex-wrap align-items-center justify-content-between mb-4" v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission">
+                  <div class="d-flex flex-wrap align-items-center justify-content-between" v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission">
                       <div class="form-check">
                           <input class="form-check-input" type="checkbox" v-model="autoSubmit" id="autoSubmit" :disabled="!isAutoSubmitOptional">
                         <label class="form-check-label form-check-label-s1" for="autoSubmit"> {{ autoSubmitText }} </label>
@@ -209,11 +209,28 @@
                       <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                   </div>
                   </ValidationProvider>
-                  <ul class="total-bid-list mb-4" v-if="isOnPlatform">
+                  <ul class="total-bid-list mt-4" v-if="isOnPlatform">
                       <li><span>{{ (!!product && productGetters.getCategory(product).is_per_round) ? 'Total number of rounds' : 'Total order quantity' }}</span> <span>{{ productGetters.getCategory(product).is_per_round ? productGetters.getOrderedOption(product, optionIdx).quantity : quantity }}</span></li>
                       <li><span>You will pay</span> <span>{{ formattedTotalPrice }}</span></li>
                   </ul>
-                  <div class="d-flex flex-wrap align-items-center justify-content-between mb-4" v-if="!!product && isOnPlatform">
+                  <div class="d-flex flex-wrap align-items-center justify-content-between mt-2">
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" v-model="useCoupon" id="useCoupon" :disabled="Boolean(couponApplied)">
+                        <label class="form-check-label form-check-label-s1" for="useCoupon"> (Optional) Apply coupon code </label>
+                      </div>
+                  </div>
+                  <div class="mb-3 mt-2" v-show="useCoupon">
+                      <div class="row g-4">
+                          <div class="col-8">
+                              <input type="text" class="form-control form-control-s1" :class="!couponError ? '' : 'is-invalid'" placeholder="Coupon code" v-model="coupon" :disabled="Boolean(couponApplied)">
+                              <div class="text-danger fade" :class="{ 'show': Boolean(couponError) }">{{ couponError }}</div>
+                          </div>
+                          <div class="col-4">
+                              <button class="btn btn-dark" @click="handleCoupon">{{ couponApplied ? 'Remove' : 'Apply' }}</button>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4" v-if="!!product && isOnPlatform">
                       <div class="form-check">
                           <input class="form-check-input" type="checkbox" v-model="terms" id="terms">
                         <label class="form-check-label form-check-label-s1" for="terms"> I understand that I need to make payment in <strong>1 single transaction</strong>, and neither Numerai nor NumerBay is liable for any loss resulted from this transaction. </label>
@@ -269,7 +286,7 @@ import NumeraiChart from '@/components/section/NumeraiChart.vue';
 // Composables
 import { onSSR } from '@vue-storefront/core';
 import { computed, reactive } from '@vue/composition-api';
-import { numeraiGetters, orderGetters, productGetters, reviewGetters, useGlobals, useMakeOrder, useNumerai, useProduct, useReview, useUser, useUserOrder, userGetters } from '@vue-storefront/numerbay';
+import { cartGetters, numeraiGetters, orderGetters, productGetters, reviewGetters, useGlobals, useMakeOrder, useNumerai, useProduct, useReview, useUser, useUserOrder, userGetters } from '@vue-storefront/numerbay';
 import { useUiNotification } from '~/composables';
 
 export default {
@@ -285,6 +302,8 @@ export default {
       quantity: 1,
       amount: 0,
       toAddress: '',
+      useCoupon: false,
+      coupon: null,
       terms: false,
       autoSubmit: false,
       submitSlot: null,
@@ -317,17 +336,20 @@ export default {
   //   });
   // },
   computed: {
+    selectedOption() {
+      return this.productGetters.getOrderedOption(this.product, this.optionIdx);
+    },
     category() {
       return this.$route.params.category || this.productGetters.getCategory(this.product).slug;
     },
     isOnPlatform() {
-      return this.productGetters.getOptionIsOnPlatform(this.productGetters.getOrderedOption(this.product, this.optionIdx));
+      return this.productGetters.getOptionIsOnPlatform(this.selectedOption);
     },
     isAutoSubmitOptional() {
-      return !this.productGetters.getOptionIsOnPlatform(this.productGetters.getOrderedOption(this.product, this.optionIdx)) || this.productGetters.getMode(this.productGetters.getOrderedOption(this.product, this.optionIdx)) === 'file';
+      return !this.productGetters.getOptionIsOnPlatform(this.selectedOption) || this.productGetters.getMode(this.selectedOption) === 'file';
     },
     autoSubmitText() {
-      return this.isAutoSubmitOptional ? '(Optional) Auto-submit this model to Numerai for me once seller submits to NumerBay.' : 'Auto-submit this model to Numerai for me.';
+      return this.isAutoSubmitOptional ? '(Optional) Auto-submit this model to Numerai for me' : 'Auto-submit this model to Numerai for me';
     },
     buyBtnText() {
       return this.isOnPlatform ? 'Place an Order' : 'Visit external listing';
@@ -382,22 +404,35 @@ export default {
       };
     },
     formattedTotalPrice() {
-      const option = this.productGetters.getOrderedOption(this.product, this.optionIdx);
+      const option = this.selectedOption;
       return `${((option.special_price ? option.special_price : option.price))?.toFixed(4)} ${option.currency}`;
+    },
+    couponError() {
+      const option = this.selectedOption;
+      return option?.error;
+    },
+    couponApplied() {
+      return cartGetters.getAppliedCoupon(this.selectedOption)?.code;
     }
-
   },
   methods: {
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     async onOptionChange(option) {
-      await this.search({ id: this.id, categorySlug: this.category, name: this.name, qty: this.quantity });
+      await this.search({ id: this.id, categorySlug: this.category, name: this.name, qty: this.quantity, coupon: this.coupon });
     },
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     async onQuantityChange(quantity) {
-      await this.search({ id: this.id, categorySlug: this.category, name: this.name, qty: this.quantity });
+      await this.search({ id: this.id, categorySlug: this.category, name: this.name, qty: this.quantity, coupon: this.coupon });
+    },
+    async handleCoupon() {
+      const couponApplied = cartGetters.getAppliedCoupon(this.selectedOption)?.code;
+      if (couponApplied) {
+        this.coupon = null;
+      }
+      await this.search({ id: this.id, categorySlug: this.category, name: this.name, qty: this.quantity, coupon: this.coupon });
     },
     async onPlaceOrder() {
-      const option = this.productGetters.getOrderedOption(this.product, this.optionIdx);
+      const option = this.selectedOption;
       if (!this.productGetters.getOptionIsOnPlatform(option)) {
         // visit external listing
         window.open(option.third_party_url, '_blank');
@@ -405,8 +440,7 @@ export default {
       }
 
       const optionId = option.id;
-      // todo coupon: coupon
-      await this.make({id: this.productGetters.getId(this.product), optionId, submitModelId: this.submitSlot, quantity: this.quantity})
+      await this.make({id: this.productGetters.getId(this.product), optionId, submitModelId: this.submitSlot, quantity: this.quantity, coupon: this.coupon})
       if (this.makeOrderError?.make) {
         this.send({
           message: this.makeOrderError.make.message,
@@ -540,6 +574,24 @@ export default {
         target.innerHTML = prevText;
       }, 1000);
     };
+
+    // const promoIsApplied = computed(
+    //   () => cartGetters.getAppliedCoupon(productGetters.getOptionById(product.value, optionId))?.code
+    // );
+
+    // const applyCoupon = async ({ couponCode }) => {
+    //   context.root.$router.push({ query: { ...context.root.$route.query, coupon: couponCode}});
+    // };
+    //
+    // const removeCoupon = async () => {
+    //   context.root.$router.push({ query: { ...context.root.$route.query, coupon: null}});
+    // };
+    //
+    // const handleCoupon = async () => {
+    //   await (promoIsApplied.value
+    //     ? removeCoupon({ currentCart: product.value })
+    //     : applyCoupon({ couponCode: promoCode.value }));
+    // };
 
     return {
       // ...pageData,
