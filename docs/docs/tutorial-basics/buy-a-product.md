@@ -57,6 +57,8 @@ Navigate to a product you are interested in, and click **Buy**. Then, select you
 
 If the product you are buying is a tournament submission, you can select a model slot to **auto-submit** to. This is mandatory if the product is sold in "Stake Only" mode. 
 
+If you have a valid discount **coupon** for the product, you can also apply it before placing an order.
+
 ![Product Quantity](/img/tutorial/productQuantity.png)
 
 :::info
@@ -109,3 +111,8 @@ If the product you bought uses client-side encryption, you may be prompted by Me
 
 ## Submission
 If you made your order with auto-submission set up during checkout, submissions will be automatically done for you after tournament round open and after the seller submits their files.
+
+## Manage coupons
+Some sellers may reward you with coupons for your orders. Your coupons are viewable in the **[My Coupons](https://numerbay.ai/coupons)** page. 
+
+![My Coupons](/img/tutorial/myCoupons.png)
