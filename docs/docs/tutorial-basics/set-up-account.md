@@ -8,19 +8,19 @@ In order to buy or sell on NumerBay, a NumerBay account with Numerai API key nee
 
 ## Sign up
 
-Head to **[numerbay.ai](https://numerbay.ai)**, click the account icon on the top right of the page, and sign up/login via either MetaMask or username:
+Head to **[numerbay.ai](https://numerbay.ai)**, click the **Connect Wallet** button on the top right of the page, and login by connecting your MetaMask wallet.
 
-### Login via MetaMask (Recommended)
-<img alt="Sign up MetaMask" src="/img/tutorial/signUpMetaMask.png" width="400"/>
-<img alt="Sign up MetaMask Sign" src="/img/tutorial/signUpMetaMaskSign.png" width="300"/>
+:::caution
 
-### Username sign up
-If you don't want to use MetaMask, sign up manually by clicking the **Username Login** tab, and click **Register today** to switch to the sign up form.
-<img alt="Sign up Username" src="/img/tutorial/signUpUsername.png" width="400"/>
+Sign-up by username has been deprecated. Users who had not connected a MetaMask wallet to their accounts can login via the legacy username login tab.
 
+:::
+
+<img alt="Sign up MetaMask" src="/img/tutorial/signUpMetaMask.png" width="450"/>
+<img alt="Sign up MetaMask Sign" src="/img/tutorial/signUpMetaMaskSign.png" width="250"/>
 
 ## Generate Key Pair
-In the **[profile update form](https://numerbay.ai/my-account/my-profile)**, click the **Generate Key Pair** button to generate a public-private key pair that will be used to encrypt your purchased artifact files.
+In the **[Edit profile page](https://numerbay.ai/account)**, click the **Generate Key Pair** button to generate a public-private key pair that will be used to encrypt your purchased artifact files.
 After doing so, click **Export key file** to safe-keep the generated key. The exported key file can be used in the [Python client](/docs/tutorial-extras/api-automation) to download encrypted files.
 
 ![Profile](/img/tutorial/profile.png)
@@ -28,7 +28,7 @@ After doing so, click **Export key file** to safe-keep the generated key. The ex
 
 ## Set up Numerai API Key
 
-After signing up and logging in, head to the NumerBay account page for the **[Numerai API form](https://numerbay.ai/my-account/numerai-api)** under the Account sidebar section.
+After logging in, head to the NumerBay account settings for the **[Numerai Settings page](https://numerbay.ai/numerai-settings)** in the sidebar.
 
 If you don't have a Numerai API key yet, you can create one in the [Numerai Account Settings](https://numer.ai/account) page. Make sure it has at least **View user info** permission. NumerBay only uses user info for model ownership verification and email notifications.
 
@@ -57,11 +57,9 @@ Please check if you are logged in with the correct MetaMask wallet or if you hav
 
 
 ## Update profile
-You can change your username, password and email in the [profile update form](https://numerbay.ai/my-account/my-profile). By default, your Numerai email address is used to receive email notifications.
+You can change your username, password and email in the **[Edit profile page](https://numerbay.ai/account)**. By default, your Numerai email address is used to receive email notifications.
 
 :::caution
-
-If you disconnect MetaMask wallet in the profile page, and your account was created with MetaMask login (without a password). You need to set a password before logging out, or you might lose access to the account.
 
 NumerBay does not yet allow password recovery, please contact support by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
 

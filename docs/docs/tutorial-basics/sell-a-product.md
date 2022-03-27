@@ -13,10 +13,11 @@ You need to have a [NumerBay account](./set-up-account) with Numerai API Key in 
 :::
 
 ## Create listing
-To create a listing, head to **[My listings](https://numerbay.ai/my-account/my-listings)** page. Click the **New Listing** button and complete the new listing form as shown below.
+To create a listing, head to **[My listings](https://numerbay.ai/listings)** page. Click **New Listing** and complete the new listing form as shown below.
 
 ### Basic product information
-![Listing Basic](/img/tutorial/listingBasic.png)
+<img alt="Listing Basic" src="/img/tutorial/listingBasic.png" width="800"/>
+
 * Category
     - `numerai-predictions`: [Numerai "Classic" tournament](https://numer.ai/tournament) submission files
     - `numerai-model`: Model binary file, training scripts or Jupyter notebooks for the associated model
@@ -29,24 +30,28 @@ To create a listing, head to **[My listings](https://numerbay.ai/my-account/my-l
 * Avatar image URL:
     - This defaults to your numerai model avatar after selecting the model
     - This must be an HTTPS URL
-* Active / Inactive: Whether your product will be active for sale immediately affer creation
-* Perpetual / Temporary Listing: Whether (and when) your listing becomes unavailable for sale
-* Client-side Encryption: Whether to encrypt artifact files with buyer's public key, [learn more about encryption](/updates/encryption)
 
-### Featured products
-![Listing Featured](/img/tutorial/listingFeatured.png)
-Select from your other listings to be featured in this product's page
+### Advanced settings
+Click **Show advanced settings** for additional configurations.
+<img alt="Listing Advanced" src="/img/tutorial/listingAdvanced.png" width="800"/>
+
+* Active for sale: Whether your product will be active for sale immediately affer creation (default: yes)
+* Auto expiration: Whether your listing automatically delist for sale after a certain tournament round (default: no)
+* Use client-side encryption: Whether to encrypt artifact files with buyer's public key, [learn more about encryption](/updates/encryption) (default: yes)
+* Featured products: Select from your other listings to be featured in this product's page
 
 ### Pricing options
-![Listing Option](/img/tutorial/listingOption.png)
+<img alt="Listing Option" src="/img/tutorial/listingOption.png" width="800"/>
+
 * Platform
     - `On-Platform`: Product is sold on NumerBay with full features
     - `Off-Platform`: Product only links to an external listing page
-* Listing Mode:
+* Listing mode:
     - `File Mode`: Buyers can download artifact files and optionally designate a model slot for submission. You can upload artifacts to NumerBay or add external file URLs
     - `Stake Only Mode`: Submit for buyers automatically without distributing artifact files, without stake limit. You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
     - `Stake Only Mode with Limit`: Submit for buyers automatically without distributing artifact files, with a stake limit (in NMR). You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
-* Number of Rounds per Unit: Number of tournament rounds bundled into this pricing option. 
+* Number of bundled rounds per unit sold: Number of tournament rounds bundled into this pricing option. 
+* Total price: Total price for the option including all bundled quantities. 
 
 :::info
 
@@ -55,16 +60,19 @@ Total number of rounds for an order will be `[order quantity] x [bundled number 
 :::
 
 ### Reward coupons
-![Listing Coupon Specs](/img/tutorial/listingCouponSpecs.png)
-* Min Spend for Rewarding Coupon
+If you want to reward coupons to buyers meeting certain conditions, tick the **Reward coupons to buyers** box and configure as shown below.
+
+<img alt="Listing Coupon Specs" src="/img/tutorial/listingCouponSpecs.png" width="800"/>
+
+* Min spend for reward
     - Minimum spend in NMR required for the currently edited product to reward the buyer with a coupon
     - This is not the min spend for the actual coupon rewarded
-* Applicable Products:
+* Applicable products:
     - Your *other* listings that the rewarded coupon can be applied to
     - The currently edited product is always included in the applicable products list
-* Coupon Discount: 0-100 integer, 100 being free
-* Coupon Max Discount: Maximum discount cap in NMR for the rewarded coupons
-* Coupon Min Spend: Minimum spend in NMR required for the applicable products in order for a buyer to use the rewarded coupons
+* Discount %: 0-100 integer, 100 being free
+* Max discount: Maximum discount cap in NMR for the rewarded coupons
+* Min spend for redemption: Minimum spend in NMR required for the applicable products in order for a buyer to use the rewarded coupons
 
 :::info
 
@@ -86,28 +94,27 @@ After submitting to NumerBay, you still need to submit your files to Numerai. Nu
 :::
 
 After tournament round opens, you need to upload artifact files to NumerBay to fulfill your active orders. 
-Click the **Artifacts** button on your product in the My listings page for the upload panel.
+Click the **upload** button next to your product in the **[My listings](https://numerbay.ai/listings)** page for the upload panel.
 
-### For products using client-side encryption
-For encrypted listings, upload is only possible when you have active sale orders.
-Upload is repeated for every active sale order at the time of upload, 
-and the process needs to be repeated for any subsequent sale order. Both the web UI and Python client automates this 
-by repeating the encryption and upload during upload. 
+### For products using client-side encryption (default)
+For encrypted listings, upload is only possible when you have active sale orders. 
 
-For Stake Only sales and sales where the buyer designates a slot to submit to, any Numerai submission is also done
+Each file upload is repeated for every active sale order at the time of upload, both the web UI and Python client automate this 
+repetition. The process needs to be manually repeated for any subsequent sale order after the previous upload. 
+
+For Stake Only sales and sales where the buyer designated an auto-submission slot, any Numerai submission is also done
 during the upload in your browser instead of being automated by the NumerBay backend.
 
-![Listing Order Artifacts](/img/tutorial/listingOrderArtifacts.png)
+<img alt="Listing Order Artifacts" src="/img/tutorial/listingOrderArtifacts.png" width="800"/>
 
 ### For products without client-side encryption
-It is recommended to upload artifacts after tournament round opens and regardless if you have active buyers.
-Once artifacts are uploaded, your product will be tagged with a `Ready` badge in the catalog page which makes it more likely to be purchased.
+If you opted not to use client-side encryption, upload can happen at any time. It is recommended to upload artifacts after tournament round opens and regardless if you have active buyers.
 
-![Listing Artifacts](/img/tutorial/listingArtifacts.png)
+Once artifacts are uploaded, your product will be tagged with a `Instant` badge in the catalog page which might make it more likely to be purchased.
 
-![Product Ready](/img/tutorial/productReady.png)
+<img alt="Product Ready" src="/img/tutorial/productReady.png" width="600"/>
 
 ## Manage sales
-Your sales are viewable in the **[Sales history](https://numerbay.ai/my-account/sales-history)** page. 
+Your sales are viewable in the **[Sales](https://numerbay.ai/sales)** page. You can click on the order IDs to view order details.
 
 ![Sales History](/img/tutorial/salesHistory.png)
