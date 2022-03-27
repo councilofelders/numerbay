@@ -5,10 +5,11 @@
 
 **NumerBay (https://numerbay.ai)** is the Numerai Community Marketplace for anything [Numerai](https://numer.ai/). 
 
-![](https://forum.numer.ai/uploads/default/original/2X/2/2e818d7bc54c05e0d0a959e03ecb39358a33d9a5.gif)
+![](https://i.imgur.com/EMCfRCz.png)
 
 This project is sponsored and funded by the **Numerai Council of Elders** and is **NOT** an official project 
 of Numerai.
+* [Docs](https://docs.numerbay.ai/)
 * [Original Project Proposal](https://forum.numer.ai/t/proposal-numerai-community-marketplace/3622)
 * [Project Updates](https://forum.numer.ai/t/updates-numerbay-the-community-marketplace/3844)
 

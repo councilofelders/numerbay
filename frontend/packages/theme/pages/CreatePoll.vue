@@ -251,21 +251,21 @@ export default {
           title: 'Equal Weights for All',
           description: 'Equal weights, allows non-staked participants to vote',
           value: 'equal',
-          icon: 'ni-lock'
+          icon: 'ni-equal'
         },
         {
           id: 2,
           title: 'Equal Weights for Staked',
           description: 'Equal weights for all staked participants',
           value: 'equal_staked',
-          icon: 'ni-files'
+          icon: 'ni-equal'
         },
         {
           id: 3,
           title: 'Log Staked NMR',
           description: 'Log-transformed weights by NMR staked on models',
           value: 'log_numerai_stake',
-          icon: 'ni-lock-alt'
+          icon: 'ni-coins'
         }
       ],
       minParticipationOptions: [

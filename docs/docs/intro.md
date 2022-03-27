@@ -6,6 +6,8 @@ sidebar_position: 1
 
 Let's discover **NumerBay in less than 5 minutes**.
 
+![Home Cover](/img/tutorial/homeCover.png)
+
 ## Getting Started
 
 **[NumerBay](https://numerbay.ai)** is the Numerai community marketplace funded by the Numerai Council of Elders. Anything related to the Numerai tournaments can be traded directly without middleman.
