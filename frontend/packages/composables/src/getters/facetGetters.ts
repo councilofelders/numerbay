@@ -30,6 +30,7 @@ const getSortOptions = (searchData): AgnosticSort => {
     { type: 'sort', id: 'corrmmc-down', value: 'CORR+MMC Rep from high to low', count: null },
     { type: 'sort', id: 'corr2mmc-down', value: 'CORR+2xMMC Rep from high to low', count: null },
     { type: 'sort', id: 'fnc-down', value: 'FNC Rep from high to low', count: null },
+    { type: 'sort', id: 'fncV3-down', value: 'FNCv3 Rep from high to low', count: null },
     { type: 'sort', id: 'tc-down', value: 'TC Rep from high to low', count: null },
     { type: 'sort', id: 'name-up', value: 'Name: A to Z', count: null},
     // { type: 'sort', id: 'price-up', value: 'Price from low to high', count: null },

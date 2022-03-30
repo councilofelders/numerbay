@@ -46,6 +46,8 @@ _SORT_OPTION_LOOKUP = {
     ),
     "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
     "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
+    "fncV3-up": Model.latest_reps.cast(JSON)["fncV3"].as_string().cast(Float),
+    "fncV3-down": desc(Model.latest_reps.cast(JSON)["fncV3"].as_string().cast(Float)),
     "tc-up": Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
     "tc-down": desc(Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)),
     "stake-up": Model.nmr_staked,
