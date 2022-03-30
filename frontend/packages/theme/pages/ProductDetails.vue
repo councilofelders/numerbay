@@ -383,6 +383,7 @@ export default {
         corr: this.$route.params.latestRankCorr || this.productGetters.getModelRank(this.product, 'corr'),
         mmc: this.$route.params.latestRankMmc || this.productGetters.getModelRank(this.product, 'mmc'),
         fnc: this.$route.params.latestRankFnc || this.productGetters.getModelRank(this.product, 'fnc'),
+        fncV3: this.$route.params.latestRankFncV3 || this.productGetters.getModelRank(this.product, 'fncV3'),
         tc: this.$route.params.latestRankTc || this.productGetters.getModelRank(this.product, 'tc'),
         ic: this.$route.params.latestRankIc || this.productGetters.getModelRank(this.product, 'ic')
       };
@@ -392,6 +393,7 @@ export default {
         corr: this.$route.params.latestRepCorr || this.productGetters.getModelRep(this.product, 'corr'),
         mmc: this.$route.params.latestRepMmc || this.productGetters.getModelRep(this.product, 'mmc'),
         fnc: this.$route.params.latestRepFnc || this.productGetters.getModelRep(this.product, 'fnc'),
+        fncV3: this.$route.params.latestRepFncV3 || this.productGetters.getModelRep(this.product, 'fncV3'),
         tc: this.$route.params.latestRepTc || this.productGetters.getModelRep(this.product, 'tc'),
         ic: this.$route.params.latestRepIc || this.productGetters.getModelRep(this.product, 'ic')
       };
@@ -499,14 +501,29 @@ export default {
           // eslint-disable-next-line camelcase
           await this.orderSearch({ role: 'buyer', filters: {product: {in: [this.productGetters.getId(this.product)]}, round_order: {in: [this.globals.selling_round]}, state: {in: ['pending', 'confirmed']}} });
           if (this.orders?.data?.length > 0) {
-            // this.send({
-            //   message: 'You already bought this product for this round',
-            //   type: 'info'
-            // });
-            // this.$router.push(`/checkout/confirmation?order=${this.orders.data[0].id}`);
-            this.toAddress = this.orderGetters.getToAddress(this.orders?.data[0]);
-            this.amount = this.orderGetters.getPrice(this.orders?.data[0]);
-            this.paymentStep = 2;
+            if (this.orders?.data[0].state === 'pending') {
+              this.toAddress = this.orderGetters.getToAddress(this.orders?.data[0]);
+              this.amount = this.orderGetters.getPrice(this.orders?.data[0]);
+              this.paymentStep = 2;
+              this.send({
+                message: 'Please complete the payment for your pending order',
+                type: 'bg-warning',
+                icon: 'ni-alert-circle',
+                persist: true
+              });
+            } else {
+              this.send({
+                message: 'You already bought this product for this round',
+                type: 'bg-warning',
+                icon: 'ni-alert-circle',
+                persist: true
+              });
+              try {
+                this.placeBidModal?.dispose();
+              } finally {
+                await this.$router.push('/purchases');
+              }
+            }
           }
         }
       }, false);

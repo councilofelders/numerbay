@@ -118,6 +118,7 @@
                 latestRepCorr: productGetters.getModelRep(product, 'corr'),
                 latestRepMmc: productGetters.getModelRep(product, 'mmc'),
                 latestRepFnc: productGetters.getModelRep(product, 'fnc'),
+                latestRepFncV3: productGetters.getModelRep(product, 'fncV3'),
                 latestRepTc: productGetters.getModelRep(product, 'tc'),
                 latestRepIc: productGetters.getModelRep(product, 'ic'),
 
@@ -159,6 +160,7 @@ export default {
         corr: this.productGetters.getModelRank(this.product, 'corr'),
         mmc: this.productGetters.getModelRank(this.product, 'mmc'),
         fnc: this.productGetters.getModelRank(this.product, 'fnc'),
+        fncV3: this.productGetters.getModelRank(this.product, 'fncV3'),
         tc: this.productGetters.getModelRank(this.product, 'tc'),
         ic: this.productGetters.getModelRank(this.product, 'ic')
       };
@@ -168,6 +170,7 @@ export default {
         corr: this.productGetters.getModelRep(this.product, 'corr'),
         mmc: this.productGetters.getModelRep(this.product, 'mmc'),
         fnc: this.productGetters.getModelRep(this.product, 'fnc'),
+        fncV3: this.productGetters.getModelRep(this.product, 'fncV3'),
         tc: this.productGetters.getModelRep(this.product, 'tc'),
         ic: this.productGetters.getModelRep(this.product, 'ic')
       };

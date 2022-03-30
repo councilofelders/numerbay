@@ -158,11 +158,14 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   corr
                   mmc
                   fnc
+                  fncV3
                   tc
                   ic
                   corrWMetamodel
                   corrPercentile
                   mmcPercentile
+                  fncPercentile
+                  fncV3Percentile
                   tcPercentile
                   icPercentile
                 }
@@ -170,6 +173,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   corr
                   mmc
                   fnc
+                  fncV3
                   tc
                   ic
                 }
@@ -177,6 +181,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   corr
                   mmc
                   fnc
+                  fncV3
                   tc
                   ic
                 }

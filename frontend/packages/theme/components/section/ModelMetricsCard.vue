@@ -55,6 +55,12 @@
                       </td>
                       <td class="stats">{{ latestReps.fnc }}</td>
                   </tr>
+                  <tr v-if="show.fnc">
+                      <td>
+                          FNCv3 Reputation
+                      </td>
+                      <td class="stats">{{ latestReps.fncV3 }}</td>
+                  </tr>
                   <tr v-if="show.tc" >
                       <td>
                           TC Reputation
@@ -92,6 +98,12 @@
                           FNC Rank
                       </td>
                       <td class="stats">{{ latestRanks.fnc }}</td>
+                  </tr>
+                  <tr v-if="show.fnc">
+                      <td>
+                          FNCv3 Rank
+                      </td>
+                      <td class="stats">{{ latestRanks.fncV3 }}</td>
                   </tr>
                   <tr v-if="show.tc">
                       <td>
