@@ -53,6 +53,7 @@ import SectionData from '@/store/store.js';
 
 // Composables
 import { useUser } from '@vue-storefront/numerbay';
+import { useUiNotification } from '~/composables';
 
 export default {
   name: 'LoginSectionTwo',
@@ -97,7 +98,20 @@ export default {
                     publicAddress: publicAddress,
                     signature: signature
                   }
-                }).then(onLoginSuccess);
+                }) //.then(onLoginSuccess);
+                if (this.user?.public_address) { // success
+                  await onLoginSuccess()
+                } else { // failure
+                  this.connecting = false;
+                  await this.loadUser();
+                  this.send({
+                    message: 'Failed to connect wallet, there may already be an account with this wallet. Try logging out and in again with the wallet',
+                    type: 'bg-danger',
+                    icon: 'ni-alert-circle',
+                    persist: true
+                  });
+                  await this.$router.push('/account');
+                }
               } else {
                 await this.loginWeb3({
                   user: {
@@ -138,8 +152,9 @@ export default {
     }
   },
   setup() {
-    const { isAuthenticated, user, register, login, loading, setUser, updateUser, error: userError,
+    const { isAuthenticated, user, register, login, load: loadUser, loading, setUser, updateUser, error: userError,
       web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, getNonce, getNonceAuthenticated, loginWeb3 } = useUser();
+    const { send } = useUiNotification();
 
     return {
       isAuthenticated,
@@ -148,7 +163,9 @@ export default {
       getNonce,
       getNonceAuthenticated,
       loginWeb3,
-      updateUser
+      updateUser,
+      loadUser,
+      send
     };
   }
 };
