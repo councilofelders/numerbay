@@ -84,13 +84,6 @@ export default {
   methods: {
     async onLogout() {
       await this.logout();
-      // todo disconnect wallet
-      // log out of metamask
-      // try {
-      //   await disconnectWeb3Modal();
-      // } catch (e) {
-      //   Logger.error(e);
-      // }
       await this.$router.push('/');
     }
   },

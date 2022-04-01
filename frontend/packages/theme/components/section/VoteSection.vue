@@ -35,15 +35,9 @@ import { computed } from '@vue/composition-api';
 
 export default {
   name: 'VoteSection',
-  data() {
-    return {
-
-    };
-  },
   methods: {
     async addVote(obj) {
       if (!this.isAuthenticated) {
-        // await this.search({ id: this.id });
         this.send({
           message: 'You need to log in to vote',
           type: 'bg-warning',
@@ -52,16 +46,6 @@ export default {
         await this.$router.push('/login-v2');
         return;
       }
-      // if (!this.user.numerai_api_key_public_id) {
-      //   this.search({ id: this.id });
-      //   this.send({
-      //     message: 'This action requires Numerai API Key',
-      //     type: 'info',
-      //     action: {text: 'Set Numerai API Key', onClick: ()=>this.$router.push('/my-account/numerai-api')},
-      //     persist: true
-      //   });
-      //   return;
-      // }
       if (this.poll.is_multiple) {
         await this.vote({id: this.poll.id, options: obj.arSelected});
         if (this.pollError.voting) {

@@ -33,47 +33,11 @@
                                     </div><!-- end col-->
                                 </div><!-- end row -->
                             </div><!-- end row -->
-<!--                            <p class="item-detail-text mb-4">{{ content }}</p>-->
-<!--                            <div class="item-credits">
-                                <div class="row g-4">
-                                    <div class="col-xl-6" v-for="item in SectionData.itemDetailData.itemDetailList" :key="item.id">
-                                        <div class="card-media card-media-s1">
-                                            <router-link :to="item.path" class="card-media-img flex-shrink-0 d-block">
-                                                <img :src="item.avatar" alt="avatar">
-                                            </router-link>
-                                            <div class="card-media-body">
-                                                <router-link :to="item.path" class="fw-semibold">{{ item.title }}</router-link>
-                                                <p class="fw-medium small">{{ item.subTitle }}</p>
-                                            </div>
-                                        </div>&lt;!&ndash; end card &ndash;&gt;
-                                    </div>&lt;!&ndash; end col&ndash;&gt;
-                                    <div class="col-xl-12" v-for="item in SectionData.itemDetailData.itemDetailListTwo" :key="item.id">
-                                        <div class="card-media card-media-s1">
-                                            <router-link :to="item.path" class="card-media-img flex-shrink-0 d-block">
-                                                <img :src="item.avatar" alt="avatar">
-                                            </router-link>
-                                            <div class="card-media-body">
-                                                <p class="fw-semibold text-black">{{ item.title }}</p>
-                                                <span class="fw-medium small">{{ item.subTitle }}</span>
-                                            </div>
-                                        </div>&lt;!&ndash; end card &ndash;&gt;
-                                    </div>&lt;!&ndash; end col&ndash;&gt;
-                                </div>&lt;!&ndash; end row &ndash;&gt;
-                            </div>&lt;!&ndash; end row &ndash;&gt;-->
                             <div class="item-detail-btns mt-4">
                                 <ul class="btns-group d-flex">
                                     <li class="flex-grow-1">
                                         <a href="javascript:void(0);" @click="togglePlaceBidModal" :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`">{{ productGetters.getIsActive(product) ? 'Buy' : 'Not for sale' }}</a>
-<!--                                        <router-link v-show="!isAuthenticated" to="/login-v2" :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`">{{ productGetters.getIsActive(product) ? 'Buy' : 'Not for sale' }}</router-link>-->
                                     </li>
-<!--                                    <li class="flex-grow-1">
-                                        <div class="dropdown">
-                                            <a href="#" class="btn bg-dark-dim d-block" data-bs-toggle="dropdown">{{ SectionData.itemDetailData.btnTextTwo }}</a>
-                                            <div class="dropdown-menu card-generic p-2 keep-open w-100 mt-1">
-                                                <router-link :to="icon.path" class="dropdown-item card-generic-item" v-for="(icon, i) in SectionData.socialShareList" :key="i"><em class="ni me-2" :class="icon.btnClass"></em>{{ icon.title }}</router-link>
-                                            </div>
-                                        </div>
-                                    </li>-->
                                 </ul>
                             </div><!-- end item-detail-btns -->
                             <ModelMetricsCard
@@ -112,60 +76,6 @@
                             </div><!-- end item-detail-description-container -->
                         </div><!-- end item-detail-content -->
                     </div><!-- end col -->
-<!--                    <div class="col-lg-12">
-                        <div class="item-detail-tab mt-5">
-                            <div class="row g-gs">
-                                <div class="col-xl-4 col-lg-6">
-                                    <div class="card-border card-full">
-                                        <div class="card-body card-body-s1">
-                                                <h5 class="mb-3">{{ SectionData.itemDetailData.itemDetailOwnerListTwo.title }}</h5>
-                                                <div class="item-detail-list">
-                                                    <div class="card-media card-media-s2" v-for="item in SectionData.itemDetailData.itemDetailOwnerListTwo.ownerList" :key="item.id">
-                                                        <router-link :to="item.path" class="card-media-img flex-shrink-0 d-block"><img :src="item.avatar" alt="avatar"></router-link>
-                                                        <div class="card-media-body">
-                                                            <p class="fw-semibold"><router-link :to="item.path" class="text-black">{{ item.title }}</router-link></p>
-                                                            <p class="small">{{ item.subTitle }}</p>
-                                                        </div>
-                                                    </div>&lt;!&ndash; end card-media &ndash;&gt;
-                                                </div>&lt;!&ndash; end item-detail-list &ndash;&gt;
-                                        </div>&lt;!&ndash; end card-body &ndash;&gt;
-                                    </div>&lt;!&ndash; end card-border &ndash;&gt;
-                                </div>&lt;!&ndash; end col &ndash;&gt;
-                                <div class="col-xl-4 col-lg-6">
-                                    <div class="card-border card-full">
-                                        <div class="card-body card-body-s1">
-                                            <h5 class="mb-3">{{ SectionData.itemDetailData.itemDetailBidsListTwo.title }}</h5>
-                                            <div class="item-detail-list">
-                                                <div class="card-media card-media-s2" v-for="item in SectionData.itemDetailData.itemDetailBidsListTwo.bidsList" :key="item.id">
-                                                    <router-link :to="item.path" class="card-media-img flex-shrink-0 d-block"><img :src="item.avatar" alt="avatar"></router-link>
-                                                    <div class="card-media-body text-truncate">
-                                                        <p class="fw-semibold text-black text-truncate">{{ item.title }}</p>
-                                                        <p class="small">{{ item.date }}</p>
-                                                    </div>
-                                                </div>&lt;!&ndash; end card-media &ndash;&gt;
-                                            </div>&lt;!&ndash; end item-detail-list &ndash;&gt;
-                                        </div>
-                                    </div>&lt;!&ndash; end col &ndash;&gt;
-                                </div>&lt;!&ndash; end col &ndash;&gt;
-                                <div class="col-xl-4">
-                                    <div class="card-border card-full">
-                                        <div class="card-body card-body-s1">
-                                                <h5 class="mb-3">{{ SectionData.itemDetailData.itemDetailHistoryListTwo.title }}</h5>
-                                                <div class="item-detail-list">
-                                                    <div class="card-media card-media-s2" v-for="item in SectionData.itemDetailData.itemDetailHistoryListTwo.historyList" :key="item.id">
-                                                        <router-link :to="item.path" class="card-media-img flex-shrink-0 d-block"><img :src="item.avatar" alt="avatar"></router-link>
-                                                        <div class="card-media-body text-truncate">
-                                                            <p class="fw-semibold text-black text-truncate">{{ item.title }}</p>
-                                                            <p class="small text-truncate">{{ item.subTitle }}</p>
-                                                        </div>
-                                                    </div>&lt;!&ndash; end card-media &ndash;&gt;
-                                                </div>&lt;!&ndash; end item-detail-list &ndash;&gt;
-                                        </div>
-                                    </div>&lt;!&ndash; end col &ndash;&gt;
-                                </div>&lt;!&ndash; end col &ndash;&gt;
-                            </div>&lt;!&ndash; end row &ndash;&gt;
-                        </div>&lt;!&ndash; end item-detail-tab &ndash;&gt;
-                    </div>&lt;!&ndash; end col &ndash;&gt;-->
                 </div><!-- end row -->
             </div><!-- .container -->
             <!-- Modal -->
@@ -188,9 +98,7 @@
                   </div>
                   <ValidationProvider rules="required|integer|min_value:1|max_value:10" v-slot="{ errors }" v-if="isOnPlatform" slim>
                   <div class="mb-3">
-                      <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Enter quantity
-  <!--                                <span class="text-primary">5 available</span>-->
-                      </label>
+                      <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Enter quantity</label>
                       <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" v-model="quantity" min="1" max="10" step="1" @change="handleSubmit(onQuantityChange)">
                       <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                   </div>
@@ -285,8 +193,8 @@ import NumeraiChart from '@/components/section/NumeraiChart.vue';
 
 // Composables
 import { onSSR } from '@vue-storefront/core';
-import { computed, reactive } from '@vue/composition-api';
-import { cartGetters, numeraiGetters, orderGetters, productGetters, reviewGetters, useGlobals, useMakeOrder, useNumerai, useProduct, useReview, useUser, useUserOrder, userGetters } from '@vue-storefront/numerbay';
+import { computed } from '@vue/composition-api';
+import { cartGetters, numeraiGetters, orderGetters, productGetters, useGlobals, useMakeOrder, useNumerai, useProduct, useUser, useUserOrder, userGetters } from '@vue-storefront/numerbay';
 import { useUiNotification } from '~/composables';
 
 export default {
@@ -308,33 +216,12 @@ export default {
       autoSubmit: false,
       submitSlot: null,
       SectionData,
-      // id: this.$route.params.id,
-      // title: this.$route.params.title,
-      // imgLg: this.$route.params.imgLg,
       metaText: this.$route.params.metaText,
       metaTextTwo: this.$route.params.metaTextTwo,
       metaTextThree: this.$route.params.metaTextThree,
       content: this.$route.params.content
     };
   },
-  // props: {
-  //   title: {
-  //     type: String,
-  //     required: true
-  //   }
-  // },
-  // mounted() {
-  //   this.products.forEach(element => {
-  //     if (this.id === element.id) {
-  //       this.imgLg = element.imgLg;
-  //       this.title = element.title;
-  //       this.metaText = element.metaText;
-  //       this.metaTextTwo = element.metaTextTwo;
-  //       this.metaTextThree = element.metaTextThree;
-  //       this.content = element.content;
-  //     }
-  //   });
-  // },
   computed: {
     selectedOption() {
       return this.productGetters.getOrderedOption(this.product, this.optionIdx);
@@ -354,9 +241,6 @@ export default {
     buyBtnText() {
       return this.isOnPlatform ? 'Place an Order' : 'Visit external listing';
     },
-    // mode() {
-    //   return this.$route.params.mode || this.productGetters.getMode(this.productGetters.getOrderedOption(this.product, 0)).toUpperCase();
-    // },
     owner() {
       return this.$route.params.owner || this.productGetters.getOwner(this.product);
     },
@@ -454,12 +338,6 @@ export default {
         this.amount = this.orderGetters.getPrice(this.order);
         this.paymentStep = 2;
       }
-
-      //   .then(() => {
-      //   this.toAddress = this.orderGetters.getToAddress(this.order);
-      //   this.amount = this.orderGetters.getPrice(this.order);
-      //   this.paymentStep = 2;
-      // });
     },
     getMetricColor(value) {
       if (value > 0) {
@@ -555,33 +433,17 @@ export default {
     const { orders, search: orderSearch } = useUserOrder('product');
     const { send } = useUiNotification();
 
-    // const pageData = reactive({
-    //   SectionData,
-    //   id: context.root.$route.params.id,
-    //   title: context.root.$route.params.title,
-    //   imgLg: context.root.$route.params.imgLg,
-    //   metaText: context.root.$route.params.metaText,
-    //   metaTextTwo: context.root.$route.params.metaTextTwo,
-    //   metaTextThree: context.root.$route.params.metaTextThree,
-    //   content: context.root.$route.params.content
-    // });
-
     const product = computed(() => (products.value.data || [])[0]);
 
     onSSR(async () => {
       await search({ id, categorySlug: category, name }).then(async ()=>{
-        // await searchRelatedProducts({ filters: {user: {in: [product.value.owner.id]}}}); // catId: product.value.category.id,
         await searchRelatedProducts({ filters: {id: {in: product?.value?.featured_products || []}}});
-        // await searchReviews({ productId: id });
-        // const product = (products.value.data || [])[0];
         if (product.value?.category?.tournament) {
           await getModelInfo({tournament: product.value?.category?.slug.startsWith('signals') ? 11 : 8, modelName: product.value?.name});
         }
         await getGlobals();
       });
     });
-
-    // const product = computed(() => productGetters.getFiltered(products.value.data, { master: true, attributes: context.root.$route.query })[0]);
 
     const onCopy = (e) => {
       const target = e.trigger.querySelector('.tooltip-text');
@@ -592,42 +454,26 @@ export default {
       }, 1000);
     };
 
-    // const promoIsApplied = computed(
-    //   () => cartGetters.getAppliedCoupon(productGetters.getOptionById(product.value, optionId))?.code
-    // );
-
-    // const applyCoupon = async ({ couponCode }) => {
-    //   context.root.$router.push({ query: { ...context.root.$route.query, coupon: couponCode}});
-    // };
-    //
-    // const removeCoupon = async () => {
-    //   context.root.$router.push({ query: { ...context.root.$route.query, coupon: null}});
-    // };
-    //
-    // const handleCoupon = async () => {
-    //   await (promoIsApplied.value
-    //     ? removeCoupon({ currentCart: product.value })
-    //     : applyCoupon({ couponCode: promoCode.value }));
-    // };
-
     return {
-      // ...pageData,
       id,
       name,
       product,
       productLoading,
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p)=>parseInt(p.id) !== parseInt(id))),
+      relatedLoading,
       numeraiCorrMmcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrMmcChartData(numerai.value)),
       numeraiTcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcChartData(numerai.value)),
       numeraiIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiIcChartData(numerai.value)),
       numerai,
       numeraiLoading,
       globals,
+      globalsLoading,
       isAuthenticated,
       userLoading,
       models: computed(() => product ? userGetters.getModels(numerai.value, productGetters.getTournamentId(product), false) : []),
       order,
       orders,
+      user,
       productGetters,
       numeraiGetters,
       orderGetters,

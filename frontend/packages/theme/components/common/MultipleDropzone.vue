@@ -1,6 +1,5 @@
 <template>
   <div :id="id" ref="dropzoneElement" class="dropzone file-upload-wrap">
-<!--    :class="{ 'vue-dropzone dropzone': includeStyling }"-->
     <div v-if="useCustomSlot" class="dz-message">
       <slot>Drop files here to upload</slot>
     </div>
@@ -12,9 +11,6 @@ let component = {};
 
 if (process.browser) {
   const Dropzone = require('dropzone').Dropzone;
-  // const {generateSignedUrl} = require('../../plugins/gcs');
-  // const useUiNotification = require('~/composables').useUiNotification;
-  // const extend = require('just-extend');
 
   Dropzone.autoDiscover = false;
   component = {
@@ -107,8 +103,6 @@ if (process.browser) {
         Object.keys(this.options).forEach((key) => {
           defaultValues[key] = this.options[key];
         }, this);
-        // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this,no-unused-vars,@typescript-eslint/no-unused-vars
-        const vm = this;
         return defaultValues;
       },
       isS3 () {

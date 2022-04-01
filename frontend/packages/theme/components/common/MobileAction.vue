@@ -24,8 +24,6 @@
 export default {
   name: 'MobileAction',
   mounted () {
-    // this.mobileSearchDropdown = this.getBootstrapDropdown(this.$refs['mobileSearch'])
-
     // slideUp
     let slideUp = (target, duration = 500) => {
       target.style.transitionProperty = 'height, margin, padding'
@@ -248,7 +246,6 @@ export default {
   },
   data () {
     return {
-      // mobileSearchDropdown: null,
       showMobileSearchDropdown: false,
       searchTerm: this.$route.query.term
     };

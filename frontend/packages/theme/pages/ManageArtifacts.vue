@@ -366,7 +366,6 @@ export default {
           file.status = 'canceled';
         }
         this.$refs.foo.dropzone.files = this.$refs.foo.dropzone.files.filter((f)=>f !== file).map((f)=>f);
-        // console.log('this.$refs.foo.dropzone.files', JSON.stringify(this.$refs.foo.dropzone.files));
         // this.$refs.foo.dropzone.updateTotalUploadProgress();
         this.$refs.foo.dropzone.emit('removedfile', file);
         if (this.productGetters.getUseEncryption(this.product) && (!this.orders || this.orders.length === 0)) {

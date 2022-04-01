@@ -112,6 +112,7 @@ export default {
 
     return {
       orders: computed(() => orders?.value?.data ? orders.value?.data : []),
+      loading,
       orderGetters,
       productGetters,
       getStatusTextClass,

@@ -24,7 +24,6 @@
                           <td><router-link class="btn-link" :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`">{{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}</router-link></td>
                             <td v-if="orderGetters.getProduct(order).category.is_per_round && parseInt(orderGetters.getItemQty(order)) > 1">{{ `${orderGetters.getRound(order)}-${parseInt(orderGetters.getRound(order))+parseInt(orderGetters.getItemQty(order))-1}` }}</td>
                             <td v-else>{{ orderGetters.getRound(order) }}</td>
-<!--                            <td>{{ orderGetters.getFormattedPrice(order, withCurrency=true, decimals=4) }}</td>-->
                             <td><span class="badge fw-medium" :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span></td>
                             <td>
                               <div class="d-flex justify-content-between" v-if="orderGetters.getStatus(order)=='confirmed'">
