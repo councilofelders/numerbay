@@ -468,7 +468,7 @@ export default {
       }
       Logger.debug('response: ', response);
       await this.productArtifactSearch({ productId: this.id });
-      await this.orderSearch({ role: 'seller', filters: { active: true} });
+      await this.orderSearch({ role: 'seller', filters: { active: true, product: {in: [this.id]}} });
       // this.resetUploadOrders();
     },
     s3UploadError(file, message, xhr) {
@@ -523,7 +523,7 @@ export default {
           }
         });
         this.componentKey += 1;
-        await this.orderSearch({ role: 'seller', filters: { active: true} });
+        await this.orderSearch({ role: 'seller', filters: { active: true, product: {in: [this.id]}} });
       } finally {
         this.$refs.foo.enable();
         this.componentLoading = false;
