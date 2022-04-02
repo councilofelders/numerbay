@@ -14,6 +14,7 @@ export type ProductVariant = {
   owner: any;
   model: any;
   avatar: string;
+  webhook: string;
   // todo consistent camelcase
   // eslint-disable-next-line camelcase
   third_party_url: string;

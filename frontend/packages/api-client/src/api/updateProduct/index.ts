@@ -9,23 +9,12 @@ export default async function updateProduct(context, params, customQuery?: Custo
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
-    // eslint-disable-next-line camelcase
-    // is_on_platform: params.isOnPlatform,
-    // price: Number(params.price),
-    // currency: params.isOnPlatform === 'true' ? params.currency : 'USD',
-    // wallet: params.wallet ? params.wallet : null,
-    // mode: params.mode,
-    // eslint-disable-next-line camelcase
-    // stake_limit: params.stakeLimit ? params.stakeLimit : null,
-    // eslint-disable-next-line camelcase
-    // category_id: Number(params.category),
     avatar: params.avatar ? params.avatar : null,
-    // eslint-disable-next-line camelcase
-    // third_party_url: params.thirdPartyUrl ? params.thirdPartyUrl : null,
     // eslint-disable-next-line camelcase
     is_active: params.isActive,
     // eslint-disable-next-line camelcase
     use_encryption: params.useEncryption,
+    webhook: params.webhook ? params.webhook : null,
     // eslint-disable-next-line camelcase
     expiration_round: params.expirationRound,
     description: params.description,

@@ -162,6 +162,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getTournamentId: (product: PRODUCT) => number;
     getTotalReviews: (product: PRODUCT) => number;
     getAverageRating: (product: PRODUCT) => number;
+    getWebhook: (product: PRODUCT) => string;
     getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
     getModelNmrStaked: (product: PRODUCT, decimals: number) => any;
     getModelRank: (product: PRODUCT, key: string) => any;

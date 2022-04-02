@@ -1042,6 +1042,47 @@ def batch_prune_storage() -> None:
         db.close()
 
 
+@celery_app.task  # (acks_late=True)
+def trigger_webhook_for_product_task(product_id: int) -> None:
+    """
+    Trigger product webhook for new order task
+
+    Args:
+        product_id (int): product ID
+    """
+    db = SessionLocal()
+    try:
+        product = crud.product.get(db, id=product_id)
+        if not product:
+            return None
+        if not product.webhook:
+            return None
+        response = requests.post(
+            product.webhook,
+            json={
+                "date": datetime.now().isoformat(),
+                "product_id": product.id,
+                "product_category": product.category.slug,  # type: ignore
+                "product_name": product.name,
+                "product_full_name": product.sku,
+                "model_id": product.model_id,
+                "tournament": product.category.tournament,  # type: ignore
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        if response.status_code != 200:
+            print(
+                f"Webhook for {product.sku} ({product.id}) "
+                f"returned an error {response.status_code}, "
+                f"the response is:\n{response.text}"
+            )
+            return None
+        print(f"Webhook for {product.sku} ({product.id}) succeeded")
+    finally:
+        db.close()
+    return None
+
+
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
     sender,  # type: ignore

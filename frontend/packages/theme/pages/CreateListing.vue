@@ -110,6 +110,16 @@
                                   </div><!-- end d-flex -->
                               </div>
                           </div><!-- end form-item -->
+                          <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                          <div class="form-item mb-4">
+                              <div class="mb-4">
+                                  <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Webhook url</h5>
+                                  <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Url to call on new sale order. Useful for products using client-side encryption</p>
+                                  <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Webhook URL (optional)" v-model="form.webhook" @change="encodeURL">
+                                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                              </div>
+                          </div><!-- end form-item -->
+                          </ValidationProvider>
                           <div class="form-item mb-4">
                               <h5 class="mb-1">Featured products</h5>
                               <p class="form-text mb-3">Other products to display in the product page (optional)</p>
@@ -402,7 +412,7 @@ export default {
     onProductsLoaded(products) {
       this.currentListing = products?.data?.find((p)=>p.id === parseInt(this.id));
       this.form = this.resetForm(this.currentListing);
-      this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts) && this.form.featuredProducts.length>0);
+      this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts) && this.form.featuredProducts.length>0) || (this.form.webhook);
     }
   },
   watch: {
@@ -471,6 +481,7 @@ export default {
       avatar: product ? productGetters.getCoverImage(product) : null,
       isActive: product ? productGetters.getIsActive(product) : true,
       useEncryption: product ? productGetters.getUseEncryption(product) : true,
+      webhook: product ? productGetters.getWebhook(product) : null,
       autoExpiration: productGetters.getExpirationRound(product) !== null,
       expirationRound: productGetters.getExpirationRound(product),
       options: product ? product.options : [],
@@ -485,7 +496,6 @@ export default {
       await fn({ id: currentListing.value ? currentListing.value.id : null, product: form.value });
       const hasProductErrors = productError.value.listingModal;
       if (hasProductErrors) {
-        // error.listingModal = productError.value.listingModal?.message;
         send({
           message: productError.value.listingModal?.message,
           type: 'bg-danger',
@@ -493,8 +503,6 @@ export default {
         });
         return;
       }
-
-      // toggleListingModal();
 
       await productSearch({filters: { user: { in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
 

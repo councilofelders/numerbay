@@ -29,6 +29,7 @@ class ProductBase(BaseModel):
     total_num_sales: Optional[int] = None
     last_sale_price: Optional[Decimal] = None
     last_sale_price_delta: Optional[Decimal] = None
+    webhook: Optional[HttpUrl] = None
     featured_products: Optional[List[int]] = None
 
 

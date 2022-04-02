@@ -166,6 +166,8 @@ export const getProductAverageRating = (product: ProductVariant): number => (pro
   acc, curr
 ) => Number.parseInt(`${acc}`, 10) + getReviewRating(curr), 0)) / (product?.reviews?.length || 1) || 0;
 
+export const getProductWebhook = (product: ProductVariant): string => product?.webhook;
+
 export const getProductModelNmrStaked = (product: ProductVariant, decimals = 2): any => (product as any)?.model?.nmr_staked?.toFixed(decimals) || '-';
 
 export const getProductModelRank = (product: ProductVariant, key: string): any => ((product as any)?.model?.latest_ranks || {})[key] || '-';
@@ -220,6 +222,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getTournamentId: getProductTournamentId,
   getTotalReviews: getProductTotalReviews,
   getAverageRating: getProductAverageRating,
+  getWebhook: getProductWebhook,
   getModelNmrStaked: getProductModelNmrStaked,
   getModelRank: getProductModelRank,
   getModelRep: getProductModelRep,

@@ -12,7 +12,6 @@ celery_app.conf.task_routes = {
     "app.worker.send_new_order_artifact_emails_task": "main-queue",
     "app.worker.send_order_artifact_upload_reminder_emails_task": "main-queue",
     "app.worker.update_model_subtask": "beat-queue",
-    # "app.worker.commit_models_subtask": "beat-queue",
     "app.worker.batch_update_models_task": "beat-queue",
     "app.worker.batch_update_model_scores_task": "beat-queue",
     "app.worker.update_globals_stats_task": "beat-queue",
@@ -28,4 +27,5 @@ celery_app.conf.task_routes = {
     "app.worker.batch_update_stake_snapshots": "beat-queue",
     "app.worker.batch_update_polls": "beat-queue",
     "app.worker.batch_prune_storage": "beat-queue",
+    "app.worker.trigger_webhook_for_product_task": "main-queue",
 }

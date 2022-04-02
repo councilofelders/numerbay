@@ -41,6 +41,7 @@ class Product(Base):
     total_num_sales = Column(Integer, default=0, server_default="0")
     last_sale_price = Column(Numeric)
     last_sale_price_delta = Column(Numeric)
+    webhook = Column(String)
     featured_products = Column(ARRAY(Integer))
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="products")

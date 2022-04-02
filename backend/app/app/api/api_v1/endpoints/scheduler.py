@@ -169,3 +169,17 @@ def add_job_artifact_reminder(
     celery_app.send_task("app.worker.send_order_artifact_upload_reminder_emails_task")
 
     return {"msg": "success!"}
+
+
+@router.post("/webhook/{id}")
+def trigger_webhook_for_product(
+    *,
+    id: int,  # pylint: disable=W0622
+    current_user: models.User = Depends(
+        deps.get_current_active_superuser
+    ),  # pylint: disable=W0613
+) -> Any:
+    """ Trigger webhook for product """
+    celery_app.send_task("app.worker.trigger_webhook_for_product_task", args=[id])
+
+    return {"msg": "success!"}
