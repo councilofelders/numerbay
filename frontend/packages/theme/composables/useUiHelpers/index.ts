@@ -14,7 +14,10 @@ const reduceFilters = (query) => (prev, curr) => {
 
 const getFiltersDataFromUrl = (context, onlyFilters) => {
   const { query } = context.$router.history.current;
-
+  // Always only show active products if not specified
+  if (!query?.status) {
+    query.status = ['active']
+  }
   return Object.keys(query)
     .filter(f => onlyFilters ? !nonFilters.includes(f) : nonFilters.includes(f))
     .reduce(reduceFilters(query), {});
