@@ -8,6 +8,7 @@ export interface UseProductFactoryParams<PRODUCTS, PRODUCT_SEARCH_PARAMS extends
   createProduct: (context: Context, params: any) => Promise<any>;
   updateProduct: (context: Context, params: any) => Promise<any>;
   deleteProduct: (context: Context, params: any) => Promise<any>;
+  testProductWebhook: (context: Context, params: any) => Promise<any>;
 }
 
 export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
@@ -16,6 +17,7 @@ export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
   return function useProduct(id: string): UseProduct<PRODUCTS, PRODUCT_SEARCH_PARAMS> {
     const products: Ref<PRODUCTS> = sharedRef([], `useProduct-products-${id}`);
     const loading = sharedRef(false, `useProduct-loading-${id}`);
+    const loadingWebhook = sharedRef(false, `useProduct-loadingWebhook-${id}`);
     const _factoryParams = configureFactoryParams(factoryParams);
 
     const errorsFactory = (): UseProductErrors => ({
@@ -92,13 +94,31 @@ export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
       }
     };
 
+    const testProductWebhook = async ({url: providedUrl}) => {
+      Logger.debug('useProductFactory.testProductWebhook', providedUrl);
+      resetErrorValue();
+
+      try {
+        loadingWebhook.value = true;
+        await _factoryParams.testProductWebhook({url: providedUrl});
+        error.value.listingModal = null;
+      } catch (err) {
+        error.value.listingModal = err;
+        Logger.error('useProduct/testProductWebhook', err);
+      } finally {
+        loadingWebhook.value = false;
+      }
+    };
+
     return {
       search,
       createProduct,
       updateProduct,
       deleteProduct,
+      testProductWebhook,
       products: computed(() => products.value),
       loading: computed(() => loading.value),
+      loadingWebhook: computed(() => loadingWebhook.value),
       error: computed(() => error.value)
     };
   };

@@ -1,9 +1,10 @@
 """ Utils endpoints (admin only) """
-
+from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends
-from pydantic.networks import EmailStr
+import requests
+from fastapi import APIRouter, Body, Depends
+from pydantic.networks import EmailStr, HttpUrl
 
 from app import models, schemas
 from app.api import deps
@@ -39,3 +40,29 @@ def test_email(
     """
     send_test_email(email_to=email_to)
     return {"msg": "Test email sent"}
+
+
+@router.post("/test-product-webhook/")
+def test_product_webhook(
+    url: HttpUrl = Body(..., embed=True),
+    current_user: models.User = Depends(
+        deps.get_current_active_user
+    ),  # pylint: disable=W0613
+) -> Any:
+    """
+    Test product webhook.
+    """
+    response = requests.post(
+        url,
+        json={
+            "date": datetime.now().isoformat(),
+            "product_id": 1,
+            "product_category": "numerai-predictions",
+            "product_name": "myproduct",
+            "product_full_name": "numerai-predictions-myproduct",
+            "model_id": "adabxxx-3acf-470e-8733-e4283261xxxx",
+            "tournament": 8,
+        },
+        headers={"Content-Type": "application/json"},
+    )
+    return {"status_code": response.status_code, "content": response.text}

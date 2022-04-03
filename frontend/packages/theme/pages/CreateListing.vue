@@ -115,7 +115,17 @@
                               <div class="mb-4">
                                   <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Webhook url</h5>
                                   <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Url to call on new sale order. Useful for products using client-side encryption</p>
-                                  <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Webhook URL (optional)" v-model="form.webhook" @change="encodeURL">
+                                  <div class="row g-4">
+                                    <div class="col-lg-10 col-sm-8">
+                                      <input type="text" class="form-control form-control-s1" :class="[(Boolean(errors[0]) || (Boolean(webhookResponseCode) && webhookResponseCode!==200)) ? 'is-invalid' : '',  webhookResponseCode===200 ? 'is-valid' : '']" placeholder="Webhook URL (optional)" v-model="form.webhook" @change="encodeURL">
+                                    </div>
+                                    <div class="col-lg-2 col-sm-4">
+                                      <button class="btn btn-dark" type="button" @click="handleTestProductWebhook(form.webhook)" :disabled="productWebhookLoading">
+                                        <span v-if="productWebhookLoading"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                                        <span v-else>Test</span>
+                                      </button>
+                                    </div>
+                                  </div>
                                   <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                               </div>
                           </div><!-- end form-item -->
@@ -136,7 +146,6 @@
                         </div>
                         <div class="form-item mb-4">
                           <h5 class="mb-3">Pricing options</h5>
-<!--                          {{form.options}}-->
                           <a class="btn" :class="form.options.length > 0 ? 'btn-outline-dark' : 'btn-dark'" @click="changeOption(-1)"><em class="ni ni-plus"></em> New Option</a>
                           <div class="row g-gs mt-1">
                             <div class="col-xl-6" v-for="option in orderedOptions" :key="option.id">
@@ -244,20 +253,11 @@ export default {
   data () {
     return {
       SectionData,
-      selected: 'Select Collection',
-      options: [
-        'Select Collection',
-        'Abstraction',
-        'Patternlicious',
-        'Skecthify',
-        'Cartoonism',
-        'Virtuland',
-        'Papercut'
-      ],
       optionForm: {},
       isModalOpen: false,
       modal: null,
       showAdvanced: false,
+      webhookResponseCode: null,
       editorOption: {
         theme: 'snow',
         modules: {
@@ -327,21 +327,6 @@ export default {
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     onCategoryChange(categoryId) {
       this.form.name = null;
-      // const category = this.leafCategories.filter(c=>c.id === Number(categoryId))[0];
-      //
-      // if (category) {
-      //   this.form.options = (this.currentListing?.options ? this.currentListing?.options : (this.form?.options || [])).filter((option) => {
-      //     if (!category.tournament) {
-      //       this.$refs.optionsForm.isOnPlatform = 'false';
-      //       return !option.is_on_platform;
-      //     }
-      //     if (option.is_on_platform && !category.is_submission) {
-      //       this.$refs.optionsForm.mode = 'file';
-      //       return option.mode === 'file';
-      //     }
-      //     return true;
-      //   });
-      // }
     },
     refresh() {
       this._computedWatchers.orderedOptions.run();
@@ -396,28 +381,28 @@ export default {
     deleteOption(index) {
       this.form.options.splice(index, 1);
     },
-    // createListing() {
-    //
-    // },
-    // updateListing() {
-    //
-    // },
-    // saveListing() {
-    //   if (!this.currentListing) {
-    //     this.createListing();
-    //   } else {
-    //     this.updateListing();
-    //   }
-    // }
     onProductsLoaded(products) {
       this.currentListing = products?.data?.find((p)=>p.id === parseInt(this.id));
       this.form = this.resetForm(this.currentListing);
       this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts) && this.form.featuredProducts.length>0) || (this.form.webhook);
+    },
+    async handleTestProductWebhook(url) {
+      await this.testProductWebhook({url})
+      const hasProductErrors = this.productError.listingModal;
+      if (hasProductErrors) {
+        this.webhookResponseCode = 500;
+        this.send({
+          message: this.productError.listingModal?.message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
+        return;
+      }
+      this.webhookResponseCode = 200;
     }
   },
   watch: {
     products(newProducts) {
-      // const id = this.$route.params.id;
       this.onProductsLoaded(newProducts);
     }
   },
@@ -426,7 +411,6 @@ export default {
       this.getNumeraiModels();
     }
 
-    // const id = this.$route.params.id;
     if (this.id && !this.currentListing) {
       this.onProductsLoaded(this.products);
     }
@@ -441,11 +425,10 @@ export default {
   },
   setup(props, context) {
     const { id } = context.root.$route.params;
-    // const { isListingModalOpen, currentListing, toggleListingModal } = useUiState();
     const { user, load: loadUser, loading: userLoading } = useUser();
     const { globals, getGlobals } = useGlobals();
     const { categories, search: categorySearch } = useCategory();
-    const { products, search: productSearch, createProduct, updateProduct, deleteProduct, loading: productLoading, error: productError } = useProduct('products');
+    const { products, search: productSearch, createProduct, updateProduct, deleteProduct, testProductWebhook, loading: productLoading, loadingWebhook: productWebhookLoading, error: productError } = useProduct('products');
     const { numerai, getModels: getNumeraiModels, error: numeraiError } = useNumerai('my-listings');
     const { send } = useUiNotification();
 
@@ -485,7 +468,6 @@ export default {
       autoExpiration: productGetters.getExpirationRound(product) !== null,
       expirationRound: productGetters.getExpirationRound(product),
       options: product ? product.options : [],
-      // hasFeaturedProducts: product?.featured_products?.length > 0,
       featuredProducts: product?.featured_products ? product?.featured_products.map(id => groupedProducts.value.map(gp=>gp.products).flat().find((p)=>parseInt(p.id) === parseInt(String(id)))) : []
     });
 
@@ -539,7 +521,10 @@ export default {
       numerai: computed(() => numerai ? numerai.value : null),
       groupedProducts,
       products,
+      testProductWebhook,
       productLoading,
+      productWebhookLoading,
+      productError,
       globals,
       user,
       productGetters,
@@ -547,7 +532,8 @@ export default {
       getNumeraiModels,
       populateModelInfo,
       resetForm,
-      saveListing
+      saveListing,
+      send
     };
   }
 };

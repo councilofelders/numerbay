@@ -61,11 +61,13 @@ export interface UseProductErrors {
 export interface UseProduct<PRODUCTS, PRODUCT_SEARCH_PARAMS> {
   products: ComputedProperty<PRODUCTS>;
   loading: ComputedProperty<boolean>;
+  loadingWebhook: ComputedProperty<boolean>;
   error: ComputedProperty<UseProductErrors>;
   search(params: ComposableFunctionArgs<PRODUCT_SEARCH_PARAMS>): Promise<void>;
   createProduct(params: { product: any }): Promise<void>;
   updateProduct(params: { id: number, product: any }): Promise<void>;
   deleteProduct(params: { id: number }): Promise<void>;
+  testProductWebhook(params: { url: string }): Promise<void>;
   [x: string]: any;
 }
 

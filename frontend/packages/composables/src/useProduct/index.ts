@@ -34,6 +34,15 @@ const params: UseProductFactoryParams<ProductsResponse, any> = {
       throw new Error(response.detail);
     }
     return response;
+  },
+
+  testProductWebhook: async (context: Context, {url}) => {
+    Logger.debug('testProductWebhook');
+    const response = await context.$numerbay.api.testProductWebhook({url});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
   }
 };
 

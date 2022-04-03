@@ -12,6 +12,7 @@ import deleteFavorite from './api/deleteFavorite';
 import deleteOrderArtifact from './api/deleteOrderArtifact';
 import deletePoll from './api/deletePoll';
 import deleteProduct from './api/deleteProduct';
+import testProductWebhook from './api/testProductWebhook';
 import getArtifact from './api/getArtifact';
 import getArtifactDownloadUrl from './api/getArtifactDownloadUrl';
 import getArtifactUploadUrl from './api/getArtifactUploadUrl';
@@ -121,6 +122,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     createProduct,
     updateProduct,
     deleteProduct,
+    testProductWebhook,
     getCategory,
     getReview,
     getFavorite,
