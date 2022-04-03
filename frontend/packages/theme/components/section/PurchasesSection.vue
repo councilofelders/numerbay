@@ -1,7 +1,7 @@
 <template>
     <div class="col-lg-8">
-        <div class="user-panel-title-box">
-            <h3>Purchases</h3>
+        <div class="user-panel-title-box d-flex">
+            <h3>Purchases</h3><button class="icon-btn ms-auto" title="Refresh" :disabled="loading" @click="refresh"><em class="ni ni-reload" v-if="!loading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span></button>
         </div><!-- end user-panel-title-box -->
         <div class="profile-setting-panel-wrap">
           <div class="table-responsive">
@@ -84,7 +84,26 @@ export default {
       this.$nextTick(() => {
         this.$refs.artifactModal.show();
       });
+    },
+    refresh() {
+      this.search({ role: 'buyer' });
     }
+  },
+  mounted() {
+    this.orderPollingTimer = setInterval(async () => {
+      await this.search({ role: 'buyer' });
+      if (this.currentOrder?.id) {
+        this.currentOrder = this.orders.filter((o) => o.id === this.currentOrder.id)[0];
+      }
+    }, 15000);
+  },
+  beforeDestroy() {
+    clearInterval(this.orderPollingTimer);
+  },
+  beforeRouteLeave (to, from, next) {
+    if (this.orderPollingTimer)
+      clearInterval(this.orderPollingTimer);
+    next();
   },
   setup() {
     const { user } = useUser();
@@ -124,6 +143,7 @@ export default {
 
     return {
       orders: computed(() => orders?.value?.data ? orders.value?.data : []),
+      loading,
       user,
       orderGetters,
       productGetters,

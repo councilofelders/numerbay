@@ -1,7 +1,7 @@
 <template>
     <div class="col-lg-8">
-        <div class="user-panel-title-box">
-            <h3>Sales</h3>
+        <div class="user-panel-title-box d-flex">
+            <h3>Sales</h3><button class="icon-btn ms-auto" title="Refresh" :disabled="loading" @click="refresh"><em class="ni ni-reload" v-if="!loading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span></button>
         </div><!-- end user-panel-title-box -->
         <div class="profile-setting-panel-wrap">
           <div class="table-responsive">
@@ -73,7 +73,26 @@ export default {
     toggleModal(order) {
       this.currentOrder = order;
       this.$refs.orderInfoModal.show();
+    },
+    refresh() {
+      this.search({ role: 'seller' });
     }
+  },
+  mounted() {
+    this.orderPollingTimer = setInterval(async () => {
+      await this.search({ role: 'seller' });
+      if (this.currentOrder?.id) {
+        this.currentOrder = this.orders.filter((o) => o.id === this.currentOrder.id)[0];
+      }
+    }, 15000);
+  },
+  beforeDestroy() {
+    clearInterval(this.orderPollingTimer);
+  },
+  beforeRouteLeave (to, from, next) {
+    if (this.orderPollingTimer)
+      clearInterval(this.orderPollingTimer);
+    next();
   },
   setup() {
     const { orders, search, loading } = useUserOrder('sales-history');
@@ -115,6 +134,7 @@ export default {
       loading,
       orderGetters,
       productGetters,
+      search,
       getStatusTextClass,
       getSubmissionStatusTextClass
     };
