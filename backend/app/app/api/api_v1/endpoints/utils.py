@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, HTTPException
 from pydantic.networks import EmailStr, HttpUrl
 
 from app import models, schemas
@@ -65,4 +65,8 @@ def test_product_webhook(
         },
         headers={"Content-Type": "application/json"},
     )
-    return {"status_code": response.status_code, "content": response.text}
+    if response.status_code == 200:
+        return {"status_code": response.status_code, "content": response.text}
+    raise HTTPException(
+        status_code=response.status_code, detail=response.text,
+    )

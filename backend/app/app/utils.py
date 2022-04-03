@@ -581,6 +581,78 @@ def send_order_artifact_upload_reminder_email(
     )
 
 
+def send_succeeded_webhook_email(
+    email_to: str, username: str, date: str, product: str,
+) -> None:
+    """
+    Send succeeded webhook email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        date (str): iso date string
+        product (str): product full name
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Webhook trigger success for {product}"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "webhook_success.html", encoding="utf8",
+    ) as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/sales"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "date": date,
+                "product": product,
+                "link": link,
+            },
+        ),
+    )
+
+
+def send_failed_webhook_email(
+    email_to: str, username: str, date: str, product: str,
+) -> None:
+    """
+    Send failed webhook email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        date (str): iso date string
+        product (str): product full name
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Failed webhook trigger for {product}"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "webhook_failed.html", encoding="utf8",
+    ) as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/sales"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "date": date,
+                "product": product,
+                "link": link,
+            },
+        ),
+    )
+
+
 def generate_password_reset_token(email: str) -> str:
     """
     Generate password reset token (placeholder, not used)

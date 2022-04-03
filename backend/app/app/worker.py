@@ -38,9 +38,11 @@ from app.models import (
 from app.utils import (
     send_email,
     send_failed_artifact_seller_email,
+    send_failed_webhook_email,
     send_new_artifact_email,
     send_new_artifact_seller_email,
     send_order_artifact_upload_reminder_email,
+    send_succeeded_webhook_email,
 )
 
 client_sentry = Client(settings.SENTRY_DSN)
@@ -1057,10 +1059,11 @@ def trigger_webhook_for_product_task(product_id: int) -> None:
             return None
         if not product.webhook:
             return None
+        date_str = datetime.now().isoformat()
         response = requests.post(
             product.webhook,
             json={
-                "date": datetime.now().isoformat(),
+                "date": date_str,
                 "product_id": product.id,
                 "product_category": product.category.slug,  # type: ignore
                 "product_name": product.name,
@@ -1071,12 +1074,23 @@ def trigger_webhook_for_product_task(product_id: int) -> None:
             headers={"Content-Type": "application/json"},
         )
         if response.status_code != 200:
+            send_failed_webhook_email(
+                email_to=product.owner.email,  # type: ignore
+                username=product.owner.username,
+                date=date_str,
+                product=product.sku,
+            )
             print(
                 f"Webhook for {product.sku} ({product.id}) "
-                f"returned an error {response.status_code}, "
-                f"the response is:\n{response.text}"
+                f"returned an error {response.status_code}"
             )
             return None
+        send_succeeded_webhook_email(
+            email_to=product.owner.email,  # type: ignore
+            username=product.owner.username,
+            date=date_str,
+            product=product.sku,
+        )
         print(f"Webhook for {product.sku} ({product.id}) succeeded")
     finally:
         db.close()
