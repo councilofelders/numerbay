@@ -530,9 +530,10 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         if not order:
             print(f"Order {order_id} not found, skipped")
             return None
-        if order.submit_state == "queued":  # already queued for submission
-            print(f"Order {order.id} already queued for submission, skipped")
-            return None
+        # Disable queue check to always redo submission
+        # if order.submit_state == "queued":  # already queued for submission
+        #     print(f"Order {order.id} already queued for submission, skipped")
+        #     return None
         crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
     finally:
         db.close()
@@ -788,11 +789,12 @@ def validate_artifact_upload_task(  # pylint: disable=too-many-branches
             for order in orders:
                 if not order.submit_model_id:
                     continue
-                if (
-                    order.submit_state == "queued"
-                ):  # already queued for submission, skip
-                    print(f"Order {order.id} already queued for submission, skipped")
-                    continue
+                # Disable queue check to always redo queuing
+                # if (
+                #     order.submit_state == "queued"
+                # ):  # already queued for submission, skip
+                #     print(f"Order {order.id} already queued for submission, skipped")
+                #     continue
 
                 print(
                     f"Uploading csv artifact {artifact.object_name} for order {order.id}"

@@ -25,7 +25,10 @@
 <!--                    <td></td>-->
                     <td>
                       <div class="d-flex justify-content-between" v-if="Boolean(artifact) && !!artifact.object_name && !!order.submit_model_id">
-                        <button class="icon-btn ms-auto" title="Submit to Numerai" @click="submit(artifact)"><em class="ni ni-upload-cloud"></em></button>
+                        <button class="icon-btn ms-auto" title="Submit to Numerai" @click="submit(artifact)">
+                          <span class="spinner-border spinner-border-sm" role="status" v-if="loading"></span>
+                          <em class="ni ni-upload-cloud" v-else></em>
+                        </button>
                       </div>
                     </td>
                 </tr>
@@ -252,6 +255,12 @@ export default {
           message: this.error.submitArtifact.message,
           type: 'bg-danger',
           icon: 'ni-alert-circle'
+        });
+      } else {
+        this.send({
+          message: 'Submission queued, please wait for a minute',
+          type: 'bg-success',
+          icon: 'ni-check'
         });
       }
     }

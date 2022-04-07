@@ -279,10 +279,11 @@ def submit_artifact(
             status_code=403,
             detail="Buyer's Numerai API Key does not have permission to upload submissions",
         )
-    if order.submit_state == "queued":
-        raise HTTPException(
-            status_code=400, detail="Submission for this order is already queued"
-        )
+    # Disable queue check to always redo queuing
+    # if order.submit_state == "queued":
+    #     raise HTTPException(
+    #         status_code=400, detail="Submission for this order is already queued"
+    #     )
 
     active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
 
