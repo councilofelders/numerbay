@@ -45,7 +45,7 @@ There is no plan to disable the existing artifact APIs,
 therefore your existing automation pipelines will be compatible with this change.
 
 ### I'm a seller, how do I start using encryption?
-In the [listing edit panel](https://numerbay.ai/my-account/my-listings) for your product, select the 
+In the [listing edit panel](https://numerbay.ai/listings) for your product, select the 
 **Use Client-side Encryption** option. That's it! Files will be encrypted for new sale orders, 
 existing active sales will not be affected. 
 You can use the [Python client](/docs/tutorial-extras/api-automation) to automate encryption and file upload.
@@ -53,7 +53,7 @@ A tutorial for selling is available [here](/docs/tutorial-basics/sell-a-product#
 
 ### I'm a buyer, what do I need to do?
 An encryption key pair is required for encryption on the seller side and for decryption after you download the files, 
-please head to the [profile page](https://numerbay.ai/my-account) to generate a key pair. Export the key file for 
+please head to the [profile page](https://numerbay.ai/account) to generate a key pair. Export the key file for 
 safe-keeping and for use with the [Python client](/docs/tutorial-extras/download-automation). 
 A tutorial for buying is available [here](/docs/tutorial-basics/buy-a-product#decryption).
 
