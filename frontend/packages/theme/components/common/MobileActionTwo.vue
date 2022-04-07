@@ -269,7 +269,7 @@ export default {
     },
     handleSearch() {
       this.toggleMobileSearchDropdown();
-      this.$router.push({path: '/explore/all', query: { term: this.searchTerm}});
+      this.$router.push({path: '/explore/all', query: { term: this.searchTerm?.trim()}});
     }
   },
   setup() {
