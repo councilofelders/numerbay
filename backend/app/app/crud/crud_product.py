@@ -57,9 +57,9 @@ _SORT_OPTION_LOOKUP = {
 }
 
 
-def parse_sort_option(sort: Optional[str], category: Category) -> Any:
+def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) -> Any:
     """ Parse sort option """
-    if category.tournament:
+    if category is not None and category.tournament:
         default_option = Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
     else:
         default_option = desc(Product.id)
@@ -393,7 +393,11 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             query = query.filter(query_filter)
         count = query.count()
         query = query.order_by(
-            nulls_last(parse_sort_option(sort, all_child_categories[0]))
+            nulls_last(
+                parse_sort_option(
+                    sort, all_child_categories[0] if all_child_categories else None
+                )
+            )
         )
         data = query.offset(skip).limit(limit).all()
 
