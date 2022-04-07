@@ -152,7 +152,7 @@ def send_new_order_email(  # pylint: disable=too-many-arguments
         Path(settings.EMAIL_TEMPLATES_DIR) / "new_order.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/order-history"
+    link = settings.SERVER_HOST + "/purchases"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -224,7 +224,7 @@ def send_new_confirmed_sale_email(  # pylint: disable=too-many-arguments
         Path(settings.EMAIL_TEMPLATES_DIR) / "new_confirmed_sale.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/sales-history"
+    link = settings.SERVER_HOST + "/sales"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -281,7 +281,7 @@ def send_order_confirmed_email(  # pylint: disable=too-many-arguments
         Path(settings.EMAIL_TEMPLATES_DIR) / "order_confirmed.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/order-history"
+    link = settings.SERVER_HOST + "/purchases"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -336,7 +336,7 @@ def send_order_expired_email(  # pylint: disable=too-many-arguments
         Path(settings.EMAIL_TEMPLATES_DIR) / "order_expired.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/order-history"
+    link = settings.SERVER_HOST + "/purchases"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -384,7 +384,7 @@ def send_new_artifact_email(
         Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/order-history"
+    link = settings.SERVER_HOST + "/purchases"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -423,7 +423,7 @@ def send_new_artifact_seller_email(
         Path(settings.EMAIL_TEMPLATES_DIR) / "new_artifact_seller.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/my-listings"
+    link = settings.SERVER_HOST + "/listings"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -473,7 +473,7 @@ def send_new_coupon_email(  # pylint: disable=too-many-arguments
         Path(settings.EMAIL_TEMPLATES_DIR) / "new_coupon.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/my-coupons"
+    link = settings.SERVER_HOST + "/coupons"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -516,7 +516,7 @@ def send_failed_artifact_seller_email(
         encoding="utf8",
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/my-listings"
+    link = settings.SERVER_HOST + "/listings"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
@@ -561,7 +561,7 @@ def send_order_artifact_upload_reminder_email(
         encoding="utf8",
     ) as f:
         template_str = f.read()
-    link = settings.SERVER_HOST + "/my-account/my-listings"
+    link = settings.SERVER_HOST + "/listings"
     celery_app.send_task(
         "app.worker.send_email_task",
         kwargs=dict(
