@@ -5,8 +5,10 @@
       <div class="filter-box pb-5">
         <div class="filter-box-filter justify-content-between align-items-center">
           <div class="filter-box-filter-item">
+            <client-only>
             <v-select class="generic-select generic-select-s2" label="value" v-model="selectedSortBy"
                       :options="sortBy.options" :clearable=false @input="onChangeSorting"></v-select>
+            </client-only>
           </div><!-- end filter-box-filter-item -->
           <div class="filter-box-filter-item filter-btn-wrap">
             <button class="icon-btn icon-btn-s1" @click="toggleFilterSidebar" :class="isFilterSidebarOpen ? 'text-primary':''"><em class="ni ni-filter"></em></button>
@@ -220,31 +222,19 @@ export default {
       }
     }
   },
-  mounted() {
-    this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || 'rank-best'));
-
-    // Set filters from URL
-    // const filters = this.th.getFacetsFromURL().filters;
-    // Object.keys(filters).forEach((filter) => {
-    //   if (filter === 'status' || filter === 'platform') {
-    //     this.selectedFilters[filter] = filters[filter];
-    //   } else {
-    //     if (!this.selectedFilters[filter]) {
-    //       Vue.set(this.selectedFilters, filter, []);
-    //     }
-    //     if (typeof filters[filter][0] === 'string') {
-    //       this.selectedFilters[filter] = [filters[filter][0].split(',').map(Number)]
-    //     } else {
-    //       this.selectedFilters[filter] = [filters[filter][0]];
-    //     }
-    //   }
-    // });
-  },
   watch: {
     async $route(to, from) {
       // react to route changes...
       await this.search(this.th.getFacetsFromURL());
       // this.getActiveClass(this.activeId = this.activeCategory);
+    },
+    facets() {
+      this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || (this.result?.data?.categories[0].tournament ? 'rank-best':'latest')));
+    }
+  },
+  computed: {
+    sortBy() {
+      return this.facetGetters.getSortOptions(this.result);
     }
   },
   setup() {
@@ -260,7 +250,7 @@ export default {
     } = useFacet(`facetId:${path}`);
     const products = computed(() => facetGetters.getProducts(result.value));
     const categoryTree = computed(() => facetGetters.getCategoryTree(result.value));
-    const sortBy = computed(() => facetGetters.getSortOptions(result.value));
+    // const sortBy = computed(() => facetGetters.getSortOptions(result.value));
     const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'platform', 'rank', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
     const activeCategory = computed(() => {
@@ -278,7 +268,6 @@ export default {
     const { changeFilters, isFacetCheckbox } = useUiHelpers();
     const { isFilterSidebarOpen, toggleFilterSidebar } = useUiState();
     const selectedFilters = ref({});
-
 
     // onSSR(async () => {
     //   await search(th.getFacetsFromURL());
@@ -368,8 +357,9 @@ export default {
 
 
     return {
-      sortBy,
+      result,
       facets,
+      facetGetters,
       loading,
       pagination,
       products,
