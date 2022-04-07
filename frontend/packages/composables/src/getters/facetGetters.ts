@@ -42,13 +42,14 @@ const getSortOptions = (searchData): AgnosticSort => {
         );
       }
 
-      // if (tournament === 11) {  // if is Signals tournament
-      //   options.push(
-      //
-      //   );
-      // }
+      if (tournament === 11) {  // if is Signals tournament
+        options.push(
+            { type: 'sort', id: 'ic-down', value: 'IC Rep from high to low', count: null },
+        );
+      }
     }
   }
+
   options.push(
       { type: 'sort', id: 'name-up', value: 'Name: A to Z', count: null},
       { type: 'sort', id: 'name-down', value: 'Name: Z to A', count: null},
