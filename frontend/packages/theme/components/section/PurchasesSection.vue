@@ -40,7 +40,7 @@
             </div>
         </div><!-- end profile-setting-panel-wrap-->
         <OrderInfoModal :order="currentOrder" modelId="orderInfoModal" ref="orderInfoModal" :withCopyButtons="true"></OrderInfoModal>
-        <div v-if="currentOrder.product"><ArtifactModal :order="currentOrder" :encryptedPrivateKey="user.encrypted_private_key" :publicKey="user.public_key" modelId="artifactModal" ref="artifactModal"></ArtifactModal></div>
+        <div v-if="currentOrder && currentOrder.product"><ArtifactModal :order="currentOrder" :encryptedPrivateKey="user.encrypted_private_key" :publicKey="user.public_key" modelId="artifactModal" ref="artifactModal"></ArtifactModal></div>
     </div><!-- end col-lg-8 -->
 </template>
 
