@@ -3,13 +3,11 @@
 <template>
     <div class="header-mobile-action">
         <div class="header-search-mobile dropdown me-2">
-            <a class="icon-btn" href="#" data-bs-toggle="dropdown">
-                <em class="ni ni-search"></em>
-             </a>
-            <div class="dropdown-menu dropdown-menu-end card-generic">
+            <a class="icon-btn" href="javascript:void(0)" data-bs-toggle="dropdown" @click="toggleMobileSearchDropdown"><em class="ni ni-search"></em></a>
+            <div class="dropdown-menu dropdown-menu-end card-generic" :class="showMobileSearchDropdown? 'show' : ''">
                 <div class="input-group">
-                    <input type="search" class="form-control form-control-s1" placeholder="Search item here...">
-                    <a href="#" class="btn btn-sm btn-outline-secondary"><em class="ni ni-search"></em></a>
+                    <input type="search" class="form-control form-control-s1" placeholder="Search item here..." v-model="searchTerm" @keydown.enter="handleSearch">
+                    <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary" @click="handleSearch"><em class="ni ni-search"></em></a>
                  </div>
             </div>
         </div><!-- end header-search-mobile -->
@@ -35,7 +33,6 @@
 
 <script>
 // Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
 
 // Composables
 import { computed } from '@vue/composition-api';
@@ -45,7 +42,8 @@ export default {
   name: 'MobileAction',
   data () {
     return {
-      SectionData
+      showMobileSearchDropdown: false,
+      searchTerm: this.$route.query.term
     };
   },
   mounted () {
@@ -265,6 +263,13 @@ export default {
     async onLogout() {
       await this.logout();
       await this.$router.push('/');
+    },
+    toggleMobileSearchDropdown() {
+      this.showMobileSearchDropdown = !this.showMobileSearchDropdown;
+    },
+    handleSearch() {
+      this.toggleMobileSearchDropdown();
+      this.$router.push({path: '/explore/all', query: { term: this.searchTerm}});
     }
   },
   setup() {
