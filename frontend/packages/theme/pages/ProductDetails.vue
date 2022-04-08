@@ -42,6 +42,7 @@
                             </div><!-- end item-detail-btns -->
                             <ModelMetricsCard
                               :nmr-staked="nmrStaked"
+                              :stake-info="stakeInfo"
                               :latest-returns="latestReturns"
                               :latest-reps="latestReps"
                               :latest-ranks="latestRanks"
@@ -261,6 +262,13 @@ export default {
     },
     nmrStaked() {
       return this.$route.params.nmrStaked || this.productGetters.getModelNmrStaked(this.product, 2);
+    },
+    stakeInfo() {
+      return {
+        corrMultiplier: this.$route.params.stakeInfoCorrMultiplier || this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || 1,
+        mmcMultiplier: this.$route.params.stakeInfoMmcMultiplier || this.productGetters.getModelStakeInfo(this.product, 'mmcMultiplier') || 0,
+        tcMultiplier: this.$route.params.stakeInfoTcMultiplier || this.productGetters.getModelStakeInfo(this.product, 'tcMultiplier') || 0
+      };
     },
     latestRanks() {
       return {

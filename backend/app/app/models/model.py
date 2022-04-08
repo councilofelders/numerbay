@@ -24,6 +24,7 @@ class Model(Base):
     name = Column(String, index=True)
     tournament = Column(Integer)
     nmr_staked = Column(Numeric)
+    stake_info = Column(JSON)
     latest_ranks = Column(JSON)
     latest_reps = Column(JSON)
     latest_returns = Column(JSON)

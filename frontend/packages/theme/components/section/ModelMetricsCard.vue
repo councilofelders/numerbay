@@ -121,6 +121,24 @@
             </table>
           </div>
         </div>
+        <div class="col-xl-12">
+          <div class="card-media card-media-s1">
+            <table class="table mb-0 table-s1 item-detail-metrics-table">
+              <tbody>
+                  <tr>
+                      <td>
+                          Payout Multipliers
+                      </td>
+                      <td class="stats" :class="[stakeInfo.mmcMultiplier ? 'colormmc':'']">
+                        <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
+                        <span v-if="stakeInfo.mmcMultiplier"> {{ stakeInfo.mmcMultiplier }}xMMC</span>
+                        <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
+                      </td>
+                  </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div><!-- end row -->
 </template>
@@ -131,6 +149,10 @@ export default {
     nmrStaked: {
       type: String,
       default: '0'
+    },
+    stakeInfo: {
+      type: Object,
+      default: () =>{}
     },
     latestReturns: {
       type: Object,
@@ -168,4 +190,7 @@ export default {
 </script>
 
 <style lang="css" scoped>
+.colormmc {
+  color: #ff6e40;
+}
 </style>

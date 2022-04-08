@@ -22,6 +22,7 @@
                       </div><!-- end metrics-wrap  -->
                       <ModelMetricsCard
                         :nmr-staked="nmrStaked"
+                        :stake-info="stakeInfo"
                         :latest-returns="latestReturns"
                         :latest-reps="latestReps"
                         :latest-ranks="latestRanks"
@@ -46,6 +47,9 @@
                 description: productGetters.getDescription(product),
                 modelUrl: productGetters.getModelUrl(product),
                 nmrStaked: productGetters.getModelNmrStaked(product, 2),
+                stakeInfoCorrMultiplier: productGetters.getModelStakeInfo(product, 'corrMultiplier'),
+                stakeInfoMmcMultiplier: productGetters.getModelStakeInfo(product, 'mmcMultiplier'),
+                stakeInfoTcMultiplier: productGetters.getModelStakeInfo(product, 'tcMultiplier'),
                 latestRankCorr: productGetters.getModelRank(product, 'corr'),
                 latestRankMmc: productGetters.getModelRank(product, 'mmc'),
                 latestRankFnc: productGetters.getModelRank(product, 'fnc'),
@@ -90,6 +94,13 @@ export default {
   computed: {
     nmrStaked() {
       return this.productGetters.getModelNmrStaked(this.product, 2);
+    },
+    stakeInfo() {
+      return {
+        corrMultiplier: this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || 1,
+        mmcMultiplier: this.productGetters.getModelStakeInfo(this.product, 'mmcMultiplier') || 0,
+        tcMultiplier: this.productGetters.getModelStakeInfo(this.product, 'tcMultiplier') || 0
+      };
     },
     latestRanks() {
       return {

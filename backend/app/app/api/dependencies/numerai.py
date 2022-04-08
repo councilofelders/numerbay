@@ -153,6 +153,12 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
               v3UserProfile(modelName: $username) {
                 startDate
                 nmrStaked
+                stakeInfo {
+                  corrMultiplier
+                  mmcMultiplier
+                  takeProfit
+                  tcMultiplier
+                }
                 roundModelPerformances {
                   roundNumber
                   corr
@@ -202,6 +208,12 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
               v2SignalsProfile(modelName: $username) {
                 startDate
                 nmrStaked
+                stakeInfo {
+                  corrMultiplier
+                  mmcMultiplier
+                  takeProfit
+                  tcMultiplier
+                }
                 roundModelPerformances {
                   roundNumber
                   corr20d

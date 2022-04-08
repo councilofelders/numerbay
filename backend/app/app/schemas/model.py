@@ -14,6 +14,7 @@ class ModelBase(BaseModel):
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None
+    stake_info: Optional[Dict] = None
     latest_ranks: Optional[Dict] = None
     latest_reps: Optional[Dict] = None
     latest_returns: Optional[Dict] = None
@@ -80,6 +81,7 @@ class ModelSummary(BaseModel):
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None
+    stake_info: Optional[Dict] = None
     latest_ranks: Optional[Dict] = None
     latest_reps: Optional[Dict] = None
     latest_returns: Optional[Dict] = None

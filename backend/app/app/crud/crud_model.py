@@ -79,6 +79,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                     name=numerai_model.name,
                     tournament=int(numerai_model.tournament),  # type: ignore
                     owner_id=int(user_json["id"]),
+                    stake_info=model_performance.get("modelPerformance", {}).get(
+                        "stakeInfo", {}
+                    ),
                     nmr_staked=Decimal(model_performance["nmrStaked"])
                     if model_performance.get("nmrStaked", None)
                     else 0,
@@ -189,6 +192,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                     name=numerai_model["name"],
                     tournament=int(numerai_model["tournament"]),
                     owner_id=int(user_json["id"]),
+                    stake_info=numerai_model["model_performance"]
+                    .get("modelPerformance", {})
+                    .get("stakeInfo", {}),
                     nmr_staked=Decimal(numerai_model["model_performance"]["nmrStaked"])
                     if numerai_model["model_performance"].get("nmrStaked", None)
                     else 0,
@@ -299,6 +305,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                             name=user_model["name"],
                             tournament=int(user_model["tournament"]),
                             owner_id=int(user_models["id"]),
+                            stake_info=user_model["model_performance"]
+                            .get("modelPerformance", {})
+                            .get("stakeInfo", {}),
                             nmr_staked=Decimal(
                                 user_model["model_performance"]["nmrStaked"]
                             )
