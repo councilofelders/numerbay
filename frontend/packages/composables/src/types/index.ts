@@ -165,6 +165,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getWebhook: (product: PRODUCT) => string;
     getBreadcrumbs?: (product: PRODUCT) => AgnosticBreadcrumb[];
     getModelNmrStaked: (product: PRODUCT, decimals: number) => any;
+    getModelStakeInfo: (product: PRODUCT, key: string) => any;
     getModelRank: (product: PRODUCT, key: string) => any;
     getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
     getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
