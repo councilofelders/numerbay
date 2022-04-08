@@ -102,7 +102,7 @@
                                       <div class="me-2">
                                           <h5 class="mb-1">Use client-side encryption</h5>
                                           <p class="form-text">Upload artifacts for each order and encrypt them in your browser</p>
-                                          <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank">Learn more about encryption</a>
+                                          <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank">Learn more about encryption <em class="ni ni-help"></em></a>
                                       </div>
                                       <div class="form-check form-switch form-switch-s1">
                                           <input class="form-check-input" type="checkbox" v-model="form.useEncryption">
@@ -114,7 +114,8 @@
                           <div class="form-item mb-4">
                               <div class="mb-4">
                                   <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Webhook url</h5>
-                                  <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Url to call on new sale order. Useful for products using client-side encryption</p>
+                                  <p class="form-text" :class="{ 'text-danger': Boolean(errors[0]) }">Url to call on new sale order. Useful for products using client-side encryption</p>
+                                  <a class="link-secondary" href="https://docs.numerbay.ai/docs/tutorial-basics/sell-a-product#advanced-settings" target="_blank">Learn more about webhook <em class="ni ni-help"></em></a>
                                   <div class="row g-4">
                                     <div class="col-lg-10 col-sm-8">
                                       <input type="text" class="form-control form-control-s1" :class="[(Boolean(errors[0]) || (Boolean(webhookResponseCode) && webhookResponseCode!==200)) ? 'is-invalid' : '',  webhookResponseCode===200 ? 'is-valid' : '']" placeholder="Webhook URL (optional)" v-model="form.webhook" @change="encodeURL">

@@ -37,7 +37,20 @@ Click **Show advanced settings** for additional configurations.
 
 * Active for sale: Whether your product will be active for sale immediately affer creation (default: yes)
 * Auto expiration: Whether your listing automatically delist for sale after a certain tournament round (default: no)
-* Use client-side encryption: Whether to encrypt artifact files with buyer's public key, [learn more about encryption](/updates/encryption) (default: yes)
+* Use client-side encryption: Whether to encrypt artifact files with buyer's public key (default: yes). [Learn more about encryption](/updates/encryption)
+* Webhook url: webhook to trigger on new confirmed sale order. Useful for triggering auto uploading of files for encrypted listings.
+  A `POST` request is made on each new sale with the following json body:
+  ```json
+  {
+    "date": "2022-04-02T13:25:32.893448",
+    "product_id": 4206,
+    "product_category": "numerai-predictions",
+    "product_name": "myproduct",
+    "product_full_name": "numerai-predictions-myproduct",
+    "model_id": "adabxxx-3acf-470e-8733-e4283261xxxx",
+    "tournament": 8
+  }
+  ```
 * Featured products: Select from your other listings to be featured in this product's page
 
 ### Pricing options
