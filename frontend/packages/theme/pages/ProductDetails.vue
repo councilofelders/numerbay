@@ -299,7 +299,7 @@ export default {
     },
     formattedTotalPrice() {
       const option = this.selectedOption;
-      return `${((option.special_price ? option.special_price : option.price))?.toFixed(4)} ${option.currency}`;
+      return `${((option.special_price === null || option.special_price === undefined) ? option.price : option.special_price)?.toFixed(4)} ${option.currency}`;
     },
     couponError() {
       const option = this.selectedOption;
@@ -344,7 +344,11 @@ export default {
       } else {
         this.toAddress = this.orderGetters.getToAddress(this.order);
         this.amount = this.orderGetters.getPrice(this.order);
-        this.paymentStep = 2;
+        if (this.amount === 0) { // Go straight to purchases page if the order if free
+          await this.$router.push('/purchases');
+        } else {
+          this.paymentStep = 2;
+        }
       }
     },
     getMetricColor(value) {
