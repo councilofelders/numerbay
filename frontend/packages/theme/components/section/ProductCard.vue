@@ -161,7 +161,7 @@ export default {
     },
     stakeInfo() {
       return {
-        corrMultiplier: this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || 1,
+        corrMultiplier: this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || (this.productGetters.getCategory(this.product).tournament === 8 ? 1 : 2),
         mmcMultiplier: this.productGetters.getModelStakeInfo(this.product, 'mmcMultiplier') || 0,
         tcMultiplier: this.productGetters.getModelStakeInfo(this.product, 'tcMultiplier') || 0
       };
