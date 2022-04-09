@@ -73,7 +73,9 @@ def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optiona
     return matched_transaction
 
 
-def on_order_confirmed(db: Session, order_obj: models.Order, transaction: str) -> None:
+def on_order_confirmed(
+    db: Session, order_obj: models.Order, transaction: Optional[str] = None
+) -> None:
     """ On order confirmed """
     # update order
     # order_obj.transaction_hash = transaction
@@ -156,6 +158,10 @@ def update_payment(db: Session, order_id: int) -> None:
     order_obj = crud.order.get(db, id=order_id)
     if order_obj:
         if order_obj.currency == "NMR":
+            # handle 100% discount
+            if order_obj.price == 0:
+                on_order_confirmed(db, order_obj, transaction=None)
+
             matched_transaction = match_transaction_for_order(db, order_obj)
             # handle manual confirmation
             if matched_transaction is None and order_obj.transaction_hash is not None:
