@@ -123,6 +123,9 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
             normalized_data["modelPerformance"]["latestRanks"] = {}
             normalized_data["modelPerformance"]["latestReps"] = {}
             normalized_data["modelPerformance"]["latestReturns"] = {}
+        normalized_data["modelPerformance"]["stakeInfo"] = data["v2SignalsProfile"][
+            "stakeInfo"
+        ]
         normalized_data["modelPerformance"]["roundModelPerformances"] = []
         for round_performance in data["v2SignalsProfile"]["roundModelPerformances"]:
             if round_performance["corr20d"] is not None:
