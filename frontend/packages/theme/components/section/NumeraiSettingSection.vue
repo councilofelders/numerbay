@@ -8,10 +8,10 @@
         <p class="fs-14 mb-3">You can create API Key in the <a href="https://numer.ai/account" target="_blank"><strong>Numerai Account</strong></a> page. Make sure it has at least <strong>View user info</strong> permission. NumerBay only uses essential information to verify model ownership.</p>
         <div class="row mt-4">
         <div class="col-lg-6"><p class="fs-14"><strong>View user info</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_read_user_info">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
-        <div class="col-lg-6"><p class="fs-14"><strong>View submission info</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_read_user_info">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
+        <div class="col-lg-6"><p class="fs-14"><strong>View submission info</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_read_submission_info">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
         </div><div class="row">
-        <div class="col-lg-6"><p class="fs-14"><strong>Upload submissions</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_read_user_info">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
-        <div class="col-lg-6 mb-3"><p class="fs-14 mb-3"><strong>Adjust stake</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_read_user_info">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
+        <div class="col-lg-6"><p class="fs-14"><strong>Upload submissions</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_upload_submission">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
+        <div class="col-lg-6 mb-3"><p class="fs-14 mb-3"><strong>Adjust stake</strong>: <strong class="text-success" v-if="user.numerai_api_key_can_stake">Granted</strong><strong class="text-warning" v-else>Restricted</strong></p></div>
         </div>
         <ValidationObserver v-slot="{ handleSubmit, reset }">
         <ValidationProvider rules="required|min:2" v-slot="{ errors }" slim>
