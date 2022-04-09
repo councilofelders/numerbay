@@ -299,7 +299,7 @@ export default {
     },
     formattedTotalPrice() {
       const option = this.selectedOption;
-      return `${((option.special_price ? option.special_price : option.price))?.toFixed(4)} ${option.currency}`;
+      return `${((option.special_price === null || option.special_price === undefined) ? option.price : option.special_price)?.toFixed(4)} ${option.currency}`;
     },
     couponError() {
       const option = this.selectedOption;
