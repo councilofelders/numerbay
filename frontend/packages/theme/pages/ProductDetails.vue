@@ -344,7 +344,11 @@ export default {
       } else {
         this.toAddress = this.orderGetters.getToAddress(this.order);
         this.amount = this.orderGetters.getPrice(this.order);
-        this.paymentStep = 2;
+        if (this.amount === 0) { // Go straight to purchases page if the order if free
+          await this.$router.push('/purchases');
+        } else {
+          this.paymentStep = 2;
+        }
       }
     },
     getMetricColor(value) {
