@@ -1,6 +1,7 @@
 """ CRUD for user """
 
 import functools
+from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
 from sqlalchemy import and_
@@ -190,6 +191,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             if not user_obj.email:  # type: ignore
                 user_update_json["email"] = account["email"]
 
+            # tag date of last sync
+            user_update_json["date_last_numerai_sync"] = datetime.utcnow()
             self.update(db, db_obj=user_obj, obj_in=user_update_json)  # type: ignore
             return True
         except ValueError as e:

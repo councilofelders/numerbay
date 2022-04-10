@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -35,6 +35,7 @@ class User(Base):
     numerai_api_key_can_stake = Column(Boolean, nullable=True)
     numerai_api_key_can_read_submission_info = Column(Boolean, nullable=True)
     numerai_api_key_can_read_user_info = Column(Boolean, nullable=True)
+    date_last_numerai_sync = Column(DateTime)
     numerai_wallet_address = Column(String, nullable=True, unique=True)
     public_key = Column(String)
     encrypted_private_key = Column(String)

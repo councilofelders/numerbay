@@ -23,6 +23,7 @@ export interface UseWeb3User {
 
 export interface UseUserErrors {
     updateUser: Error;
+    syncUserNumerai: Error;
     register: Error;
     login: Error;
     web3: Error;
@@ -36,6 +37,7 @@ export interface UseUser<USER, UPDATE_USER_PARAMS> {
   web3User: ComputedProperty<UseWeb3User>;
   setUser: (user: USER) => void;
   updateUser: (params: { user: UPDATE_USER_PARAMS; customQuery?: CustomQuery }) => Promise<void>;
+  syncUserNumerai: () => Promise<void>;
   register: (params: { user: UseUserRegisterParams; customQuery?: CustomQuery }) => Promise<void>;
   login: (params: { user: UseUserLoginParams; customQuery?: CustomQuery }) => Promise<void>;
   loginWeb3: (params: { user: { publicAddress: string, signature: string }; customQuery?: CustomQuery }) => Promise<void>;

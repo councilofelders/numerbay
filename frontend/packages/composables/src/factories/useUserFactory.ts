@@ -9,6 +9,7 @@ export interface UseUserFactoryParams<USER, UPDATE_USER_PARAMS, REGISTER_USER_PA
   getNonce: (context: Context, params: {publicAddress: string}) => Promise<void>;
   getNonceAuthenticated: (context: Context, params: {currentUser: USER}) => Promise<void>;
   updateUser: (context: Context, params: {currentUser: USER; updatedUserData: UPDATE_USER_PARAMS; customQuery?: CustomQuery}) => Promise<USER>;
+  syncUserNumerai: (context: Context, params: {currentUser: USER}) => Promise<USER>;
   register: (context: Context, params: REGISTER_USER_PARAMS & {customQuery?: CustomQuery}) => Promise<USER>;
   logIn: (context: Context, params: { username: string; password: string; customQuery?: CustomQuery }) => Promise<USER>;
   logInWeb3: (context: Context, params: { publicAddress: string; signature: string; customQuery?: CustomQuery }) => Promise<USER>;
@@ -25,6 +26,7 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
   return function useUser (): UseUser<USER, UPDATE_USER_PARAMS> {
     const errorsFactory = (): UseUserErrors => ({
       updateUser: null,
+      syncUserNumerai: null,
       register: null,
       login: null,
       web3: null,
@@ -74,6 +76,22 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
       } catch (err) {
         error.value.updateUser = err;
         Logger.error('useUser/updateUser', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const syncUserNumerai = async () => {
+      Logger.debug('useUserFactory.syncUserNumerai', user.value);
+      resetErrorValue();
+
+      try {
+        loading.value = true;
+        user.value = await _factoryParams.syncUserNumerai({currentUser: user.value});
+        error.value.syncUserNumerai = null;
+      } catch (err) {
+        error.value.syncUserNumerai = err;
+        Logger.error('useUser/syncUserNumerai', err);
       } finally {
         loading.value = false;
       }
@@ -267,6 +285,7 @@ export const useUserFactory = <USER, UPDATE_USER_PARAMS, REGISTER_USER_PARAMS ex
       user: computed(() => user.value),
       web3User: computed(() => web3User.value),
       updateUser,
+      syncUserNumerai,
       register,
       login,
       loginWeb3,

@@ -40,6 +40,7 @@ import updateArtifact from './api/updateArtifact';
 import updatePoll from './api/updatePoll';
 import updateProduct from './api/updateProduct';
 import userUpdateMe from './api/userUpdateMe';
+import userSyncNumerai from './api/userSyncNumerai';
 import validateArtifactUpload from './api/validateArtifactUpload';
 import validateOrderArtifactUpload from './api/validateOrderArtifactUpload';
 import votePoll from './api/votePoll';
@@ -137,6 +138,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     logOutUser,
     getMe,
     userUpdateMe,
+    userSyncNumerai,
     getNumeraiModels,
     getNumeraiModelInfo,
     getOrder,

@@ -8,7 +8,7 @@ import {
 import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
-import {getPublicKey} from '../getters/userGetters';
+import {getNumeraiLastSyncDate, getPublicKey} from '../getters/userGetters';
 
 export type Address = Record<string, unknown>;
 
@@ -22,6 +22,8 @@ export type User = {
   public_address?: string;
   // eslint-disable-next-line camelcase
   numerai_api_key_public_id?: string;
+  // eslint-disable-next-line camelcase
+  date_last_numerai_sync?: string;
   // eslint-disable-next-line camelcase
   public_key?: string;
   // eslint-disable-next-line camelcase
@@ -126,6 +128,7 @@ export interface UserGetters<USER> {
     getEmailAddress: (customer: USER) => string;
     getPublicAddress: (customer: USER) => string;
     getNumeraiApiKeyPublicId: (customer: USER) => string;
+    getNumeraiLastSyncDate: (customer: USER) => string;
     getNonce: (customer: USER) => string;
     getPublicKey: (customer: USER) => string;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

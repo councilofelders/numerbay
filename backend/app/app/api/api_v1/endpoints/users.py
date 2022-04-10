@@ -144,6 +144,20 @@ def read_user_me(
     return current_user
 
 
+@router.post("/sync-numerai", response_model=schemas.User)
+def sync_user_numerai(  # pylint: disable=too-many-locals
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """ Sync user with Numerai API"""
+    user_json = jsonable_encoder(current_user)
+    numerai_api_updated = crud.user.update_numerai_api(db, user_json)
+    if not numerai_api_updated:
+        raise HTTPException(status_code=400, detail="Failed to sync with Numerai API")
+    return crud.user.get(db, current_user.id)
+
+
 # @router.get("/{user_id}", response_model=schemas.User)
 # def read_user_by_id(
 #     user_id: int,
