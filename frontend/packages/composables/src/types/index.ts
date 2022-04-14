@@ -19,6 +19,14 @@ export type User = {
   username?: string;
   email?: string;
   // eslint-disable-next-line camelcase
+  social_rocketchat?: string;
+  // eslint-disable-next-line camelcase
+  social_linkedin?: string;
+  // eslint-disable-next-line camelcase
+  social_twitter?: string;
+  // eslint-disable-next-line camelcase
+  social_website?: string;
+  // eslint-disable-next-line camelcase
   public_address?: string;
   // eslint-disable-next-line camelcase
   numerai_api_key_public_id?: string;
@@ -126,6 +134,10 @@ export interface UserGetters<USER> {
     getId: (customer: USER) => number;
     getUsername: (customer: USER) => string;
     getEmailAddress: (customer: USER) => string;
+    getSocialRocketChat: (customer: USER) => string;
+    getSocialLinkedIn: (customer: USER) => string;
+    getSocialTwitter: (customer: USER) => string;
+    getSocialWebsite: (customer: USER) => string;
     getPublicAddress: (customer: USER) => string;
     getNumeraiApiKeyPublicId: (customer: USER) => string;
     getNumeraiLastSyncDate: (customer: USER) => string;

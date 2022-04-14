@@ -20,6 +20,10 @@ class UserBase(BaseModel):
     username: Optional[str] = None
     public_address: Optional[str] = None
     date_last_numerai_sync: Optional[datetime] = None
+    social_rocketchat: Optional[str] = None
+    social_linkedin: Optional[str] = None
+    social_twitter: Optional[str] = None
+    social_website: Optional[str] = None
 
 
 # Properties to receive via API on creation
@@ -88,6 +92,10 @@ class GenericOwner(BaseModel):
 
     id: Optional[int] = None
     username: Optional[str] = None
+    social_rocketchat: Optional[str] = None
+    social_linkedin: Optional[str] = None
+    social_twitter: Optional[str] = None
+    social_website: Optional[str] = None
 
     class Config:  # pylint: disable=missing-class-docstring
         orm_mode = True

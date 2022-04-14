@@ -12,6 +12,14 @@ export default async function userUpdateMe(context, params, customQuery?: Custom
     password: params.password,
     email: params.email ? params.email : null,
     // eslint-disable-next-line camelcase
+    social_rocketchat: params.socialRocketChat,
+    // eslint-disable-next-line camelcase
+    social_linkedin: params.socialLinkedIn,
+    // eslint-disable-next-line camelcase
+    social_twitter: params.socialTwitter,
+    // eslint-disable-next-line camelcase
+    social_website: params.socialWebsite,
+    // eslint-disable-next-line camelcase
     numerai_api_key_public_id: params.numeraiApiKeyPublicId ? params.numeraiApiKeyPublicId : null,
     // eslint-disable-next-line camelcase
     numerai_api_key_secret: params.numeraiApiKeySecret ? params.numeraiApiKeySecret : null,
