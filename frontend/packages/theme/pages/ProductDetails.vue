@@ -421,7 +421,14 @@ export default {
       modal?.addEventListener('shown.bs.modal', () => {
         this.$refs.optionDropdown?.$refs?.search?.focus();
         if (this.isAuthenticated) {
-          this.getModels();
+          this.getModels().catch((e)=>{
+            this.send({
+              message: e?.message,
+              type: 'bg-danger',
+              icon: 'ni-alert-circle',
+              persist: true
+            });
+          });
         }
       }, false);
 

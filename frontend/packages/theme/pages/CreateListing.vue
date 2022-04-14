@@ -409,7 +409,14 @@ export default {
   },
   mounted () {
     if (this.userGetters.getNumeraiApiKeyPublicId(this.user)) {
-      this.getNumeraiModels();
+      this.getNumeraiModels().catch((e)=>{
+        this.send({
+          message: e?.message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle',
+          persist: true
+        });
+      })
     }
 
     if (this.id && !this.currentListing) {

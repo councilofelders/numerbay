@@ -47,6 +47,7 @@ export function useNumeraiFactory(
       } catch (err) {
         error.value.getModels = err;
         Logger.error(`useNumerai/${ssrKey}/getModels`, err);
+        throw err;
       } finally {
         loading.value = false;
       }
