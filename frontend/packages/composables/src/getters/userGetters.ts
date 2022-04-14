@@ -8,6 +8,14 @@ export const getUsername = (user: User): string => user?.username || '';
 
 export const getUserEmailAddress = (user: User): string => user?.email || '';
 
+export const getUserSocialRocketChat = (user: User): string => user?.social_rocketchat || '';
+
+export const getUserSocialLinkedIn = (user: User): string => user?.social_linkedin || '';
+
+export const getUserSocialTwitter = (user: User): string => user?.social_twitter || '';
+
+export const getUserSocialWebsite = (user: User): string => user?.social_website || '';
+
 export const getPublicAddress = (user: User): string => user?.public_address || '';
 
 export const getNumeraiApiKeyPublicId = (user: User): string => user?.numerai_api_key_public_id || null;
@@ -33,6 +41,10 @@ const userGetters: UserGetters<User> = {
   getId: getId,
   getUsername: getUsername,
   getEmailAddress: getUserEmailAddress,
+  getSocialRocketChat: getUserSocialRocketChat,
+  getSocialLinkedIn: getUserSocialLinkedIn,
+  getSocialTwitter: getUserSocialTwitter,
+  getSocialWebsite: getUserSocialWebsite,
   getPublicAddress: getPublicAddress,
   getNumeraiApiKeyPublicId: getNumeraiApiKeyPublicId,
   getNumeraiLastSyncDate: getNumeraiLastSyncDate,

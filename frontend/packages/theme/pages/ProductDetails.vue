@@ -28,12 +28,18 @@
                                             <div class="card-media-body">
                                                 <p class="fw-semibold text-black text-break">@{{ owner }}</p>
                                                 <span class="fw-medium small">Owner</span>
+                                                <ul class="social-links mt-2" v-if="hasSocials">
+                                                    <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span class="ni icon" :class="`ni-chat`"></span>RocketChat</a></li>
+                                                    <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span class="ni icon" :class="`ni-linkedin`"></span>LinkedIn</a></li>
+                                                    <li v-if="socialTwitter"><a :href="socialTwitter" target="_blank"><span class="ni icon" :class="`ni-twitter`"></span>Twitter</a></li>
+                                                    <li v-if="socialWebsite"><a :href="socialWebsite" target="_blank"><span class="ni icon" :class="`ni-globe`"></span>Website</a></li>
+                                                </ul>
                                             </div>
                                         </div><!-- end card -->
                                     </div><!-- end col-->
                                 </div><!-- end row -->
                             </div><!-- end row -->
-                            <div class="item-detail-btns mt-4">
+                            <div class="item-detail-btns mt-2">
                                 <ul class="btns-group d-flex">
                                     <li class="flex-grow-1">
                                         <a href="javascript:void(0);" @click="togglePlaceBidModal" :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`">{{ productGetters.getIsActive(product) ? 'Buy' : 'Not for sale' }}</a>
@@ -41,6 +47,7 @@
                                 </ul>
                             </div><!-- end item-detail-btns -->
                             <ModelMetricsCard
+                              class="mt-2"
                               :nmr-staked="nmrStaked"
                               :stake-info="stakeInfo"
                               :latest-returns="latestReturns"
@@ -244,6 +251,21 @@ export default {
     },
     owner() {
       return this.$route.params.owner || this.productGetters.getOwner(this.product);
+    },
+    socialRocketChat() {
+      return this.product?.owner?.social_rocketchat;
+    },
+    socialLinkedIn() {
+      return this.product?.owner?.social_linkedin;
+    },
+    socialTwitter() {
+      return this.product?.owner?.social_twitter;
+    },
+    socialWebsite() {
+      return this.product?.owner?.social_website;
+    },
+    hasSocials() {
+      return Boolean(this.socialRocketChat || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
     },
     isNumeraiChartReady() {
       return !this.productLoading && !this.numeraiLoading && Boolean(this.productGetters.getCategory(this.product).tournament) && Boolean(this.numerai.modelInfo);

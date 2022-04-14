@@ -30,6 +30,44 @@
                             </div><!-- end col -->
                             </ValidationProvider>
                         </div><!-- end row -->
+                        <div class="row">
+                          <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                          <div class="col-lg-6 mb-3">
+                              <label for="rocketChatLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">RocketChat Link</label>
+                              <input type="text" id="rocketChatLink" class="form-control form-control-s1"
+                                     :class="!errors[0] ? '' : 'is-invalid'"
+                                     placeholder="E.g. https://rocketchat.numer.ai/direct/slyfox" v-model="form.socialRocketChat">
+                              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                          </div><!-- end col -->
+                          </ValidationProvider>
+                          <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                          <div class="col-lg-6 mb-3">
+                              <label for="linkedInLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">LinkedIn Link</label>
+                              <input type="text" id="linkedInLink" class="form-control form-control-s1"
+                                     :class="!errors[0] ? '' : 'is-invalid'"
+                                     placeholder="E.g. https://www.linkedin.com/in/richardcraib" v-model="form.socialLinkedIn">
+                              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                          </div><!-- end col -->
+                          </ValidationProvider>
+                          <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                          <div class="col-lg-6 mb-3">
+                              <label for="twitterLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Twitter Link</label>
+                              <input type="text" id="twitterLink" class="form-control form-control-s1"
+                                     :class="!errors[0] ? '' : 'is-invalid'"
+                                     placeholder="E.g. https://twitter.com/numerai" v-model="form.socialTwitter">
+                              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                          </div><!-- end col -->
+                          </ValidationProvider>
+                          <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                          <div class="col-lg-6 mb-3">
+                              <label for="webLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Web Link</label>
+                              <input type="text" id="webLink" class="form-control form-control-s1"
+                                     :class="!errors[0] ? '' : 'is-invalid'"
+                                     placeholder="E.g. https://numer.ai/" v-model="form.socialWebsite">
+                              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                          </div><!-- end col -->
+                          </ValidationProvider>
+                        </div><!-- end row -->
                         <button class="btn btn-dark mt-3 d-flex justify-content-center" type="button" @click="handleSubmit(onUpdateProfile)" :disabled="userLoading">
                           <span v-if="userLoading"><span class="spinner-border spinner-border-sm me-2" role="status" ></span>Saving...</span>
                           <span v-else>Update Profile</span>
@@ -164,6 +202,18 @@ extend('confirmed', {
   message: 'Password not matched'
 });
 
+extend('url', {
+  validate: (value) => {
+    if (value) {
+      // eslint-disable-next-line
+      return /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(value);
+    }
+
+    return false;
+  },
+  message: 'This must be a valid URL'
+});
+
 export default {
   name: 'AccountSection',
   data () {
@@ -233,7 +283,11 @@ export default {
       await this.updateUser({
         user: {
           username: this.form.username,
-          email: this.form.email
+          email: this.form.email,
+          socialRocketChat: this.form.socialRocketChat,
+          socialLinkedIn: this.form.socialLinkedIn,
+          socialTwitter: this.form.socialTwitter,
+          socialWebsite: this.form.socialWebsite,
         }
       });
       this.form = this.resetForm();
@@ -359,6 +413,10 @@ export default {
     const resetForm = () => ({
       username: userGetters.getUsername(user.value),
       email: userGetters.getEmailAddress(user.value),
+      socialRocketChat: userGetters.getSocialRocketChat(user.value),
+      socialLinkedIn: userGetters.getSocialLinkedIn(user.value),
+      socialTwitter: userGetters.getSocialTwitter(user.value),
+      socialWebsite: userGetters.getSocialWebsite(user.value),
       // publicAddress: userGetters.getPublicAddress(user.value),
       // nonce: userGetters.getNonce(user.value),
       publicKey: user.value?.public_key,

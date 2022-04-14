@@ -73,6 +73,10 @@ def update_user_me(  # pylint: disable=too-many-locals
     username: str = Body(None),
     password: str = Body(None),
     email: EmailStr = Body(None),
+    social_rocketchat: str = Body(None),
+    social_linkedin: str = Body(None),
+    social_twitter: str = Body(None),
+    social_website: str = Body(None),
     public_address: str = Body(None),
     numerai_api_key_public_id: str = Body(None),
     numerai_api_key_secret: str = Body(None),
@@ -96,6 +100,14 @@ def update_user_me(  # pylint: disable=too-many-locals
         user_in.username = username
     if email is not None:
         user_in.email = email
+
+    # Update socials
+    user_in.social_rocketchat = social_rocketchat
+    user_in.social_linkedin = social_linkedin
+    user_in.social_twitter = social_twitter
+    user_in.social_website = social_website
+
+    # Update Numerai API key
     if numerai_api_key_public_id is not None:
         if numerai_api_key_secret is not None:
             user_in.numerai_api_key_public_id = numerai_api_key_public_id
