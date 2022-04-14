@@ -1,10 +1,12 @@
 <template>
   <div class="col-lg-9 ps-xl-5">
-      <div class="user-panel-title-box d-flex">
-          <h3>Numerai Settings</h3>
-          <div class="ms-auto d-flex">
-            <span class="my-auto me-2">Last sync: {{ userGetters.getNumeraiLastSyncDate(user) }}</span>
-            <button class="icon-btn" title="Sync with Numerai" :disabled="userLoading" @click="sync"><em class="ni ni-reload" v-if="!userLoading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span></button>
+      <div class="user-panel-title-box">
+          <div class="d-flex">
+            <h3>Numerai Settings</h3>
+            <div class="ms-auto d-flex">
+              <span class="my-auto me-2">Last sync: {{ userGetters.getNumeraiLastSyncDate(user) }}</span>
+              <button class="icon-btn" title="Sync with Numerai" :disabled="userLoading" @click="sync"><em class="ni ni-reload" v-if="!userLoading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span></button>
+            </div>
           </div>
       </div><!-- end user-panel-title-box -->
       <div class="profile-setting-panel-wrap">
