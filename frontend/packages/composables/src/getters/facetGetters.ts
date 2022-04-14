@@ -25,26 +25,29 @@ const getSortOptions = (searchData): AgnosticSort => {
   if (searchData?.data) {
     tournament = searchData?.data?.categories[0].tournament
     if (tournament) {  // if is tournament category
-      options.push(
-          { type: 'sort', id: 'rank-best', value: 'Rank from top to bottom', count: null },
-          { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
-          { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
-          { type: 'sort', id: 'mmc-down', value: 'MMC Rep from high to low', count: null },
-          { type: 'sort', id: 'corrmmc-down', value: 'CORR+MMC Rep from high to low', count: null },
-          { type: 'sort', id: 'corr2mmc-down', value: 'CORR+2xMMC Rep from high to low', count: null },
-          { type: 'sort', id: 'tc-down', value: 'TC Rep from high to low', count: null },
-      )
-
       if (tournament === 8) {  // if is Numerai tournament
         options.push(
-            { type: 'sort', id: 'fnc-down', value: 'FNC Rep from high to low', count: null },
-            { type: 'sort', id: 'fncV3-down', value: 'FNCv3 Rep from high to low', count: null }
+            { type: 'sort', id: 'rank-best', value: 'TC from high to low', count: null },
+            { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
+            { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
+            { type: 'sort', id: 'corr-down', value: 'CORR from high to low', count: null },
+            { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
+            { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
+            { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
+            { type: 'sort', id: 'fnc-down', value: 'FNC from high to low', count: null },
+            { type: 'sort', id: 'fncV3-down', value: 'FNCv3 from high to low', count: null }
         );
       }
 
       if (tournament === 11) {  // if is Signals tournament
         options.push(
-            { type: 'sort', id: 'ic-down', value: 'IC Rep from high to low', count: null },
+            { type: 'sort', id: 'rank-best', value: 'CORR from high to low', count: null },
+            { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
+            { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
+            { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
+            { type: 'sort', id: 'corrmmc-down', value: 'CORR+MMC from high to low', count: null },
+            { type: 'sort', id: 'corr2mmc-down', value: 'CORR+2xMMC from high to low', count: null },
+            { type: 'sort', id: 'ic-down', value: 'IC from high to low', count: null },
         );
       }
     }
