@@ -1,7 +1,12 @@
 <template>
     <div class="col-lg-8">
-        <div class="user-panel-title-box d-flex">
-            <h3>Purchases</h3><button class="icon-btn ms-auto" title="Refresh" :disabled="loading" @click="refresh"><em class="ni ni-reload" v-if="!loading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span></button>
+        <div class="user-panel-title-box">
+            <div class="d-flex">
+              <h3>Purchases</h3>
+              <button class="icon-btn ms-auto" title="Refresh" :disabled="loading" @click="refresh">
+                <em class="ni ni-reload" v-if="!loading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span>
+              </button>
+            </div>
         </div><!-- end user-panel-title-box -->
         <div class="profile-setting-panel-wrap">
           <div class="table-responsive">
