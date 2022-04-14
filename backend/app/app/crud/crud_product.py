@@ -22,14 +22,16 @@ _SORT_OPTION_LOOKUP = {
     # "price-down": desc(Product.price),
     "name-up": Product.name,
     "name-down": desc(Product.name),
-    "rank-best": Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer),
-    "rank-worst": desc(Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)),
+    # "rank-best": Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer),
+    # "rank-worst": desc(Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)),
     "return3m-up": Model.latest_returns.cast(JSON)["threeMonths"]
     .as_string()
     .cast(Float),
     "return3m-down": desc(
         Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
     ),
+    "corr-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float),
+    "corr-down": desc(Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)),
     "mmc-up": Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
     "mmc-down": desc(Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)),
     "corrmmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
@@ -43,6 +45,18 @@ _SORT_OPTION_LOOKUP = {
     "corr2mmc-down": desc(
         Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
         + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
+    ),
+    "corrtc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+    + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corrtc-down": desc(
+        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+        + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr2tc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+    + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr2tc-down": desc(
+        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+        + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
     ),
     "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
     "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
@@ -60,7 +74,14 @@ _SORT_OPTION_LOOKUP = {
 def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) -> Any:
     """ Parse sort option """
     if category is not None and category.tournament:
-        default_option = Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+        if category.tournament == 8:
+            default_option = (
+                Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)
+            )
+        else:
+            default_option = (
+                Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+            )
     else:
         default_option = desc(Product.id)
 
