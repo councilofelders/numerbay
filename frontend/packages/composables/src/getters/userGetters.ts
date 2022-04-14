@@ -12,6 +12,8 @@ export const getPublicAddress = (user: User): string => user?.public_address || 
 
 export const getNumeraiApiKeyPublicId = (user: User): string => user?.numerai_api_key_public_id || null;
 
+export const getNumeraiLastSyncDate = (user: User): string => user?.date_last_numerai_sync ? user?.date_last_numerai_sync.slice(0, 19).replace(/-/g, '/').replace('T', ' ') : '-';
+
 export const getNonce = (user: User): string => user?.nonce || '';
 
 export const getPublicKey = (user: User): string => user?.public_key || null;
@@ -33,6 +35,7 @@ const userGetters: UserGetters<User> = {
   getEmailAddress: getUserEmailAddress,
   getPublicAddress: getPublicAddress,
   getNumeraiApiKeyPublicId: getNumeraiApiKeyPublicId,
+  getNumeraiLastSyncDate: getNumeraiLastSyncDate,
   getNonce: getNonce,
   getPublicKey: getPublicKey,
   getModels: getModels

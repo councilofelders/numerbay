@@ -1,5 +1,6 @@
 """ Data schema for user """
 
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr
@@ -18,6 +19,7 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     username: Optional[str] = None
     public_address: Optional[str] = None
+    date_last_numerai_sync: Optional[datetime] = None
 
 
 # Properties to receive via API on creation

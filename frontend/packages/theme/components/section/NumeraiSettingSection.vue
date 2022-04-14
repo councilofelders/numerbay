@@ -1,7 +1,11 @@
 <template>
   <div class="col-lg-9 ps-xl-5">
-      <div class="user-panel-title-box">
+      <div class="user-panel-title-box d-flex">
           <h3>Numerai Settings</h3>
+          <div class="ms-auto d-flex">
+            <span class="my-auto me-2">Last sync: {{ userGetters.getNumeraiLastSyncDate(user) }}</span>
+            <button class="icon-btn" title="Sync with Numerai" :disabled="userLoading" @click="sync"><em class="ni ni-reload" v-if="!userLoading"></em><span class="spinner-border spinner-border-sm" role="status" v-else></span></button>
+          </div>
       </div><!-- end user-panel-title-box -->
       <div class="profile-setting-panel-wrap">
         <p class="fs-14 mb-3">You must connect your Numerai account via API in order to trade on NumerBay.</p>
@@ -92,6 +96,9 @@ export default {
       });
       this.form = this.resetForm();
       await this.getNumeraiModels();
+    },
+    async sync() {
+      await this.syncUserNumerai();
     }
   },
   mounted() {
@@ -120,7 +127,7 @@ export default {
     showHidePassword('.password-toggle');
   },
   setup() {
-    const { user, isAuthenticated, loading: userLoading, updateUser, error: userError } = useUser();
+    const { user, isAuthenticated, loading: userLoading, updateUser, syncUserNumerai, error: userError } = useUser();
     const { getModels: getNumeraiModels } = useNumerai('account');
     const { send } = useUiNotification();
 
@@ -188,6 +195,8 @@ export default {
       resetForm,
       getNumeraiModels,
       updateUser,
+      syncUserNumerai,
+      userGetters,
       submitForm,
       send
     };

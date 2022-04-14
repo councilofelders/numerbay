@@ -48,6 +48,16 @@ const params: UseUserFactoryParams<User, any, any> = {
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  syncUserNumerai: async (context: Context, { currentUser }) => {
+    Logger.debug('syncUserNumerai');
+    const response = await context.$numerbay.api.userSyncNumerai();
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   register: async (context: Context, { username, password }) => {
     Logger.debug('register');
     const registerResponse = await context.$numerbay.api.signUpUser({username: username, password: password});
