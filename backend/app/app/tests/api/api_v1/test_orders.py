@@ -193,6 +193,11 @@ def test_create_order_invalid_api_permissions(
         assert response.status_code == 400
 
         # No permission to upload: reject
+        crud.user.update(
+            db,
+            db_obj=crud.user.get(db, id=current_user["id"]),  # type: ignore
+            obj_in={"numerai_api_key_can_upload_submission": False},
+        )
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,
@@ -210,11 +215,16 @@ def test_create_order_invalid_api_permissions(
         crud.user.update(
             db,
             db_obj=crud.user.get(db, id=current_user["id"]),  # type: ignore
-            obj_in={"numerai_api_key_can_upload_submission": True},
+            obj_in={
+                "numerai_api_key_can_upload_submission": True,
+                "numerai_api_key_can_stake": False,
+            },
         )
 
-        crud.product.update(
-            db, db_obj=product, obj_in={"mode": "stake_with_limit", "stake_limit": 1}
+        crud.product_option.update(
+            db,
+            db_obj=product.options[0],
+            obj_in={"mode": "stake_with_limit", "stake_limit": 1},
         )
 
         order_data = {
