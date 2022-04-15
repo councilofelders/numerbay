@@ -6,8 +6,9 @@ from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
 from numerapi import NumerAPI
+from sqlalchemy.orm import Session
 
-from app import models
+from app import crud, models
 
 
 def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
@@ -496,6 +497,17 @@ def check_user_numerai_api(user: models.User) -> None:
             raise HTTPException(
                 status_code=400, detail="Numerai API Error: Insufficient Permission."
             )
+
+
+def sync_user_numerai_api(db: Session, user_json: dict) -> None:
+    numerai_api_updated = crud.user.update_numerai_api(db, user_json)
+    if not numerai_api_updated:
+        raise HTTPException(status_code=400, detail="Failed to update Numerai API")
+    result = crud.model.update_model(db, user_json=user_json)
+    if not result:
+        raise HTTPException(
+            status_code=400, detail="Numerai API Error: Insufficient Permission.",
+        )
 
 
 def generate_numerai_submission_url(
