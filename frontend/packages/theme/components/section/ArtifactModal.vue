@@ -22,17 +22,15 @@
           </tr>
           <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
             <td>
-                      <span class="text-break" style="white-space: normal;">
-                        <a href="javascript:void(0);" @click="download(artifact)"
-                           :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
-                            artifactGetters.getObjectName(artifact)
-                          }}</a>
-                        <span class="spinner-border spinner-border-sm text-primary" role="status"
-                              v-if="isActiveArtifact(artifact)"></span>
-                      </span>
+              <span class="text-break" style="white-space: normal;">
+                <a href="javascript:void(0);" @click="download(artifact)"
+                   :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                    artifactGetters.getObjectName(artifact)
+                  }}</a>
+                <span class="spinner-border spinner-border-sm text-primary" role="status"
+                      v-if="isActiveArtifact(artifact)"></span>
+              </span>
             </td>
-            <!--                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>-->
-            <!--                    <td></td>-->
             <td>
               <div class="d-flex justify-content-between"
                    v-if="Boolean(artifact) && !!artifact.object_name && !!order.submit_model_id">
@@ -64,17 +62,15 @@
           </tr>
           <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
             <td>
-                      <span class="text-break" style="white-space: normal;">
-                        <a href="javascript:void(0);" @click="downloadAndDecrypt(artifact)"
-                           :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
-                            artifactGetters.getObjectName(artifact)
-                          }}</a>
-                        <span class="spinner-border spinner-border-sm text-primary" role="status"
-                              v-if="isActiveArtifact(artifact)"></span>
-                      </span>
+              <span class="text-break" style="white-space: normal;">
+                <a href="javascript:void(0);" @click="downloadAndDecrypt(artifact)"
+                   :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                    artifactGetters.getObjectName(artifact)
+                  }}</a>
+                <span class="spinner-border spinner-border-sm text-primary" role="status"
+                      v-if="isActiveArtifact(artifact)"></span>
+              </span>
             </td>
-            <!--                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>-->
-            <!--                    <td></td>-->
             <td>
             </td>
           </tr>

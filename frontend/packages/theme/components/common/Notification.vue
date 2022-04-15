@@ -18,7 +18,6 @@
 </template>
 
 <script>
-// import { SfIcon, SfNotification } from '@storefront-ui/vue';
 import {useUiNotification} from '~/composables';
 
 export default {

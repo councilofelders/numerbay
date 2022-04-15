@@ -62,8 +62,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
 import Pagination from 'vue-pagination-2';
 
 // Composables
@@ -78,7 +76,6 @@ export default {
   },
   data() {
     return {
-      SectionData,
       page: 1,
       perPage: 6,
       currentOrder: {}
@@ -137,20 +134,6 @@ export default {
       }
     };
 
-    const getSubmissionStatusTextClass = (order) => {
-      const status = orderGetters.getSubmissionStatus(order);
-      switch (status) {
-        case 'failed':
-          return 'bg-danger';
-        case 'queued':
-          return 'bg-warning';
-        case 'completed':
-          return 'bg-success';
-        default:
-          return '';
-      }
-    };
-
     return {
       orders: computed(() => orders?.value?.data ? orders.value?.data : []),
       loading,
@@ -158,7 +141,6 @@ export default {
       productGetters,
       search,
       getStatusTextClass,
-      getSubmissionStatusTextClass
     };
   }
 };

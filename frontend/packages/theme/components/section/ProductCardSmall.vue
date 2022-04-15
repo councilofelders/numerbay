@@ -66,14 +66,9 @@
                 latestRepIc: productGetters.getModelRep(product, 'ic'),
 
                 title: productGetters.getName(product).toUpperCase(),
-                metaText: product.metaText,
                 price: productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx)),
                 priceTwo: productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx)),
-                imgLg: productGetters.getCoverImage(product),
-                metaText: product.metaText,
-                metaTextTwo: product.metaTextTwo,
-                metaTextThree: product.metaTextThree,
-                content: product.content,
+                imgLg: productGetters.getCoverImage(product)
                 }
             }"
     >

@@ -30,8 +30,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
 import ProductCardSmall from '@/components/section/ProductCardSmall';
 
 // core version + navigation, pagination modules:
@@ -65,11 +63,6 @@ export default {
     Swiper,
     SwiperSlide,
     ProductCardSmall
-  },
-  data() {
-    return {
-      SectionData
-    };
   },
   setup() {
     return {

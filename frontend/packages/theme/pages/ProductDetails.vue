@@ -278,11 +278,7 @@ export default {
       terms: false,
       autoSubmit: false,
       submitSlot: null,
-      SectionData,
-      metaText: this.$route.params.metaText,
-      metaTextTwo: this.$route.params.metaTextTwo,
-      metaTextThree: this.$route.params.metaTextThree,
-      content: this.$route.params.content
+      SectionData
     };
   },
   computed: {

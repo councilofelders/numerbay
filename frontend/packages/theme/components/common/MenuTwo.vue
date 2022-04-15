@@ -32,9 +32,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
-
 // @ is an alias to /src
 import MenuList from '@/components/common/MenuList.vue';
 
@@ -47,11 +44,6 @@ export default {
   props: ['classname'],
   components: {
     MenuList
-  },
-  data() {
-    return {
-      SectionData
-    };
   },
   mounted() {
 

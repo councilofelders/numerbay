@@ -23,15 +23,7 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
-
 export default {
-  name: 'MenuList',
-  data() {
-    return {
-      SectionData
-    };
-  }
+  name: 'MenuList'
 };
 </script>

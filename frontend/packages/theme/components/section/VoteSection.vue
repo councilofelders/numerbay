@@ -25,8 +25,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-
 // Composables
 import {onSSR} from '@vue-storefront/core';
 import {pollGetters, usePoll, useUser} from '@vue-storefront/numerbay';

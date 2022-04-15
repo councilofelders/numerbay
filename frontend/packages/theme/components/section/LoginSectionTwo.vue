@@ -95,7 +95,6 @@ export default {
           const signaturePromise = signer.signMessage(`I am signing my one-time nonce: ${nonce}`);
 
           const onLoginSuccess = async () => {
-            console.log('login success');
             this.connecting = false;
             await this.$router.push('/account');
           };
@@ -132,29 +131,15 @@ export default {
               }
             }
           }).catch(() => {
-            console.log('login fail');
             this.connecting = false;
           });
         }).catch(() => {
-          console.log('wallet fail');
           this.connecting = false;
         });
       } catch (err) {
-        console.log('wallet fail2');
         console.error({err});
-        // this.$bvToast.toast(err.message || 'Wallet connection failed', {
-        //   title: 'Wallet',
-        //   variant: 'danger'
-        // });
       }
     }
-    // login() {
-    //   identity.open('login');
-    // },
-    // logout() {
-    //   identity.logout();
-    //   this.user = null;
-    // }
   },
   mounted() {
     if (this.isAuthenticated && this.user?.username && !this.authenticated) {
@@ -163,8 +148,8 @@ export default {
   },
   setup() {
     const {
-      isAuthenticated, user, register, login, load: loadUser, loading, setUser, updateUser, error: userError,
-      web3User, initWeb3Modal, ethereumListener, connectWeb3Modal, getNonce, getNonceAuthenticated, loginWeb3
+      isAuthenticated, user, load: loadUser, updateUser,
+      web3User, getNonce, getNonceAuthenticated, loginWeb3
     } = useUser();
     const {send} = useUiNotification();
 

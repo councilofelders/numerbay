@@ -189,23 +189,6 @@
             </ValidationObserver>
           </div><!-- end profile-setting-panel -->
         </div><!-- end tab-pane -->
-        <!--                <div class="tab-pane fade" id="validate-profile" role="tabpanel" aria-labelledby="validate-profile-tab">
-                            <div class="profile-setting-panel">
-                                <h5 class="mb-4">Verify your profile</h5>
-                                <p class="mb-3 fs-14">Verify your unique identity by linking your phone number with your account. Once your profile is validated, you will be approved to participate in all drops that require profile validation to purchase.</p>
-                                <p class="mb-4 fs-14">(Please note, profile validation is not 2fa and not used for security purposes.)</p>
-                                <hr class="my-4">
-                                <h6 class="mb-3 fw-semibold">Enter phone number to receive code</h6>
-                                <ul class="btns-group">
-                                    <li>
-                                        <input type="text" class="form-control form-control-s1 phone-number" placeholder="Phone number">
-                                    </li>
-                                    <li>
-                                        <button class="btn btn-dark" type="button">Submit</button>
-                                    </li>
-                                </ul>
-                            </div>&lt;!&ndash; end profile-setting-panel &ndash;&gt;
-                        </div>&lt;!&ndash; end tab-pane &ndash;&gt;-->
       </div><!-- end tab-content -->
     </div><!-- end profile-setting-panel-wrap-->
   </div><!-- end col-lg-8 -->
@@ -334,7 +317,6 @@ export default {
       }
     },
     async generateKeyPair() {
-      // todo notification
       if (!this.userGetters.getPublicAddress(this.user)) {
         await this.send({
           message: 'Please connect a MetaMask wallet first',

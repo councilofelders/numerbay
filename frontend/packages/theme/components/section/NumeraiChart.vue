@@ -53,9 +53,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-//.dark-mode {
-//  display: none;
-//}
 .dark-mode {
   canvas {
     filter: invert(1) brightness(150%) hue-rotate(180deg);

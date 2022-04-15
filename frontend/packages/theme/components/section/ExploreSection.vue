@@ -56,22 +56,8 @@
                         <label class="form-check-label form-check-label-s1" :for="`${facet.id}-${option.value}`">
                           {{ option.id + `${option.count ? ` (${option.count})` : ''}` }} </label>
                       </div>
-                      <!--              <SfFilter
-                                      v-for="option in facet.options"
-                                      :key="`${facet.id}-${option.value}`"
-                                      :label="option.id + `${option.count ? ` (${option.count})` : ''}`"
-                                      :selected="isFilterSelected(facet, option)"
-                                      class="filters__item"
-                                      @change="() => selectFilter(facet, option)"
-                                    />-->
                     </div>
                     <div v-else>
-                      <!--              <input class="form-range" type="range" :id="facet.id"
-                                           :value="getSelectedRangeFilterValue(facet)"
-                                           :min="getRangeFilterOption(facet.options, 'from')"
-                                           :max="getRangeFilterOption(facet.options, 'to')"
-                                           :setp="getRangeFilterOption(facet.options, 'step')"
-                                    >-->
                       <Range
                         :id="facet.id"
                         :disabled="false"
@@ -91,26 +77,6 @@
                         class="form-range"
                         @change="(values) => updateRangeFilter(facet, values)"
                       />
-                      <!--              <label class="form-check-label form-check-label-s1" :for="facet.id"> {{ option.id + `${option.count ? ` (${option.count})` : ''}` }} </label>-->
-                      <!--              <SfRange
-                                      :id="facet.id"
-                                      :disabled="false"
-                                      :value="getSelectedRangeFilterValue(facet)"
-                                      :config='{
-                                        "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
-                                        "range":{
-                                          "min":getRangeFilterOption(facet.options, "from"),
-                                          "max":getRangeFilterOption(facet.options, "to")
-                                        },"step":getRangeFilterOption(facet.options, "step"),"connect":true,"direction":"ltr",
-                                        "orientation":"horizontal","behaviour":"tap-drag","tooltips":true,"keyboardSupport":true,
-                                        format: {
-                                          to: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals"))),
-                                          from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
-                                        }
-                                      }'
-                                      class="filters__item"
-                                      @change="(values) => updateRangeFilter(facet, values)"
-                                    />-->
                     </div>
                   </div>
                 </div>
@@ -167,12 +133,10 @@
 
 <script>
 // Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
 import Pagination from 'vue-pagination-2';
 import ProductCard from '@/components/section/ProductCard';
 
 // Composables
-// import {onSSR} from '@vue-storefront/core';
 import Vue from 'vue';
 import {facetGetters, productGetters, useCart, useFacet, useUser, useWishlist} from '@vue-storefront/numerbay';
 import {useUiHelpers, useUiNotification, useUiState} from '~/composables';
@@ -189,7 +153,6 @@ export default {
     return {
       selectedSortBy: null,
       page: this.$route.query.page ? parseInt(this.$route.query.page, 10) : 1,
-      SectionData,
       category: 'all',
       name: '',
       activeId: 1

@@ -206,9 +206,7 @@
 
 <script>
 // Composables
-import {orderGetters, productGetters} from '@vue-storefront/numerbay';
 import {extend} from 'vee-validate';
-import _ from 'lodash';
 
 extend('decimal', {
   validate: (value, {decimals = '*', separator = '.'} = {}) => {
@@ -443,11 +441,7 @@ export default {
         }
       };
       if (index > -1) {
-        console.log('pricing', pricing);
-        console.log('options before', options);
-
         options[index] = pricing;
-        console.log('options after', options);
         this.editedOption = -1;
       } else {
         options.push(pricing);
@@ -458,37 +452,8 @@ export default {
       this.hide();
     }
   },
-  // mounted() {
-  //
-  //   /* ============= Custom Tooltips =============== */
-  //   function customTooltip(selector, active) {
-  //     const elem = document.querySelectorAll(selector);
-  //     if (elem.length > 0) {
-  //       elem.forEach(item => {
-  //         const parent = item.parentElement;
-  //         const next = item.nextElementSibling;
-  //         createPopper(item, next);
-  //         parent.addEventListener('mouseenter', function() {
-  //           parent.classList.add(active);
-  //         });
-  //         parent.addEventListener('mouseleave', function() {
-  //           parent.classList.remove(active);
-  //         });
-  //       });
-  //     }
-  //   }
-  //
-  //   customTooltip('.custom-tooltip', 'active');
-  // },
   beforeDestroy() {
     this.modal?.hide();
-  },
-  setup() {
-
-    return {
-      orderGetters,
-      productGetters
-    };
   }
 };
 </script>

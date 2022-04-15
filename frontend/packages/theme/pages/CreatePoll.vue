@@ -266,8 +266,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-
 // Composables
 import {ref} from '@vue/composition-api';
 import {onSSR} from '@vue-storefront/core';
@@ -279,7 +277,6 @@ import {
   userGetters
 } from '@vue-storefront/numerbay';
 import {useUiNotification} from '~/composables';
-import _ from 'lodash';
 
 export default {
   name: 'CreatePoll',

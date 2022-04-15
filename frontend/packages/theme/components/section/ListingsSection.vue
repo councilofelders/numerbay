@@ -73,8 +73,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
 import Pagination from 'vue-pagination-2';
 
 // Composables
@@ -89,7 +87,6 @@ export default {
   },
   data() {
     return {
-      SectionData,
       page: 1,
       perPage: 6,
       currentOrder: {}

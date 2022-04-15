@@ -42,16 +42,6 @@
             <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
           </div>
         </ValidationProvider>
-        <!--        <div class="mb-3">
-                    <label for="oldPassword" class="form-label">Old Password</label>
-                    <div class="position-relative">
-                        <input type="password" class="form-control form-control-s1" id="oldPassword" placeholder="Old password">
-                        <a href="oldPassword" class="password-toggle" title="Toggle show/hide pasword">
-                            <em class="password-shown ni ni-eye-off"></em>
-                            <em class="password-hidden ni ni-eye"></em>
-                        </a>
-                    </div>
-                </div>-->
         <ValidationProvider rules="required|min:2" v-slot="{ errors }" slim>
           <div class="mb-3">
             <label for="numeraiApiKeySecret" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Numerai
@@ -75,16 +65,11 @@
           <span v-else>Save</span>
         </button>
       </ValidationObserver>
-      <!--        <hr class="my-4">-->
-      <!--        <p class="fs-13">If your encounter errors. Please contact <a href="contact" class="btn-link">support</a></p>-->
     </div><!-- end profile-setting-panel-wrap-->
   </div><!-- end col-lg-8 -->
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
-
 // Composables
 import {ref} from '@vue/composition-api';
 import {useNumerai, useUser, userGetters} from '@vue-storefront/numerbay';
@@ -92,22 +77,6 @@ import {useUiNotification} from '~/composables';
 
 export default {
   name: 'NumeraiSettingSection',
-  data() {
-    return {
-      SectionData,
-      selected: 'Select a Country',
-      options: [
-        'Select a Country',
-        'Afghanistan',
-        'Åland Islands',
-        'Albania',
-        'American Samoa',
-        'United States of America',
-        'Uruguay',
-        'Uzbekistan'
-      ]
-    };
-  },
   methods: {
     async onSave() {
       await this.updateUser({

@@ -256,9 +256,6 @@
 </template>
 
 <script>
-// Import component data. You can change the data in the store to reflect in all component
-import SectionData from '@/store/store.js';
-
 // Composables
 import {computed, ref} from '@vue/composition-api';
 import {onSSR} from '@vue-storefront/core';
@@ -295,7 +292,6 @@ export default {
   ],
   data() {
     return {
-      SectionData,
       optionForm: {},
       isModalOpen: false,
       modal: null,

@@ -34,22 +34,10 @@
                   <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                 </div><!-- end form-floating -->
               </ValidationProvider>
-              <!--                            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
-                                              <div class="form-check">
-                                                  <input class="form-check-input" type="checkbox" value="" id="logMeIn">
-                                                  <label class="form-check-label form-check-label-s1" for="logMeIn"> Remember me </label>
-                                              </div>
-                                              <router-link to="login" class="btn-link form-forget-password">Forgot Password</router-link>
-                                          </div>-->
               <button class="btn btn-dark btn-full d-flex justify-content-center" type="submit" :disabled="loading">
                 <span v-if="loading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Logging In...</span>
                 <span v-else>{{ SectionData.loginData.btnText }}</span>
               </button>
-              <!--                            <span class="d-block my-4">— or login with —</span>
-                                          <ul class="btns-group d-flex">
-                                              <li class="flex-grow-1" v-for="(list, i) in SectionData.loginData.btns" :key="i"><router-link :to="list.path" class="btn d-block" :class="list.btnClass"><em class="ni" :class="list.icon"></em> {{ list.title }} </router-link></li>
-                                          </ul>
-                                          <p class="mt-3 form-text">{{ SectionData.loginData.haveAccountText }} <router-link :to="SectionData.loginData.btnTextLink" class="btn-link">{{ SectionData.loginData.btnTextTwo }}</router-link></p>-->
             </form>
           </ValidationObserver>
         </div><!-- end col-lg-6 -->
