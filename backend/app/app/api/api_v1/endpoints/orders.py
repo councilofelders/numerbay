@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -185,9 +186,23 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         if model.tournament == product.model.tournament and model.id == submit_model_id
     ]
     if submit_model_id is not None and len(submit_models) == 0:
-        raise HTTPException(
-            status_code=403, detail="Invalid Numerai model ID for submission"
-        )
+        # Attempt Numerai API sync
+        user_json = jsonable_encoder(current_user)
+        numerai.sync_user_numerai_api(db, user_json)
+
+        # Try to resolve model again
+        submit_models = [
+            model
+            for model in current_user.models  # type: ignore
+            if model.tournament == product.model.tournament
+            and model.id == submit_model_id
+        ]
+
+        # Fails again, raise error
+        if len(submit_models) == 0:
+            raise HTTPException(
+                status_code=403, detail="Invalid Numerai model ID for submission"
+            )
 
     if product:
         coupon_obj = crud.coupon.get_by_code(db, code=coupon)

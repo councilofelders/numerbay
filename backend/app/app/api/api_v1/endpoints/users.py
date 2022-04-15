@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.api.dependencies import numerai
 from app.core.security import verify_signature
 from app.db.session import SessionLocal
 
@@ -115,17 +116,7 @@ def update_user_me(  # pylint: disable=too-many-locals
             user_json = jsonable_encoder(user_in)
             user_json["id"] = current_user.id
             tmp_db = SessionLocal()
-            numerai_api_updated = crud.user.update_numerai_api(tmp_db, user_json)
-            if not numerai_api_updated:
-                raise HTTPException(
-                    status_code=400, detail="Failed to update Numerai API"
-                )
-            result = crud.model.update_model(tmp_db, user_json=user_json)
-            if not result:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Numerai API Error: Insufficient Permission.",
-                )
+            numerai.sync_user_numerai_api(tmp_db, user_json)
     if public_address is not None and public_address == "":  # disconnect web3
         user_in.public_address = None
         user_in.signature = None
@@ -164,9 +155,7 @@ def sync_user_numerai(  # pylint: disable=too-many-locals
 ) -> Any:
     """ Sync user with Numerai API"""
     user_json = jsonable_encoder(current_user)
-    numerai_api_updated = crud.user.update_numerai_api(db, user_json)
-    if not numerai_api_updated:
-        raise HTTPException(status_code=400, detail="Failed to sync with Numerai API")
+    numerai.sync_user_numerai_api(db, user_json)
     return crud.user.get(db, current_user.id)
 
 
