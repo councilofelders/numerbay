@@ -157,9 +157,6 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             detail="Specifying Numerai model ID for submission is required for this product option",
         )
 
-    # Numerai API
-    numerai.check_user_numerai_api(current_user)
-
     # Numerai api permissions
     if product_option.mode != "file" or (
         submit_model_id is not None
@@ -178,6 +175,9 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
                 status_code=403,
                 detail="Numerai API Key does not have permission to upload submissions",
             )
+
+    # Numerai API
+    numerai.check_user_numerai_api(current_user)
 
     # Own submit model id
     submit_models = [
