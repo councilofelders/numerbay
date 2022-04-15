@@ -2,8 +2,8 @@
   <div class="page-wrap">
     <!-- header  -->
     <header class="header-section has-header-main" :class="getHeaderClass()">
-        <!-- Header main -->
-        <HeaderMain :isTransparent="$route.fullPath === '/' ? 'is-transparent': ''"></HeaderMain>
+      <!-- Header main -->
+      <HeaderMain :isTransparent="$route.fullPath === '/' ? 'is-transparent': ''"></HeaderMain>
     </header>
     <Nuxt :key="$route.fullPath"/>
     <Notification/>

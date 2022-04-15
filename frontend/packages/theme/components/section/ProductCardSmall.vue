@@ -1,42 +1,45 @@
 <template>
-    <div class="card card-full">
-        <div class="card-image">
-            <img :src="productGetters.getCoverImage(product)" class="card-img-top" alt="art image">
+  <div class="card card-full">
+    <div class="card-image">
+      <img :src="productGetters.getCoverImage(product)" class="card-img-top" alt="art image">
+    </div>
+    <div class="card-body p-4">
+      <h5 class="card-title text-truncate mb-0">{{ productGetters.getName(product).toUpperCase() }}</h5>
+      <div class="card-author mb-1 d-flex align-items-center">
+        <span class="me-1 card-author-by">{{ productGetters.getCategory(product).slug }}</span>
+      </div><!-- end card-author -->
+      <div class="card-price-wrap d-flex align-items-center justify-content-between mb-3">
+        <div class="me-2">
+          <span class="card-price-title">Price</span>
+          <span class="card-price-number">{{
+              productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx))
+            }}</span>
         </div>
-        <div class="card-body p-4">
-            <h5 class="card-title text-truncate mb-0">{{ productGetters.getName(product).toUpperCase() }}</h5>
-            <div class="card-author mb-1 d-flex align-items-center">
-                <span class="me-1 card-author-by">{{ productGetters.getCategory(product).slug }}</span>
-            </div><!-- end card-author -->
-            <div class="card-price-wrap d-flex align-items-center justify-content-between mb-3">
-              <div class="me-2">
-                  <span class="card-price-title">Price</span>
-                  <span class="card-price-number">{{ productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx)) }}</span>
-              </div>
-              <div>
-                <div class="custom-tooltip-wrap">
-                  <a href="javascript:void(0);" class="custom-tooltip author-link link-secondary fs-13" v-show="!!productGetters.getCategory(product).tournament">Metrics...</a>
-                  <div class="card-generic custom-tooltip-dropdown">
-                      <div class="metrics-wrap mb-3">
-                          <h6 class="mb-1 smaller text-uppercase">Model Metrics</h6>
-                      </div><!-- end metrics-wrap  -->
-                      <ModelMetricsCard
-                        :nmr-staked="nmrStaked"
-                        :stake-info="stakeInfo"
-                        :latest-returns="latestReturns"
-                        :latest-reps="latestReps"
-                        :latest-ranks="latestRanks"
-                        :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
-                      ></ModelMetricsCard>
-                  </div><!-- end dropdown-menu -->
-                </div>
-              </div>
-            </div><!-- end card-price-wrap -->
-           <span class="btn btn-sm" :class="productGetters.getIsActive(product)?'btn-dark':'btn-light disabled'">Buy</span>
-        </div><!-- end card-body -->
-        <router-link
-            class="details"
-            :to="{
+        <div>
+          <div class="custom-tooltip-wrap">
+            <a href="javascript:void(0);" class="custom-tooltip author-link link-secondary fs-13"
+               v-show="!!productGetters.getCategory(product).tournament">Metrics...</a>
+            <div class="card-generic custom-tooltip-dropdown">
+              <div class="metrics-wrap mb-3">
+                <h6 class="mb-1 smaller text-uppercase">Model Metrics</h6>
+              </div><!-- end metrics-wrap  -->
+              <ModelMetricsCard
+                :nmr-staked="nmrStaked"
+                :stake-info="stakeInfo"
+                :latest-returns="latestReturns"
+                :latest-reps="latestReps"
+                :latest-ranks="latestRanks"
+                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
+              ></ModelMetricsCard>
+            </div><!-- end dropdown-menu -->
+          </div>
+        </div>
+      </div><!-- end card-price-wrap -->
+      <span class="btn btn-sm" :class="productGetters.getIsActive(product)?'btn-dark':'btn-light disabled'">Buy</span>
+    </div><!-- end card-body -->
+    <router-link
+      class="details"
+      :to="{
                 name: 'ProductDetailsByFullName',
                 params: {
                 id: product.id,
@@ -73,22 +76,23 @@
                 content: product.content,
                 }
             }"
-        >
-        </router-link>
-    </div><!-- end card -->
+    >
+    </router-link>
+  </div><!-- end card -->
 </template>
 <script>
-import { createPopper } from '@popperjs/core';
+import {createPopper} from '@popperjs/core';
 
 // Composables
-import { productGetters } from '@vue-storefront/numerbay';
+import {productGetters} from '@vue-storefront/numerbay';
 
 export default {
   name: 'ProductCard',
   props: {
     product: {
       type: Object,
-      default: () =>{}
+      default: () => {
+      }
     }
   },
   computed: {
@@ -138,7 +142,7 @@ export default {
       return Boolean(productGetters.getCategory(product)) && productGetters.getCategory(product).slug.includes('-data');
     }
   },
-  mounted () {
+  mounted() {
 
     /* ============= Custom Tooltips =============== */
     function customTooltip(selector, active) {
@@ -148,10 +152,10 @@ export default {
           const parent = item.parentElement;
           const next = item.nextElementSibling;
           createPopper(item, next);
-          parent.addEventListener('mouseenter', function() {
+          parent.addEventListener('mouseenter', function () {
             parent.classList.add(active);
           });
-          parent.addEventListener('mouseleave', function() {
+          parent.addEventListener('mouseleave', function () {
             parent.classList.remove(active);
           });
         });
@@ -170,16 +174,17 @@ export default {
 </script>
 
 <style lang="css" scoped>
- .details {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
- }
- .author-link {
-   z-index: 2;
-   position: relative;
- }
+.details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.author-link {
+  z-index: 2;
+  position: relative;
+}
 </style>

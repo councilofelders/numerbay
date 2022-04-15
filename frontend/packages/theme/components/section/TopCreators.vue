@@ -1,13 +1,13 @@
 <template>
-    <section class="top-creator-section" :class="classname">
-            <div class="container">
-                <div class="section-head-sm" :class="isCenter">
-                    <h2>Featured Creators</h2>
-                </div>
-                <!-- creators -->
-                <Creators></Creators>
-            </div><!-- .container -->
-        </section><!-- end top-creator-section -->
+  <section class="top-creator-section" :class="classname">
+    <div class="container">
+      <div class="section-head-sm" :class="isCenter">
+        <h2>Featured Creators</h2>
+      </div>
+      <!-- creators -->
+      <Creators></Creators>
+    </div><!-- .container -->
+  </section><!-- end top-creator-section -->
 </template>
 
 <script>
@@ -17,7 +17,7 @@ import SectionData from '@/store/store.js';
 export default {
   name: 'TopCreators',
   props: ['classname', 'isCenter'],
-  data () {
+  data() {
     return {
       SectionData
     };

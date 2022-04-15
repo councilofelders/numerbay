@@ -1,6 +1,5 @@
-
 <script>
-import { Line } from 'vue-chartjs';
+import {Line} from 'vue-chartjs';
 
 export default {
   name: 'NumeraiChart',
@@ -48,7 +47,7 @@ export default {
       })
     }
   },
-  mounted () {
+  mounted() {
     this.renderChart(this.chartdata, this.options);
   }
 };
@@ -58,8 +57,8 @@ export default {
 //  display: none;
 //}
 .dark-mode {
-    canvas {
-        filter: invert(1) brightness(150%) hue-rotate(180deg);
-    }
+  canvas {
+    filter: invert(1) brightness(150%) hue-rotate(180deg);
+  }
 }
 </style>

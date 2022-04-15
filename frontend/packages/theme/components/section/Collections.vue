@@ -1,13 +1,13 @@
 <template>
-<section class="collection-section section-space">
+  <section class="collection-section section-space">
     <div class="container">
-       <div class="section-head-sm" :class="classname">
-         <h2>Collections</h2>
-       </div>
-        <!-- collection slider -->
-        <CollectionSlider></CollectionSlider>
+      <div class="section-head-sm" :class="classname">
+        <h2>Collections</h2>
+      </div>
+      <!-- collection slider -->
+      <CollectionSlider></CollectionSlider>
     </div><!-- .container -->
-</section><!-- end collection-section -->
+  </section><!-- end collection-section -->
 </template>
 
 <script>
@@ -17,7 +17,7 @@ import SectionData from '@/store/store.js';
 export default {
   name: 'Collections',
   props: ['classname'],
-  data () {
+  data() {
     return {
       SectionData
     };

@@ -1,11 +1,12 @@
 <template>
   <div ref="range" type="range" class="range-slider" :disabled="disabled">
-    <slot v-bind="$attrs" />
+    <slot v-bind="$attrs"/>
   </div>
 </template>
 <script>
 import noUiSlider from "nouislider";
 import "nouislider/dist/nouislider.css";
+
 export default {
   name: "Range",
   props: {
@@ -80,6 +81,7 @@ export default {
   background-color: #dee2e6;
   border: none;
   box-shadow: none;
+
   .noUi {
     &-handle {
       width: 22px;
@@ -89,20 +91,25 @@ export default {
       box-shadow: none;
       //@include border(--range-handle-border, 1px, solid, var(--c-primary));
       background-color: #ffffff;
+
       &::before,
       &::after {
         display: none;
       }
+
       &:focus {
         outline: none;
       }
+
       &.noUi-active .noUi-touch-area {
         background-color: #7952b3;
       }
     }
+
     &-connect {
       background-color: #7952b3;
     }
+
     &-touch-area {
       background-color: #ffffff;
       border-radius: 50%;
@@ -110,6 +117,7 @@ export default {
       //  background-color: #7952b3;
       //}
     }
+
     &-tooltip {
       bottom: -200%;
       color: #8091a7;
@@ -123,26 +131,32 @@ export default {
       //@include border(--range-tooltip-border, 0, none, var(--c-primary));
     }
   }
+
   &[disabled="disabled"] {
     .noUi {
       &-handle {
         border-color: #6c757d;
       }
+
       &-connect {
         background-color: #6c757d;
       }
+
       &-touch-area:hover {
         background-color: #f8f9fa;
       }
+
       &-tooltip {
         display: none;
       }
     }
   }
 }
+
 .noUi-vertical {
   height: 300px;
   width: 7px;
+
   .noUi-handle {
     transform: translate3d(20%, 0, 0);
   }

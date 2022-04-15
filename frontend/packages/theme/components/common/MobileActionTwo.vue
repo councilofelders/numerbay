@@ -1,52 +1,66 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-unused-expressions */
 <template>
-    <div class="header-mobile-action">
-        <div class="header-search-mobile dropdown me-2">
-            <a class="icon-btn" href="javascript:void(0)" data-bs-toggle="dropdown" @click="toggleMobileSearchDropdown"><em class="ni ni-search"></em></a>
-            <div class="dropdown-menu dropdown-menu-end card-generic" :class="showMobileSearchDropdown? 'show' : ''">
-                <div class="input-group">
-                    <input type="search" class="form-control form-control-s1" placeholder="Search item here..." v-model="searchTerm" @keydown.enter="handleSearch">
-                    <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary" @click="handleSearch"><em class="ni ni-search"></em></a>
-                 </div>
-            </div>
-        </div><!-- end header-search-mobile -->
-        <div class="header-mobile-user-menu me-2">
-            <button type="button" class="icon-btn" data-bs-toggle="dropdown"><em class="ni ni-user"></em></button>
-              <ul class="dropdown-menu card-generic card-generic-s3 dropdown-menu-end mt-2">
-                    <li><h6 class="dropdown-header">Hello {{ username }}!</h6></li>
-                    <li><router-link class="dropdown-item card-generic-item" to="/account"><em class="ni ni-setting me-2"></em>Account Settings</router-link></li>
-                    <li><a class="dropdown-item card-generic-item" href="https://docs.numerbay.ai/" target="_blank"><em class="ni ni-question-alt me-2"></em>Docs</a></li>
-                    <li><a href="#" class="dropdown-item card-generic-item theme-toggler" title="Toggle Dark/Light mode"><em class="ni ni-moon me-2"></em> Dark Mode</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><button class="dropdown-item card-generic-item" @click="onLogout"><em class="ni ni-power me-2"></em>Logout</button></li>
-              </ul>
-        </div><!-- end hheader-mobile-user-menu -->
-        <div class="header-toggle">
-            <button class="menu-toggler">
-                <em class="menu-on menu-icon ni ni-menu"></em>
-                <em class="menu-off menu-icon ni ni-cross"></em>
-            </button>
-        </div><!-- .header-toggle -->
-     </div><!-- end header-mobile-action -->
+  <div class="header-mobile-action">
+    <div class="header-search-mobile dropdown me-2">
+      <a class="icon-btn" href="javascript:void(0)" data-bs-toggle="dropdown" @click="toggleMobileSearchDropdown"><em
+        class="ni ni-search"></em></a>
+      <div class="dropdown-menu dropdown-menu-end card-generic" :class="showMobileSearchDropdown? 'show' : ''">
+        <div class="input-group">
+          <input type="search" class="form-control form-control-s1" placeholder="Search item here..."
+                 v-model="searchTerm" @keydown.enter="handleSearch">
+          <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary" @click="handleSearch"><em
+            class="ni ni-search"></em></a>
+        </div>
+      </div>
+    </div><!-- end header-search-mobile -->
+    <div class="header-mobile-user-menu me-2">
+      <button type="button" class="icon-btn" data-bs-toggle="dropdown"><em class="ni ni-user"></em></button>
+      <ul class="dropdown-menu card-generic card-generic-s3 dropdown-menu-end mt-2">
+        <li><h6 class="dropdown-header">Hello {{ username }}!</h6></li>
+        <li>
+          <router-link class="dropdown-item card-generic-item" to="/account"><em class="ni ni-setting me-2"></em>Account
+            Settings
+          </router-link>
+        </li>
+        <li><a class="dropdown-item card-generic-item" href="https://docs.numerbay.ai/" target="_blank"><em
+          class="ni ni-question-alt me-2"></em>Docs</a></li>
+        <li><a href="#" class="dropdown-item card-generic-item theme-toggler" title="Toggle Dark/Light mode"><em
+          class="ni ni-moon me-2"></em> Dark Mode</a></li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        <li>
+          <button class="dropdown-item card-generic-item" @click="onLogout"><em class="ni ni-power me-2"></em>Logout
+          </button>
+        </li>
+      </ul>
+    </div><!-- end hheader-mobile-user-menu -->
+    <div class="header-toggle">
+      <button class="menu-toggler">
+        <em class="menu-on menu-icon ni ni-menu"></em>
+        <em class="menu-off menu-icon ni ni-cross"></em>
+      </button>
+    </div><!-- .header-toggle -->
+  </div><!-- end header-mobile-action -->
 </template>
 
 <script>
 // Import component data. You can change the data in the store to reflect in all component
 
 // Composables
-import { computed } from '@vue/composition-api';
-import { useUser } from '@vue-storefront/numerbay';
+import {computed} from '@vue/composition-api';
+import {useUser} from '@vue-storefront/numerbay';
 
 export default {
   name: 'MobileAction',
-  data () {
+  data() {
     return {
       showMobileSearchDropdown: false,
       searchTerm: this.$route.query.term
     };
   },
-  mounted () {
+  mounted() {
     // slideUp
     const slideUp = (target, duration = 500) => {
       target.style.transitionProperty = 'height, margin, padding';
@@ -138,7 +152,7 @@ export default {
     const menu_toggle = document.querySelectorAll('.' + _menu_toggle);
 
     // Toggle Dropdown Menu
-    function toggleDropdown (parent, subMenu, _active) {
+    function toggleDropdown(parent, subMenu, _active) {
       if (!parent.classList.contains(_active)) {
         parent.classList.add(_active);
         // eslint-disable-next-line no-undef
@@ -151,7 +165,7 @@ export default {
     }
 
     // Close Dropdown Menu Siblings
-    function closeDropdownSiblings (siblings, menu, _sub, _active) {
+    function closeDropdownSiblings(siblings, menu, _sub, _active) {
       Array.from(siblings).forEach(item => {
         if (item.classList.contains(_active) && !menu.classList.contains(_active)) {
           item.classList.remove(_active);
@@ -166,7 +180,7 @@ export default {
     }
 
     // Dropdown Menu
-    function menuDropdown (toggle, _sub, _active) {
+    function menuDropdown(toggle, _sub, _active) {
       toggle.forEach(item => {
         item.addEventListener('click', function (e) {
           e.preventDefault();
@@ -178,19 +192,21 @@ export default {
         });
       });
     }
+
     // Dropdown Menu Init
     menuDropdown(menu_toggle, _menu_sub, _menu_active);
 
     // mobile nav class add/remove
-    function mobileNavInit () {
+    function mobileNavInit() {
       // eslint-disable-next-line camelcase
       if (window.innerWidth <= _navbar_break) {
         navbar.classList.add(_navbar_mobile);
       }
     }
+
     mobileNavInit();
 
-    function mobileNavResize () {
+    function mobileNavResize() {
       // eslint-disable-next-line camelcase
       if (window.innerWidth <= _navbar_break) {
         navbar.classList.add(_navbar_mobile);
@@ -199,6 +215,7 @@ export default {
         navbar_toggle.classList.remove(_navbar_active);
       }
     }
+
     window.addEventListener('resize', function () {
       mobileNavResize();
     });
@@ -206,10 +223,11 @@ export default {
     /*  =======================================================
   Mobile nav toggle
 ========================================================== */
-    function mobileNavToggle () {
+    function mobileNavToggle() {
       navbar_toggle.classList.toggle(_navbar_active);
       navbar.classList.toggle(_navbar_active);
     }
+
     // eslint-disable-next-line camelcase
     if (navbar_toggle) {
       navbar_toggle.addEventListener('click', function () {
@@ -220,11 +238,11 @@ export default {
     /*  =======================================================
   Mobile Remove / close nav when overlay is clicked
 ========================================================== */
-    function navOutSideClick (event) {
+    function navOutSideClick(event) {
       // eslint-disable-next-line camelcase
       if (event.target !== navbar && event.target !== navbar_toggle &&
-    // eslint-disable-next-line camelcase
-    event.target.closest('.' + _navbar) == null && event.target.closest('.' + _navbar_toggle) == null) {
+        // eslint-disable-next-line camelcase
+        event.target.closest('.' + _navbar) == null && event.target.closest('.' + _navbar_toggle) == null) {
         // eslint-disable-next-line camelcase
         if (navbar_toggle) {
           navbar_toggle.classList.remove(_navbar_active);
@@ -232,6 +250,7 @@ export default {
         navbar.classList.remove(_navbar_active);
       }
     }
+
     document.addEventListener('click', function (event) {
       navOutSideClick(event);
     });
@@ -239,7 +258,7 @@ export default {
     /*  =======================================================
   Sticky navbar on scroll down
 ========================================================== */
-    function stickyMenu (selector) {
+    function stickyMenu(selector) {
       const elem = document.querySelectorAll(selector);
       if (elem.length > 0) {
         elem.forEach(item => {
@@ -256,6 +275,7 @@ export default {
         });
       }
     }
+
     stickyMenu('.is-sticky');
 
   },
@@ -269,11 +289,11 @@ export default {
     },
     handleSearch() {
       this.toggleMobileSearchDropdown();
-      this.$router.push({path: '/explore/all', query: { term: this.searchTerm?.trim()}});
+      this.$router.push({path: '/explore/all', query: {term: this.searchTerm?.trim()}});
     }
   },
   setup() {
-    const { user, logout, disconnectWeb3Modal } = useUser();
+    const {user, logout, disconnectWeb3Modal} = useUser();
 
     return {
       user,

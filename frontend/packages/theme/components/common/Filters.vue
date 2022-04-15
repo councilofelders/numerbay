@@ -1,54 +1,77 @@
 <template>
-    <div class="filter-box">
-                    <div class="filter-box-filter">
-                        <div class="filter-box-filter-item dropdown d-none">
-                            <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown"> {{ SectionData.filterCatData.title }} </button>
-                            <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
-                                <div class="generic-scroll">
-                                    <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in []" :key="i" :class="list.class">{{ list.title }}</router-link>
-                                </div>
-                            </div>
-                        </div><!-- end dropdwon -->
-                        <div class="filter-box-filter-item dropdown d-none">
-                            <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown"> {{ SectionData.filterCollectionData.title }} </button>
-                            <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
-                                <div class="generic-scroll">
-                                    <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in []" :key="i" :class="list.class">{{ list.title }}</router-link>
-                                </div>
-                                <hr class="my-2">
-                                <div class="card-generic-footer p-2">
-                                    <ul class="btns-group">
-                                        <li v-for="(btn, i) in SectionData.filterCollectionData.btnData" :key="i"><a href="#" class="btn btn-sm btn-light">{{ btn }}</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div><!-- end dropdwon -->
-                        <div class="filter-box-filter-item dropdown d-none">
-                            <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown"> {{ SectionData.filterSaleTypeData.title }} </button>
-                            <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
-                                <div class="generic-scroll">
-                                    <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in SectionData.filterSaleTypeData.saleTypeList" :key="i" :class="list.class">{{ list.title }}</router-link>
-                                </div>
-                                <hr class="my-2">
-                                <div class="card-generic-footer p-2">
-                                    <ul class="btns-group">
-                                        <li v-for="(btn, i) in SectionData.filterSaleTypeData.btnData" :key="i"><a href="#" class="btn btn-sm btn-light">{{ btn }}</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div><!-- end dropdwon -->
-                        <div class="filter-box-filter-item ms-md-auto">
-                            <div class="dropdown">
-                                <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">{{ menuTabs.title }}</button>
-                                <div class="dropdown-menu card-generic card-generic-s2 my-2 dropdown-menu-end keep-open">
-                                    <div class="text-secondary py-2 px-3 filter-box-sort-text"><span>Sort by</span></div>
-                                    <a href="#" class="dropdown-item card-generic-item" v-for="tab in menuTabs" @click.prevent="setTab(tab)" :key="tab.id">{{ tab.title }}</a>
-                                </div>
+  <div class="filter-box">
+    <div class="filter-box-filter">
+      <div class="filter-box-filter-item dropdown d-none">
+        <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">
+          {{ SectionData.filterCatData.title }}
+        </button>
+        <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
+          <div class="generic-scroll">
+            <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in []" :key="i"
+                         :class="list.class">{{ list.title }}
+            </router-link>
+          </div>
+        </div>
+      </div><!-- end dropdwon -->
+      <div class="filter-box-filter-item dropdown d-none">
+        <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">
+          {{ SectionData.filterCollectionData.title }}
+        </button>
+        <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
+          <div class="generic-scroll">
+            <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in []" :key="i"
+                         :class="list.class">{{ list.title }}
+            </router-link>
+          </div>
+          <hr class="my-2">
+          <div class="card-generic-footer p-2">
+            <ul class="btns-group">
+              <li v-for="(btn, i) in SectionData.filterCollectionData.btnData" :key="i"><a href="#"
+                                                                                           class="btn btn-sm btn-light">{{
+                  btn
+                }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div><!-- end dropdwon -->
+      <div class="filter-box-filter-item dropdown d-none">
+        <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">
+          {{ SectionData.filterSaleTypeData.title }}
+        </button>
+        <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
+          <div class="generic-scroll">
+            <router-link class="dropdown-item card-generic-item" :to="list.path"
+                         v-for="(list, i) in SectionData.filterSaleTypeData.saleTypeList" :key="i" :class="list.class">
+              {{ list.title }}
+            </router-link>
+          </div>
+          <hr class="my-2">
+          <div class="card-generic-footer p-2">
+            <ul class="btns-group">
+              <li v-for="(btn, i) in SectionData.filterSaleTypeData.btnData" :key="i"><a href="#"
+                                                                                         class="btn btn-sm btn-light">{{
+                  btn
+                }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div><!-- end dropdwon -->
+      <div class="filter-box-filter-item ms-md-auto">
+        <div class="dropdown">
+          <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">{{
+              menuTabs.title
+            }}
+          </button>
+          <div class="dropdown-menu card-generic card-generic-s2 my-2 dropdown-menu-end keep-open">
+            <div class="text-secondary py-2 px-3 filter-box-sort-text"><span>Sort by</span></div>
+            <a href="#" class="dropdown-item card-generic-item" v-for="tab in menuTabs" @click.prevent="setTab(tab)"
+               :key="tab.id">{{ tab.title }}</a>
+          </div>
 
-                            </div>
-                        </div><!-- end filter-box-filter-item -->
-                    </div><!-- end filter-box-filter -->
-                </div><!-- end filter-box -->
+        </div>
+      </div><!-- end filter-box-filter-item -->
+    </div><!-- end filter-box-filter -->
+  </div><!-- end filter-box -->
 </template>
 
 <script>
@@ -57,7 +80,7 @@ import SectionData from '@/store/store.js';
 
 export default {
   name: 'Filters',
-  data () {
+  data() {
     return {
       SectionData,
       menuTabs: [
@@ -142,7 +165,7 @@ export default {
     }
   },
   computed: {
-    filteredData () {
+    filteredData() {
       return this.tableData.filter(data => {
         if (this.selectedTab === null) return true;
         const opts = this.selectedTab.options.map(opt => opt.status);

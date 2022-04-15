@@ -1,122 +1,152 @@
 <template>
-<div class="page-wrap">
+  <div class="page-wrap">
     <!-- create -->
     <section class="create-section section-space-b pt-4 pt-md-5 mt-md-4">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="section-head-sm">
-                        <router-link :to="`/listings`" class="btn-link fw-semibold"><em class="ni ni-arrow-left"></em> My listings</router-link>
-                        <h1 class="mt-2">Manage artifacts</h1>
-                    </div>
-                </div><!-- end col -->
-                <div class="col-lg-8">
-                    <form action="#" class="form-create mb-5 mb-lg-0">
-                        <div class="form-item mb-4">
-                            <h5 class="mb-3">Upload file</h5>
-                            <client-only>
-                              <multiple-dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs" :destroyDropzone="false"
-                                v-on:vdropzone-error="s3UploadError"
-                                v-on:vdropzone-success="s3UploadSuccess"
-                                v-on:vdropzone-total-upload-progress="s3TotalUploadProgress"
-                                v-on:vdropzone-queue-complete="s3UploadAllComplete"
-                                v-on:vdropzone-removed-file="onRemove"
-                                v-on:vdropzone-file-added="onFileAdd"
-                              >
-                                <p class="file-name mb-4" id="file-name">An encrypted copy will be added for each active order<br/>Allowed extentions: {{this.dropzoneOptions.acceptedFiles}}.</p>
-                                <input id="file-upload" class="file-upload-input" data-target="file-name" type="file" hidden>
-                                <label class="input-label btn btn-dark">Choose File</label>
-                              </multiple-dropzone>
-                            </client-only>
-                        </div><!-- end form-item -->
-                        <div class="table-responsive">
-                            <table class="table mb-0 table-s2">
-                                <thead class="fs-14">
-                                    <tr>
-                                        <th scope="col" v-for="(list, i) in [
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="section-head-sm">
+              <router-link :to="`/listings`" class="btn-link fw-semibold"><em class="ni ni-arrow-left"></em> My listings
+              </router-link>
+              <h1 class="mt-2">Manage artifacts</h1>
+            </div>
+          </div><!-- end col -->
+          <div class="col-lg-8">
+            <form action="#" class="form-create mb-5 mb-lg-0">
+              <div class="form-item mb-4">
+                <h5 class="mb-3">Upload file</h5>
+                <client-only>
+                  <multiple-dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs"
+                                     :destroyDropzone="false"
+                                     v-on:vdropzone-error="s3UploadError"
+                                     v-on:vdropzone-success="s3UploadSuccess"
+                                     v-on:vdropzone-total-upload-progress="s3TotalUploadProgress"
+                                     v-on:vdropzone-queue-complete="s3UploadAllComplete"
+                                     v-on:vdropzone-removed-file="onRemove"
+                                     v-on:vdropzone-file-added="onFileAdd"
+                  >
+                    <p class="file-name mb-4" id="file-name">An encrypted copy will be added for each active order<br/>Allowed
+                      extentions: {{ this.dropzoneOptions.acceptedFiles }}.</p>
+                    <input id="file-upload" class="file-upload-input" data-target="file-name" type="file" hidden>
+                    <label class="input-label btn btn-dark">Choose File</label>
+                  </multiple-dropzone>
+                </client-only>
+              </div><!-- end form-item -->
+              <div class="table-responsive">
+                <table class="table mb-0 table-s2">
+                  <thead class="fs-14">
+                  <tr>
+                    <th scope="col" v-for="(list, i) in [
                                           'Upload',
                                           '#',
                                           'Buyer',
                                           'Mode',
                                           'Files Uploaded',
                                           'Numerai Submission'
-                                        ]" :key="i">{{ list }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="fs-13">
-                                    <tr v-if="!orders || orders.length===0"><td colspan="3" class="text-secondary">No active sale order to upload for</td></tr>
-                                    <tr v-for="order in orders" :key="orderGetters.getId(order)">
-                                        <th scope="row">
-                                          <div class="form-check form-switch form-switch-s1">
-                                            <input class="form-check-input" type="checkbox"
-                                                   @change="toggleUploadOrder(orderGetters.getId(order))"
-                                                   :checked="Boolean(uploadOrders && uploadOrders.includes(orderGetters.getId(order)))"
-                                                   :name="String(orderGetters.getId(order))"
-                                                   :key="orderGetters.getId(order)">
-                                          </div>
-                                        </th>
-                                        <th scope="row"><a href="javascript:void(0);" @click="toggleModal(order)" title="Click for details">{{ orderGetters.getId(order) }}<span v-if="!order.buyer_public_key">&nbsp;(Unencrypted)</span></a></th>
-                                        <td>{{ orderGetters.getBuyer(order) }}</td>
-                                        <td>{{ order.mode }}</td>
-                                        <td>{{ (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length}} / {{getMaxOrderArtifactsCount() }}</td>
-                                        <td><span class="badge fw-medium" :class="getSubmissionStatusTextClass(order)">{{ orderGetters.getSubmissionStatus(order) }}</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div><!-- end table-responsive -->
-                        <div class="table-responsive mt-4">
-                            <table class="table mb-0 table-s2" v-if="artifacts">
-                                <thead class="fs-14">
-                                    <tr>
-                                        <th scope="col" v-for="(list, i) in [
+                                        ]" :key="i">{{ list }}
+                    </th>
+                  </tr>
+                  </thead>
+                  <tbody class="fs-13">
+                  <tr v-if="!orders || orders.length===0">
+                    <td colspan="3" class="text-secondary">No active sale order to upload for</td>
+                  </tr>
+                  <tr v-for="order in orders" :key="orderGetters.getId(order)">
+                    <th scope="row">
+                      <div class="form-check form-switch form-switch-s1">
+                        <input class="form-check-input" type="checkbox"
+                               @change="toggleUploadOrder(orderGetters.getId(order))"
+                               :checked="Boolean(uploadOrders && uploadOrders.includes(orderGetters.getId(order)))"
+                               :name="String(orderGetters.getId(order))"
+                               :key="orderGetters.getId(order)">
+                      </div>
+                    </th>
+                    <th scope="row"><a href="javascript:void(0);" @click="toggleModal(order)" title="Click for details">{{
+                        orderGetters.getId(order)
+                      }}<span v-if="!order.buyer_public_key">&nbsp;(Unencrypted)</span></a></th>
+                    <td>{{ orderGetters.getBuyer(order) }}</td>
+                    <td>{{ order.mode }}</td>
+                    <td>
+                      {{ (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length }}
+                      / {{ getMaxOrderArtifactsCount() }}
+                    </td>
+                    <td><span class="badge fw-medium" :class="getSubmissionStatusTextClass(order)">{{
+                        orderGetters.getSubmissionStatus(order)
+                      }}</span></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div><!-- end table-responsive -->
+              <div class="table-responsive mt-4">
+                <table class="table mb-0 table-s2" v-if="artifacts">
+                  <thead class="fs-14">
+                  <tr>
+                    <th scope="col" v-for="(list, i) in [
                                           '#',
                                           'File Name',
                                           'State',
                                           'Recipient',
                                           'Action'
-                                        ]" :key="i">{{ list }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="fs-13">
-                                    <tr v-if="(!getAllOrderArtifacts() || getAllOrderArtifacts().length===0) && (!artifacts.data || artifacts.data.length===0)"><td colspan="3" class="text-secondary">Please upload artifacts after the round opens</td></tr>
-                                    <tr v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
-                                        <th scope="row">{{ artifact.order_id }}</th>
-                                      <td><span class="text-break" style="white-space: normal;"><a href="javascript:void(0);" title="Download not available">{{ artifactGetters.getObjectName(artifact) }}</a></span></td>
-                                        <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>
-                                        <td>{{ artifact.is_numerai_direct ? 'Numerai' : 'Buyer' }}</td>
-                                        <td>
-                                          <div class="d-flex justify-content-between">
-                                            <button class="icon-btn ms-auto" title="Delete" @click="onManualRemoveOrderArtifact(artifact)" :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)">
-                                              <span class="spinner-border spinner-border-sm text-secondary" role="status" v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)"></span>
-                                              <em class="ni ni-trash" v-else></em>
-                                            </button>
-                                          </div>
-                                        </td>
-                                    </tr>
-                                    <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
-                                        <th scope="row">{{ artifact.order_id }}</th>
-                                      <td><span class="text-break" style="white-space: normal;"><a href="javascript:void(0);" @click="download(artifact)" :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{ artifactGetters.getObjectName(artifact) }}</a></span></td>
-                                        <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>
-                                        <td></td>
-                                        <td>
-                                          <div class="d-flex justify-content-between">
-                                            <button class="icon-btn ms-auto" title="Delete" @click="onManualRemove(artifact)" :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)">
-                                              <span class="spinner-border spinner-border-sm text-secondary" role="status" v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)"></span>
-                                              <em class="ni ni-trash" v-else></em>
-                                            </button>
-                                          </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div><!-- end table-responsive -->
-                    </form>
-                </div><!-- endn col -->
-            </div><!-- row-->
-            <OrderInfoModal :order="currentOrder" modelId="orderInfoModal" ref="orderInfoModal"></OrderInfoModal>
-        </div><!-- container -->
+                                        ]" :key="i">{{ list }}
+                    </th>
+                  </tr>
+                  </thead>
+                  <tbody class="fs-13">
+                  <tr
+                    v-if="(!getAllOrderArtifacts() || getAllOrderArtifacts().length===0) && (!artifacts.data || artifacts.data.length===0)">
+                    <td colspan="3" class="text-secondary">Please upload artifacts after the round opens</td>
+                  </tr>
+                  <tr v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
+                    <th scope="row">{{ artifact.order_id }}</th>
+                    <td><span class="text-break" style="white-space: normal;"><a href="javascript:void(0);"
+                                                                                 title="Download not available">{{
+                        artifactGetters.getObjectName(artifact)
+                      }}</a></span></td>
+                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span>
+                    </td>
+                    <td>{{ artifact.is_numerai_direct ? 'Numerai' : 'Buyer' }}</td>
+                    <td>
+                      <div class="d-flex justify-content-between">
+                        <button class="icon-btn ms-auto" title="Delete" @click="onManualRemoveOrderArtifact(artifact)"
+                                :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)">
+                          <span class="spinner-border spinner-border-sm text-secondary" role="status"
+                                v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)"></span>
+                          <em class="ni ni-trash" v-else></em>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
+                    <th scope="row">{{ artifact.order_id }}</th>
+                    <td><span class="text-break" style="white-space: normal;"><a href="javascript:void(0);"
+                                                                                 @click="download(artifact)"
+                                                                                 :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                        artifactGetters.getObjectName(artifact)
+                      }}</a></span></td>
+                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span>
+                    </td>
+                    <td></td>
+                    <td>
+                      <div class="d-flex justify-content-between">
+                        <button class="icon-btn ms-auto" title="Delete" @click="onManualRemove(artifact)"
+                                :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)">
+                          <span class="spinner-border spinner-border-sm text-secondary" role="status"
+                                v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)"></span>
+                          <em class="ni ni-trash" v-else></em>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div><!-- end table-responsive -->
+            </form>
+          </div><!-- endn col -->
+        </div><!-- row-->
+        <OrderInfoModal :order="currentOrder" modelId="orderInfoModal" ref="orderInfoModal"></OrderInfoModal>
+      </div><!-- container -->
     </section><!-- create-section -->
-</div><!-- end page-wrap -->
+  </div><!-- end page-wrap -->
 </template>
 
 <script>
@@ -134,12 +164,13 @@ import {
   useProductArtifact,
   useUserOrder
 } from '@vue-storefront/numerbay';
-import { computed, ref } from '@vue/composition-api';
-import { Logger } from '@vue-storefront/core';
-import { useUiNotification } from '~/composables';
+import {computed, ref} from '@vue/composition-api';
+import {Logger} from '@vue-storefront/core';
+import {useUiNotification} from '~/composables';
 
-import { decodeBase64 } from 'tweetnacl-util';
+import {decodeBase64} from 'tweetnacl-util';
 import nacl from 'tweetnacl';
+
 nacl.sealedbox = require('tweetnacl-sealedbox-js');
 
 import 'nuxt-dropzone/dropzone.css';
@@ -183,7 +214,7 @@ export default {
   components: {
     MultipleDropzone
   },
-  data () {
+  data() {
     return {
       SectionData,
       currentOrder: {},
@@ -208,8 +239,7 @@ export default {
       }
     };
   },
-  computed: {
-  },
+  computed: {},
   watch: {
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     orders(orders) {
@@ -226,7 +256,7 @@ export default {
       this.$refs.orderInfoModal.show();
     },
     generateUploadUrl(file) {
-      const signedUrlPromise = generateSignedUrl(file[0].isUnencrypted ? this.gcs.unencryptedSigningURL : this.gcs.signingURL, this.gcs.params, file[0]).then((signed)=>{
+      const signedUrlPromise = generateSignedUrl(file[0].isUnencrypted ? this.gcs.unencryptedSigningURL : this.gcs.signingURL, this.gcs.params, file[0]).then((signed) => {
         if (signed.error) {
           const {send} = useUiNotification();
           send({
@@ -288,23 +318,23 @@ export default {
           }
         });
         this.componentKey += 1;
-        await this.productArtifactSearch({ productId: this.id });
+        await this.productArtifactSearch({productId: this.id});
       } finally {
         this.$refs.foo.enable();
         this.componentLoading = false;
         this.activeArtifact = null;
-        this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+        this.activeArtifacts = this.activeArtifacts.filter((id) => id !== artifact.id);
       }
     },
     hasUnencryptedOrder() {
-      return this.orders.filter(o=>!o.buyer_public_key).length > 0;
+      return this.orders.filter(o => !o.buyer_public_key).length > 0;
     },
     filterUploadOrders(orders) {
-      return orders.filter(o=>this.uploadOrders.includes(o.id));
+      return orders.filter(o => this.uploadOrders.includes(o.id));
     },
     toggleUploadOrder(orderId) {
       if (this.uploadOrders.includes(orderId)) {
-        this.uploadOrders = this.uploadOrders.filter(id=>id !== orderId);
+        this.uploadOrders = this.uploadOrders.filter(id => id !== orderId);
       } else {
         this.uploadOrders.push(orderId);
       }
@@ -317,23 +347,23 @@ export default {
         }
       }
       if (this.uploadOrders.length === 0) {
-        this.uploadOrders = this.orders.map(o=>this.orderGetters.getId(o));
+        this.uploadOrders = this.orders.map(o => this.orderGetters.getId(o));
       }
     },
     filterActiveArtifacts(artifacts) {
       if (!artifacts) {
         return [];
       }
-      return artifacts.filter(a=>a.state === 'active');
+      return artifacts.filter(a => a.state === 'active');
     },
     getUniqueActiveOrderArtifacts(order) {
       if (!order?.artifacts) {
         return [];
       }
       if (order.mode === 'file') {
-        return order.artifacts.filter(a=>!a.is_numerai_direct).filter(a=>a.state === 'active');
+        return order.artifacts.filter(a => !a.is_numerai_direct).filter(a => a.state === 'active');
       } else {
-        return order.artifacts.filter(a=>a.state === 'active');
+        return order.artifacts.filter(a => a.state === 'active');
       }
     },
     isPendingUpload(order) {
@@ -344,13 +374,13 @@ export default {
       }
     },
     getOrderArtifacts(order) {
-      return this.orders.filter(o=>(o.id === order.id)).map(o=>o.artifacts).flat() || [];
+      return this.orders.filter(o => (o.id === order.id)).map(o => o.artifacts).flat() || [];
     },
     getMaxOrderArtifactsCount() {
-      return Math.max.apply(null, this.orders.map(o=>this.getUniqueActiveOrderArtifacts(o)?.length));
+      return Math.max.apply(null, this.orders.map(o => this.getUniqueActiveOrderArtifacts(o)?.length));
     },
     getAllOrderArtifacts() {
-      return this.orders.map(o=>o.artifacts).flat();
+      return this.orders.map(o => o.artifacts).flat();
     },
     onFileAdd(file) {
       if (!file.isSubtask) {
@@ -365,7 +395,7 @@ export default {
         ) {
           file.status = 'canceled';
         }
-        this.$refs.foo.dropzone.files = this.$refs.foo.dropzone.files.filter((f)=>f !== file).map((f)=>f);
+        this.$refs.foo.dropzone.files = this.$refs.foo.dropzone.files.filter((f) => f !== file).map((f) => f);
         // this.$refs.foo.dropzone.updateTotalUploadProgress();
         this.$refs.foo.dropzone.emit('removedfile', file);
         if (this.productGetters.getUseEncryption(this.product) && (!this.orders || this.orders.length === 0)) {
@@ -419,7 +449,7 @@ export default {
       this.activeArtifacts.push(artifact.id);
       const downloadUrl = await this.downloadOrderArtifact({artifactId: artifact.id});
       this.activeArtifact = null;
-      this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+      this.activeArtifacts = this.activeArtifacts.filter((id) => id !== artifact.id);
       if (this.orderArtifactError.downloadArtifact) {
         this.send({
           message: this.orderArtifactError.downloadArtifact.message,
@@ -461,13 +491,16 @@ export default {
       Logger.debug('Upload success', file.artifactId);
       let response = null;
       if (file.isUnencrypted) {
-        response = await this.$root.context.$vsf.$numerbay.api.validateArtifactUpload({productId: this.id, artifactId: file.artifactId});
+        response = await this.$root.context.$vsf.$numerbay.api.validateArtifactUpload({
+          productId: this.id,
+          artifactId: file.artifactId
+        });
       } else {
         response = await this.$root.context.$vsf.$numerbay.api.validateOrderArtifactUpload({artifactId: file.artifactId});
       }
       Logger.debug('response: ', response);
-      await this.productArtifactSearch({ productId: this.id });
-      await this.orderSearch({ role: 'seller', filters: { active: true, product: {in: [this.id]}} });
+      await this.productArtifactSearch({productId: this.id});
+      await this.orderSearch({role: 'seller', filters: {active: true, product: {in: [this.id]}}});
       // this.resetUploadOrders();
     },
     s3UploadError(file, message, xhr) {
@@ -522,16 +555,16 @@ export default {
           }
         });
         this.componentKey += 1;
-        await this.orderSearch({ role: 'seller', filters: { active: true, product: {in: [this.id]}} });
+        await this.orderSearch({role: 'seller', filters: {active: true, product: {in: [this.id]}}});
       } finally {
         this.$refs.foo.enable();
         this.componentLoading = false;
         this.activeArtifact = null;
-        this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+        this.activeArtifacts = this.activeArtifacts.filter((id) => id !== artifact.id);
       }
     }
   },
-  mounted () {
+  mounted() {
     this.gcs = {
       unencryptedSigningURL: this.$root.context.$vsf.$numerbay.api.getArtifactUploadUrl,
       signingURL: this.$root.context.$vsf.$numerbay.api.getOrderArtifactUploadUrl,
@@ -548,15 +581,28 @@ export default {
   },
   setup(props, context) {
     const id = parseInt(context.root.$route.params.id);
-    const { products, search: productSearch } = useProduct(`manage-artifacts-${id}`);
-    const { artifacts, search: productArtifactSearch, createArtifact, downloadArtifact, deleteArtifact, loading: productArtifactLoading, error } = useProductArtifact(`${id}`);
-    const { downloadArtifact: downloadOrderArtifact, deleteArtifact: deleteOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError } = useOrderArtifact(`${id}`);
-    const { orders, search: orderSearch, loading: orderLoading } = useUserOrder(`${id}`);
-    const { send } = useUiNotification();
+    const {products, search: productSearch} = useProduct(`manage-artifacts-${id}`);
+    const {
+      artifacts,
+      search: productArtifactSearch,
+      createArtifact,
+      downloadArtifact,
+      deleteArtifact,
+      loading: productArtifactLoading,
+      error
+    } = useProductArtifact(`${id}`);
+    const {
+      downloadArtifact: downloadOrderArtifact,
+      deleteArtifact: deleteOrderArtifact,
+      loading: orderArtifactLoading,
+      error: orderArtifactError
+    } = useOrderArtifact(`${id}`);
+    const {orders, search: orderSearch, loading: orderLoading} = useUserOrder(`${id}`);
+    const {send} = useUiNotification();
 
-    productSearch({ id: id });
-    productArtifactSearch({ productId: id });
-    orderSearch({ role: 'seller', filters: {active: true, product: {in: [id]}} });
+    productSearch({id: id});
+    productArtifactSearch({productId: id});
+    orderSearch({role: 'seller', filters: {active: true, product: {in: [id]}}});
 
     const isManualFormOpen = ref(false);
     const activeArtifact = ref(null);

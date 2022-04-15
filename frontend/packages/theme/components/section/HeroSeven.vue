@@ -1,25 +1,25 @@
 <template>
-    <div class="hero-wrap hero-wrap-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-9 mx-auto">
-                    <div class="hero-content py-0 text-center">
-                        <h1 class="hero-title hero-title-lg mb-4">{{ SectionData.heroDataSix.title }}</h1>
-                        <p class="hero-text hero-text-s2 px-lg-5">{{ SectionData.heroDataSix.content }}</p>
-                        <ButtonGroup :btns="SectionData.btnDataThree" classname="hero-btns"></ButtonGroup>
-                        <div class="row g-gs justify-content-center counter-wrap">
-                            <div class="col-sm-4" :class="item.className" v-for="item in countItemData" :key="item.id">
-                                <div class="count-item">
-                                    <h3 class="count-title">{{ item.title }}</h3>
-                                    <span class="count-text small">{{ item.text }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div><!-- hero-content -->
-                </div><!-- col -->
+  <div class="hero-wrap hero-wrap-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9 mx-auto">
+          <div class="hero-content py-0 text-center">
+            <h1 class="hero-title hero-title-lg mb-4">{{ SectionData.heroDataSix.title }}</h1>
+            <p class="hero-text hero-text-s2 px-lg-5">{{ SectionData.heroDataSix.content }}</p>
+            <ButtonGroup :btns="SectionData.btnDataThree" classname="hero-btns"></ButtonGroup>
+            <div class="row g-gs justify-content-center counter-wrap">
+              <div class="col-sm-4" :class="item.className" v-for="item in countItemData" :key="item.id">
+                <div class="count-item">
+                  <h3 class="count-title">{{ item.title }}</h3>
+                  <span class="count-text small">{{ item.text }}</span>
+                </div>
+              </div>
             </div>
-        </div><!-- .container-->
-    </div><!-- end hero-wrap -->
+          </div><!-- hero-content -->
+        </div><!-- col -->
+      </div>
+    </div><!-- .container-->
+  </div><!-- end hero-wrap -->
 </template>
 
 <script>
@@ -27,19 +27,19 @@
 import SectionData from '@/store/store.js';
 
 // Composables
-import { computed } from '@vue/composition-api';
-import { onSSR } from '@vue-storefront/core';
-import { useGlobals } from '@vue-storefront/numerbay';
+import {computed} from '@vue/composition-api';
+import {onSSR} from '@vue-storefront/core';
+import {useGlobals} from '@vue-storefront/numerbay';
 
 export default {
   name: 'HeroSeven',
-  data () {
+  data() {
     return {
       SectionData
     };
   },
   setup() {
-    const { globals, getGlobals, loading: globalsLoading } = useGlobals();
+    const {globals, getGlobals, loading: globalsLoading} = useGlobals();
 
     onSSR(async () => {
       await getGlobals();

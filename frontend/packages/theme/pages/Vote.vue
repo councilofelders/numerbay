@@ -1,5 +1,5 @@
 <template>
-<div class="page-wrap">
+  <div class="page-wrap">
     <!-- hero -->
     <HeroFour classname="hero-title" :title="'Vote'" :lists="[
       {
@@ -7,7 +7,7 @@
       }
     ]"></HeroFour>
     <VoteSection></VoteSection>
-</div><!-- end page-wrap -->
+  </div><!-- end page-wrap -->
 </template>
 
 <script>
@@ -20,7 +20,7 @@ export default {
   components: {
     HeroFour
   },
-  data () {
+  data() {
     return {
       SectionData
     }

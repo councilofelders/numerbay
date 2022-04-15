@@ -68,7 +68,7 @@ if (process.browser) {
           uploadMultiple: false,
           paramName: 'file',
           autoProcessQueue: false,
-          sending (file, xhr) {
+          sending(file, xhr) {
             const _send = xhr.send;
             xhr.send = () => {
               _send.call(xhr, file);
@@ -105,7 +105,7 @@ if (process.browser) {
         }, this);
         return defaultValues;
       },
-      isS3 () {
+      isS3() {
         return this.awss3 !== null;
       }
     },
@@ -138,7 +138,7 @@ if (process.browser) {
         }
 
         const method = dz.resolveOption(dz.options.method, files, dataBlocks);
-        dz.resolveOption(dz.options.url, files, dataBlocks).then((url)=>{
+        dz.resolveOption(dz.options.url, files, dataBlocks).then((url) => {
           const extend = require('just-extend').default;
           xhr.open(method, url, true);
           // Setting the timeout after open because of IE11 issue: https://gitlab.com/meno/dropzone/issues/8
@@ -274,7 +274,7 @@ if (process.browser) {
                 this.files[_i].name === file.name &&
                 this.files[_i].size === file.size &&
                 this.files[_i].lastModified ===
-                  file.lastModified
+                file.lastModified
               ) {
                 this.removeFile(file);
                 // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
@@ -502,7 +502,7 @@ component.render = (createElement) => {
   const hasChildren = this.$slots.default && this.$slots.default.length;
   const useSlot = this.useCustomSlot === '' || this.useCustomSlot === true || hasChildren;
   const vnodes = useSlot
-    ? [createElement('div', { staticClass: 'dz-message' }, this.$slots.default)]
+    ? [createElement('div', {staticClass: 'dz-message'}, this.$slots.default)]
     : this.$slots.default;
 
   // Default: true
@@ -530,25 +530,31 @@ module.exports = component;
   color: #777;
   transition: 0.2s linear;
 }
+
 .vue-dropzone:hover {
   background-color: #f6f6f6;
 }
+
 .vue-dropzone > i {
   color: #ccc;
 }
+
 .vue-dropzone > .dz-preview .dz-image {
   border-radius: 0;
   width: 100%;
   height: 100%;
 }
+
 .vue-dropzone > .dz-preview .dz-image img:not([src]) {
   width: 200px;
   height: 200px;
 }
+
 .vue-dropzone > .dz-preview .dz-image:hover img {
   transform: none;
   -webkit-filter: none;
 }
+
 .vue-dropzone > .dz-preview .dz-details {
   bottom: 0;
   top: 0;
@@ -557,27 +563,34 @@ module.exports = component;
   transition: opacity 0.2s linear;
   text-align: left;
 }
+
 .vue-dropzone > .dz-preview .dz-details .dz-filename {
   word-break: break-all !important;
   white-space: normal !important;
 }
+
 .vue-dropzone > .dz-preview .dz-details .dz-size span {
   visibility: hidden;
-  display:none;
+  display: none;
 }
+
 .vue-dropzone > .dz-preview .dz-details .dz-filename span {
   background-color: transparent;
 }
+
 .vue-dropzone > .dz-preview .dz-details .dz-filename:not(:hover) span {
   border: none;
 }
+
 .vue-dropzone > .dz-preview .dz-details .dz-filename:hover span {
   background-color: transparent;
   border: none;
 }
+
 .vue-dropzone > .dz-preview .dz-progress .dz-upload {
   background: #cccccc;
 }
+
 .vue-dropzone > .dz-preview .dz-remove {
   position: absolute;
   z-index: 30;
@@ -594,9 +607,11 @@ module.exports = component;
   letter-spacing: 1.1px;
   opacity: 0;
 }
+
 .vue-dropzone > .dz-preview:hover .dz-remove {
   opacity: 1;
 }
+
 .vue-dropzone > .dz-preview .dz-success-mark,
 .vue-dropzone > .dz-preview .dz-error-mark {
   margin-left: auto;
@@ -605,11 +620,13 @@ module.exports = component;
   top: 35%;
   left: 0;
 }
+
 .vue-dropzone > .dz-preview .dz-success-mark svg,
 .vue-dropzone > .dz-preview .dz-error-mark svg {
   margin-left: auto;
   margin-right: auto;
 }
+
 .vue-dropzone > .dz-preview .dz-error-message {
   margin-left: auto;
   margin-right: auto;
@@ -617,13 +634,16 @@ module.exports = component;
   width: 100%;
   text-align: center;
 }
+
 .vue-dropzone > .dz-preview .dz-error-message:after {
   display: none;
 }
+
 .vue-dropzone > .dz-preview .vdManualThumbnail {
   object-fit: cover;
 }
+
 .dropzone {
-  background: rgba(0,0,0,0)!important;
+  background: rgba(0, 0, 0, 0) !important;
 }
 </style>

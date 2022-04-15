@@ -1,12 +1,12 @@
 <template>
-<section class="related-product-section section-space-b">
+  <section class="related-product-section section-space-b">
     <div class="container">
-        <!-- section heading -->
-        <SectionHeading classname="text-center" :text="title"></SectionHeading>
-        <!-- product -->
-        <swiper
-            :slides-per-view="4"
-            :breakpoints="{
+      <!-- section heading -->
+      <SectionHeading classname="text-center" :text="title"></SectionHeading>
+      <!-- product -->
+      <swiper
+        :slides-per-view="4"
+        :breakpoints="{
               0: {
                   slidesPerView: 1
               },
@@ -20,13 +20,13 @@
                   slidesPerView: 4
               }
             }"
-            :pagination="{ clickable: true }">
-            <swiper-slide v-for="product in products" :key="product.id" >
-                <ProductCardSmall :product="product"></ProductCardSmall>
-            </swiper-slide>
-        </swiper>
+        :pagination="{ clickable: true }">
+        <swiper-slide v-for="product in products" :key="product.id">
+          <ProductCardSmall :product="product"></ProductCardSmall>
+        </swiper-slide>
+      </swiper>
     </div><!-- .container -->
-</section><!-- end related-product-section -->
+  </section><!-- end related-product-section -->
 </template>
 
 <script>
@@ -35,17 +35,17 @@ import SectionData from '@/store/store.js';
 import ProductCardSmall from '@/components/section/ProductCardSmall';
 
 // core version + navigation, pagination modules:
-import { Pagination } from 'swiper';
-import { SwiperCore } from 'swiper-vue2';
+import {Pagination} from 'swiper';
+import {SwiperCore} from 'swiper-vue2';
 
 // configure Swiper to use modules
 SwiperCore.use([Pagination]);
 
 // Import Swiper Vue.js components
-import { Swiper, SwiperSlide } from 'swiper-vue2';
+import {Swiper, SwiperSlide} from 'swiper-vue2';
 
 // Composables
-import { productGetters } from '@vue-storefront/numerbay';
+import {productGetters} from '@vue-storefront/numerbay';
 
 export default {
   name: 'RelatedProducts',

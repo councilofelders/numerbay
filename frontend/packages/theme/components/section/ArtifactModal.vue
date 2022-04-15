@@ -1,76 +1,98 @@
 <template>
-    <Modal :modal-id="modalId" @registeredModal="modal = $event" modal-class="modal-lg">
-      <template slot="title">Artifact Files</template>
-      <div class="row g-2">
-        <div class="col-xl-12">
-          <table class="table mb-0 table-s2" v-if="artifacts && orderGetters.getStatus(order)=='confirmed' && !order.buyer_public_key">
-            <thead class="fs-14">
-                <tr>
-                    <th scope="col" v-for="(list, i) in [
+  <Modal :modal-id="modalId" @registeredModal="modal = $event" modal-class="modal-lg">
+    <template slot="title">Artifact Files</template>
+    <div class="row g-2">
+      <div class="col-xl-12">
+        <table class="table mb-0 table-s2"
+               v-if="artifacts && orderGetters.getStatus(order)=='confirmed' && !order.buyer_public_key">
+          <thead class="fs-14">
+          <tr>
+            <th scope="col" v-for="(list, i) in [
                       'Download File',
                       'Numerai Submission'
-                    ]" :key="i">{{ list }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-if="!artifacts || artifacts.total===0"><td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round opens</td></tr>
-                <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
-                    <td>
+                    ]" :key="i">{{ list }}
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-if="!artifacts || artifacts.total===0">
+            <td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round
+              opens
+            </td>
+          </tr>
+          <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
+            <td>
                       <span class="text-break" style="white-space: normal;">
-                        <a href="javascript:void(0);" @click="download(artifact)" :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{ artifactGetters.getObjectName(artifact) }}</a>
-                        <span class="spinner-border spinner-border-sm text-primary" role="status" v-if="isActiveArtifact(artifact)"></span>
+                        <a href="javascript:void(0);" @click="download(artifact)"
+                           :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                            artifactGetters.getObjectName(artifact)
+                          }}</a>
+                        <span class="spinner-border spinner-border-sm text-primary" role="status"
+                              v-if="isActiveArtifact(artifact)"></span>
                       </span>
-                    </td>
-<!--                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>-->
-<!--                    <td></td>-->
-                    <td>
-                      <div class="d-flex justify-content-between" v-if="Boolean(artifact) && !!artifact.object_name && !!order.submit_model_id">
-                        <button class="icon-btn ms-auto" title="Submit to Numerai" @click="submit(artifact)">
-                          <span class="spinner-border spinner-border-sm" role="status" v-if="loading"></span>
-                          <em class="ni ni-upload-cloud" v-else></em>
-                        </button>
-                      </div>
-                    </td>
-                </tr>
-            </tbody>
-          </table>
-          <table class="table mb-0 table-s2" v-if="orderArtifacts && orderGetters.getStatus(order)=='confirmed' && Boolean(order.buyer_public_key)">
-            <thead class="fs-14">
-                <tr>
-                    <th scope="col" v-for="(list, i) in [
+            </td>
+            <!--                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>-->
+            <!--                    <td></td>-->
+            <td>
+              <div class="d-flex justify-content-between"
+                   v-if="Boolean(artifact) && !!artifact.object_name && !!order.submit_model_id">
+                <button class="icon-btn ms-auto" title="Submit to Numerai" @click="submit(artifact)">
+                  <span class="spinner-border spinner-border-sm" role="status" v-if="loading"></span>
+                  <em class="ni ni-upload-cloud" v-else></em>
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <table class="table mb-0 table-s2"
+               v-if="orderArtifacts && orderGetters.getStatus(order)=='confirmed' && Boolean(order.buyer_public_key)">
+          <thead class="fs-14">
+          <tr>
+            <th scope="col" v-for="(list, i) in [
                       'Download File',
                       'Numerai Submission'
-                    ]" :key="i">{{ list }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-if="!orderArtifacts || orderArtifacts.total===0"><td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round opens</td></tr>
-                <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
-                    <td>
+                    ]" :key="i">{{ list }}
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-if="!orderArtifacts || orderArtifacts.total===0">
+            <td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round
+              opens
+            </td>
+          </tr>
+          <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
+            <td>
                       <span class="text-break" style="white-space: normal;">
-                        <a href="javascript:void(0);" @click="downloadAndDecrypt(artifact)" :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{ artifactGetters.getObjectName(artifact) }}</a>
-                        <span class="spinner-border spinner-border-sm text-primary" role="status" v-if="isActiveArtifact(artifact)"></span>
+                        <a href="javascript:void(0);" @click="downloadAndDecrypt(artifact)"
+                           :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                            artifactGetters.getObjectName(artifact)
+                          }}</a>
+                        <span class="spinner-border spinner-border-sm text-primary" role="status"
+                              v-if="isActiveArtifact(artifact)"></span>
                       </span>
-                    </td>
-<!--                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>-->
-<!--                    <td></td>-->
-                    <td>
-                    </td>
-                </tr>
-            </tbody>
-          </table>
-        </div>
+            </td>
+            <!--                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span></td>-->
+            <!--                    <td></td>-->
+            <td>
+            </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
   </Modal><!-- end modal-->
 </template>
 <script>
 // Composables
-import { artifactGetters, orderGetters, useOrderArtifact, useProductArtifact } from '@vue-storefront/numerbay';
-import { computed, ref } from '@vue/composition-api';
+import {artifactGetters, orderGetters, useOrderArtifact, useProductArtifact} from '@vue-storefront/numerbay';
+import {computed, ref} from '@vue/composition-api';
 import axios from 'axios';
-import { decodeBase64 } from 'tweetnacl-util';
+import {decodeBase64} from 'tweetnacl-util';
 import nacl from 'tweetnacl';
-import { useUiNotification } from '~/composables';
+import {useUiNotification} from '~/composables';
+
 nacl.sealedbox = require('tweetnacl-sealedbox-js');
 
 // decryption
@@ -94,7 +116,7 @@ export default {
     },
     order: {
       type: Object,
-      default: () =>({})
+      default: () => ({})
     },
     publicKey: {
       type: String,
@@ -113,8 +135,8 @@ export default {
   },
   methods: {
     show() {
-      this.search({ productId: this.order.product.id });
-      this.searchOrderArtifacts({ orderId: this.order.id });
+      this.search({productId: this.order.product.id});
+      this.searchOrderArtifacts({orderId: this.order.id});
       this.modal?.show();
     },
     hide() {
@@ -162,7 +184,7 @@ export default {
         link.download = filename;
         link.click();
       } finally {
-        this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+        this.activeArtifacts = this.activeArtifacts.filter((id) => id !== artifact.id);
       }
     },
     async decryptfile(objFile) {
@@ -203,7 +225,7 @@ export default {
       this.activeArtifacts.push(artifact.id);
       const downloadUrl = await this.downloadOrderArtifact({artifactId: artifact.id});
       this.activeArtifact = null;
-      this.activeArtifacts = this.activeArtifacts.filter((id)=>id !== artifact.id);
+      this.activeArtifacts = this.activeArtifacts.filter((id) => id !== artifact.id);
       if (this.orderArtifactError.downloadArtifact) {
         this.send({
           message: this.orderArtifactError.downloadArtifact.message,
@@ -228,7 +250,7 @@ export default {
           const filename = downloadUrl.split('/').pop().split('#')[0].split('?')[0];
           const blob = new Blob([response.data]);
           const file = new File([blob], filename);
-          this.downloadingArtifacts = this.downloadingArtifacts.filter((id)=>id !== artifact.id);
+          this.downloadingArtifacts = this.downloadingArtifacts.filter((id) => id !== artifact.id);
           this.decryptingArtifacts.push(artifact.id);
           this.decryptfile(file).then((blobUrl) => {
             const link = document.createElement('a');
@@ -236,17 +258,17 @@ export default {
             link.download = filename;
             link.click();
             URL.revokeObjectURL(link.href);
-          }).catch((e)=>{
+          }).catch((e) => {
             console.error(e);
-          }).finally(()=>{
-            this.decryptingArtifacts = this.decryptingArtifacts.filter((id)=>id !== artifact.id);
+          }).finally(() => {
+            this.decryptingArtifacts = this.decryptingArtifacts.filter((id) => id !== artifact.id);
           });
-        }).catch((e)=>{
-          console.error(e);
-        }).finally(()=>{
-          this.downloadingArtifacts = this.downloadingArtifacts.filter((id)=>id !== artifact.id);
-          this.downloadingProgress[artifact.id] = 0;
-        });
+        }).catch((e) => {
+        console.error(e);
+      }).finally(() => {
+        this.downloadingArtifacts = this.downloadingArtifacts.filter((id) => id !== artifact.id);
+        this.downloadingProgress[artifact.id] = 0;
+      });
     },
     async submit(artifact) {
       await this.submitArtifact({orderId: this.order.id, artifactId: artifact.id});
@@ -269,13 +291,22 @@ export default {
     this.modal?.hide();
   },
   setup(props) {
-    const { artifacts, search, downloadArtifact, submitArtifact, loading, error } = useProductArtifact(`${props.order.product.id}`);
-    const { artifacts: orderArtifacts, search: searchOrderArtifacts, downloadArtifact: downloadOrderArtifact,
-      submitArtifact: submitOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError } = useOrderArtifact(`${props.order.id}`);
-    const { send } = useUiNotification();
+    const {
+      artifacts,
+      search,
+      downloadArtifact,
+      submitArtifact,
+      loading,
+      error
+    } = useProductArtifact(`${props.order.product.id}`);
+    const {
+      artifacts: orderArtifacts, search: searchOrderArtifacts, downloadArtifact: downloadOrderArtifact,
+      submitArtifact: submitOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError
+    } = useOrderArtifact(`${props.order.id}`);
+    const {send} = useUiNotification();
 
-    search({ productId: props.order.product.id });
-    searchOrderArtifacts({ orderId: props.order.id });
+    search({productId: props.order.product.id});
+    searchOrderArtifacts({orderId: props.order.id});
 
     const downloadingArtifacts = ref([]);
     const decryptingArtifacts = ref([]);

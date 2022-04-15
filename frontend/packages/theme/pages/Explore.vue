@@ -1,14 +1,15 @@
 <template>
-<div class="page-wrap">
+  <div class="page-wrap">
     <!-- Hero -->
-    <HeroFour classname="hero-title" :title="SectionData.breadcrumbData.breadcrumbList.title" :lists="SectionData.breadcrumbData.breadcrumbList.navList"></HeroFour>
+    <HeroFour classname="hero-title" :title="SectionData.breadcrumbData.breadcrumbList.title"
+              :lists="SectionData.breadcrumbData.breadcrumbList.navList"></HeroFour>
     <!-- Explore section  -->
     <ExploreSection></ExploreSection>
     <!-- top creators -->
-<!--    <TopCreators classname="section-space-t"></TopCreators>-->
+    <!--    <TopCreators classname="section-space-t"></TopCreators>-->
     <!-- Collections -->
-<!--    <Collections></Collections>-->
-</div><!-- end page-wrap -->
+    <!--    <Collections></Collections>-->
+  </div><!-- end page-wrap -->
 </template>
 
 <script>
@@ -21,7 +22,7 @@ export default {
   components: {
     HeroFour
   },
-  data () {
+  data() {
     return {
       SectionData
     };

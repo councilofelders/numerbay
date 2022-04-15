@@ -1,26 +1,27 @@
 <template>
   <div class="wrapper">
-      <div class="row mb-2">
-        <div class="col-10"><h4>{{ question }}</h4></div>
-        <div class="col-2"><span class="spinner-border spinner-border-sm text-primary float-end" role="status" v-if="loading"></span></div>
+    <div class="row mb-2">
+      <div class="col-10"><h4>{{ question }}</h4></div>
+      <div class="col-2"><span class="spinner-border spinner-border-sm text-primary float-end" role="status"
+                               v-if="loading"></span></div>
+    </div>
+    <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
+      <span class="item-detail-text-meta">By <span class="text-primary fw-semibold">{{ owner }}</span></span>
+      <span class="dot-separeted"></span>
+      <span class="item-detail-text-meta">Ends <span class="text-primary fw-semibold">{{ deadline }}</span></span>
+      <span class="dot-separeted"></span>
+      <span class="item-detail-text-meta">Weight <span class="text-primary fw-semibold">{{ weightMode }}</span></span>
+      <div v-if="!canShowResults">
+        <span class="item-detail-text-meta">Results to be shown after poll ends</span>
       </div>
-      <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
-          <span class="item-detail-text-meta">By <span class="text-primary fw-semibold">{{ owner }}</span></span>
-          <span class="dot-separeted"></span>
-          <span class="item-detail-text-meta">Ends <span class="text-primary fw-semibold">{{ deadline }}</span></span>
-          <span class="dot-separeted"></span>
-          <span class="item-detail-text-meta">Weight <span class="text-primary fw-semibold">{{ weightMode }}</span></span>
-          <div v-if="!canShowResults">
-            <span class="item-detail-text-meta">Results to be shown after poll ends</span>
-          </div>
-      </div>
-      <div class="row mb-2" v-if="Boolean(description)">
-        <div class="col-12">{{ description }}</div>
-      </div>
-      <div class="poll-area">
-          <div v-for="(a,index) in calcAnswers" :key="index">
-            <input :type="multiple ? `checkbox` : `radio`" name="poll" :id="`opt-${index}`" @click.prevent="handleVote(a)">
-            <label :for="`opt-${index}`" :class="[(a.selected ? 'selected' : ''), (visibleResults ? 'selectall' : '')]">
+    </div>
+    <div class="row mb-2" v-if="Boolean(description)">
+      <div class="col-12">{{ description }}</div>
+    </div>
+    <div class="poll-area">
+      <div v-for="(a,index) in calcAnswers" :key="index">
+        <input :type="multiple ? `checkbox` : `radio`" name="poll" :id="`opt-${index}`" @click.prevent="handleVote(a)">
+        <label :for="`opt-${index}`" :class="[(a.selected ? 'selected' : ''), (visibleResults ? 'selectall' : '')]">
               <span class="poll-row">
                   <span class="poll-column">
                       <span class="circle"></span>
@@ -28,15 +29,18 @@
                   </span>
                   <span class="percent" v-if="canShowResults">{{ getPercent(a) }}%</span>
               </span>
-              <div class="progress" :style='`--w:${getPercent(a)};`' v-if="canShowResults"></div>
-          </label>
-          </div>
+          <div class="progress" :style='`--w:${getPercent(a)};`' v-if="canShowResults"></div>
+        </label>
       </div>
-      <transition name="fade">
+    </div>
+    <transition name="fade">
       <div class="text-center mt-4" v-if="multiple && canSubmit && totalSelections > 0">
-        <button type="button" class="btn btn-outline-dark" @click.prevent="handleMultiple">{{ submitButtonText }}</button>
+        <button type="button" class="btn btn-outline-dark" @click.prevent="handleMultiple">{{
+            submitButtonText
+          }}
+        </button>
       </div>
-      </transition>
+    </transition>
   </div>
 </template>
 
@@ -219,140 +223,140 @@ export default {
 
 <style lang="scss" scoped>
 ::selection {
-    color: #fff;
-    background: var(--bs-primary);
+  color: #fff;
+  background: var(--bs-primary);
 }
 
 .wrapper {
-    //border-radius: 15px;
-    //padding: 25px;
-    width: 100%;
-    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(28, 43, 70, 0.05);
-    padding: 15px;
-    border-radius: 6px;
+  //border-radius: 15px;
+  //padding: 25px;
+  width: 100%;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(28, 43, 70, 0.05);
+  padding: 15px;
+  border-radius: 6px;
 }
 
 .dark-mode .wrapper {
-    border-color: #202020;
+  border-color: #202020;
 }
 
 .wrapper header {
-    font-size: 22px;
-    font-weight: 600;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .wrapper .poll-area {
-    margin: 20px 0 15px 0;
+  margin: 20px 0 15px 0;
 }
 
 .poll-area label {
-    display: block;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    padding: 8px 15px;
-    border: 2px solid var(--vs-state-disabled-bg);
-    transition: all 0.2s ease;
+  display: block;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  padding: 8px 15px;
+  border: 2px solid var(--vs-state-disabled-bg);
+  transition: all 0.2s ease;
 }
 
 .poll-area label:hover {
-    border-color: #ddd;
+  border-color: #ddd;
 }
 
 label.selected {
-    border-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
 }
 
 label .poll-row {
-    display: flex;
-    pointer-events: none;
-    justify-content: space-between;
+  display: flex;
+  pointer-events: none;
+  justify-content: space-between;
 }
 
 label .poll-row .poll-column {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 label .poll-row .circle {
-    min-width: 19px;
-    height: 19px;
-    width: 19px;
-    display: block;
-    border: 2px solid #ccc;
-    border-radius: 50%;
-    margin-right: 10px;
-    position: relative;
+  min-width: 19px;
+  height: 19px;
+  width: 19px;
+  display: block;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  margin-right: 10px;
+  position: relative;
 }
 
 label.selected .poll-row .circle {
-    border-color: var(--bs-primary);
+  border-color: var(--bs-primary);
 }
 
 label .poll-row .circle::after {
-    content: "";
-    height: 11px;
-    width: 11px;
-    background: var(--bs-primary);
-    border-radius: inherit;
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    display: none;
+  content: "";
+  height: 11px;
+  width: 11px;
+  background: var(--bs-primary);
+  border-radius: inherit;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  display: none;
 }
 
 .poll-area label:hover .poll-row .circle::after {
-    display: block;
-    background: var(--vs-state-disabled-bg);
+  display: block;
+  background: var(--vs-state-disabled-bg);
 }
 
 label.selected .poll-row .circle::after {
-    display: block;
-    background: var(--bs-primary) !important;
+  display: block;
+  background: var(--bs-primary) !important;
 }
 
 label .poll-row span {
-    font-size: 16px;
-    font-weight: 500;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 label .poll-row .percent {
-    display: none;
+  display: none;
 }
 
 label .progress {
-    height: 7px;
-    width: 100%;
-    position: relative;
-    background: #f0f0f0;
-    margin: 8px 0 3px 0;
-    border-radius: 30px;
-    display: none;
-    pointer-events: none;
+  height: 7px;
+  width: 100%;
+  position: relative;
+  background: #f0f0f0;
+  margin: 8px 0 3px 0;
+  border-radius: 30px;
+  display: none;
+  pointer-events: none;
 }
 
 label .progress:after {
-    position: absolute;
-    content: "";
-    height: 100%;
-    background: #ccc;
-    width: calc(1% * var(--w));
-    border-radius: inherit;
-    transition: all 0.2s ease;
+  position: absolute;
+  content: "";
+  height: 100%;
+  background: #ccc;
+  width: calc(1% * var(--w));
+  border-radius: inherit;
+  transition: all 0.2s ease;
 }
 
 label.selected .progress::after {
-    background: var(--bs-primary);
+  background: var(--bs-primary);
 }
 
 label.selectall .progress,
 label.selectall .poll-row .percent {
-    display: block;
+  display: block;
 }
 
 input[type="radio"],
 input[type="checkbox"] {
-    display: none;
+  display: none;
 }
 
 .fade {
@@ -360,6 +364,7 @@ input[type="checkbox"] {
   &-leave-active {
     transition: opacity 0.25s linear;
   }
+
   &-enter,
   &-leave,
   &-leave-to {

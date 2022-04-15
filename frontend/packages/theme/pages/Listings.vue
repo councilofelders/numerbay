@@ -1,17 +1,18 @@
 <template>
-<div class="page-wrap">
+  <div class="page-wrap">
     <!-- offer section -->
     <section class="user-panel-section section-space">
-        <div class="container">
-            <div class="row">
-                <!-- user sidebar -->
-                <UserSidebar title="My Listings" :lists="SectionData.accountSidebarData.navList" :navs="SectionData.editProfileData.editProfileTabNavMobile"></UserSidebar>
-                <!-- offer -->
-                <ListingsSection></ListingsSection>
-            </div><!-- end row -->
-        </div><!-- end container -->
+      <div class="container">
+        <div class="row">
+          <!-- user sidebar -->
+          <UserSidebar title="My Listings" :lists="SectionData.accountSidebarData.navList"
+                       :navs="SectionData.editProfileData.editProfileTabNavMobile"></UserSidebar>
+          <!-- offer -->
+          <ListingsSection></ListingsSection>
+        </div><!-- end row -->
+      </div><!-- end container -->
     </section><!-- end user-panel-section -->
-</div><!-- end page-wrap -->
+  </div><!-- end page-wrap -->
 </template>
 
 <script>
@@ -24,7 +25,7 @@ export default {
   middleware: [
     'is-authenticated'
   ],
-  data () {
+  data() {
     return {
       SectionData
     };

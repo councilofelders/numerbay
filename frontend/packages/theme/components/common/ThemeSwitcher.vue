@@ -1,22 +1,22 @@
 <template>
-    <a href="#" class="theme-toggler" title="Toggle Dark/Light mode">
+  <a href="#" class="theme-toggler" title="Toggle Dark/Light mode">
         <span>
           <em class="ni ni-moon icon theme-toggler-show"></em>
           <em class="ni ni-sun icon theme-toggler-hide"></em>
         </span>
-        <span class="theme-toggler-text">Dark Mode</span>
-    </a>
+    <span class="theme-toggler-text">Dark Mode</span>
+  </a>
 </template>
 
 <script>
 export default {
   name: 'ThemeSwither',
-  mounted () {
+  mounted() {
 
     /*  ==========================================
       Dark/Light mode configaration
     ========================================== */
-    function themeSwitcher (selector) {
+    function themeSwitcher(selector) {
       const themeToggler = document.querySelectorAll(selector);
       if (themeToggler.length > 0) {
         themeToggler.forEach(item => {
@@ -32,7 +32,7 @@ export default {
         });
       }
 
-      function retrieveTheme () {
+      function retrieveTheme() {
         const theme = localStorage.getItem('website_theme');
         if (theme !== null) {
           document.body.classList.remove('default', 'dark-mode');
