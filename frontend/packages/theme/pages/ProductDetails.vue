@@ -135,25 +135,27 @@
                 <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
               </div>
             </ValidationProvider>
-            <div class="d-flex flex-wrap align-items-center justify-content-between"
+            <div v-if="isAuthenticated">
+              <div class="d-flex flex-wrap align-items-center justify-content-between"
                  v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" v-model="autoSubmit" id="autoSubmit"
-                       :disabled="!isAutoSubmitOptional">
-                <label class="form-check-label form-check-label-s1" for="autoSubmit"> {{ autoSubmitText }} </label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" v-model="autoSubmit" id="autoSubmit"
+                         :disabled="!isAutoSubmitOptional">
+                  <label class="form-check-label form-check-label-s1" for="autoSubmit"> {{ autoSubmitText }} </label>
+                </div>
               </div>
+              <ValidationProvider rules="required" v-slot="{ errors }" v-if="autoSubmit" slim>
+                <div class="mb-3">
+                  <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Select a submission
+                    slot</label>
+                  <v-select class="generic-select generic-select-s1" :class="!errors[0] ? '' : 'is-invalid'"
+                            ref="slotDropdown" v-model="submitSlot" v-if="!!product && !numeraiLoading" label="name"
+                            :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
+                            :reduce="model => model.id" :clearable=true></v-select>
+                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                </div>
+              </ValidationProvider>
             </div>
-            <ValidationProvider rules="required" v-slot="{ errors }" v-if="autoSubmit" slim>
-              <div class="mb-3">
-                <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Select a submission
-                  slot</label>
-                <v-select class="generic-select generic-select-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                          ref="slotDropdown" v-model="submitSlot" v-if="!!product && !numeraiLoading" label="name"
-                          :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
-                          :reduce="model => model.id" :clearable=true></v-select>
-                <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
-              </div>
-            </ValidationProvider>
             <ul class="total-bid-list mt-4" v-if="isOnPlatform">
               <li><span>{{
                   (!!product && productGetters.getCategory(product).is_per_round) ? 'Total number of rounds' : 'Total order quantity'
@@ -162,40 +164,45 @@
                 }}</span></li>
               <li><span>You will pay</span> <span>{{ formattedTotalPrice }}</span></li>
             </ul>
-            <div class="d-flex flex-wrap align-items-center justify-content-between mt-2">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" v-model="useCoupon" id="useCoupon"
-                       :disabled="Boolean(couponApplied)">
-                <label class="form-check-label form-check-label-s1" for="useCoupon"> (Optional) Apply coupon
-                  code </label>
-              </div>
-            </div>
-            <div class="mb-3 mt-2" v-show="useCoupon">
-              <div class="row g-4">
-                <div class="col-8">
-                  <input type="text" class="form-control form-control-s1" :class="!couponError ? '' : 'is-invalid'"
-                         placeholder="Coupon code" v-model="coupon" :disabled="Boolean(couponApplied)">
-                  <div class="text-danger fade" :class="{ 'show': Boolean(couponError) }">{{ couponError }}</div>
-                </div>
-                <div class="col-4">
-                  <button class="btn btn-dark" @click="handleCoupon">{{ couponApplied ? 'Remove' : 'Apply' }}</button>
+            <div v-if="isAuthenticated">
+              <div class="d-flex flex-wrap align-items-center justify-content-between mt-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" v-model="useCoupon" id="useCoupon"
+                         :disabled="Boolean(couponApplied)">
+                  <label class="form-check-label form-check-label-s1" for="useCoupon"> (Optional) Apply coupon
+                    code </label>
                 </div>
               </div>
-            </div>
-            <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4"
-                 v-if="!!product && isOnPlatform">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" v-model="terms" id="terms">
-                <label class="form-check-label form-check-label-s1" for="terms"> I understand that I need to make
-                  payment in <strong>1 single transaction</strong>, and neither Numerai nor NumerBay is liable for any
-                  loss resulted from this transaction. </label>
+              <div class="mb-3 mt-2" v-show="useCoupon">
+                <div class="row g-4">
+                  <div class="col-8">
+                    <input type="text" class="form-control form-control-s1" :class="!couponError ? '' : 'is-invalid'"
+                           placeholder="Coupon code" v-model="coupon" :disabled="Boolean(couponApplied)">
+                    <div class="text-danger fade" :class="{ 'show': Boolean(couponError) }">{{ couponError }}</div>
+                  </div>
+                  <div class="col-4">
+                    <button class="btn btn-dark" @click="handleCoupon">{{ couponApplied ? 'Remove' : 'Apply' }}</button>
+                  </div>
+                </div>
               </div>
+              <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4"
+                   v-if="!!product && isOnPlatform">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" v-model="terms" id="terms">
+                  <label class="form-check-label form-check-label-s1" for="terms"> I understand that I need to make
+                    payment in <strong>1 single transaction</strong>, and neither Numerai nor NumerBay is liable for any
+                    loss resulted from this transaction. </label>
+                </div>
+              </div>
+              <button @click="handleSubmit(onPlaceOrder)" class="btn btn-dark btn-full d-flex justify-content-center"
+                      :disabled="isOnPlatform && (makeOrderLoading || !terms)">
+                <span v-if="makeOrderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Placing Order...</span>
+                <span v-else>{{ buyBtnText }}</span>
+              </button>
             </div>
-            <button @click="handleSubmit(onPlaceOrder)" class="btn btn-dark btn-full d-flex justify-content-center"
-                    :disabled="isOnPlatform && (makeOrderLoading || !terms)">
-              <span v-if="makeOrderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Placing Order...</span>
-              <span v-else>{{ buyBtnText }}</span>
-            </button>
+            <div v-else>
+              <router-link to="/login-v2" class="btn btn-dark btn-full d-flex justify-content-center mt-4">Login</router-link>
+            </div>
           </ValidationObserver>
         </div>
         <div v-if="paymentStep === 2">
@@ -458,11 +465,7 @@ export default {
       }
     },
     togglePlaceBidModal() {
-      if (!this.isAuthenticated) {
-        this.$router.push('/login-v2');
-      } else {
-        this.placeBidModal?.toggle();
-      }
+      this.placeBidModal?.toggle();
     }
   },
   watch: {
@@ -477,46 +480,38 @@ export default {
       const modal = this.$refs.placeBidModal.$refs.placeBidModal;
 
       modal?.addEventListener('show.bs.modal', async () => {
-        if (!this.isAuthenticated) {
-          try {
-            this.placeBidModal?.dispose();
-          } finally {
-            await this.$router.push('/login-v2');
+        await this.getGlobals();
+        // eslint-disable-next-line camelcase
+        await this.orderSearch({
+          role: 'buyer',
+          filters: {
+            product: {in: [this.productGetters.getId(this.product)]},
+            round_order: {in: [this.globals.selling_round]},
+            state: {in: ['pending', 'confirmed']}
           }
-        } else {
-          await this.getGlobals();
-          // eslint-disable-next-line camelcase
-          await this.orderSearch({
-            role: 'buyer',
-            filters: {
-              product: {in: [this.productGetters.getId(this.product)]},
-              round_order: {in: [this.globals.selling_round]},
-              state: {in: ['pending', 'confirmed']}
-            }
-          });
-          if (this.orders?.data?.length > 0) {
-            if (this.orders?.data[0].state === 'pending') {
-              this.toAddress = this.orderGetters.getToAddress(this.orders?.data[0]);
-              this.amount = this.orderGetters.getPrice(this.orders?.data[0]);
-              this.paymentStep = 2;
-              this.send({
-                message: 'Please complete the payment for your pending order',
-                type: 'bg-warning',
-                icon: 'ni-alert-circle',
-                persist: true
-              });
-            } else {
-              this.send({
-                message: 'You already bought this product for this round',
-                type: 'bg-warning',
-                icon: 'ni-alert-circle',
-                persist: true
-              });
-              try {
-                this.placeBidModal?.dispose();
-              } finally {
-                await this.$router.push('/purchases');
-              }
+        });
+        if (this.orders?.data?.length > 0) {
+          if (this.orders?.data[0].state === 'pending') {
+            this.toAddress = this.orderGetters.getToAddress(this.orders?.data[0]);
+            this.amount = this.orderGetters.getPrice(this.orders?.data[0]);
+            this.paymentStep = 2;
+            this.send({
+              message: 'Please complete the payment for your pending order',
+              type: 'bg-warning',
+              icon: 'ni-alert-circle',
+              persist: true
+            });
+          } else {
+            this.send({
+              message: 'You already bought this product for this round',
+              type: 'bg-warning',
+              icon: 'ni-alert-circle',
+              persist: true
+            });
+            try {
+              this.placeBidModal?.dispose();
+            } finally {
+              await this.$router.push('/purchases');
             }
           }
         }
