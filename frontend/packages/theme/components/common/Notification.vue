@@ -6,9 +6,14 @@
          :key="notification.id"
     >
       <div class="d-flex">
+        <span class="mx-1 m-auto ni fs-12" :class="notification.icon"
+                v-if="Boolean(notification.icon)"></span>
         <div class="toast-body">
-          <span class="ni mx-1" :class="notification.icon"
-                v-if="Boolean(notification.icon)"></span>{{ notification.message }}
+          {{ notification.message }}
+          <div v-if="Boolean(notification.action) && Boolean(notification.action.text)">
+            <a type="button" class="btn-link fw-regular text-white"
+               @click="notification.action.onClick()">{{ notification.action.text }}</a>
+          </div>
         </div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                 aria-label="Close"></button>

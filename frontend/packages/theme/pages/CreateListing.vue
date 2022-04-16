@@ -452,7 +452,13 @@ export default {
           message: e?.message,
           type: 'bg-danger',
           icon: 'ni-alert-circle',
-          persist: true
+          persist: true,
+          action: {
+            text: 'Change Numerai API Key',
+            onClick: async () => {
+              await this.$router.push('/numerai-settings');
+            }
+          }
         });
       })
     }
