@@ -73,7 +73,7 @@
           </div><!-- end col -->
           <div class="col-lg-9 ms-auto">
             <div class="item-detail-content">
-              <div class="item-detail-chart-container mb-4">
+              <div class="item-detail-chart-container mb-4" v-if="Boolean(productGetters.getCategory(product).tournament)">
                 <div class="card-border card-full">
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
