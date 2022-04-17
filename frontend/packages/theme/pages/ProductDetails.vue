@@ -62,6 +62,7 @@
               </div><!-- end item-detail-btns -->
               <ModelMetricsCard
                 class="mt-2"
+                v-show="Boolean(productGetters.getCategory(product).tournament)"
                 :tournament="productGetters.getCategory(product).tournament"
                 :nmr-staked="nmrStaked"
                 :stake-info="stakeInfo"
