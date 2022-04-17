@@ -132,7 +132,11 @@
               <td>
                 Payout Multipliers
               </td>
-              <td class="stats" :class="[stakeInfo.mmcMultiplier ? 'colormmc':'']">
+              <td class="stats" :class="[stakeInfo.tcMultiplier ? 'colortc':'']" v-if="tournament === 8">
+                <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
+                <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
+              </td>
+              <td class="stats" :class="[stakeInfo.mmcMultiplier ? 'colormmc':'']" v-else>
                 <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
                 <span v-if="stakeInfo.mmcMultiplier"> {{ stakeInfo.mmcMultiplier }}xMMC</span>
                 <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
@@ -149,6 +153,10 @@
 export default {
   name: 'ModelMetricsCard',
   props: {
+    tournament: {
+      type: Number,
+      default: 8
+    },
     nmrStaked: {
       type: String,
       default: '0'
@@ -199,5 +207,8 @@ export default {
 <style lang="css" scoped>
 .colormmc {
   color: #ff6e40;
+}
+.colortc {
+  color: #a278dc;
 }
 </style>

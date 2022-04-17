@@ -62,6 +62,7 @@
               </div><!-- end item-detail-btns -->
               <ModelMetricsCard
                 class="mt-2"
+                :tournament="productGetters.getCategory(product).tournament"
                 :nmr-staked="nmrStaked"
                 :stake-info="stakeInfo"
                 :latest-returns="latestReturns"
@@ -344,7 +345,7 @@ export default {
     },
     stakeInfo() {
       return {
-        corrMultiplier: this.$route.params.stakeInfoCorrMultiplier || this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || (this.productGetters.getCategory(this.product).tournament === 8 ? 1 : 2),
+        corrMultiplier: this.$route.params.stakeInfoCorrMultiplier || this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || (this.productGetters.getCategory(this.product).tournament === 8 ? 0 : 2),
         mmcMultiplier: this.$route.params.stakeInfoMmcMultiplier || this.productGetters.getModelStakeInfo(this.product, 'mmcMultiplier') || 0,
         tcMultiplier: this.$route.params.stakeInfoTcMultiplier || this.productGetters.getModelStakeInfo(this.product, 'tcMultiplier') || 0
       };
