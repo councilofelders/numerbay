@@ -259,7 +259,7 @@ export interface NumeraiGetters<NUMERAI> {
     getWokeDate: (numerai: NUMERAI) => string,
     getFormatted: (value: number, decimals: number) => string,
     getNumeraiCorrMmcChartData: (numerai: NUMERAI) => any,
-    getNumeraiTcChartData: (numerai: NUMERAI) => any,
+    getNumeraiCorrTcChartData: (numerai: NUMERAI) => any,
     getNumeraiIcChartData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }

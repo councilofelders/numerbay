@@ -97,7 +97,7 @@ export const getNumeraiCorrMmcChartData = (numerai: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiTcChartData = (numerai: any) => {
+export const getNumeraiCorrTcChartData = (numerai: any) => {
   if (!numerai?.modelInfo) {
     return {};
   }
@@ -111,6 +111,14 @@ export const getNumeraiTcChartData = (numerai: any) => {
   return {
     labels: transposed.roundNumber,
     datasets: [
+      {
+        label: 'CORR',
+        borderColor: '#666666',
+        fill: false,
+        lineTension: 0,
+        data: transposed.corr,
+        data1: transposed.corrPercentile
+      },
       {
         label: 'TC',
         borderColor: '#a278dc',
@@ -168,7 +176,7 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getWokeDate,
   getFormatted,
   getNumeraiCorrMmcChartData,
-  getNumeraiTcChartData,
+  getNumeraiCorrTcChartData,
   getNumeraiIcChartData
 };
 
