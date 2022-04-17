@@ -78,14 +78,13 @@
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
                     <div class="item-detail-list" v-if="isNumeraiChartReady">
-                      <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrMmcChartData"></NumeraiChart>
-                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==8" class="numerai-chart"
-                                    :chartdata="numeraiTcChartData"></NumeraiChart>
+                      <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrTcChartData" v-if="productGetters.getCategory(product).tournament==8"></NumeraiChart>
+                      <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrMmcChartData" v-if="productGetters.getCategory(product).tournament==11"></NumeraiChart>
                       <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" class="numerai-chart"
                                     :chartdata="numeraiIcChartData"></NumeraiChart>
                     </div>
                     <div class="item-detail-list placeholder-glow" v-else>
-                      <svg class="bd-placeholder-img placeholder" width="100%" height="480"
+                      <svg class="bd-placeholder-img placeholder" width="100%" :height="productGetters.getCategory(product).tournament==8 ? 240 : 480"
                            xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder"
                            preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title>
                         <rect width="100%" height="100%" fill="#868e96"></rect>
@@ -593,7 +592,7 @@ export default {
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p) => parseInt(p.id) !== parseInt(id))),
       relatedLoading,
       numeraiCorrMmcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrMmcChartData(numerai.value)),
-      numeraiTcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcChartData(numerai.value)),
+      numeraiCorrTcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrTcChartData(numerai.value)),
       numeraiIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiIcChartData(numerai.value)),
       numerai,
       numeraiLoading,
