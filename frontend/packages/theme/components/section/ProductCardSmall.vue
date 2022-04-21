@@ -18,7 +18,7 @@
         <div>
           <div class="custom-tooltip-wrap">
             <a href="javascript:void(0);" class="custom-tooltip author-link link-secondary fs-13"
-               v-show="!!productGetters.getCategory(product).tournament">Metrics...</a>
+               v-show="!!productGetters.getCategory(product).is_per_model">Metrics...</a>
             <div class="card-generic custom-tooltip-dropdown">
               <div class="metrics-wrap mb-3">
                 <h6 class="mb-1 smaller text-uppercase">Model Metrics</h6>

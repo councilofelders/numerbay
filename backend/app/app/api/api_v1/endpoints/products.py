@@ -190,7 +190,7 @@ def create_product(
     # Model ownership
     tournament = category.tournament
     model_id = None
-    if tournament:
+    if tournament and category.is_per_model:
         model = crud.model.get_by_name(db, name=product_in.name, tournament=tournament)
         if not model:
             raise HTTPException(
