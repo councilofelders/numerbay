@@ -183,7 +183,9 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     submit_models = [
         model
         for model in current_user.models  # type: ignore
-        if model.tournament == product.model.tournament and model.id == submit_model_id
+        if product.model
+        and model.tournament == product.model.tournament
+        and model.id == submit_model_id
     ]
     if submit_model_id is not None and len(submit_models) == 0:
         # Attempt Numerai API sync

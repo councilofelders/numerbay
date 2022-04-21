@@ -62,7 +62,7 @@
               </div><!-- end item-detail-btns -->
               <ModelMetricsCard
                 class="mt-2"
-                v-show="Boolean(productGetters.getCategory(product).tournament)"
+                v-show="Boolean(productGetters.getCategory(product).is_per_model)"
                 :tournament="productGetters.getCategory(product).tournament"
                 :nmr-staked="nmrStaked"
                 :stake-info="stakeInfo"
@@ -75,7 +75,7 @@
           </div><!-- end col -->
           <div class="col-lg-9 ms-auto">
             <div class="item-detail-content">
-              <div class="item-detail-chart-container mb-4" v-if="Boolean(productGetters.getCategory(product).tournament)">
+              <div class="item-detail-chart-container mb-4" v-if="Boolean(productGetters.getCategory(product).is_per_model)">
                 <div class="card-border card-full">
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
@@ -327,7 +327,7 @@ export default {
       return Boolean(this.socialRocketChat || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
     },
     isNumeraiChartReady() {
-      return !this.productLoading && !this.numeraiLoading && Boolean(this.productGetters.getCategory(this.product).tournament) && Boolean(this.numerai.modelInfo);
+      return !this.productLoading && !this.numeraiLoading && Boolean(this.productGetters.getCategory(this.product).is_per_model) && Boolean(this.numerai.modelInfo);
     },
     title() {
       return this.$route.params.title || this.productGetters.getName(this.product).toUpperCase();
@@ -567,7 +567,7 @@ export default {
     onSSR(async () => {
       await search({id, categorySlug: category, name}).then(async () => {
         await searchRelatedProducts({filters: {id: {in: product?.value?.featured_products || []}}});
-        if (product.value?.category?.tournament) {
+        if (product.value?.category?.is_per_model) {
           await getModelInfo({
             tournament: product.value?.category?.slug.startsWith('signals') ? 11 : 8,
             modelName: product.value?.name
