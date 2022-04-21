@@ -413,7 +413,6 @@ export default {
       return [];
     },
     onIsPerpetualChange(autoExpiration) {
-      console.log('change', autoExpiration);
       if (autoExpiration) {
         this.form.expirationRound = this.productGetters.getExpirationRound(this.currentListing) || this.globals?.selling_round;
       } else {
