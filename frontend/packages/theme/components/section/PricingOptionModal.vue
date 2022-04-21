@@ -49,8 +49,8 @@
           <ul class="row g-3 nav nav-tabs nav-tabs-s2" id="myTab" role="tablist">
             <li class="nav-item col-4 col-sm-4 col-lg-3 tooltip-s1" role="presentation" v-for="list in listingModes"
                 :key="list.id">
-              <button class="nav-link" :class="mode === list.value ? 'active':''" :id="list.value" data-bs-toggle="tab"
-                      type="button" @click="mode = list.value">
+              <button class="nav-link" :class="[mode === list.value ? 'active':'', isListingModeDisabled(list.value) ? 'disabled':'']" :id="list.value" data-bs-toggle="tab"
+                      type="button" @click="mode = list.value" :disabled="isListingModeDisabled(list.value)">
                 <span class="tooltip-s1-text tooltip-s1-text-lg tooltip-text">{{ list.description }}</span>
                 <em class="ni nav-link-icon" :class="list.icon"></em>
                 <span class="nav-link-title mt-1 d-block">{{ list.title }}</span>
@@ -366,6 +366,9 @@ export default {
         this.mode = null;
         this.stakeLimit = null;
       }
+    },
+    isListingModeDisabled(mode) {
+      return !this.isSubmissionCategory && mode !== 'file';
     },
     changeOption(index) {
       this.resetData();
