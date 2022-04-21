@@ -26,7 +26,7 @@
                     <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required" v-slot="{ errors }" v-if="isTournamentCategory(form.category)"
+                <ValidationProvider rules="required" v-slot="{ errors }" v-if="isPerModelCategory(form.category)"
                                     slim>
                   <div class="form-item mb-4">
                     <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Select model</h5>
@@ -382,6 +382,13 @@ export default {
       if (categoryId) {
         const category = this.leafCategories.filter(c => c.id === Number(categoryId))[0];
         return category?.is_per_round;
+      }
+      return false;
+    },
+    isPerModelCategory(categoryId) {
+      if (categoryId) {
+        const category = this.leafCategories.filter(c => c.id === Number(categoryId))[0];
+        return category?.is_per_model;
       }
       return false;
     },
