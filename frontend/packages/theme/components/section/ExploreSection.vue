@@ -18,15 +18,15 @@
             <div class="filter-btn-group">
               <div class="menu-item d-inline-block" v-for="subcategory in getSubcategories(categoryTree)"
                    :key="subcategory.id">
-                <nuxt-link :to="localePath(th.getCatLink(subcategory))" class="btn filter-btn"
+                <a href="javascript:void(0);" class="btn filter-btn"
                            :class="getActiveClass(subcategory.id)"
                            @click.prevent="activeId = subcategory.id">{{ subcategory.label }}
-                </nuxt-link>
+                </a>
                 <div class="menu-sub" style="z-index: 10000;">
                   <ul class="menu-list">
-                    <li class="menu-item">
+<!--                    <li class="menu-item">
                       <router-link :to="localePath(th.getCatLink(subcategory))" class="menu-link">All</router-link>
-                    </li>
+                    </li>-->
                     <li class="menu-item" v-for="subsubcategory in getSubcategories(subcategory)">
                       <router-link :to="localePath(th.getCatLink(subsubcategory))" class="menu-link">
                         {{ subsubcategory.label }}

@@ -15,7 +15,7 @@
       </p>
     </div><!-- end alert -->
     <div class="profile-setting-panel-wrap">
-      <router-link :to="`/explore/numerai`" class="btn btn-outline-dark mb-4"
+      <router-link :to="`/explore/numerai-predictions`" class="btn btn-outline-dark mb-4"
                    :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''">Start
         Shopping
       </router-link>

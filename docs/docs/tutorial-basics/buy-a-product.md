@@ -26,8 +26,10 @@ Learn more about [client-side encryption](/updates/encryption).
 
 ## Browse products
 
-- [Classic Numerai Tournament Products](https://numerbay.ai/explore/numerai)
-- [Signals Tournament Products](https://numerbay.ai/explore/signals)
+- [Numerai Tournament Predictions](https://numerbay.ai/explore/numerai-predictions)
+- [Numerai Tournament Models](https://numerbay.ai/explore/numerai-models)
+- [Signals Tournament Predictions](https://numerbay.ai/explore/signals-predictions)
+- [Signals Tournament Data](https://numerbay.ai/explore/signals-data)
 - [NFTs and Others](https://numerbay.ai/explore/onlyfams)
 
 ![Product Catalog](/img/tutorial/productCatalog.png)

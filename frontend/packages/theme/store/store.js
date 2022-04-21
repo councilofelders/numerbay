@@ -33,7 +33,7 @@ const SectionData = {
     {
       btnClass: 'btn-lg btn-dark',
       title: 'Buy',
-      path: '/explore/numerai'
+      path: '/explore/numerai-predictions'
     },
     {
       btnClass: 'btn-lg btn-outline-dark',
