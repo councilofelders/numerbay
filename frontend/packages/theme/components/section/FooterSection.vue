@@ -19,10 +19,10 @@
                 <h5 class="mb-4">Marketplace</h5>
                 <ul class="list-item list-item-s1">
                   <li>
-                    <router-link to="/explore/numerai">Numerai</router-link>
+                    <router-link to="/explore/numerai-predictions">Numerai</router-link>
                   </li>
                   <li>
-                    <router-link to="/explore/signals">Signals</router-link>
+                    <router-link to="/explore/signals-predictions">Signals</router-link>
                   </li>
                   <li>
                     <router-link to="/explore/onlyfams">OnlyFams</router-link>
@@ -74,7 +74,7 @@
         by the Numerai Community.</p>
       <ul class="list-item list-item-s1 list-item-inline">
         <li>
-          <router-link to="/explore/numerai">Explore</router-link>
+          <router-link to="/explore/numerai-predictions">Explore</router-link>
         </li>
         <li>
           <router-link to="/account">Account</router-link>
