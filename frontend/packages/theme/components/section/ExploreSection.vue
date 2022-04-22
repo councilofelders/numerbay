@@ -5,10 +5,8 @@
       <div class="filter-box pb-5">
         <div class="filter-box-filter justify-content-between align-items-center">
           <div class="filter-box-filter-item">
-            <client-only>
-              <v-select class="generic-select generic-select-s2" label="value" v-model="selectedSortBy"
-                        :options="sortBy.options" :clearable=false @input="onChangeSorting"></v-select>
-            </client-only>
+            <v-select class="generic-select generic-select-s2" label="value" v-model="selectedSortBy"
+                      :options="sortBy.options" :clearable=false @input="onChangeSorting"></v-select>
           </div><!-- end filter-box-filter-item -->
           <div class="filter-box-filter-item filter-btn-wrap">
             <button class="icon-btn icon-btn-s1" @click="toggleFilterSidebar"
@@ -19,14 +17,14 @@
               <div class="menu-item d-inline-block" v-for="subcategory in getSubcategories(categoryTree)"
                    :key="subcategory.id">
                 <a href="javascript:void(0);" class="btn filter-btn"
-                           :class="getActiveClass(subcategory.id)"
-                           @click.prevent="activeId = subcategory.id">{{ subcategory.label }}
+                   :class="getActiveClass(subcategory.id)"
+                   @click.prevent="activeId = subcategory.id">{{ subcategory.label }}
                 </a>
                 <div class="menu-sub" style="z-index: 10000;">
                   <ul class="menu-list">
-<!--                    <li class="menu-item">
-                      <router-link :to="localePath(th.getCatLink(subcategory))" class="menu-link">All</router-link>
-                    </li>-->
+                    <!--                    <li class="menu-item">
+                                          <router-link :to="localePath(th.getCatLink(subcategory))" class="menu-link">All</router-link>
+                                        </li>-->
                     <li class="menu-item" v-for="subsubcategory in getSubcategories(subcategory)">
                       <nuxt-link :to="localePath(th.getCatLink(subsubcategory))" class="menu-link">
                         {{ subsubcategory.label }}
@@ -93,7 +91,7 @@
       </div><!-- end filter-box -->
       <!-- Product -->
       <div class="row g-gs" v-if="loading">
-        <div class="col-lg-6" v-for="index in 10" :key="index">
+        <div class="col-lg-6" v-for="index in pagination.itemsPerPage" :key="index">
           <div class="card card-full flex-sm-row product-s2">
             <div class="card-image">
               <img src="https://numer.ai/img/profile_picture_light.jpg" class="product-img" alt="avatar image">
@@ -181,7 +179,35 @@ export default {
     },
     // filter by category
     getSubcategories(categoryTree) {
-      return categoryTree?.items || [];
+      return categoryTree?.items || {
+        "label": "All",
+        "slug": "all",
+        "id": 1,
+        "isCurrent": false,
+        "items": [
+          {
+            "label": "Numerai",
+            "slug": "numerai",
+            "id": 2,
+            "isCurrent": false,
+            "items": []
+          },
+          {
+            "label": "Signals",
+            "slug": "signals",
+            "id": 5,
+            "isCurrent": false,
+            "items": []
+          },
+          {
+            "label": "OnlyFams",
+            "slug": "onlyfams",
+            "id": 8,
+            "isCurrent": false,
+            "items": []
+          }
+        ]
+      }.items;
     },
     filterProductsByCategory(products) {
       return products.filter(product => !product.category.indexOf(this.category));
