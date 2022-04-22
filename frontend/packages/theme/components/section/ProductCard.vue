@@ -85,6 +85,7 @@
   </div><!-- end card -->
 </template>
 <script>
+import ModelMetricsCard from "./ModelMetricsCard";
 import {createPopper} from '@popperjs/core';
 
 // Composables
@@ -92,6 +93,9 @@ import {productGetters} from '@vue-storefront/numerbay';
 
 export default {
   name: 'ProductCard',
+  components: {
+    ModelMetricsCard
+  },
   props: {
     product: {
       type: Object,

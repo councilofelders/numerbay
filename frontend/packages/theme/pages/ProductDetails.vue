@@ -248,7 +248,9 @@
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
 
-import NumeraiChart from '@/components/section/NumeraiChart.vue';
+import ModelMetricsCard from "@/components/section/ModelMetricsCard";
+import NumeraiChart from '@/components/section/NumeraiChart';
+import RelatedProducts from "@/components/section/RelatedProducts";
 
 // Composables
 import {onSSR} from '@vue-storefront/core';
@@ -271,7 +273,9 @@ import {useUiNotification} from '~/composables';
 export default {
   name: 'ProductDetails',
   components: {
-    NumeraiChart
+    ModelMetricsCard,
+    NumeraiChart,
+    RelatedProducts
   },
   data() {
     return {

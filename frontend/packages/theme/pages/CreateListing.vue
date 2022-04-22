@@ -256,6 +256,8 @@
 </template>
 
 <script>
+import PricingOptionModal from "../components/section/PricingOptionModal";
+
 // Composables
 import {computed, ref} from '@vue/composition-api';
 import {onSSR} from '@vue-storefront/core';
@@ -287,6 +289,9 @@ extend('secureUrl', {
 
 export default {
   name: 'CreateListing',
+  components: {
+    PricingOptionModal
+  },
   middleware: [
     'is-authenticated'
   ],

@@ -72,6 +72,8 @@
 </template>
 
 <script>
+import ArtifactModal from "~/components/section/ArtifactModal";
+import OrderInfoModal from "~/components/section/OrderInfoModal";
 import Pagination from 'vue-pagination-2';
 
 // Composables
@@ -82,6 +84,8 @@ import {orderGetters, productGetters, useUser, useUserOrder} from '@vue-storefro
 export default {
   name: 'PurchasesSection',
   components: {
+    ArtifactModal,
+    OrderInfoModal,
     Pagination
   },
   data() {

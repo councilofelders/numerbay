@@ -152,6 +152,7 @@
 <script>
 // Import component data. You can change the data in the store to reflect in all component
 import MultipleDropzone from '../components/common/MultipleDropzone';
+import OrderInfoModal from "~/components/section/OrderInfoModal";
 import SectionData from '@/store/store.js';
 
 // Composables
@@ -212,7 +213,8 @@ export default {
     'is-authenticated'
   ],
   components: {
-    MultipleDropzone
+    MultipleDropzone,
+    OrderInfoModal
   },
   data() {
     return {

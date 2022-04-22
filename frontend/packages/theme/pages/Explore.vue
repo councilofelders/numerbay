@@ -15,11 +15,14 @@
 <script>
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
+
+import ExploreSection from "@/components/section/ExploreSection";
 import HeroFour from '@/components/section/HeroFour.vue';
 
 export default {
   name: 'Explore',
   components: {
+    ExploreSection,
     HeroFour
   },
   data() {

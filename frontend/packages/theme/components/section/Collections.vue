@@ -14,8 +14,13 @@
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
 
+import CollectionSlider from "../common/CollectionSlider";
+
 export default {
   name: 'Collections',
+  components: {
+    CollectionSlider
+  },
   props: ['classname'],
   data() {
     return {

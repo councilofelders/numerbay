@@ -62,6 +62,7 @@
 </template>
 
 <script>
+import OrderInfoModal from "~/components/section/OrderInfoModal";
 import Pagination from 'vue-pagination-2';
 
 // Composables
@@ -72,6 +73,7 @@ import {orderGetters, productGetters, useUserOrder} from '@vue-storefront/numerb
 export default {
   name: 'SalesSection',
   components: {
+    OrderInfoModal,
     Pagination
   },
   data() {

@@ -26,12 +26,17 @@
 <script>
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
-import HeroSeven from '@/components/section/HeroSeven.vue';
+
+import Category from "@/components/section/Category";
+import HeroSeven from '@/components/section/HeroSeven';
+import Newsletter from "@/components/section/Newsletter";
 
 export default {
   name: 'Home',
   components: {
-    HeroSeven
+    Category,
+    HeroSeven,
+    Newsletter
   },
   data() {
     return {
