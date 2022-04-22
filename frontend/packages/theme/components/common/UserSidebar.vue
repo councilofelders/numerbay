@@ -17,7 +17,7 @@
       <div class="sidebar-widget">
         <ul class="user-nav">
           <li v-for="(list, i) in lists" :key="i" :class="list.title === title ? 'active' : ''">
-            <router-link :to="list.path"><em class="ni me-2" :class="list.icon"></em>{{ list.title }}</router-link>
+            <nuxt-link :to="list.path"><em class="ni me-2" :class="list.icon"></em>{{ list.title }}</nuxt-link>
           </li>
         </ul>
       </div><!-- end sidebar-widget -->
