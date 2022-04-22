@@ -7,7 +7,7 @@
           <!-- user sidebar -->
           <UserSidebar title="Sales" :lists="SectionData.accountSidebarData.navList"
                        :navs="SectionData.editProfileData.editProfileTabNavMobile"></UserSidebar>
-          <!-- offer -->
+          <!-- sales -->
           <SalesSection></SalesSection>
         </div><!-- end row -->
       </div><!-- end container -->
@@ -19,9 +19,14 @@
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
 
+import SalesSection from "@/components/section/SalesSection";
+
 export default {
   name: 'Sales',
   layout: 'account',
+  components: {
+    SalesSection
+  },
   middleware: [
     'is-authenticated'
   ],

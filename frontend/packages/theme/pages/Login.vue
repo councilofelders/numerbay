@@ -6,7 +6,12 @@
 </template>
 
 <script>
+import LoginSection from "@/components/section/LoginSection";
+
 export default {
-  name: 'Login'
+  name: 'Login',
+  components: {
+    LoginSection
+  }
 };
 </script>

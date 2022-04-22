@@ -19,9 +19,14 @@
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
 
+import ListingsSection from "../components/section/ListingsSection";
+
 export default {
   name: 'Listings',
   layout: 'account',
+  components: {
+    ListingsSection
+  },
   middleware: [
     'is-authenticated'
   ],

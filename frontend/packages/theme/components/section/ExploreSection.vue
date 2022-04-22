@@ -134,11 +134,12 @@
 // Import component data. You can change the data in the store to reflect in all component
 import Pagination from 'vue-pagination-2';
 import ProductCard from '@/components/section/ProductCard';
+import Range from "../common/Range";
 
 // Composables
 import Vue from 'vue';
-import {facetGetters, productGetters, useCart, useFacet, useUser, useWishlist} from '@vue-storefront/numerbay';
-import {useUiHelpers, useUiNotification, useUiState} from '~/composables';
+import {facetGetters, useFacet} from '@vue-storefront/numerbay';
+import {useUiHelpers, useUiState} from '~/composables';
 import {computed, ref} from '@vue/composition-api';
 import {useVueRouter} from '~/helpers/hooks/useVueRouter';
 
@@ -146,7 +147,8 @@ export default {
   name: 'ExploreSection',
   components: {
     Pagination,
-    ProductCard
+    ProductCard,
+    Range
   },
   data() {
     return {

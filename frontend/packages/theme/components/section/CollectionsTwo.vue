@@ -11,8 +11,13 @@
 </template>
 
 <script>
+import CollectionSlider from "../common/CollectionSlider";
+
 export default {
   name: 'CollectionsTwo',
+  components: {
+    CollectionSlider
+  },
   props: ['classname']
 };
 </script>

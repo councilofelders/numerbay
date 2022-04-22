@@ -11,12 +11,14 @@
 </template>
 
 <script>
-import HeroFour from '@/components/section/HeroFour.vue'
+import HeroFour from '@/components/section/HeroFour'
+import VoteSection from "@/components/section/VoteSection";
 
 export default {
   name: 'Vote',
   components: {
-    HeroFour
+    HeroFour,
+    VoteSection
   }
 }
 </script>
