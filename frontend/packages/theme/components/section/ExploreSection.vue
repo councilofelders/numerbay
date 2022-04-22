@@ -28,9 +28,9 @@
                       <router-link :to="localePath(th.getCatLink(subcategory))" class="menu-link">All</router-link>
                     </li>-->
                     <li class="menu-item" v-for="subsubcategory in getSubcategories(subcategory)">
-                      <router-link :to="localePath(th.getCatLink(subsubcategory))" class="menu-link">
+                      <nuxt-link :to="localePath(th.getCatLink(subsubcategory))" class="menu-link">
                         {{ subsubcategory.label }}
-                      </router-link>
+                      </nuxt-link>
                     </li>
                   </ul>
                 </div>
@@ -126,7 +126,7 @@
       <div class="text-center mt-4 mt-md-5">
         <Pagination :records="pagination.totalItems" v-model="page" :per-page="pagination.itemsPerPage"
                     @paginate="goToPage" v-if="pagination.totalItems"></Pagination>
-        <span v-else>No result found</span>
+        <span v-else>No more items</span>
       </div>
     </div><!-- .container -->
   </section><!-- end explore-section -->

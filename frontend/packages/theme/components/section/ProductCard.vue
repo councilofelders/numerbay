@@ -46,7 +46,7 @@
         </div><!-- end card-price-wrap -->
       </div>
     </div><!-- end card-body -->
-    <router-link
+    <nuxt-link
       class="details"
       :to="{
                 name: 'ProductDetailsByFullName',
@@ -81,7 +81,7 @@
                 }
             }"
     >
-    </router-link>
+    </nuxt-link>
   </div><!-- end card -->
 </template>
 <script>

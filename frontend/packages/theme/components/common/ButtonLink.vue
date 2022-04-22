@@ -1,5 +1,5 @@
 <template>
-  <router-link :class="classname" :to="link">{{ text }}</router-link>
+  <nuxt-link :class="classname" :to="link">{{ text }}</nuxt-link>
 </template>
 
 <script>
