@@ -125,7 +125,8 @@
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
         <Pagination :records="pagination.totalItems" v-model="page" :per-page="pagination.itemsPerPage"
-                    @paginate="goToPage"></Pagination>
+                    @paginate="goToPage" v-if="pagination.totalItems"></Pagination>
+        <span v-else>No result found</span>
       </div>
     </div><!-- .container -->
   </section><!-- end explore-section -->
