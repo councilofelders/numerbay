@@ -38,6 +38,8 @@ class Product(Base):
     use_encryption = Column(Boolean, server_default="f")
     is_ready = Column(Boolean)
     expiration_round = Column(Integer)
+    total_qty_sales = Column(Integer, default=0, server_default="0")
+    total_qty_delivered = Column(Integer, default=0, server_default="0")
     total_num_sales = Column(Integer, default=0, server_default="0")
     last_sale_price = Column(Numeric)
     last_sale_price_delta = Column(Numeric)

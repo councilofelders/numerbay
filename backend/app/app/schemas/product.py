@@ -26,6 +26,8 @@ class ProductBase(BaseModel):
     use_encryption: Optional[bool] = None
     is_ready: Optional[bool] = None
     expiration_round: Optional[int] = None
+    total_qty_sales: Optional[int] = None
+    total_qty_delivered: Optional[int] = None
     total_num_sales: Optional[int] = None
     last_sale_price: Optional[Decimal] = None
     last_sale_price_delta: Optional[Decimal] = None
