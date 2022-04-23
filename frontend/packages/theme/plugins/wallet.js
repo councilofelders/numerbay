@@ -53,10 +53,21 @@ export default async ({env}, inject) => {
         return;
       }
 
+      // https://github.com/MetaMask/metamask-extension/issues/9407#issuecomment-1090191883
+      // Fixes Error: "unchecked runtime.lasterror: could not establish connection. receiving end does not exist."
+      // that occurs on the initial page load when Metamask is installed
+      // Reloads the page after n seconds if Metamask is installed but not initialized
+      const waitSeconds = 10;
+      if (typeof window !== "undefined" && typeof window.ethereum !== 'undefined' &&  !window.ethereum._state.initialized) {
+        while(!ethereum._state.initialized) {
+          await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+          window.location.reload();
+        }
+      }
+
       wallet.network = await wallet.provider.getNetwork();
 
       const [account] = await wallet.provider.send('eth_requestAccounts');
-      console.log('wallet connect', {account});
 
       if (account) {
         await wallet.setAccount(account);
@@ -86,12 +97,12 @@ export default async ({env}, inject) => {
   if (window.ethereum) {
 
     window.ethereum.on('accountsChanged', ([newAddress]) => {
-      console.info('accountsChanged', newAddress);
+      // console.info('accountsChanged', newAddress);
       wallet.setAccount(newAddress);
     });
 
     window.ethereum.on('chainChanged', (chainId) => {
-      console.info('chainChanged', chainId);
+      // console.info('chainChanged', chainId);
       window.location.reload();
     });
 
