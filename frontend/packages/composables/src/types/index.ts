@@ -9,6 +9,7 @@ import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefron
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
 import {getNumeraiLastSyncDate, getPublicKey} from '../getters/userGetters';
+import {getProductQtySales} from "../getters/productGetters";
 
 export type Address = Record<string, unknown>;
 
@@ -192,6 +193,9 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getModelUrl: (product: PRODUCT) => string;
     getIsAvailable: (product: PRODUCT, optionIdx: number) => boolean;
     getTotalSales: (product: PRODUCT) => number;
+    getQtySales: (product: PRODUCT) => number;
+    getQtyDelivered: (product: PRODUCT) => number;
+    getOnTimeRating: (product: PRODUCT) => string;
     [getterName: string]: any;
 }
 
