@@ -25,6 +25,9 @@
                 <span class="dot-separeted"></span>
                 <span class="item-detail-text-meta">Past sales <span
                   class="text-primary fw-semibold">{{ productGetters.getTotalSales(product) }}</span></span>
+                <span class="dot-separeted" v-if="productGetters.getOnTimeRating(product)"></span>
+                <span class="item-detail-text-meta" v-if="productGetters.getOnTimeRating(product)">On time <span
+                  class="text-primary fw-semibold" :class="getDeliveryRateTextClass(productGetters.getOnTimeRating(product))" :title="`${productGetters.getQtyDelivered(product)} / ${productGetters.getQtySales(product)} quantity delivered on time`">{{ productGetters.getOnTimeRating(product) }}</span></span>
               </div>
               <div class="item-credits">
                 <div class="row g-4">
@@ -592,6 +595,21 @@ export default {
       }, 1000);
     };
 
+    const getDeliveryRateTextClass = (rating) => {
+      switch (rating) {
+        case 'always':
+          return 'text-success';
+        case 'good':
+          return 'text-success';
+        case 'average':
+          return 'text-warning';
+        case 'poor':
+          return 'text-danger';
+        default:
+          return '';
+      }
+    };
+
     return {
       id,
       name,
@@ -624,7 +642,8 @@ export default {
       onCopy,
       orderSearch,
       getGlobals,
-      send
+      send,
+      getDeliveryRateTextClass
     };
   }
 };

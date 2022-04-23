@@ -206,6 +206,28 @@ export const getProductIsAvailable = (product: ProductVariant, optionIdx: number
 
 export const getProductTotalSales = (product: ProductVariant): number => (product as any)?.total_num_sales || 0;
 
+export const getProductQtySales = (product: ProductVariant): number => (product as any)?.total_qty_sales || 0;
+
+export const getProductQtyDelivered = (product: ProductVariant): number => (product as any)?.total_qty_delivered || 0;
+
+export const getProductOnTimeRating = (product: ProductVariant): string => {
+  const total_qty_sales = (product as any)?.total_qty_sales || 0;
+  if (total_qty_sales > 3) {
+    const total_qty_delivered = (product as any)?.total_qty_delivered || 0;
+    const delivery_rate = total_qty_delivered / total_qty_sales;
+    if (delivery_rate >= 0.95) {
+      return 'always';
+    } else if (delivery_rate >= 0.75) {
+      return 'good';
+    } else if (delivery_rate >= 0.5) {
+      return 'average';
+    } else {
+      return 'poor';
+    }
+  }
+  return null;
+};
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -247,7 +269,10 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getOwner: getProductOwner,
   getModelUrl: getProductModelUrl,
   getIsAvailable: getProductIsAvailable,
-  getTotalSales: getProductTotalSales
+  getTotalSales: getProductTotalSales,
+  getQtySales: getProductQtySales,
+  getQtyDelivered: getProductQtyDelivered,
+  getOnTimeRating: getProductOnTimeRating
 };
 
 export default productGetters;
