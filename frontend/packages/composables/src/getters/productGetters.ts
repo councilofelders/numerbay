@@ -188,7 +188,17 @@ export const getProductExpirationRound = (product: ProductVariant): number => (p
 
 export const getProductOwner = (product: ProductVariant): string => (product as any)?.owner?.username || '-';
 
-export const getProductModelUrl = (product: ProductVariant): string => (product as any)?.category?.tournament ? ((product as any)?.category?.tournament === 8 ? `https://numer.ai/${(product as any)?.model?.name}` : `https://signals.numer.ai/${(product as any)?.model?.name}`) : null;
+export const getProductModelUrl = (product: ProductVariant): string => {
+  if ((product as any)?.category?.is_per_model) {
+    const tournament = (product as any)?.category?.tournament;
+    if (tournament === 8) {
+      return `https://numer.ai/${(product as any)?.model?.name}`;
+    } else if (tournament === 11) {
+      return `https://signals.numer.ai/${(product as any)?.model?.name}`;
+    }
+  }
+  return null;
+};
 
 export const getProductIsAvailable = (product: ProductVariant, optionIdx: number): boolean => {
   return getProductIsActive(product) && !(!getOptionUrl(getProductOrderedOption(product, optionIdx)) && !getOptionIsOnPlatform(getProductOrderedOption(product, optionIdx)));

@@ -13,7 +13,9 @@
                   </div><!-- end item-detail-img-container -->
                 </div><!-- end item-detail-content -->
               </div><!-- end col -->
-              <h1 class="item-detail-title mb-2 text-break"><a :href="modelUrl" class="" target="_blank">{{ title }}</a>
+              <h1 class="item-detail-title mb-2 text-break">
+                <a :href="modelUrl" class="" target="_blank" v-if="Boolean(modelUrl)">{{ title }}</a>
+                <span v-else>{{ title }}</span>
               </h1>
               <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
                 <span class="item-detail-text-meta">Round <span
