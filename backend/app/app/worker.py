@@ -959,6 +959,10 @@ def batch_update_delivery_rate() -> None:
     """ Batch update delivery rate task """
     db = SessionLocal()
     try:
+        selling_round = crud.globals.get_singleton(  # type: ignore
+            db=db
+        ).selling_round
+
         users = crud.user.search(
             # type: ignore
             db,
@@ -970,17 +974,18 @@ def batch_update_delivery_rate() -> None:
             if not user.products or len(user.products) == 0:
                 continue
             for product in user.products:
-                query_filters = [
-                    Order.product_id == product.id,
-                    Order.state == "confirmed",
-                ]
-                query_filter = functools.reduce(and_, query_filters)
-                total_qty_sales = (
-                    db.query(func.sum(Order.quantity)).filter(query_filter).scalar()
-                )
-                product.total_qty_sales = total_qty_sales
+                # query_filters = [
+                #     Order.product_id == product.id,
+                #     Order.state == "confirmed",
+                # ]
+                # query_filter = functools.reduce(and_, query_filters)
+                # total_qty_sales = (
+                #     db.query(func.sum(Order.quantity)).filter(query_filter).scalar()
+                # )
+                # product.total_qty_sales = total_qty_sales
 
                 # todo improve query efficiency
+                total_qty_sales = 0
                 total_qty_delivered = 0
                 product_artifacts_rounds = set(
                     [
@@ -992,6 +997,7 @@ def batch_update_delivery_rate() -> None:
                 query_filters = [
                     Order.product_id == product.id,
                     Order.state == "confirmed",
+                    Order.round_order < selling_round,
                 ]
                 query_filter = functools.reduce(and_, query_filters)
                 orders = db.query(Order).filter(query_filter).all()
@@ -1009,13 +1015,17 @@ def batch_update_delivery_rate() -> None:
                         )
                         if product.category.is_per_round:
                             for tournament_round in range(
-                                order.round_order, order.round_order + order.quantity
+                                order.round_order,
+                                min(order.round_order + order.quantity, selling_round),
                             ):
+                                total_qty_sales += 1
                                 if tournament_round in delivered_rounds:
                                     total_qty_delivered += 1
                         else:
+                            total_qty_sales += order.quantity
                             if order.round_order in delivered_rounds:
                                 total_qty_delivered += order.quantity
+                product.total_qty_sales = total_qty_sales
                 product.total_qty_delivered = total_qty_delivered
 
         db.commit()
