@@ -372,6 +372,19 @@ export default {
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     onCategoryChange(categoryId) {
       this.form.name = null;
+      if (categoryId) {
+        const category = this.leafCategories.filter(c => c.id === Number(categoryId))[0];
+        console.log('category', category)
+        switch (category?.slug) {
+          case 'signals-data':
+            if (!this.form.description) {
+              this.form.description = `<h1>Data Overview</h1><p>This product offers [DATA TYPE] for [COVERAGE], sourced from [DATA SOURCE].</p><p><br></p><p>This data is used by the following models:</p><ul><li>[LINKS TO SIGNALS MODEL]</li></ul><p><br></p><p>Data file is in [FORMAT] and is typically uploaded at [DAY OF WEEK] [TIME OF DAY].</p><p><br></p><h1>Coverage</h1><p>This data file contains [NUMBER] [COUNTRY] tickers, ... from [YYYYMMDD] to [YYYYMMDD]</p><p><br></p><h1>Column Definitions</h1><p>The data file has [NUMBER OF COLUMNS]:</p><ol><li><strong>Column1 </strong>[TYPE] - [DESCRIPTION]</li><li><strong>Column2 </strong>[TYPE] - [DESCRIPTION]</li></ol><p><br></p><h1>Sample Data</h1><p>[Table or screenshot or link to sample data file]</p>`;
+            }
+            break;
+          default:
+            return;
+        }
+      }
     },
     refresh() {
       this._computedWatchers.orderedOptions.run();
