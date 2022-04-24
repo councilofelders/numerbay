@@ -305,6 +305,7 @@ export default {
       editorOption: {
         theme: 'snow',
         modules: {
+          markdownShortcuts: {}, // https://patricklee.nyc/quill-markdown-shortcuts/
           toolbar: {
             container: [
               ['bold', 'italic', 'underline', 'strike'],
