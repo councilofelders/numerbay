@@ -102,9 +102,11 @@
               </div><!-- end item-detail-chart-container -->
               <div class="item-detail-description-container mb-4">
                 <div class="card-border card-full">
-                  <div class="card-body card-body-s1 ql-snow">
+                  <div class="card-body card-body-s1">
                     <h5 class="mb-3">Description</h5>
-                    <div class="item-detail-text mb-4 ql-editor" v-html="description"></div>
+                    <div class="ql-container ql-snow" style="border: none;">
+                      <div class="item-detail-text mb-4 ql-editor" v-html="description"></div>
+                    </div>
                   </div><!-- end card-body -->
                 </div><!-- end card-border -->
               </div><!-- end item-detail-description-container -->
