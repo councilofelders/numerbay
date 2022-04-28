@@ -56,6 +56,7 @@ const getSortOptions = (searchData): AgnosticSort => {
   options.push(
       { type: 'sort', id: 'name-up', value: 'Name: A to Z', count: null},
       { type: 'sort', id: 'name-down', value: 'Name: Z to A', count: null},
+      { type: 'sort', id: 'sales-down', value: 'Sales from high to low', count: null },
       { type: 'sort', id: 'latest', value: 'Latest', count: null }
   );
 
