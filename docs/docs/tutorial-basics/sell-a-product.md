@@ -31,6 +31,49 @@ To create a listing, head to **[My listings](https://numerbay.ai/listings)** pag
     - This defaults to your numerai model avatar after selecting the model
     - This must be an HTTPS URL
 
+### Product description
+An informative product description will help potential buyers make decisions. 
+The product description field supports Markdown shortcuts and image upload to help you write rich text.
+
+Some product categories (e.g. Signals data) comes with description templates which is populated automatically during listing creation when the category is selected.
+
+To trigger the Markdown shortcuts, type in the editor instead of copy-and-pasting Markdown text. 
+The following shortcuts are supported:
+
+~~~markdown
+# Headers
+
+**Bold text**
+
+*Italic*
+
+***Bold italic***
+
+~~Strikethrough~~
+
+- Bullet points
+
+1. Numbered lists
+
+[] Checkboxes
+
+[]() Links
+
+> Blockquote
+
+`Inline code block`
+
+```
+Fenced Code block
+```
+
+--- Horizontal Rule
+~~~
+
+<img alt="Listing Advanced" src="/img/tutorial/listingDescription.png" width="800"/>
+
+To upload images, it is recommended to use the insert image button on the editor instead of copy-and-pasting images. 
+
 ### Advanced settings
 Click **Show advanced settings** for additional configurations.
 <img alt="Listing Advanced" src="/img/tutorial/listingAdvanced.png" width="800"/>
