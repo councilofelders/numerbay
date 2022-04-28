@@ -216,6 +216,8 @@
                 </div><!-- end form-item -->
                 <div class="form-item mb-4">
                   <label class="mb-2 form-label">Description</label>
+                  <a href="https://docs.numerbay.ai/docs/tutorial-basics/sell-a-product#product-description"
+                     target="_blank" class="float-end fs-15"><em class="ni ni-help"></em> Markdown shortcuts</a>
                   <client-only>
                     <div class="mb-4 editor">
                       <quill-editor
