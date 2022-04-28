@@ -66,6 +66,28 @@
                     </object>
                   </div><!-- end form-item -->
                 </ValidationProvider>
+                <div v-if="isTournamentCategory(form.category)">
+                  <div class="alert alert-success d-flex mb-4" role="alert" v-if="!isSignalsDataCategory(form.category)">
+                    <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+                    </svg>
+                    <p class="fs-14">
+                      Buyer-side encryption is enabled by default, uploading artifact files requires active sales.<br/>
+                      <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank"><em class="ni ni-help"></em> Learn more about encryption</a>
+                    </p>
+                  </div><!-- end alert -->
+                  <div class="alert alert-warning d-flex mb-4" role="alert" v-else>
+                    <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+                    </svg>
+                    <p class="fs-14">
+                      Buyer-side encryption is disabled by default due to large files, you can enable it in advanced settings.<br/>
+                      <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank"><em class="ni ni-help"></em> Learn more about encryption</a>
+                    </p>
+                  </div><!-- end alert -->
+                </div>
                 <div class="form-item mb-4">
                   <div class="mb-4">
                     <div class="d-flex align-items-center justify-content-between">
@@ -379,11 +401,13 @@ export default {
         console.log('category', category)
         switch (category?.slug) {
           case 'signals-data':
+            this.form.useEncryption = false;
             if (!this.form.description) {
               this.form.description = `<h1>Data Overview</h1><p>This product offers [DATA TYPE] for [COVERAGE], sourced from [DATA SOURCE].</p><p><br></p><p>This data is used by the following models:</p><ul><li>[LINKS TO SIGNALS MODEL]</li></ul><p><br></p><p>Data file is in [FORMAT] and is typically uploaded at [DAY OF WEEK] [TIME OF DAY].</p><p><br></p><h1>Coverage</h1><p>This data file contains [NUMBER] [COUNTRY] tickers, ... from [YYYYMMDD] to [YYYYMMDD]</p><p><br></p><h1>Column Definitions</h1><p>The data file has [NUMBER OF COLUMNS]:</p><ol><li><strong>Column1 </strong>[TYPE] - [DESCRIPTION]</li><li><strong>Column2 </strong>[TYPE] - [DESCRIPTION]</li></ol><p><br></p><h1>Sample Data</h1><p>[Table or screenshot or link to sample data file]</p>`;
             }
             break;
           default:
+            this.form.useEncryption = true;
             return;
         }
       }
@@ -410,6 +434,13 @@ export default {
       if (categoryId) {
         const category = this.leafCategories.filter(c => c.id === Number(categoryId))[0];
         return category?.is_per_model;
+      }
+      return false;
+    },
+    isSignalsDataCategory(categoryId) {
+      if (categoryId) {
+        const category = this.leafCategories.filter(c => c.id === Number(categoryId))[0];
+        return category?.slug === 'signals-data';
       }
       return false;
     },
