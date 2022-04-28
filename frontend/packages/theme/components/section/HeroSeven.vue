@@ -57,8 +57,8 @@ export default {
         },
         {
           id: 2,
-          title: `${globals.value.total_num_sales || 0}`,
-          text: 'Product Sales',
+          title: `${globals.value.total_qty_sales || 0}`,
+          text: 'Quantity Sold',
           className: 'col-6'
         },
         {

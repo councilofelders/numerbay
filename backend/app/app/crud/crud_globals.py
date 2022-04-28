@@ -79,6 +79,11 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
             .filter(models.Order.state == "confirmed")
             .scalar()
         )
+        total_qty_sales = (
+            db.query(func.sum(models.Order.quantity))
+            .filter(models.Order.state == "confirmed")
+            .scalar()
+        )
         total_sales_nmr = (
             db.query(func.sum(models.Order.price))
             .filter(models.Order.state == "confirmed")
@@ -90,6 +95,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
             obj_in={
                 "total_num_products": total_num_products,
                 "total_num_sales": total_num_sales,
+                "total_qty_sales": total_qty_sales,
                 "total_sales_nmr": total_sales_nmr,
             },
         )

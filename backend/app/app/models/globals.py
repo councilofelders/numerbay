@@ -16,4 +16,5 @@ class Globals(Base):
     )
     total_num_products = Column(Integer)
     total_num_sales = Column(Integer)
+    total_qty_sales = Column(Integer)
     total_sales_nmr = Column(Numeric)
