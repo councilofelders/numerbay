@@ -68,6 +68,7 @@ _SORT_OPTION_LOOKUP = {
     "ic-down": desc(Model.latest_reps.cast(JSON)["ic"].as_string().cast(Float)),
     "stake-up": Model.nmr_staked,
     "stake-down": desc(Model.nmr_staked),
+    "sales-down": desc(Product.total_qty_sales)
 }
 
 
@@ -419,7 +420,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     sort, all_child_categories[0] if all_child_categories else None
                 )
             )
-        )
+        ).order_by(desc(Product.id))
         data = query.offset(skip).limit(limit).all()
 
         agg_query = (
