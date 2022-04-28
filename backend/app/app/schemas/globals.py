@@ -15,6 +15,7 @@ class GlobalsBase(BaseModel):
     is_doing_round_rollover: Optional[bool] = None
     total_num_products: Optional[int] = None
     total_num_sales: Optional[int] = None
+    total_qty_sales: Optional[int] = None
     total_sales_nmr: Optional[Decimal] = None
 
 

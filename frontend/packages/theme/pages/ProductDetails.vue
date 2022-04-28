@@ -23,8 +23,8 @@
                 <span class="dot-separeted"></span>
                 <span class="item-detail-text-meta">{{ category }}</span>
                 <span class="dot-separeted"></span>
-                <span class="item-detail-text-meta">Past sales <span
-                  class="text-primary fw-semibold">{{ productGetters.getTotalSales(product) }}</span></span>
+                <span class="item-detail-text-meta">Sold <span
+                  class="text-primary fw-semibold">{{ productGetters.getQtySales(product) }}</span></span>
                 <span class="dot-separeted" v-if="productGetters.getOnTimeRating(product)"></span>
                 <span class="item-detail-text-meta" v-if="productGetters.getOnTimeRating(product)">On time <span
                   class="text-primary fw-semibold" :class="getDeliveryRateTextClass(productGetters.getOnTimeRating(product))" :title="`${productGetters.getQtyDelivered(product)} / ${productGetters.getQtySales(product)} quantity delivered on time`">{{ productGetters.getOnTimeRating(product) }}</span></span>

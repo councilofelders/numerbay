@@ -68,7 +68,7 @@ _SORT_OPTION_LOOKUP = {
     "ic-down": desc(Model.latest_reps.cast(JSON)["ic"].as_string().cast(Float)),
     "stake-up": Model.nmr_staked,
     "stake-down": desc(Model.nmr_staked),
-    "sales-down": desc(Product.total_qty_sales)
+    "sales-down": desc(Product.total_qty_sales),
 }
 
 
