@@ -42,6 +42,9 @@ export const getProduct = (order: any): any => order?.product || null;
 export const getSubmitModelName = (order: any): any => order?.submit_model_name || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getMode = (order: any): any => order?.mode || null;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getItems = (order: any): any[] => order?.items || [];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -84,6 +87,7 @@ const orderGetters: UserOrderGetters<Order, OrderItem> = {
   getTransactionHash,
   getProduct,
   getSubmitModelName,
+  getMode,
   getItems,
   getItemSku,
   getItemName,

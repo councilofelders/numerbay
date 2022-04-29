@@ -9,53 +9,51 @@
         </button>
       </div>
     </div><!-- end user-panel-title-box -->
-    <div class="profile-setting-panel-wrap">
-      <div class="table-responsive">
-        <table class="table mb-0 table-s2">
-          <thead class="fs-14">
-          <tr>
-            <th scope="col" v-for="(list, i) in [
-                              '#',
-                              'Product',
-                              'Round(s)',
-                              'Amount',
-                              'Status'
-                            ]" :key="i">{{ list }}
-            </th>
-          </tr>
-          </thead>
-          <tbody class="fs-13">
-          <tr v-if="!displayedOrders || displayedOrders.length === 0">
-            <td colspan="3" class="text-secondary">You currently have no sale</td>
-          </tr>
-          <tr v-for="order in displayedOrders" :key="order.id">
-            <th scope="row"><a href="javascript:void(0);" @click="toggleModal(order)"
-                               title="Click for details">{{ orderGetters.getId(order) }}</a></th>
-            <td>
-              <router-link class="btn-link"
-                           :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`">
-                {{ orderGetters.getItemSku(orderGetters.getProduct(order)) }}
-              </router-link>
-            </td>
-            <td
-              v-if="orderGetters.getProduct(order).category.is_per_round && parseInt(orderGetters.getItemQty(order)) > 1">
-              {{
-                `${orderGetters.getRound(order)}-${parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1}`
-              }}
-            </td>
-            <td v-else>{{ orderGetters.getRound(order) }}</td>
-            <td>{{ orderGetters.getFormattedPrice(order, withCurrency = true, decimals = 4) }}</td>
-            <td><span class="badge fw-medium" :class="getStatusTextClass(order)">{{
-                orderGetters.getStatus(order)
-              }}</span></td>
-          </tr>
-          </tbody>
-        </table>
-      </div><!-- end table-responsive -->
-      <!-- pagination -->
-      <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="orders.length" v-model="page" :per-page="perPage"></Pagination>
-      </div>
+    <div v-if="!displayedOrders || displayedOrders.length === 0">You currently have no sale</div>
+    <div class="profile-setting-panel-wrap" v-else>
+        <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" :class="'active'" :id="'all'" type="button">All sales</button>
+            </li>
+        </ul>
+        <div class="tab-content mt-4 tab-content-desktop">
+            <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="all-tab">
+                <div class="activity-tab-wrap">
+                    <div class="card card-creator-s1 mb-4" v-for="order in displayedOrders" :key="order.id">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="card-media-img flex-shrink-0">
+                                <img :src="productGetters.getCoverImage(orderGetters.getProduct(order))" alt="avatar">
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="card-s1-title">
+                                  <router-link class="btn-link"
+                                               :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`">
+                                    {{ productGetters.getName(orderGetters.getProduct(order)).toUpperCase() }}</router-link>
+                                </h6>
+                                <p class="card-s1-text">
+                                  <span>
+                                    <span class="btn-link text-decoration-none fw-medium">
+                                      {{ productGetters.getCategory(orderGetters.getProduct(order)).slug }}
+                                    </span> {{ orderGetters.getMode(order) }} x {{ orderGetters.getItemQty(order) }} for round
+                                    <span class="btn-link text-decoration-none fw-medium">{{ orderGetters.getRound(order) }}</span><span class="btn-link text-decoration-none fw-medium"
+                                          v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
+                                    >-{{ parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1 }}
+                                    </span> by
+                                    <span class="btn-link text-decoration-none fw-medium">{{ orderGetters.getBuyer(order) }}</span>
+                                    <span> for <span class="btn-link text-decoration-none fw-medium">{{ orderGetters.getFormattedPrice(order, withCurrency = true, decimals = 4) }}</span></span>
+                                  </span>
+                                </p>
+                                <p class="card-s1-text">{{ orderGetters.getDate(order) }}</p>
+                                <p class="card-s1-text">
+                                  <span class="badge fw-medium" :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
+                                  <a href="javascript:void(0);" @click="toggleInfoModal(order)" title="Click for details" class="ms-2">View details</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div><!-- end card -->
+                </div><!-- end activity-tab-wrap -->
+            </div><!-- end tab-pane -->
+        </div><!-- end tab-content -->
     </div><!-- end profile-setting-panel-wrap-->
     <OrderInfoModal :order="currentOrder" modelId="orderInfoModal" ref="orderInfoModal"></OrderInfoModal>
   </div><!-- end col-lg-8 -->
@@ -91,7 +89,7 @@ export default {
     }
   },
   methods: {
-    toggleModal(order) {
+    toggleInfoModal(order) {
       this.currentOrder = order;
       this.$refs.orderInfoModal.show();
     },
