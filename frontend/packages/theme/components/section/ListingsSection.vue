@@ -20,8 +20,8 @@
           class="ni ni-plus"></em> New Listing
       </router-link>
       <div class="row g-gs">
-        <div class="col-xl-12" v-if="!products || products.length === 0">You currently have no listing</div>
-        <div class="col-xl-6" v-for="product in products" :key="productGetters.getId(product)">
+        <div class="col-xl-12" v-if="!displayedProducts || displayedProducts.length === 0">You currently have no listing</div>
+        <div class="col-xl-6" v-for="product in displayedProducts" :key="productGetters.getId(product)">
           <div class="card card-full">
             <div class="card-body card-body-s1">
               <p class="mb-3 fs-13 mb-4">Sold {{ productGetters.getQtySales(product) }}<span
@@ -79,6 +79,10 @@
           </div><!-- end card -->
         </div><!-- end col -->
       </div><!-- end row -->
+      <!-- pagination -->
+      <div class="text-center mt-4 mt-md-5">
+        <Pagination :records="products.length" v-model="page" :per-page="perPage"></Pagination>
+      </div>
     </div><!-- end profile-setting-panel -->
   </div><!-- end col-lg-8 -->
 </template>
@@ -104,10 +108,10 @@ export default {
     };
   },
   computed: {
-    displayedOrders() {
+    displayedProducts() {
       const startIndex = this.perPage * (this.page - 1);
       const endIndex = startIndex + this.perPage;
-      return this.orders?.slice(startIndex, endIndex);
+      return this.products?.slice(startIndex, endIndex);
     }
   },
   setup() {

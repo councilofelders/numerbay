@@ -52,6 +52,10 @@
                         </div>
                     </div><!-- end card -->
                 </div><!-- end activity-tab-wrap -->
+                <!-- pagination -->
+                <div class="text-center mt-4 mt-md-5">
+                  <Pagination :records="orders.length" v-model="page" :per-page="perPage"></Pagination>
+                </div>
             </div><!-- end tab-pane -->
         </div><!-- end tab-content -->
     </div><!-- end profile-setting-panel-wrap-->
@@ -84,7 +88,7 @@ export default {
   data() {
     return {
       page: 1,
-      perPage: 6,
+      perPage: 10,
       currentOrder: {}
     };
   },
