@@ -14,61 +14,53 @@
         It only takes a few minutes!
       </p>
     </div><!-- end alert -->
-    <div class="profile-setting-panel-wrap">
-      <router-link :to="`/create-listing`" class="btn btn-outline-dark mb-4"
-                   :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''"><em
-        class="ni ni-plus"></em> New Listing
-      </router-link>
-      <div class="table-responsive">
-        <table class="table mb-0 table-s2">
-          <thead class="fs-14">
-          <tr>
-            <th scope="col" v-for="(list, i) in [
-                            'Product',
-                            'Category',
-                            'Default Price',
-                            'Status',
-                            'Action'
-                          ]" :key="i">{{ list }}
-            </th>
-          </tr>
-          </thead>
-          <tbody class="fs-13">
-          <tr v-if="!products || products.length === 0">
-            <td colspan="3" class="text-secondary">You currently have no listing</td>
-          </tr>
-          <tr v-for="product in products" :key="productGetters.getId(product)">
-            <th scope="row">
-              <router-link class="btn-link"
-                           :to="`/product/${productGetters.getCategory(product).slug}/${productGetters.getName(product)}`">
-                {{ productGetters.getName(product) }}
-              </router-link>
-            </th>
-            <td>{{ productGetters.getCategory(product).slug }}</td>
-            <td>{{ productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, 0), true) }}</td>
-            <td><span class="badge fw-medium" :class="getStatusTextClass(product)">{{ getStatusText(product) }}</span>
-            </td>
-            <td>
-              <div class="d-flex justify-content-between">
-                <router-link :to="{
+    <div class="profile-setting-panel">
+        <router-link :to="`/create-listing`" class="btn btn-outline-dark mb-4"
+                     :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''"><em
+          class="ni ni-plus"></em> New Listing
+        </router-link>
+        <div class="row g-gs">
+            <div class="col-xl-12" v-if="!products || products.length === 0">You currently have no listing</div>
+            <div class="col-xl-6" v-for="product in products" :key="productGetters.getId(product)">
+                <div class="card card-full">
+                    <div class="card-body card-body-s1">
+                        <p class="mb-3 fs-13 mb-4">Sold {{ productGetters.getQtySales(product) }}<span v-if="productGetters.getQtySales(product) > 0"><span class="dot-separeted"></span>{{ productGetters.getQtyDelivered(product) }} / {{ productGetters.getQtySales(product) }} on time</span></p>
+                        <div class="card-media mb-3">
+                            <div class="card-media-img flex-shrink-0">
+                                <img :src="productGetters.getCoverImage(product)" alt="avatar image">
+                            </div><!-- card-media-img -->
+                            <div class="card-media-body">
+                                <h4><router-link :to="`/product/${productGetters.getCategory(product).slug}/${productGetters.getName(product)}`">{{ productGetters.getName(product) }}</router-link></h4>
+                                <p class="fw-medium fs-14">{{ productGetters.getCategory(product).slug }}</p>
+                                <p class="fs-15" v-if="productGetters.getUseEncryption(product)">Encrypted</p>
+                                <p class="fs-15" v-else>Unencrypted</p>
+                            </div><!-- end card-media-body -->
+                        </div><!-- end card-media -->
+                        <div class="card-media mb-3">
+                            <div class="card-media-body">
+                                <span class="fw-medium fs-13">Default Price</span>
+                                <p class="fw-medium text-black fs-14">{{ productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, 0), true) }}</p>
+                            </div>
+                            <div class="card-media-body">
+                                <span class="fw-medium fs-13">Default Mode</span>
+                                <p class="fw-medium text-black fs-14 text-capitalize">{{ productGetters.getMode(productGetters.getOrderedOption(product, 0), true) }}</p>
+                            </div>
+                        </div><!-- end d-flex -->
+                        <ul class="btns-group">
+                            <li><span class="badge fw-medium" :class="getStatusTextClass(product)">{{ getStatusText(product) }}</span></li>
+                            <li><router-link :to="{
                             name: 'manage-artifacts',
-                            params: {id: productGetters.getId(product)}}" class="icon-btn ms-auto"
-                             title="Manage Artifacts"><em class="ni ni-upload"></em></router-link>
-                <router-link :to="{
+                            params: {id: productGetters.getId(product)}}" class="btn-link fw-medium fs-13 text-primary"
+                                             title="Manage Artifacts">Upload Files</router-link></li>
+                            <li><router-link :to="{
                             name: 'edit-listing',
-                            params: {id: productGetters.getId(product)}}" class="icon-btn ms-auto" title="Edit"><em
-                  class="ni ni-edit"></em></router-link>
-              </div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div><!-- end table-responsive -->
-      <!-- pagination -->
-      <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="products.length" v-model="page" :per-page="perPage"></Pagination>
-      </div>
-    </div><!-- end profile-setting-panel-wrap-->
+                            params: {id: productGetters.getId(product)}}" class="btn-link fw-medium fs-13 text-secondary" title="Edit">Edit</router-link></li>
+                        </ul>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+            </div><!-- end col -->
+        </div><!-- end row -->
+    </div><!-- end profile-setting-panel -->
   </div><!-- end col-lg-8 -->
 </template>
 
@@ -109,9 +101,9 @@ export default {
 
     const getStatusText = (product) => {
       if (productGetters.getIsActive(product)) {
-        return 'active';
+        return 'Active';
       } else {
-        return 'delisted';
+        return 'Delisted';
       }
     };
 
