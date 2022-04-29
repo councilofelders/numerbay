@@ -19,44 +19,57 @@
                    :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''">Start
         Shopping
       </router-link>
-      <div class="table-responsive">
-        <table class="table mb-0 table-s2">
-          <thead class="fs-14">
-          <tr>
-            <th scope="col" v-for="(list, i) in [
-                              'Code',
-                              'Until',
-                              'Allowed Product IDs',
-                              'Off %',
-                              'Max Discount',
-                              'Remain'
-                            ]" :key="i">{{ list }}
-            </th>
-          </tr>
-          </thead>
-          <tbody class="fs-13">
-          <tr v-if="!user.coupons || user.coupons.length === 0">
-            <td colspan="3" class="text-secondary">You currently have no coupon</td>
-          </tr>
-          <tr v-for="coupon in user.coupons" :key="coupon.id">
-            <td>{{ coupon.code }}</td>
-            <td>{{ coupon.date_expiration || '-' }}</td>
-            <td>
-              <span class="text-break" style="white-space: normal;"><a class="btn-link"
-                                                                       v-for="product_id in coupon.applicable_product_ids"
-                                                                       :href="`/p/${product_id}`"
-                                                                       target="_blank">{{ product_id }}, </a></span>
-            </td>
-            <td>{{ coupon.discount_percent }} %</td>
-            <td>{{ coupon.max_discount }} NMR</td>
-            <td>{{ coupon.quantity_remaining }} / {{ coupon.quantity_total }}</td>
-          </tr>
-          </tbody>
-        </table>
-      </div><!-- end table-responsive -->
+      <div class="row g-gs">
+        <div class="col-xl-12" v-if="!displayedProductCoupons || displayedProductCoupons.length === 0">You currently have no coupon</div>
+        <div class="col-xl-6" v-for="(productCoupon, i) in displayedProductCoupons" :key="i" v-if="displayedProductCoupons">
+          <div class="card card-full">
+            <div class="card-body card-body-s1">
+              <p class="mb-3 fs-13 mb-4">{{ productCoupon.quantity_remaining }} / {{ productCoupon.quantity_total }} remaining<span
+                v-if="productCoupon.date_expiration"><span class="dot-separeted"></span>expires on {{ productCoupon.date_expiration }}</span></p>
+              <div class="card-media mb-3">
+                <div class="card-media-img flex-shrink-0">
+                  <img :src="productGetters.getCoverImage(productCoupon.product)" alt="avatar image">
+                </div><!-- card-media-img -->
+                <div class="card-media-body">
+                  <h4>
+                    <router-link
+                      :to="`/product/${productGetters.getCategory(productCoupon.product).slug}/${productGetters.getName(productCoupon.product)}`">
+                      {{ productGetters.getName(productCoupon.product).toUpperCase() }}
+                    </router-link>
+                  </h4>
+                  <p class="fw-medium fs-14">{{ productGetters.getCategory(productCoupon.product).slug }}</p>
+                  <div class="fs-15">
+                    Code:
+                    <div class="tooltip-s1">
+                      <button v-clipboard:copy="productCoupon.code" v-clipboard:success="onCopy"
+                              class="copy-text" type="button">
+                        <span class="tooltip-s1-text tooltip-text">Copy</span>
+                        <span class="btn-link text-decoration-none fw-medium">{{ productCoupon.code }}</span>
+                        <em class="ni ni-copy"></em>
+                      </button>
+                    </div>
+                  </div>
+                </div><!-- end card-media-body -->
+              </div><!-- end card-media -->
+              <div class="card-media mb-3">
+                <div class="card-media-body">
+                  <span class="fw-medium fs-13">Discount %</span>
+                  <p class="fw-medium text-black fs-14">
+                    {{ productCoupon.discount_percent }} %</p>
+                </div>
+                <div class="card-media-body">
+                  <span class="fw-medium fs-13">Discount Cap</span>
+                  <p class="fw-medium text-black fs-14 text-capitalize">
+                    {{ productCoupon.max_discount }} NMR</p>
+                </div>
+              </div><!-- end d-flex -->
+            </div><!-- end card-body -->
+          </div><!-- end card -->
+        </div><!-- end col -->
+      </div><!-- end row -->
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="user.coupons.length" v-model="page" :per-page="perPage"></Pagination>
+        <Pagination :records="productCoupons.length" v-model="page" :per-page="perPage"></Pagination>
       </div>
     </div><!-- end profile-setting-panel-wrap-->
   </div><!-- end col-lg-8 -->
@@ -67,8 +80,11 @@
 import Pagination from "vue-pagination-2";
 
 // Composables
+import {onSSR} from '@vue-storefront/core';
 import {computed} from '@vue/composition-api';
 import {
+  productGetters,
+  useProduct,
   useUser,
   userGetters
 } from '@vue-storefront/numerbay';
@@ -84,13 +100,51 @@ export default {
       perPage: 6
     };
   },
+  computed: {
+    displayedProductCoupons() {
+      const startIndex = this.perPage * (this.page - 1);
+      const endIndex = startIndex + this.perPage;
+      return this.productCoupons?.slice(startIndex, endIndex);
+    }
+  },
   setup() {
     const {user, loading: userLoading} = useUser();
+    const {products, search, loading: productLoading} = useProduct('coupons');
+
+    const couponProductIds = [...new Set(user?.value.coupons.map(c => c.applicable_product_ids || []).flat())];
+
+    onSSR(async () => {
+      await search({filters: {id: {in: couponProductIds}}, sort: 'latest'});
+    });
+
+    const productLookUp = computed(() => Object.assign({}, ...(products?.value?.data ? products.value.data : []).map(({id,...rest}) => ({[id]: {id,...rest}}))));
+
+    const productCoupons = computed(() => {
+      const productCoupons = [];
+      user?.value.coupons.forEach((coupon) => {
+        (coupon.applicable_product_ids || []).forEach((product_id) => {
+          productCoupons.push({...coupon, product: productLookUp.value[parseInt(product_id)]})
+        });
+      });
+      return productCoupons;
+    });
+
+    const onCopy = (e) => {
+      const target = e.trigger.querySelector('.tooltip-text');
+      const prevText = target.innerHTML;
+      target.innerHTML = 'Copied';
+      setTimeout(function () {
+        target.innerHTML = prevText;
+      }, 1000);
+    };
 
     return {
+      productCoupons,
+      productGetters,
       user: computed(() => user?.value ? user.value : null),
       userLoading,
-      userGetters
+      userGetters,
+      onCopy
     };
   }
 };
