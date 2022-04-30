@@ -8,7 +8,7 @@
       <div class="row g-gs">
         <div class="col-sm-6 col-md-6 col-lg-3" v-for="item in []" :key="item.id">
           <router-link :to="item.path" class="card card-full">
-            <img :src="item.img" class="card-img-top" alt="featured miage">
+            <img :src="item.img" class="card-img-top" alt="featured image">
             <div class="card-body p-4">
               <h5 class="card-title">{{ item.title }}</h5>
               <p class="small">{{ item.content }}</p>

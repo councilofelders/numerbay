@@ -1,7 +1,7 @@
 <template>
   <div class="card card-full">
     <div class="card-image">
-      <img :src="productGetters.getCoverImage(product)" class="card-img-top" alt="art image">
+      <img :src="productGetters.getCoverImage(product)" class="card-img-top max-height-200" alt="art image">
     </div>
     <div class="card-body p-4">
       <h5 class="card-title text-truncate mb-0">{{ productGetters.getName(product).toUpperCase() }}</h5>
@@ -186,5 +186,11 @@ export default {
 .author-link {
   z-index: 2;
   position: relative;
+}
+
+.max-height-200 {
+  height: 100%;
+  max-height: 200px;
+  object-fit: cover;
 }
 </style>
