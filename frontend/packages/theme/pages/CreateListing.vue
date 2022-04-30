@@ -66,7 +66,7 @@
                     </object>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <div v-if="isTournamentCategory(form.category)">
+                <div v-if="!Boolean(currentListing) && isTournamentCategory(form.category)">
                   <div class="alert alert-success d-flex mb-4" role="alert" v-if="!isSignalsDataCategory(form.category)">
                     <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
                       <path
