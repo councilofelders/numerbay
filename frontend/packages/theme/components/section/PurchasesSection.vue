@@ -46,7 +46,8 @@
                                 <p class="card-s1-text">{{ orderGetters.getDate(order) }}</p>
                                 <p class="card-s1-text">
                                   <span class="badge fw-medium" :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
-                                  <a href="javascript:void(0);" @click="toggleInfoModal(order)" title="Click for details" class="ms-2">View details</a>
+                                  <a href="javascript:void(0);" @click="toggleInfoModal(order)" title="Click for details" class="ms-2 text-secondary">View details</a>
+                                  <a href="javascript:void(0);" @click="toggleArtifactModal(order)" title="Click for files" class="ms-2 text-primary" v-if="orderGetters.getStatus(order)=='confirmed'">Download</a>
                                 </p>
                             </div>
                         </div>
