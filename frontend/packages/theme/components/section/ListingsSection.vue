@@ -62,16 +62,16 @@
                   }}</span></li>
                 <li>
                   <router-link :to="{
-                            name: 'manage-artifacts',
-                            params: {id: productGetters.getId(product)}}" class="btn-link fw-medium fs-13 text-primary"
-                               title="Manage Artifacts">Upload Files
+                            name: 'edit-listing',
+                            params: {id: productGetters.getId(product)}}"
+                               class="btn-link fw-medium fs-13 text-secondary" title="Edit">Edit
                   </router-link>
                 </li>
                 <li>
                   <router-link :to="{
-                            name: 'edit-listing',
-                            params: {id: productGetters.getId(product)}}"
-                               class="btn-link fw-medium fs-13 text-secondary" title="Edit">Edit
+                            name: 'manage-artifacts',
+                            params: {id: productGetters.getId(product)}}" class="btn-link fw-medium fs-13 text-primary"
+                               title="Manage Artifacts">Upload Files
                   </router-link>
                 </li>
               </ul>
