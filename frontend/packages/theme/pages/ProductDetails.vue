@@ -214,8 +214,7 @@
           </ValidationObserver>
         </div>
         <div v-if="paymentStep === 2">
-          <p class="mb-3">Please make payment through your <strong>Numerai wallet</strong> within <strong>45
-            minutes</strong>. You can leave this page.</p>
+          <p class="mb-3">Please complete the payment within <strong>45 minutes</strong></p>
           <div class="mb-3">
             <label class="form-label">Seller wallet address</label>
             <div class="d-flex align-items-center border p-3 rounded-3">
@@ -241,7 +240,12 @@
               </div>
             </div>
           </div>
-          <a :href="SectionData.placeBidModal.btnLink" class="btn btn-dark d-block">View my orders</a>
+          <div class="mb-2">
+          <a href="javascript:void(0);" @click="pay" class="btn btn-dark d-block">Pay with MetaMask</a>
+          </div>
+          <div class="mb-2">
+          <a href="https://numer.ai/wallet" target="_blank" class="btn btn-light d-block">Open Numerai Wallet</a>
+          </div>
         </div>
       </Modal><!-- end modal-->
     </section><!-- end item-detail-section -->
@@ -276,6 +280,8 @@ import {
   userGetters
 } from '@vue-storefront/numerbay';
 import {useUiNotification} from '~/composables';
+import { ethers } from 'ethers';
+import {contractAddress, transferAbi} from "../plugins/nmr";
 
 export default {
   name: 'ProductDetails',
@@ -466,6 +472,21 @@ export default {
           this.paymentStep = 2;
         }
       }
+    },
+    async pay() {
+      const signer = await this.$wallet.provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, transferAbi, signer);
+
+      // const balance = await contract.balanceOf(userGetters.getPublicAddress(this.user));
+      // console.log('balance: ' + ethers.utils.formatUnits(balance, 18));
+
+      const numberOfTokens = ethers.utils.parseUnits(String(this.amount), 18);
+
+      await contract.transfer(this.toAddress, numberOfTokens).then(function (tx) {
+        console.log(tx);
+      }).catch((e) => {
+        console.error(e);
+      });
     },
     getMetricColor(value) {
       if (value > 0) {
