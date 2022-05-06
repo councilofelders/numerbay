@@ -474,6 +474,31 @@ export default {
       }
     },
     async pay() {
+      if (!userGetters.getPublicAddress(this.user)) {
+        this.send({
+          message: 'Please connect a MetaMask wallet',
+          type: 'bg-danger',
+          icon: 'ni-alert-circle',
+          persist: true,
+          action: {
+            text: 'Connect now',
+            onClick: async () => {
+              await this.$router.push('/account');
+            }
+          }
+        });
+        return;
+      }
+
+      if (userGetters.getPublicAddress(this.user).toUpperCase() !== this.$wallet.account.toUpperCase()) {
+        this.send({
+          message: 'Please use the MetaMask wallet connected to your NumerBay account',
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
+        return;
+      }
+
       const signer = await this.$wallet.provider.getSigner();
       const contract = new ethers.Contract(contractAddress, transferAbi, signer);
 
@@ -485,7 +510,15 @@ export default {
       await contract.transfer(this.toAddress, numberOfTokens).then(function (tx) {
         console.log(tx);
       }).catch((e) => {
-        console.error(e);
+        let message = e.message;
+        if (message.includes('UNPREDICTABLE_GAS_LIMIT')) {
+          message = 'Insufficient balance or exceeded gas limit';
+        }
+        this.send({
+          message: message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
       });
     },
     getMetricColor(value) {
