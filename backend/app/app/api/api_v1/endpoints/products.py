@@ -218,6 +218,9 @@ def create_product(
     # Create options
     for product_option_in in product_options_in:  # type: ignore
         product_option_in.product_id = product.id
+        # standardize wallet address to lower case
+        if product_option_in.wallet:
+            product_option_in.wallet = product_option_in.wallet.lower()
         if product_option_in.coupon_specs:
             if (
                 product.id
@@ -265,6 +268,9 @@ def update_product(  # pylint: disable=too-many-branches
     if product_in.options is not None:
         product_option_ids = []
         for product_option_in in product_in.options:
+            # standardize wallet address to lower case
+            if product_option_in.wallet:
+                product_option_in.wallet = product_option_in.wallet.lower()
             if product_option_in.id is not None and product_option_in.id != -1:
                 product_option_ids.append(product_option_in.id)
 
