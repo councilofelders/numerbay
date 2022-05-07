@@ -10,7 +10,7 @@ from app.schemas.user import OrderBuyer
 
 # Shared properties
 class ReviewBase(BaseModel):
-    """ Base data schema for review """
+    """Base data schema for review"""
 
     created_at: Optional[datetime] = None
     round_tournament: Optional[int] = None
@@ -21,7 +21,7 @@ class ReviewBase(BaseModel):
 
 # Properties to receive on review creation
 class ReviewCreate(ReviewBase):
-    """ Create data schema for review """
+    """Create data schema for review"""
 
     round_tournament: int
     rating: int
@@ -32,12 +32,12 @@ class ReviewCreate(ReviewBase):
 
 # Properties to receive on review update
 class ReviewUpdate(ReviewBase):
-    """ Update data schema for review """
+    """Update data schema for review"""
 
 
 # Properties shared by models stored in DB
 class ReviewInDBBase(ReviewBase):
-    """ Base database data schema for review """
+    """Base database data schema for review"""
 
     id: int
     reviewer: OrderBuyer
@@ -49,9 +49,9 @@ class ReviewInDBBase(ReviewBase):
 
 # Properties to return to client
 class Review(ReviewInDBBase):
-    """ API data schema for review """
+    """API data schema for review"""
 
 
 # Properties properties stored in DB
 class ReviewInDB(ReviewInDBBase):
-    """ Database data schema for review """
+    """Database data schema for review"""

@@ -16,7 +16,7 @@ def validate_product_input(
     category: Union[schemas.Category, models.Category],
     current_user: Union[schemas.User, models.User],
 ) -> Union[schemas.ProductCreate, schemas.ProductUpdate]:
-    """ Validate product input """
+    """Validate product input"""
     # Product name
     if (
         isinstance(product_in, schemas.ProductCreate)
@@ -32,7 +32,8 @@ def validate_product_input(
     if product_in.expiration_round is not None:
         if product_in.expiration_round <= 0:
             raise HTTPException(
-                status_code=400, detail="Expiration round must be a positive integer",
+                status_code=400,
+                detail="Expiration round must be a positive integer",
             )
 
         # deactivate automatically if already expired
@@ -43,7 +44,8 @@ def validate_product_input(
     # Avatar url scheme
     if product_in.avatar and not product_in.avatar.startswith("https"):
         raise HTTPException(
-            status_code=400, detail="Avatar image must be a HTTPS URL",
+            status_code=400,
+            detail="Avatar image must be a HTTPS URL",
         )
 
     # At least one option
@@ -56,7 +58,8 @@ def validate_product_input(
         and len(product_in.options) == 0
     ):
         raise HTTPException(
-            status_code=400, detail="At least one pricing option is required",
+            status_code=400,
+            detail="At least one pricing option is required",
         )
 
     # Pricing options
@@ -73,7 +76,8 @@ def validate_product_input(
 
             if option_exists:
                 raise HTTPException(
-                    status_code=400, detail="Duplicated pricing not allowed",
+                    status_code=400,
+                    detail="Duplicated pricing not allowed",
                 )
 
             validate_product_option_input(db, product_option, current_user)
@@ -110,7 +114,7 @@ def validate_product_option_input(  # pylint: disable=too-many-branches
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate],
     current_user: Union[schemas.User, models.User],
 ) -> None:
-    """ Validate product option input """
+    """Validate product option input"""
     # Positive price
     validate_product_option_price_positive(product_option)
 
@@ -172,7 +176,8 @@ def validate_product_option_input(  # pylint: disable=too-many-branches
             # Stake limit amount check
             if product_option.stake_limit < 1:
                 raise HTTPException(
-                    status_code=400, detail="Stake limit must be greater than 1 NMR",
+                    status_code=400,
+                    detail="Stake limit must be greater than 1 NMR",
                 )
 
         # On-platform chain type
@@ -224,7 +229,7 @@ def validate_product_option_coupon_specs(
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate],
     current_user: Union[schemas.User, models.User],
 ) -> None:
-    """ Validate product option coupon specs """
+    """Validate product option coupon specs"""
     if not product_option.coupon:
         return None
 
@@ -233,7 +238,8 @@ def validate_product_option_coupon_specs(
         product_option.coupon_specs, dict
     ):
         raise HTTPException(
-            status_code=400, detail="Coupon specs must be provided",
+            status_code=400,
+            detail="Coupon specs must be provided",
         )
 
     # drop unknown fields
@@ -297,7 +303,8 @@ def validate_product_option_coupon_specs(
         )
     except ValueError:
         raise HTTPException(
-            status_code=400, detail="Discount percentage must be an integer",
+            status_code=400,
+            detail="Discount percentage must be an integer",
         )
 
     if (
@@ -312,14 +319,16 @@ def validate_product_option_coupon_specs(
 
     if Decimal(product_option.coupon_specs["max_discount"]) <= Decimal("0"):
         raise HTTPException(
-            status_code=400, detail="Max discount must be positive",
+            status_code=400,
+            detail="Max discount must be positive",
         )
 
     if "min_spend" in coupon_specs_keys and Decimal(
         product_option.coupon_specs["min_spend"]
     ) < Decimal("1"):
         raise HTTPException(
-            status_code=400, detail="Coupon min spend must be above 1",
+            status_code=400,
+            detail="Coupon min spend must be above 1",
         )
     return None
 
@@ -327,27 +336,29 @@ def validate_product_option_coupon_specs(
 def validate_product_option_quantity_positive(
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate]
 ) -> None:
-    """ Validate product option quantity positive """
+    """Validate product option quantity positive"""
     if product_option.quantity is not None:
         if product_option.quantity <= 0:
             raise HTTPException(
-                status_code=400, detail="Quantity must be positive",
+                status_code=400,
+                detail="Quantity must be positive",
             )
 
 
 def validate_product_option_price_positive(
     product_option: Union[schemas.ProductOptionCreate, schemas.ProductOptionUpdate]
 ) -> None:
-    """ Validate product option price positive """
+    """Validate product option price positive"""
     if product_option.price is not None:
         if product_option.price <= 0:
             raise HTTPException(
-                status_code=400, detail="Price must be positive",
+                status_code=400,
+                detail="Price must be positive",
             )
 
 
 def validate_existing_product(db: Session, product_id: int) -> models.Product:
-    """ Validate existing product """
+    """Validate existing product"""
     product = crud.product.get(db=db, id=product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -357,7 +368,7 @@ def validate_existing_product(db: Session, product_id: int) -> models.Product:
 def validate_product_owner(
     db: Session, product_id: int, currend_user_id: int
 ) -> models.Product:
-    """ Validate product owner """
+    """Validate product owner"""
     product = validate_existing_product(db, product_id)
     if product.owner_id != currend_user_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -367,7 +378,7 @@ def validate_product_owner(
 def validate_buyer(
     product: models.Product, current_user: models.User, selling_round: int
 ) -> Optional[models.Order]:
-    """ Validate buyer """
+    """Validate buyer"""
     for order in current_user.orders:  # type: ignore
         if (
             order.round_order > selling_round - order.quantity
@@ -381,7 +392,7 @@ def validate_buyer(
 def validate_existing_product_option(
     db: Session, option_id: int
 ) -> models.ProductOption:
-    """ Validate existing product option """
+    """Validate existing product option"""
     product_option = crud.product_option.get(db=db, id=option_id)
     if not product_option:
         raise HTTPException(status_code=404, detail="Product option not found")

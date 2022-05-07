@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 # Shared properties
 class StakeSnapshotBase(BaseModel):
-    """ Base data schema for stake snapshot """
+    """Base data schema for stake snapshot"""
 
     date_creation: Optional[datetime] = None
     round_tournament: Optional[int] = None
@@ -24,7 +24,7 @@ class StakeSnapshotBase(BaseModel):
 
 # Properties to receive on stake_snapshot creation
 class StakeSnapshotCreate(StakeSnapshotBase):
-    """ Create data schema for stake snapshot """
+    """Create data schema for stake snapshot"""
 
     date_creation: datetime
     name: str
@@ -33,12 +33,12 @@ class StakeSnapshotCreate(StakeSnapshotBase):
 
 # Properties to receive on stake_snapshot update
 class StakeSnapshotUpdate(StakeSnapshotBase):
-    """ Update data schema for stake snapshot """
+    """Update data schema for stake snapshot"""
 
 
 # Properties shared by models stored in DB
 class StakeSnapshotInDBBase(StakeSnapshotBase):
-    """ Base database data schema for stake snapshot """
+    """Base database data schema for stake snapshot"""
 
     id: str
 
@@ -48,9 +48,9 @@ class StakeSnapshotInDBBase(StakeSnapshotBase):
 
 # Properties to return to client
 class StakeSnapshot(StakeSnapshotInDBBase):
-    """ API data schema for stake snapshot """
+    """API data schema for stake snapshot"""
 
 
 # Properties properties stored in DB
 class StakeSnapshotInDB(StakeSnapshotInDBBase):
-    """ Database data schema for stake snapshot """
+    """Database data schema for stake snapshot"""

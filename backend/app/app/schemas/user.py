@@ -12,7 +12,7 @@ from .model import ModelMinimal
 
 
 class UserBase(BaseModel):
-    """ Base data schema for user """
+    """Base data schema for user"""
 
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
@@ -28,7 +28,7 @@ class UserBase(BaseModel):
 
 # Properties to receive via API on creation
 class UserCreate(BaseModel):
-    """ Create data schema for user """
+    """Create data schema for user"""
 
     username: str
     password: str
@@ -41,7 +41,7 @@ class UserCreate(BaseModel):
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):  # pylint: disable=too-many-instance-attributes
-    """ Update data schema for user """
+    """Update data schema for user"""
 
     password: Optional[str] = None
     signature: Optional[str] = None
@@ -53,7 +53,7 @@ class UserUpdate(UserBase):  # pylint: disable=too-many-instance-attributes
 
 
 class UserInDBBase(UserBase):
-    """ Base database data schema for user """
+    """Base database data schema for user"""
 
     id: Optional[int] = None
 
@@ -63,7 +63,7 @@ class UserInDBBase(UserBase):
 
 # Additional properties to return via API
 class User(UserInDBBase):
-    """ API data schema for user """
+    """API data schema for user"""
 
     numerai_api_key_public_id: Optional[str] = None
     numerai_api_key_can_upload_submission: Optional[bool] = None
@@ -79,7 +79,7 @@ class User(UserInDBBase):
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
-    """ Database data schema for user """
+    """Database data schema for user"""
 
     hashed_password: str
     nonce: Optional[str] = None
@@ -88,7 +88,7 @@ class UserInDB(UserInDBBase):
 
 
 class GenericOwner(BaseModel):
-    """ API data schema for generic owner """
+    """API data schema for generic owner"""
 
     id: Optional[int] = None
     username: Optional[str] = None
@@ -102,7 +102,7 @@ class GenericOwner(BaseModel):
 
 
 class OrderBuyer(BaseModel):
-    """ API data schema for order buyer """
+    """API data schema for order buyer"""
 
     id: Optional[int] = None
     username: Optional[str] = None

@@ -16,17 +16,19 @@ def validate_new_artifact(
     url: str = None,
     filename: str = None,
 ) -> None:
-    """ Validate new artifacts """
+    """Validate new artifacts"""
     # Product exists
     if not product:
         raise HTTPException(
-            status_code=404, detail="Product not found",
+            status_code=404,
+            detail="Product not found",
         )
 
     # Product ownership
     if product.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail="Not enough permissions",
+            status_code=403,
+            detail="Not enough permissions",
         )
 
     # Input validation
@@ -43,7 +45,8 @@ def validate_new_artifact(
 
     if url and not (url.startswith("http://") or url.startswith("https://")):
         raise HTTPException(
-            status_code=400, detail="Invalid URL",
+            status_code=400,
+            detail="Invalid URL",
         )
 
     # todo filename suffix / desc validation
@@ -68,17 +71,19 @@ def validate_new_artifact(
 def validate_existing_artifact(
     artifact: Optional[models.Artifact], product_id: int, selling_round: int
 ) -> models.Artifact:
-    """ Validate existing artifact """
+    """Validate existing artifact"""
     # artifact exists
     if not artifact:
         raise HTTPException(
-            status_code=404, detail="Artifact not found",
+            status_code=404,
+            detail="Artifact not found",
         )
 
     # artifact belongs to product
     if artifact.product_id != product_id:
         raise HTTPException(
-            status_code=400, detail="Invalid artifact ID for product",
+            status_code=400,
+            detail="Invalid artifact ID for product",
         )
 
     # artifact current round
@@ -87,7 +92,8 @@ def validate_existing_artifact(
         and artifact.round_tournament < selling_round  # type: ignore
     ):
         raise HTTPException(
-            status_code=400, detail="Artifact expired",
+            status_code=400,
+            detail="Artifact expired",
         )
     return artifact
 
@@ -95,7 +101,7 @@ def validate_existing_artifact(
 def send_artifact_emails_for_active_orders(
     db: Session, artifact: models.Artifact, is_file: bool = True
 ) -> None:
-    """ Send artifact emails for active orders """
+    """Send artifact emails for active orders"""
     if settings.EMAILS_ENABLED:
         # orders = crud.order.get_multi_by_state(
         #     db, state="confirmed", round_order=globals.selling_round  # type: ignore

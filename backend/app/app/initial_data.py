@@ -10,13 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 def init() -> None:
-    """ Init db """
+    """Init db"""
     db = SessionLocal()
     init_db(db)
 
 
 def main() -> None:
-    """ Main init function """
+    """Main init function"""
     logger.info("Creating initial data")
     init()
     logger.info("Initial data created")

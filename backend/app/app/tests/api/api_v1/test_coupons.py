@@ -49,7 +49,9 @@ def test_create_product_coupon_spec(
     )
     model_id = model.id
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 200
     content = response.json()
@@ -105,7 +107,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Coupon specs must be provided"
@@ -131,7 +135,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -160,7 +166,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -189,7 +197,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -220,7 +230,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -251,7 +263,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid applicable product ID 9999"
@@ -279,7 +293,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -310,7 +326,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Max discount must be positive"
@@ -339,7 +357,9 @@ def test_create_product_invalid_coupon_spec(
         ],
     }
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Coupon min spend must be above 1"

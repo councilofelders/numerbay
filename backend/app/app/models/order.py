@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class Order(Base):
-    """ Database model for order """
+    """Database model for order"""
 
     id = Column(Integer, primary_key=True, index=True)
     date_order = Column(DateTime, index=True, nullable=False)

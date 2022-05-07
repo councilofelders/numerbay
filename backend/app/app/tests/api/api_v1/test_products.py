@@ -32,7 +32,9 @@ def test_create_product(
     )
     model_id = model.id
     response = client.post(
-        f"{settings.API_V1_STR}/products/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/products/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 200
     content = response.json()

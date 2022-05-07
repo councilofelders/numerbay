@@ -23,7 +23,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
 
 
 def get_db() -> Generator:
-    """ Get db session """
+    """Get db session"""
 
     try:
         db = SessionLocal()
@@ -99,7 +99,7 @@ def get_current_active_superuser(
 
 
 def get_gcs_bucket() -> Bucket:
-    """ Get GCS bucket """
+    """Get GCS bucket"""
     service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
     credentials = service_account.Credentials.from_service_account_info(
         service_account_info

@@ -62,7 +62,7 @@ services:
         # Redirect a domain without www to www
         # To enable it remove the previous line and uncomment the next
         # - traefik.http.middlewares.${STACK_NAME}-www-redirect.redirectregex.replacement=https://www.${DOMAIN}/$${3}
-        # Middleware to redirect www, to disable it remove the next line 
+        # Middleware to redirect www, to disable it remove the next line
         - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-https.middlewares=${STACK_NAME?Variable not set}-www-redirect
         # Middleware to redirect www, and redirect HTTP to HTTPS
         # to disable www redirection remove the section: ${STACK_NAME?Variable not set}-www-redirect,
@@ -108,7 +108,7 @@ services:
     # image: rabbitmq:3-management
     #
     # You also have to change the flower command
-  
+
   flower:
     image: mher/flower:0.9.5
     networks:
@@ -134,7 +134,7 @@ services:
         - traefik.http.routers.${STACK_NAME?Variable not set}-flower-https.tls=true
         - traefik.http.routers.${STACK_NAME?Variable not set}-flower-https.tls.certresolver=le
         - traefik.http.services.${STACK_NAME?Variable not set}-flower.loadbalancer.server.port=5555
-  
+
   backend:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     env_file:
@@ -149,6 +149,7 @@ services:
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
+      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
     build:
       context: ./backend
       dockerfile: backend.dockerfile
@@ -160,7 +161,7 @@ services:
         - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
         - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.rule=PathPrefix(`/backend-api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)
         - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=80
-  
+
   celeryworker:
     image: '${DOCKER_IMAGE_CELERYWORKER?Variable not set}:${TAG-latest}'
     env_file:
@@ -175,6 +176,7 @@ services:
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
+      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
     build:
       context: ./backend
       dockerfile: celeryworker.dockerfile
@@ -196,13 +198,14 @@ services:
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
+      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
     build:
       context: ./backend
       dockerfile: celeryworker.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
     command: bash -c "python /app/app/celeryworker_pre_start.py && celery beat -A app.worker -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
-  
+
   frontend:
     image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
     build:

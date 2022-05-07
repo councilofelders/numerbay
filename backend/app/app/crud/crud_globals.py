@@ -15,10 +15,10 @@ from app.schemas.globals import GlobalsCreate, GlobalsUpdate
 
 
 class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
-    """ CRUD for globals """
+    """CRUD for globals"""
 
     def get_selling_round(self, active_round: Dict) -> int:
-        """ Get selling round """
+        """Get selling round"""
         utc_time = datetime.now(timezone.utc)
         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
         close_staking_time = pd.to_datetime(
@@ -34,7 +34,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         return active_round["number"]
 
     def get_singleton(self, db: Session) -> Optional[Globals]:
-        """ Get globals singleton """
+        """Get globals singleton"""
         instance = db.query(self.model).filter(self.model.id == 0).one_or_none()
         if instance:
             return instance
@@ -53,7 +53,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         return instance
 
     def update_singleton(self, db: Session) -> Globals:
-        """ Update globals singleton """
+        """Update globals singleton"""
         instance = self.get_singleton(db)
         active_round = numerai.get_numerai_active_round()
         selling_round_number = self.get_selling_round(active_round)
@@ -67,7 +67,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         )
 
     def update_stats(self, db: Session) -> Globals:
-        """ Update global stats """
+        """Update global stats"""
         instance = self.get_singleton(db)
         total_num_products = (
             db.query(func.count(models.Product.id))

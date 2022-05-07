@@ -8,7 +8,7 @@ from .user import User
 
 
 class Token(BaseModel):
-    """ Base data schema for auth token """
+    """Base data schema for auth token"""
 
     access_token: str
     token_type: str
@@ -16,12 +16,12 @@ class Token(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    """ API data schema for auth token """
+    """API data schema for auth token"""
 
     sub: Optional[int] = None
 
 
 class Nonce(BaseModel):
-    """ API data schema for nonce """
+    """API data schema for nonce"""
 
     nonce: str

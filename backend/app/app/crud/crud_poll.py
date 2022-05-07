@@ -12,12 +12,12 @@ from app.schemas.poll import PollCreate, PollUpdate
 
 
 def parse_sort_option(sort: Optional[str]) -> Any:  # pylint: disable=W0613
-    """ Parse sort option """
+    """Parse sort option"""
     return desc(Poll.id)
 
 
 class CRUDPoll(CRUDBase[Poll, PollCreate, PollUpdate]):
-    """ CRUD for poll """
+    """CRUD for poll"""
 
     def search(  # pylint: disable=too-many-locals
         self,
@@ -30,7 +30,7 @@ class CRUDPoll(CRUDBase[Poll, PollCreate, PollUpdate]):
         term: str = None,  # pylint: disable=W0613
         sort: str = None,
     ) -> Any:
-        """ Search polls """
+        """Search polls"""
         query_filters = []
         if id is not None:
             query_filters.append(Poll.id == id)

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 
 class Poll(Base):
-    """ Database model for poll """
+    """Database model for poll"""
 
     id = Column(String, primary_key=True, index=True)
     date_creation = Column(DateTime, index=True, nullable=False)

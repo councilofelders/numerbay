@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class Model(Base):
-    """ Database model for Numerai model """
+    """Database model for Numerai model"""
 
     id = Column(String, primary_key=True, index=True)
     last_updated = Column(

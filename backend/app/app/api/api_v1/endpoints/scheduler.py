@@ -18,7 +18,7 @@ def get_schedules(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Get schedules """
+    """Get schedules"""
     i = celery_app.control.inspect()
     return {
         "scheduled": i.scheduled(),
@@ -35,7 +35,7 @@ def add_job_test(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add test job """
+    """Add test job"""
     celery_app.send_task("app.worker.tick", args=["add"])
 
     return {"msg": "success!"}
@@ -48,7 +48,7 @@ def add_job_numerai_models(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add Numerai models job """
+    """Add Numerai models job"""
     celery_app.send_task("app.worker.batch_update_models_task")
 
     return {"msg": "success!"}
@@ -61,7 +61,7 @@ def add_job_numerai_model_scores(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add Numerai model scores job """
+    """Add Numerai model scores job"""
     celery_app.send_task("app.worker.batch_update_model_scores_task")
 
     return {"msg": "success!"}
@@ -74,7 +74,7 @@ def add_job_round_rollover(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add round rollover job """
+    """Add round rollover job"""
     celery_app.send_task("app.worker.update_round_rollover")
 
     return {"msg": "success!"}
@@ -87,7 +87,7 @@ def add_job_payments(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add payments job """
+    """Add payments job"""
     celery_app.send_task("app.worker.batch_update_payments_task")
 
     return {"msg": "success!"}
@@ -100,7 +100,7 @@ def add_job_submit_numerai_models(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add submit Numerai models job """
+    """Add submit Numerai models job"""
     celery_app.send_task("app.worker.batch_submit_numerai_models_task")
 
     return {"msg": "success!"}
@@ -113,7 +113,7 @@ def add_job_validate_numerai_models_stake(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add validate Numerai models stake job """
+    """Add validate Numerai models stake job"""
     celery_app.send_task("app.worker.batch_validate_numerai_models_stake_task")
 
     return {"msg": "success!"}
@@ -126,7 +126,7 @@ def add_job_update_stake_snapshots(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add update stake snapshots job """
+    """Add update stake snapshots job"""
     celery_app.send_task("app.worker.batch_update_stake_snapshots")
 
     return {"msg": "success!"}
@@ -139,7 +139,7 @@ def add_job_update_polls(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add update polls job """
+    """Add update polls job"""
     celery_app.send_task("app.worker.batch_update_polls")
 
     return {"msg": "success!"}
@@ -152,7 +152,7 @@ def add_job_prune_storage(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add prune storage job """
+    """Add prune storage job"""
     celery_app.send_task("app.worker.batch_prune_storage")
 
     return {"msg": "success!"}
@@ -165,7 +165,7 @@ def add_job_artifact_reminder(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add artifact reminder job """
+    """Add artifact reminder job"""
     celery_app.send_task("app.worker.send_order_artifact_upload_reminder_emails_task")
 
     return {"msg": "success!"}
@@ -179,7 +179,7 @@ def trigger_webhook_for_product(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Trigger webhook for product """
+    """Trigger webhook for product"""
     celery_app.send_task("app.worker.trigger_webhook_for_product_task", args=[id])
 
     return {"msg": "success!"}
@@ -192,7 +192,7 @@ def add_job_delivery_rate(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Add delivery rate job """
+    """Add delivery rate job"""
     celery_app.send_task("app.worker.batch_update_delivery_rate")
 
     return {"msg": "success!"}

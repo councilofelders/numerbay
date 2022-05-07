@@ -40,7 +40,13 @@ def search_polls(  # pylint: disable=too-many-arguments
     validate_search_params(skip=skip)
 
     polls = crud.poll.search(
-        db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
+        db,
+        id=id,
+        skip=skip,
+        limit=limit,
+        filters=filters,
+        term=term,
+        sort=sort,
     )
 
     polls_to_return = []
@@ -75,7 +81,13 @@ def search_polls_authenticated(  # pylint: disable=too-many-arguments,too-many-l
     validate_search_params(skip=skip)
 
     polls = crud.poll.search(
-        db, id=id, skip=skip, limit=limit, filters=filters, term=term, sort=sort,
+        db,
+        id=id,
+        skip=skip,
+        limit=limit,
+        filters=filters,
+        term=term,
+        sort=sort,
     )
 
     polls_to_return = []
@@ -346,7 +358,8 @@ def close_poll(
 
 
 @router.post(
-    "/{id}", response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]],
+    "/{id}",
+    response_model=Dict[str, Union[int, List[schemas.Poll], List, Dict]],
 )
 def vote(  # pylint: disable=too-many-locals
     *,

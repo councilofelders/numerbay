@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class Vote(Base):
-    """ Database model for vote """
+    """Database model for vote"""
 
     __table_args__ = (
         UniqueConstraint(

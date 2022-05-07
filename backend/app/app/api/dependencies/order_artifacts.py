@@ -17,7 +17,7 @@ from app.utils import send_new_artifact_email, send_new_artifact_seller_email
 def get_object_name(
     sku: str, selling_round: int, original_filename: str, override_filename: str = None
 ) -> str:
-    """ Get object name """
+    """Get object name"""
     file_ext = Path(original_filename).suffix
     object_name = f"{sku}_{str(selling_round)}_{uuid.uuid4().hex}"
     if override_filename:
@@ -33,7 +33,7 @@ def generate_gcs_signed_url(
     expiration_minutes: int = 10,
     is_upload: bool = True,
 ) -> str:
-    """ Generate GCS signed URL """
+    """Generate GCS signed URL"""
     blob = bucket.blob(object_name)
     url = blob.generate_signed_url(
         expiration=timedelta(minutes=expiration_minutes),
@@ -55,17 +55,19 @@ def validate_new_order_artifact(
     url: str = None,
     filename: str = None,
 ) -> None:
-    """ Validate new order artifact """
+    """Validate new order artifact"""
     # Order exists
     if not order:
         raise HTTPException(
-            status_code=404, detail="Order not found",
+            status_code=404,
+            detail="Order not found",
         )
 
     # Product ownership
     if order.product.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail="Not enough permissions",
+            status_code=403,
+            detail="Not enough permissions",
         )
 
     # Input validation
@@ -82,7 +84,8 @@ def validate_new_order_artifact(
 
     if url and not (url.startswith("http://") or url.startswith("https://")):
         raise HTTPException(
-            status_code=400, detail="Invalid URL",
+            status_code=400,
+            detail="Invalid URL",
         )
 
     # todo filename suffix / desc validation
@@ -95,11 +98,12 @@ def validate_new_order_artifact(
 def validate_existing_order_artifact(
     artifact: Optional[models.OrderArtifact], selling_round: int
 ) -> models.OrderArtifact:
-    """ Validate existing order artifact """
+    """Validate existing order artifact"""
     # artifact exists
     if not artifact:
         raise HTTPException(
-            status_code=404, detail="Order artifact not found",
+            status_code=404,
+            detail="Order artifact not found",
         )
 
     # artifact current round
@@ -108,7 +112,8 @@ def validate_existing_order_artifact(
         and artifact.round_tournament < selling_round  # type: ignore
     ):
         raise HTTPException(
-            status_code=400, detail="Order artifact expired",
+            status_code=400,
+            detail="Order artifact expired",
         )
     return artifact
 
@@ -116,7 +121,7 @@ def validate_existing_order_artifact(
 def send_artifact_emails_for_active_orders(
     db: Session, artifact: models.Artifact, is_file: bool = True
 ) -> None:
-    """ Send artifact emails for active orders """
+    """Send artifact emails for active orders"""
     if settings.EMAILS_ENABLED:
         # orders = crud.order.get_multi_by_state(
         #     db, state="confirmed", round_order=globals.selling_round  # type: ignore

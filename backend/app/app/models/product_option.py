@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class ProductOption(Base):
-    """ Database model for product option """
+    """Database model for product option"""
 
     __tablename__ = "product_option"  # type: ignore
     id = Column(Integer, primary_key=True, index=True)

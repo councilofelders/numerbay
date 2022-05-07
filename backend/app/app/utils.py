@@ -405,7 +405,11 @@ def send_new_artifact_email(
 
 
 def send_new_artifact_seller_email(
-    email_to: str, username: str, round_tournament: int, product: str, artifact: str,
+    email_to: str,
+    username: str,
+    round_tournament: int,
+    product: str,
+    artifact: str,
 ) -> None:
     """
     Send new artifact seller email
@@ -497,7 +501,11 @@ def send_new_coupon_email(  # pylint: disable=too-many-arguments
 
 
 def send_failed_artifact_seller_email(
-    email_to: str, username: str, round_tournament: int, product: str, artifact: str,
+    email_to: str,
+    username: str,
+    round_tournament: int,
+    product: str,
+    artifact: str,
 ) -> None:
     """
     Send failed artifact seller email
@@ -582,7 +590,10 @@ def send_order_artifact_upload_reminder_email(
 
 
 def send_succeeded_webhook_email(
-    email_to: str, username: str, date: str, product: str,
+    email_to: str,
+    username: str,
+    date: str,
+    product: str,
 ) -> None:
     """
     Send succeeded webhook email
@@ -596,7 +607,8 @@ def send_succeeded_webhook_email(
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Webhook trigger success for {product}"
     with open(
-        Path(settings.EMAIL_TEMPLATES_DIR) / "webhook_success.html", encoding="utf8",
+        Path(settings.EMAIL_TEMPLATES_DIR) / "webhook_success.html",
+        encoding="utf8",
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/sales"
@@ -618,7 +630,10 @@ def send_succeeded_webhook_email(
 
 
 def send_failed_webhook_email(
-    email_to: str, username: str, date: str, product: str,
+    email_to: str,
+    username: str,
+    date: str,
+    product: str,
 ) -> None:
     """
     Send failed webhook email
@@ -632,7 +647,8 @@ def send_failed_webhook_email(
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Failed webhook trigger for {product}"
     with open(
-        Path(settings.EMAIL_TEMPLATES_DIR) / "webhook_failed.html", encoding="utf8",
+        Path(settings.EMAIL_TEMPLATES_DIR) / "webhook_failed.html",
+        encoding="utf8",
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/sales"
@@ -668,7 +684,9 @@ def generate_password_reset_token(email: str) -> str:
     expires = now + delta
     exp = expires.timestamp()
     encoded_jwt = jwt.encode(
-        {"exp": exp, "nbf": now, "sub": email}, settings.SECRET_KEY, algorithm="HS256",
+        {"exp": exp, "nbf": now, "sub": email},
+        settings.SECRET_KEY,
+        algorithm="HS256",
     )
     return encoded_jwt
 

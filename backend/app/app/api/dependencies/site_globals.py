@@ -17,7 +17,8 @@ def validate_not_during_rollover(db: Session) -> Globals:
     site_globals = crud.globals.get_singleton(db=db)
     if site_globals is None:
         raise HTTPException(
-            status_code=400, detail="Failed to read site globals",
+            status_code=400,
+            detail="Failed to read site globals",
         )
     if site_globals.is_doing_round_rollover:
         raise HTTPException(

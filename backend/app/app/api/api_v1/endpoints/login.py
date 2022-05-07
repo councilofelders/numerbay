@@ -94,7 +94,9 @@ def test_token(current_user: models.User = Depends(deps.get_current_user)) -> An
 
 @router.post("/login/nonce", response_model=schemas.Nonce)
 def login_nonce(
-    *, db: Session = Depends(deps.get_db), public_address: str = Body(..., embed=True),
+    *,
+    db: Session = Depends(deps.get_db),
+    public_address: str = Body(..., embed=True),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests

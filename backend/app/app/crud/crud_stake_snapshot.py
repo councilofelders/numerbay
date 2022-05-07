@@ -8,7 +8,7 @@ from app.schemas.stake_snapshot import StakeSnapshotCreate, StakeSnapshotUpdate
 class CRUDStakeSnapshot(
     CRUDBase[StakeSnapshot, StakeSnapshotCreate, StakeSnapshotUpdate]
 ):
-    """ CRUD for stake snapshot """
+    """CRUD for stake snapshot"""
 
 
 stake_snapshot = CRUDStakeSnapshot(StakeSnapshot)

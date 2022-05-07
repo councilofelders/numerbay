@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class OrderArtifact(Base):
-    """ Database model for order artifact """
+    """Database model for order artifact"""
 
     __tablename__ = "order_artifact"  # type: ignore
     id = Column(String, primary_key=True, index=True)

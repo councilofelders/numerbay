@@ -171,14 +171,12 @@ def send_new_order_artifact_emails_task(artifact_id: str) -> None:
 
 @celery_app.task  # (acks_late=True)
 def send_order_artifact_upload_reminder_emails_task() -> None:
-    """ Send order artifact upload reminder emails task """
+    """Send order artifact upload reminder emails task"""
     if not settings.EMAILS_ENABLED:
         return None
     db = SessionLocal()
     try:
-        selling_round = crud.globals.get_singleton(  # type: ignore
-            db=db
-        ).selling_round
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
         orders = crud.order.get_active_orders(db, round_order=selling_round)
         orders_to_remind = []
@@ -265,7 +263,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_models_task() -> None:
-    """ Batch upload Numerai models task """
+    """Batch upload Numerai models task"""
     db = SessionLocal()
     try:
         users = crud.user.search(
@@ -350,7 +348,7 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_globals_stats_task() -> None:
-    """ Update global stats task """
+    """Update global stats task"""
     db = SessionLocal()
     try:
         crud.globals.update_stats(db)
@@ -360,7 +358,7 @@ def update_globals_stats_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_active_round() -> None:
-    """ Update active round task """
+    """Update active round task"""
     db = SessionLocal()
     try:
         active_round = numerai.get_numerai_active_round()
@@ -401,7 +399,7 @@ def update_active_round() -> None:
 
 @celery_app.task  # (acks_late=True)
 def update_round_rollover() -> None:
-    """ Update round rollover task """
+    """Update round rollover task"""
     db = SessionLocal()
     try:
         site_globals = crud.globals.get_singleton(db)
@@ -430,7 +428,9 @@ def update_round_rollover() -> None:
             )
 
             # check order stake
-            celery_app.send_task("app.worker.batch_validate_numerai_models_stake_task",)
+            celery_app.send_task(
+                "app.worker.batch_validate_numerai_models_stake_task",
+            )
 
             # check again soon
             celery_app.send_task(
@@ -493,7 +493,7 @@ def update_payment_subtask(order_id: int) -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_payments_task() -> None:
-    """ Batch update payments task """
+    """Batch update payments task"""
     db = SessionLocal()
     try:
         orders = crud.order.get_multi_by_state(db, state="pending")
@@ -710,7 +710,7 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
 
 @celery_app.task  # (acks_late=True)
 def batch_submit_numerai_models_task() -> None:
-    """ Batch submit Numerai models task """
+    """Batch submit Numerai models task"""
     db = SessionLocal()
     try:
         orders = crud.order.get_pending_submission_orders(
@@ -837,7 +837,7 @@ def validate_artifact_upload_task(  # pylint: disable=too-many-branches
 
 @celery_app.task  # (acks_late=True)
 def batch_validate_numerai_models_stake_task() -> None:
-    """ batch validate Numerai models stake task """
+    """batch validate Numerai models stake task"""
     db = SessionLocal()
     try:
         # orders = crud.order.get_multi_by_state(
@@ -881,7 +881,7 @@ def batch_validate_numerai_models_stake_task() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_stake_snapshots() -> None:
-    """ Batch update stake snapshots task """
+    """Batch update stake snapshots task"""
     db = SessionLocal()
     try:
         # Connect existing stake snapshots
@@ -956,12 +956,10 @@ def batch_update_stake_snapshots() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_delivery_rate() -> None:
-    """ Batch update delivery rate task """
+    """Batch update delivery rate task"""
     db = SessionLocal()
     try:
-        selling_round = crud.globals.get_singleton(  # type: ignore
-            db=db
-        ).selling_round
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
         users = crud.user.search(
             # type: ignore
@@ -1035,7 +1033,7 @@ def batch_update_delivery_rate() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_update_polls() -> None:
-    """ Batch update polls task """
+    """Batch update polls task"""
     db = SessionLocal()
     try:
         date_now = datetime.utcnow()
@@ -1052,7 +1050,7 @@ def batch_update_polls() -> None:
 
 @celery_app.task  # (acks_late=True)
 def batch_prune_storage() -> None:
-    """ Batch prune storage task """
+    """Batch prune storage task"""
     # prune artifacts
     db = SessionLocal()
     try:
@@ -1184,7 +1182,7 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
     sender,  # type: ignore
     **kwargs,
 ) -> None:
-    """ Setup celery scheduled tasks """
+    """Setup celery scheduled tasks"""
 
     print("Setup Cron Tasks")
     sender.conf.beat_schedule = {

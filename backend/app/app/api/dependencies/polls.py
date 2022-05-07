@@ -14,7 +14,7 @@ from app.core.config import settings
 
 
 def validate_active_52_weeks(user_models_snapshots: List) -> None:
-    """ Validate user active for 52 weeks """
+    """Validate user active for 52 weeks"""
     is_valid = False
     for model_snapshot in user_models_snapshots:
         if model_snapshot.return_52_weeks is not None:
@@ -29,7 +29,7 @@ def validate_active_52_weeks(user_models_snapshots: List) -> None:
 
 
 def validate_active_13_weeks(user_models_snapshots: List) -> None:
-    """ Validate user active for 13 weeks """
+    """Validate user active for 13 weeks"""
     is_valid = False
     for model_snapshot in user_models_snapshots:
         if model_snapshot.return_13_weeks is not None:
@@ -44,7 +44,7 @@ def validate_active_13_weeks(user_models_snapshots: List) -> None:
 
 
 def generate_voter_id(poll: models.Poll, user: models.User) -> str:
-    """ Generate voter ID """
+    """Generate voter ID"""
     if poll.is_anonymous:
         # todo other wallet support
         to_encode = {"poll_id": poll.id, "voter_address": user.numerai_wallet_address}
@@ -56,7 +56,7 @@ def generate_voter_id(poll: models.Poll, user: models.User) -> str:
 def get_voter_weight(
     db: Session, poll: models.Poll, user: models.User, override: bool = False
 ) -> Optional[Decimal]:
-    """ Get voter weight """
+    """Get voter weight"""
     min_stake = poll.min_stake if poll.min_stake is not None else 0
 
     # Numerai API, check regardless weight mode
@@ -131,7 +131,7 @@ def get_voter_weight(
 def get_user_from_voter_id(
     db: Session, voter_id: str, is_anonymous: bool
 ) -> Optional[models.User]:
-    """ Get user from voter ID """
+    """Get user from voter ID"""
     if is_anonymous:
         voter_id_decoded = jwt.decode(
             voter_id, settings.SECRET_KEY, algorithms=["HS256"]
@@ -150,7 +150,7 @@ def get_user_from_voter_id(
 
 
 def take_stake_weight_snapshots(db: Session, poll: models.Poll) -> None:
-    """ Take stake weight snapshots """
+    """Take stake weight snapshots"""
     for each_vote in poll.votes:  # type: ignore
         voter = get_user_from_voter_id(db, each_vote.voter_id, poll.is_anonymous)
         try:
