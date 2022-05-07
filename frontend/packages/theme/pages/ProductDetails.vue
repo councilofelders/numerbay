@@ -241,10 +241,10 @@
             </div>
           </div>
           <div class="mb-2">
-          <a href="javascript:void(0);" @click="pay" class="btn btn-dark d-block">Pay with MetaMask</a>
+          <a href="https://numer.ai/wallet" target="_blank" class="btn btn-dark d-block">Open Numerai Wallet (Gas-free)</a>
           </div>
           <div class="mb-2">
-          <a href="https://numer.ai/wallet" target="_blank" class="btn btn-light d-block">Open Numerai Wallet</a>
+          <a href="javascript:void(0);" @click="pay" class="btn btn-light d-block">Pay with MetaMask</a>
           </div>
         </div>
       </Modal><!-- end modal-->
@@ -509,6 +509,7 @@ export default {
 
       await contract.transfer(this.toAddress, numberOfTokens).then(function (tx) {
         console.log(tx);
+        console.log(JSON.stringify(tx));
       }).catch((e) => {
         let message = e.message;
         if (message.includes('UNPREDICTABLE_GAS_LIMIT')) {
