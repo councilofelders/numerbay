@@ -14,8 +14,6 @@
               Settings
             </router-link>
           </li>
-          <li><a class="dropdown-item card-generic-item" href="https://docs.numerbay.ai/" target="_blank"><em
-            class="ni ni-question-alt me-2"></em>Docs</a></li>
           <li><a href="#" class="dropdown-item card-generic-item theme-toggler" title="Toggle Dark/Light mode"><em
             class="ni ni-moon me-2"></em> Dark Mode</a></li>
           <li>
