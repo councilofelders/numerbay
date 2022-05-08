@@ -302,6 +302,7 @@ export default {
       quantity: 1,
       amount: 0,
       toAddress: '',
+      orderId: null,
       useCoupon: false,
       coupon: null,
       terms: false,
@@ -469,6 +470,7 @@ export default {
           icon: 'ni-alert-circle'
         });
       } else {
+        this.orderId = this.orderGetters.getId(this.order);
         this.toAddress = this.orderGetters.getToAddress(this.order);
         this.amount = this.orderGetters.getPrice(this.order);
         if (this.amount === 0) { // Go straight to purchases page if the order if free
@@ -477,6 +479,29 @@ export default {
           this.paymentStep = 2;
         }
       }
+    },
+    async onTransactionResponse(transaction) {
+      this.paymentMessage = 'Waiting for confirmation, do not close';
+      await transaction.wait().then(async (receipt) => {
+        this.paymentMessage = 'Validating payment';
+        await this.validatePayment({orderId: this.orderId, transactionHash: receipt.transactionHash});
+        this.paymentMessage = null;
+        if (this.userOrderError?.validatePayment) {
+          await this.send({
+            message: this.userOrderError.validatePayment.message,
+            type: 'bg-danger',
+            icon: 'ni-alert-circle',
+            persist: true
+          });
+        } else {
+          await this.send({
+            message: 'Payment success',
+            type: 'bg-success',
+            icon: 'ni-alert-circle'
+          });
+          await this.$router.push('/purchases');
+        }
+      });
     },
     async pay() {
       if (!userGetters.getPublicAddress(this.user)) {
@@ -515,27 +540,7 @@ export default {
       this.paymentMessage = 'Waiting for payment approval';
       await contract.transfer(this.toAddress, numberOfTokens).then(async (tx) => {
         this.paymentMessage = 'Waiting for transaction response';
-        await this.$wallet.provider.getTransaction(tx.hash).then(async (transaction) => {
-          await transaction.wait().then(async (receipt) => {
-            this.paymentMessage = 'Validating payment';
-            await this.validatePayment({orderId: this.orderGetters.getId(this.orders?.data[0]), transactionHash: receipt.transactionHash});
-            this.paymentMessage = null;
-            if (this.userOrderError?.validatePayment) {
-              await this.send({
-                message: this.userOrderError.validatePayment.message,
-                type: 'bg-danger',
-                icon: 'ni-alert-circle'
-              });
-            } else {
-              await this.send({
-                message: 'Payment success',
-                type: 'bg-success',
-                icon: 'ni-alert-circle'
-              });
-              await this.$router.push('/purchases');
-            }
-          });
-        })
+        await this.$wallet.provider.getTransaction(tx.hash).then(this.onTransactionResponse);
       }).catch(async (e) => {
         this.paymentMessage = null;
         let message = e.message;
@@ -586,6 +591,7 @@ export default {
         });
         if (this.orders?.data?.length > 0) {
           if (this.orders?.data[0].state === 'pending') {
+            this.orderId = this.orderGetters.getId(this.orders?.data[0]);
             this.toAddress = this.orderGetters.getToAddress(this.orders?.data[0]);
             this.amount = this.orderGetters.getPrice(this.orders?.data[0]);
             this.paymentStep = 2;
