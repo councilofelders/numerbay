@@ -13,7 +13,16 @@ const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
     //   data: [],
     //   total: 0
     // };
-  }
+  },
+
+  validatePayment: async (context: Context, {orderId, transactionHash}) => {
+    Logger.debug('validatePayment');
+    const response = await context.$numerbay.api.validatePayment({orderId, transactionHash});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
 };
 
 export default useUserOrderFactory<OrdersResponse, OrderSearchParams>(params);

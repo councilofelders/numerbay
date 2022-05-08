@@ -246,6 +246,10 @@
           <div class="mb-2">
           <a href="javascript:void(0);" @click="pay" class="btn btn-light d-block">Pay with MetaMask</a>
           </div>
+          <div class="mb-2" v-if="paymentMessage">
+            <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
+            <span class="text-primary">{{ paymentMessage }}</span>
+          </div>
         </div>
       </Modal><!-- end modal-->
     </section><!-- end item-detail-section -->
@@ -303,6 +307,7 @@ export default {
       terms: false,
       autoSubmit: false,
       submitSlot: null,
+      paymentMessage: null,
       SectionData
     };
   },
@@ -507,10 +512,32 @@ export default {
 
       const numberOfTokens = ethers.utils.parseUnits(String(this.amount), 18);
 
-      await contract.transfer(this.toAddress, numberOfTokens).then(function (tx) {
-        console.log(tx);
-        console.log(JSON.stringify(tx));
-      }).catch((e) => {
+      this.paymentMessage = 'Waiting for payment approval';
+      await contract.transfer(this.toAddress, numberOfTokens).then(async (tx) => {
+        this.paymentMessage = 'Waiting for transaction response';
+        await this.$wallet.provider.getTransaction(tx.hash).then(async (transaction) => {
+          await transaction.wait().then(async (receipt) => {
+            this.paymentMessage = 'Validating payment';
+            await this.validatePayment({orderId: this.orderGetters.getId(this.orders?.data[0]), transactionHash: receipt.transactionHash});
+            this.paymentMessage = null;
+            if (this.userOrderError?.validatePayment) {
+              await this.send({
+                message: this.userOrderError.validatePayment.message,
+                type: 'bg-danger',
+                icon: 'ni-alert-circle'
+              });
+            } else {
+              await this.send({
+                message: 'Payment success',
+                type: 'bg-success',
+                icon: 'ni-alert-circle'
+              });
+              await this.$router.push('/purchases');
+            }
+          });
+        })
+      }).catch(async (e) => {
+        this.paymentMessage = null;
         let message = e.message;
         if (message.includes('UNPREDICTABLE_GAS_LIMIT')) {
           message = 'Insufficient balance or exceeded gas limit';
@@ -625,7 +652,7 @@ export default {
     const {globals, getGlobals, loading: globalsLoading} = useGlobals();
     const {user, isAuthenticated, loading: userLoading} = useUser();
     const {order, make, loading: makeOrderLoading, error: makeOrderError} = useMakeOrder();
-    const {orders, search: orderSearch} = useUserOrder('product');
+    const {orders, search: orderSearch, validatePayment, error: userOrderError} = useUserOrder('product');
     const {send} = useUiNotification();
 
     const product = computed(() => (products.value.data || [])[0]);
@@ -686,6 +713,8 @@ export default {
       models: computed(() => product ? userGetters.getModels(numerai.value, productGetters.getTournamentId(product), false) : []),
       order,
       orders,
+      validatePayment,
+      userOrderError,
       user,
       productGetters,
       numeraiGetters,

@@ -355,6 +355,7 @@ def validate_payment(
     if order.state != "pending":
         raise HTTPException(status_code=403, detail="Order not pending")
 
+    # todo validate transaction_hash
     abi = [
         {
             "anonymous": False,
@@ -410,5 +411,7 @@ def validate_payment(
             raise HTTPException(status_code=400, detail="Duplicated transaction hash")
 
         on_order_confirmed(db, order, transaction_hash)
+
+        return order
 
     raise HTTPException(status_code=400, detail="Invalid transaction hash")
