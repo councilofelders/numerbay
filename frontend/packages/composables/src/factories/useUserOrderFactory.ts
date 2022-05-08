@@ -4,6 +4,7 @@ import { UseUserOrder, UseUserOrderErrors } from '../types/composables';
 
 export interface UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS> extends FactoryParams {
   searchOrders: (context: Context, params: ORDER_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ORDERS>;
+  validatePayment: (context: Context, params: any) => Promise<any>;
 }
 
 export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS>) {
@@ -29,9 +30,25 @@ export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: 
       }
     };
 
+    const validatePayment = async ({orderId, transactionHash}) => {
+      Logger.debug(`useUserOrderFactory.validatePayment ${orderId}/${transactionHash}`);
+
+      try {
+        loading.value = true;
+        await _factoryParams.validatePayment({orderId, transactionHash});
+        error.value.validatePayment = null;
+      } catch (err) {
+        error.value.validatePayment = err;
+        Logger.error(`useUserOrder/${ssrKey}/validatePayment`, err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
     return {
       orders: computed(() => orders.value),
       search,
+      validatePayment,
       loading: computed(() => loading.value),
       error: computed(() => error.value)
     };

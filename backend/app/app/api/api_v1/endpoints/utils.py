@@ -68,5 +68,6 @@ def test_product_webhook(
     if response.status_code == 200:
         return {"status_code": response.status_code, "content": response.text}
     raise HTTPException(
-        status_code=response.status_code, detail=response.text,
+        status_code=response.status_code,
+        detail=response.text,
     )

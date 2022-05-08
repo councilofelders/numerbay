@@ -18,12 +18,12 @@ from app.schemas.model import ModelCreate, ModelUpdate
 
 
 class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
-    """ CRUD for Numerai model """
+    """CRUD for Numerai model"""
 
     def get_by_name(
         self, db: Session, *, name: str, tournament: int
     ) -> Optional[Model]:
-        """ Get Numerai model by name """
+        """Get Numerai model by name"""
         return (
             db.query(self.model)
             .filter(and_(self.model.name == name, self.model.tournament == tournament))
@@ -33,7 +33,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     def create_with_owner(
         self, db: Session, *, obj_in: ModelCreate, owner_id: int
     ) -> Model:
-        """ Create Numerai model with owner """
+        """Create Numerai model with owner"""
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, owner_id=owner_id)
         db.add(db_obj)
@@ -44,7 +44,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     def get_multi_by_owner(
         self, db: Session, *, owner_id: int, skip: int = 0, limit: int = None
     ) -> List[Model]:
-        """ Get multiple Numerai models by owner """
+        """Get multiple Numerai models by owner"""
         return (
             db.query(self.model)
             .filter(Model.owner_id == owner_id)
@@ -56,7 +56,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     def update_model_unauthenticated(
         self, db: Session, user_json: Dict
     ) -> Optional[str]:
-        """ Update Numerai model without auth """
+        """Update Numerai model without auth"""
         numerai_models = self.get_multi_by_owner(db, owner_id=user_json["id"])
 
         try:
@@ -162,7 +162,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             raise e
 
     def update_model(self, db: Session, user_json: Dict) -> Optional[str]:
-        """ Update Numerai model """
+        """Update Numerai model"""
         if (
             "numerai_api_key_secret" not in user_json
             or user_json["numerai_api_key_secret"] is None
@@ -280,7 +280,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return None
 
     def batch_update_models(self, db: Session) -> bool:
-        """ Batch update Numerai models """
+        """Batch update Numerai models"""
         try:
             print(f"{datetime.utcnow()} Running batch_update_models...")
             loop = asyncio.new_event_loop()

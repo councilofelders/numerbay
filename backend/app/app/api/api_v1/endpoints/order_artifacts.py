@@ -44,7 +44,7 @@ def generate_upload_url(  # pylint: disable=too-many-locals
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Generate upload URL """
+    """Generate upload URL"""
     if is_numerai_direct in [  # pylint: disable=simplifiable-if-statement
         "true",
         "True",
@@ -144,7 +144,7 @@ def validate_upload(
         deps.get_current_active_user
     ),  # pylint: disable=W0613
 ) -> Any:
-    """ Validate upload """
+    """Validate upload"""
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     artifact = crud.order_artifact.get(db, id=artifact_id)
@@ -154,7 +154,8 @@ def validate_upload(
 
     if not artifact.object_name:
         raise HTTPException(
-            status_code=400, detail="Artifact not an upload object",
+            status_code=400,
+            detail="Artifact not an upload object",
         )
 
     if artifact.is_numerai_direct:
@@ -183,7 +184,8 @@ def validate_upload(
                 db, db_obj=artifact.order, obj_in={"submit_state": "failed"}
             )  # type: ignore
             raise HTTPException(
-                status_code=404, detail="Submission failed",
+                status_code=404,
+                detail="Submission failed",
             )
         crud.order.update(
             db,
@@ -208,7 +210,8 @@ def validate_upload(
 
             crud.order_artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
             raise HTTPException(
-                status_code=404, detail="Artifact file not uploaded",
+                status_code=404,
+                detail="Artifact file not uploaded",
             )
 
         celery_app.send_task(
@@ -224,7 +227,8 @@ def validate_upload(
 
 
 @router.get(
-    "/", response_model=Dict[str, Union[int, List[schemas.OrderArtifact]]],
+    "/",
+    response_model=Dict[str, Union[int, List[schemas.OrderArtifact]]],
 )
 def list_order_artifacts(
     *,
@@ -233,7 +237,7 @@ def list_order_artifacts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ List order artifacts """
+    """List order artifacts"""
     order = validate_existing_order(db, order_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
@@ -257,7 +261,7 @@ def generate_download_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Generate download URL """
+    """Generate download URL"""
     artifact = crud.order_artifact.get(db, id=artifact_id)
 
     if not artifact:
@@ -347,7 +351,8 @@ def delete_order_artifact(
     # not numerai direct submission
     if artifact.is_numerai_direct:  # type: ignore
         raise HTTPException(
-            status_code=400, detail="Direct Numerai submission cannot be deleted",
+            status_code=400,
+            detail="Direct Numerai submission cannot be deleted",
         )
 
     # product ownership

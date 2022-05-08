@@ -68,7 +68,9 @@ def update_category(
 
 @router.get("/{id}", response_model=schemas.Category)
 def read_category(
-    *, db: Session = Depends(deps.get_db), id: int,  # pylint: disable=W0622
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,  # pylint: disable=W0622
 ) -> Any:
     """
     Get category by ID.

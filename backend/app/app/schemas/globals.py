@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 # Shared properties
 class GlobalsBase(BaseModel):
-    """ Base data schema for globals """
+    """Base data schema for globals"""
 
     active_round: Optional[int] = None
     selling_round: Optional[int] = None
@@ -21,16 +21,16 @@ class GlobalsBase(BaseModel):
 
 # Properties to receive via API on creation
 class GlobalsCreate(GlobalsBase):
-    """ Create data schema for globals """
+    """Create data schema for globals"""
 
 
 # Properties to receive via API on update
 class GlobalsUpdate(GlobalsBase):
-    """ Update data schema for globals """
+    """Update data schema for globals"""
 
 
 class GlobalsInDBBase(GlobalsBase):
-    """ Base database data schema for globals """
+    """Base database data schema for globals"""
 
     id: Optional[int] = None
 
@@ -40,9 +40,9 @@ class GlobalsInDBBase(GlobalsBase):
 
 # Additional properties to return via API
 class Globals(GlobalsInDBBase):
-    """ API data schema for globals """
+    """API data schema for globals"""
 
 
 # Additional properties stored in DB
 class GlobalsInDB(GlobalsInDBBase):
-    """ Database data schema for globals """
+    """Database data schema for globals"""

@@ -20,7 +20,7 @@ wait_seconds = 1  # pylint: disable=invalid-name
     after=after_log(logger, logging.WARN),
 )
 def init() -> None:
-    """ Init db """
+    """Init db"""
 
     try:
         db = SessionLocal()
@@ -32,7 +32,7 @@ def init() -> None:
 
 
 def main() -> None:
-    """ Main init function """
+    """Main init function"""
     logger.info("Initializing service")
     init()
     logger.info("Service finished initializing")

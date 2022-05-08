@@ -36,7 +36,9 @@ router = APIRouter()
 
 @router.post("/", response_model=schemas.User)
 def create_user(
-    *, db: Session = Depends(deps.get_db), user_in: schemas.UserCreate,
+    *,
+    db: Session = Depends(deps.get_db),
+    user_in: schemas.UserCreate,
 ) -> Any:
     """
     Create new user.
@@ -48,7 +50,8 @@ def create_user(
         or user_in.password == ""
     ):
         raise HTTPException(
-            status_code=400, detail="Please specify username and password",
+            status_code=400,
+            detail="Please specify username and password",
         )
 
     user = crud.user.get_by_username(db, username=user_in.username)  # type: ignore
@@ -153,7 +156,7 @@ def sync_user_numerai(  # pylint: disable=too-many-locals
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Sync user with Numerai API"""
+    """Sync user with Numerai API"""
     user_json = jsonable_encoder(current_user)
     numerai.sync_user_numerai_api(db, user_json)
     return crud.user.get(db, current_user.id)

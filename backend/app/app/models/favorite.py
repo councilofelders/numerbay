@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class Favorite(Base):
-    """ Database model for favorite """
+    """Database model for favorite"""
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"), index=True)

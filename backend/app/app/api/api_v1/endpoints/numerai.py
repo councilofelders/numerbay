@@ -16,7 +16,7 @@ router = APIRouter()
 def get_numerai_models_endpoint(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Get Numerai models """
+    """Get Numerai models"""
 
     if (
         current_user.numerai_api_key_secret is None
@@ -41,7 +41,7 @@ def get_numerai_models_endpoint(
 
 @router.get("/{tournament}/pipeline-status", response_model=Dict)
 def get_numerai_pipeline_status_endpoint(tournament: int) -> Any:
-    """ Get Numerai scoring pipeline status """
+    """Get Numerai scoring pipeline status"""
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
@@ -53,7 +53,7 @@ def get_numerai_pipeline_status_endpoint(tournament: int) -> Any:
 
 @router.get("/{tournament}/{model_name}", response_model=Dict)
 def get_numerai_model_performance_endpoint(tournament: int, model_name: str) -> Any:
-    """ Get Numerai model performance """
+    """Get Numerai model performance"""
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
@@ -71,7 +71,7 @@ def get_numerai_model_target_stake(
     model_name: str,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Dict:
-    """ Get Numerai model target stake """
+    """Get Numerai model target stake"""
     if (
         current_user.numerai_api_key_secret is None
         or len(current_user.numerai_api_key_secret) == 0
@@ -102,7 +102,7 @@ def set_numerai_model_target_stake(
     target_stake_amount: Decimal = Body(..., embed=True),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Dict:
-    """ Set Numerai model target stake """
+    """Set Numerai model target stake"""
     if (
         current_user.numerai_api_key_secret is None
         or len(current_user.numerai_api_key_secret) == 0

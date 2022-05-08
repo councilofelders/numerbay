@@ -6,13 +6,14 @@ from typing import Any, Dict, List, Union
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from web3 import Web3
 
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
-from app.api.dependencies.orders import validate_existing_order
+from app.api.dependencies.orders import on_order_confirmed, validate_existing_order
 from app.api.dependencies.products import (
     validate_existing_product,
     validate_existing_product_option,
@@ -93,7 +94,8 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     # Quantity
     if quantity < 1:
         raise HTTPException(
-            status_code=400, detail="Order quantity must be positive",
+            status_code=400,
+            detail="Order quantity must be positive",
         )
 
     total_quantity = (
@@ -277,7 +279,7 @@ def submit_artifact(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Submit artifact """
+    """Submit artifact"""
     order = validate_existing_order(db, order_id)
 
     if (
@@ -333,3 +335,83 @@ def submit_artifact(
     )
     crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
     return {"msg": "success!"}
+
+
+@router.post("/{order_id}/payment/{transaction_hash}")
+def validate_payment(
+    *,
+    order_id: int,
+    transaction_hash: str,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Validate payment"""
+    order = validate_existing_order(db, order_id)
+    if (
+        order.buyer_id != current_user.id  # pylint: disable=consider-using-in
+        and order.product.owner_id != current_user.id
+    ):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.state != "pending":
+        raise HTTPException(status_code=403, detail="Order not pending")
+
+    # todo validate transaction_hash
+    abi = [
+        {
+            "anonymous": False,
+            "inputs": [
+                {"indexed": True, "name": "from", "type": "address"},
+                {"indexed": True, "name": "to", "type": "address"},
+                {"indexed": False, "name": "value", "type": "uint256"},
+            ],
+            "name": "Transfer",
+            "type": "event",
+        },
+    ]
+
+    infura_url = f"https://mainnet.infura.io/v3/{settings.INFURA_PROJECT_ID}"
+    web3 = Web3(Web3.HTTPProvider(infura_url))
+    contract = web3.eth.contract(
+        address=Web3.toChecksumAddress(settings.NMR_CONTRACT_ADDRESS), abi=abi
+    )
+
+    tx_receipt = web3.eth.getTransactionReceipt(transaction_hash)
+    if tx_receipt:
+        transfer_event = contract.events.Transfer().processReceipt(tx_receipt)
+        transaction_timestamp = datetime.utcfromtimestamp(
+            web3.eth.getBlock(transfer_event[0]["blockNumber"])["timestamp"]
+        )
+
+        # time check
+        if transaction_timestamp < order.date_order:
+            raise HTTPException(status_code=400, detail="Invalid transaction timestamp")
+
+        transaction_from = transfer_event[0]["args"]["from"].lower()
+        transaction_to = transfer_event[0]["args"]["to"].lower()
+        if transaction_to != order.to_address.lower():  # type: ignore
+            raise HTTPException(
+                status_code=400, detail="Transaction recipient mismatch"
+            )
+        if (
+            transaction_from != order.from_address
+            and transaction_from != current_user.public_address
+        ):
+            raise HTTPException(status_code=400, detail="Transaction sender mismatch")
+        transaction_amount = web3.fromWei(transfer_event[0]["args"]["value"], "ether")
+        if transaction_amount != order.price:
+            raise HTTPException(status_code=400, detail="Transaction amount mismatch")
+
+        # existing match check
+        existing_match = (
+            db.query(models.Order)
+            .filter(models.Order.transaction_hash == transaction_hash)
+            .first()
+        )
+        if existing_match is not None:
+            raise HTTPException(status_code=400, detail="Duplicated transaction hash")
+
+        on_order_confirmed(db, order, transaction_hash)
+
+        return order
+
+    raise HTTPException(status_code=400, detail="Invalid transaction hash")

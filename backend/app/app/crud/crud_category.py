@@ -11,10 +11,10 @@ from app.schemas.category import CategoryCreate, CategoryUpdate
 
 
 class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
-    """ CRUD for category """
+    """CRUD for category"""
 
     def get_all_subcategories(self, db: Session, *, category_id: int) -> List:
-        """ Get all subcategories """
+        """Get all subcategories"""
         nodealias = aliased(self.model)
 
         descendants = (
@@ -32,7 +32,7 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
     def get_multi_by_slug(
         self, db: Session, *, slug: str, skip: int = 0, limit: int = None
     ) -> List[Category]:
-        """ Get multiple categories by slug """
+        """Get multiple categories by slug"""
         return (
             db.query(self.model)
             .filter(Category.slug == slug)
@@ -44,7 +44,7 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
     def create_with_parent(
         self, db: Session, *, obj_in: CategoryCreate, parent_id: int
     ) -> Category:
-        """ Create category with parent """
+        """Create category with parent"""
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, parent_id=parent_id)
         db.add(db_obj)

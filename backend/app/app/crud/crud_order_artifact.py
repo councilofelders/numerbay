@@ -15,7 +15,7 @@ from app.schemas.order_artifact import OrderArtifactCreate, OrderArtifactUpdate
 class CRUDOrderArtifact(
     CRUDBase[OrderArtifact, OrderArtifactCreate, OrderArtifactUpdate]
 ):
-    """ CRUD for order artifact """
+    """CRUD for order artifact"""
 
     def get_multi_by_order_round(
         self,
@@ -25,7 +25,7 @@ class CRUDOrderArtifact(
         round_tournament: int,
         active_only: Optional[bool] = False
     ) -> List[OrderArtifact]:
-        """ Get multiple order artifacts by order round """
+        """Get multiple order artifacts by order round"""
         query_filters = [OrderArtifact.order_id == order.id]
         if order.product.category.is_per_round:
             query_filters.append(OrderArtifact.round_tournament == round_tournament)
@@ -35,7 +35,7 @@ class CRUDOrderArtifact(
         return db.query(self.model).filter(query_filter).all()
 
     def bulk_mark_for_pruning(self, db: Session, current_round: int) -> None:
-        """ Bulk mark order artifacts for storage pruning """
+        """Bulk mark order artifacts for storage pruning"""
         artifacts_to_prune = (
             db.query(self.model)
             .join(models.Order)

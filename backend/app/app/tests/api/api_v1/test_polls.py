@@ -34,7 +34,9 @@ def test_create_poll(
     }
 
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 200
     content = response.json()
@@ -86,7 +88,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["id"] = "~#123,."
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -99,7 +103,9 @@ def test_create_poll_invalid_inputs(
         data = copy.deepcopy(base_data)
         data["id"] = existing_poll.id
         response = client.post(
-            f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+            f"{settings.API_V1_STR}/polls/",
+            headers=superuser_token_headers,
+            json=data,
         )
         assert response.status_code == 400
         assert response.json()["detail"] == "Poll with this id already exists"
@@ -110,7 +116,9 @@ def test_create_poll_invalid_inputs(
     data["is_stake_predetermined"] = False  # type: ignore
 
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -122,7 +130,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["max_options"] = -10
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Max options setting must be at least 1"
@@ -132,7 +142,9 @@ def test_create_poll_invalid_inputs(
     data["is_multiple"] = False
     data["max_options"] = 2
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -144,7 +156,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["weight_mode"] = "invalid_mode"
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid weight mode"
@@ -153,7 +167,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["stake_basis_round"] = 128
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -165,7 +181,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["min_stake"] = -0.1
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Min stake threshold must be positive"
@@ -174,7 +192,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["min_rounds"] = 12
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -185,7 +205,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["clip_low"] = 1
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -197,7 +219,9 @@ def test_create_poll_invalid_inputs(
     data["weight_mode"] = "log_numerai_stake"
     data["clip_low"] = -1
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Low-side clipping threshold must be positive"
@@ -206,7 +230,9 @@ def test_create_poll_invalid_inputs(
     data["weight_mode"] = "log_numerai_stake"
     data["clip_high"] = -1
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "High-side clipping threshold must be positive"
@@ -216,7 +242,9 @@ def test_create_poll_invalid_inputs(
     data["clip_low"] = 1
     data["min_stake"] = 2
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -229,7 +257,9 @@ def test_create_poll_invalid_inputs(
     data["clip_low"] = 2
     data["clip_high"] = 1
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert (
@@ -241,7 +271,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["options"] = []
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid number of options"
@@ -249,7 +281,9 @@ def test_create_poll_invalid_inputs(
     data = copy.deepcopy(base_data)
     data["max_options"] = 6
     response = client.post(
-        f"{settings.API_V1_STR}/polls/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/polls/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid number of options"
@@ -258,7 +292,8 @@ def test_create_poll_invalid_inputs(
 def test_search_polls(client: TestClient, db: Session) -> None:
     with get_random_poll(db) as poll:
         response = client.post(
-            f"{settings.API_V1_STR}/polls/search", json={"id": poll.id},
+            f"{settings.API_V1_STR}/polls/search",
+            json={"id": poll.id},
         )
         assert response.status_code == 200
         content = response.json()
@@ -271,7 +306,8 @@ def test_search_polls_authenticated(
 ) -> None:
     with get_random_poll(db) as poll:
         response = client.post(
-            f"{settings.API_V1_STR}/polls/search-authenticated", json={"id": poll.id},
+            f"{settings.API_V1_STR}/polls/search-authenticated",
+            json={"id": poll.id},
         )
         assert response.status_code == 401
 

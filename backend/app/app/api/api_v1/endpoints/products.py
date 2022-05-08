@@ -173,7 +173,8 @@ def create_product(
     )
     if child_categories_count > 0:
         raise HTTPException(
-            status_code=400, detail="Category must be a leaf category",
+            status_code=400,
+            detail="Category must be a leaf category",
         )
 
     # Existing listing
@@ -181,7 +182,8 @@ def create_product(
     product = crud.product.get_by_sku(db, sku=sku)
     if product:
         raise HTTPException(
-            status_code=400, detail=f"{product.sku} is already listed",
+            status_code=400,
+            detail=f"{product.sku} is already listed",
         )
 
     # Numerai API
@@ -194,11 +196,13 @@ def create_product(
         model = crud.model.get_by_name(db, name=product_in.name, tournament=tournament)
         if not model:
             raise HTTPException(
-                status_code=404, detail="Model not found",
+                status_code=404,
+                detail="Model not found",
             )
         if model.owner_id != current_user.id:
             raise HTTPException(
-                status_code=403, detail="Not enough permissions",
+                status_code=403,
+                detail="Not enough permissions",
             )
         model_id = model.id
 
@@ -218,6 +222,9 @@ def create_product(
     # Create options
     for product_option_in in product_options_in:  # type: ignore
         product_option_in.product_id = product.id
+        # standardize wallet address to lower case
+        if product_option_in.wallet:
+            product_option_in.wallet = product_option_in.wallet.lower()
         if product_option_in.coupon_specs:
             if (
                 product.id
@@ -265,6 +272,9 @@ def update_product(  # pylint: disable=too-many-branches
     if product_in.options is not None:
         product_option_ids = []
         for product_option_in in product_in.options:
+            # standardize wallet address to lower case
+            if product_option_in.wallet:
+                product_option_in.wallet = product_option_in.wallet.lower()
             if product_option_in.id is not None and product_option_in.id != -1:
                 product_option_ids.append(product_option_in.id)
 
@@ -370,7 +380,7 @@ def generate_upload_url(  # pylint: disable=too-many-locals
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Generate upload URL """
+    """Generate upload URL"""
     product = crud.product.get(db, id=product_id)
     validate_new_artifact(
         product=product, current_user=current_user, url=None, filename=filename
@@ -458,7 +468,7 @@ def validate_upload(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Validate upload """
+    """Validate upload"""
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
     artifact = crud.artifact.get(db, id=artifact_id)
@@ -476,13 +486,15 @@ def validate_upload(
 
     if not artifact.object_name:
         raise HTTPException(
-            status_code=400, detail="Artifact not an upload object",
+            status_code=400,
+            detail="Artifact not an upload object",
         )
 
     blob = bucket.blob(artifact.object_name)
     if not blob.exists():
         raise HTTPException(
-            status_code=404, detail="Artifact file not uploaded",
+            status_code=404,
+            detail="Artifact file not uploaded",
         )
 
     crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
@@ -511,7 +523,7 @@ async def create_product_artifact(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Create product artifact """
+    """Create product artifact"""
     product = crud.product.get(db, id=product_id)
 
     validate_new_artifact(
@@ -563,7 +575,7 @@ async def update_product_artifact(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Update product artifact """
+    """Update product artifact"""
     product = crud.product.get(db, id=product_id)
     validate_new_artifact(
         product=product, current_user=current_user, url=url, filename=filename
@@ -610,7 +622,7 @@ def list_product_artifacts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ List product artifacts """
+    """List product artifacts"""
     product = validate_existing_product(db, product_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
@@ -635,7 +647,7 @@ def generate_download_url(
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """ Generate download URL """
+    """Generate download URL"""
     product = validate_existing_product(db, product_id)
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore

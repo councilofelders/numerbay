@@ -31,7 +31,11 @@ def create_random_product(
     description = random_lower_string()
 
     product_in = ProductCreate(
-        name=name, category_id=3, description=description, options=[], id=id,
+        name=name,
+        category_id=3,
+        description=description,
+        options=[],
+        id=id,
     )
     product = crud.product.create_with_owner(
         db=db,

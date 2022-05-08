@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class Review(Base):
-    """ Database model for review """
+    """Database model for review"""
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, index=True, nullable=False)

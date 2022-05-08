@@ -35,7 +35,10 @@ def test_create_user_new_username(client: TestClient, db: Session) -> None:
     username = random_email()
     password = random_lower_string()
     data = {"username": username, "password": password}
-    r = client.post(f"{settings.API_V1_STR}/users/", json=data,)
+    r = client.post(
+        f"{settings.API_V1_STR}/users/",
+        json=data,
+    )
     assert 200 <= r.status_code < 300
     created_user = r.json()
     user = crud.user.get_by_username(db, username=username)
@@ -70,7 +73,10 @@ def test_create_user_existing_username(client: TestClient, db: Session) -> None:
     user_in = UserCreate(username=username, password=password)
     user = crud.user.create(db, obj_in=user_in)
     data = {"username": username, "password": password}
-    r = client.post(f"{settings.API_V1_STR}/users/", json=data,)
+    r = client.post(
+        f"{settings.API_V1_STR}/users/",
+        json=data,
+    )
     created_user = r.json()
     assert r.status_code == 400
     assert "_id" not in created_user
@@ -84,7 +90,10 @@ def test_create_user_empty(client: TestClient, db: Session) -> None:
     user_in = UserCreate(username=username, password=password)
     user = crud.user.create(db, obj_in=user_in)
     data = {"username": username, "password": password}
-    r = client.post(f"{settings.API_V1_STR}/users/", json=data,)
+    r = client.post(
+        f"{settings.API_V1_STR}/users/",
+        json=data,
+    )
     created_user = r.json()
     assert r.status_code == 400
     assert "_id" not in created_user
@@ -102,7 +111,9 @@ def test_update_username_password(
     new_password = random_lower_string()
     data = {"username": new_username, "password": new_password}
     r = client.put(
-        f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers, json=data,
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json=data,
     )
     assert 200 <= r.status_code < 300
     updated_user = r.json()
@@ -124,7 +135,10 @@ def test_update_username_conflict(
     username = random_email()
     password = random_lower_string()
     data = {"username": username, "password": password}
-    r = client.post(f"{settings.API_V1_STR}/users/", json=data,)
+    r = client.post(
+        f"{settings.API_V1_STR}/users/",
+        json=data,
+    )
     existing_user = r.json()
 
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
@@ -135,7 +149,9 @@ def test_update_username_conflict(
     new_password = random_lower_string()
     data = {"username": new_username, "password": new_password}
     r = client.put(
-        f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers, json=data,
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json=data,
     )
     updated_user = r.json()
     assert r.status_code == 400

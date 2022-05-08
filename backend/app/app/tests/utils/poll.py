@@ -44,7 +44,10 @@ def create_random_poll(
         ],
     )
 
-    poll = crud.poll.create(db=db, obj_in=poll_in,)
+    poll = crud.poll.create(
+        db=db,
+        obj_in=poll_in,
+    )
 
     return poll
 

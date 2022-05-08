@@ -90,6 +90,10 @@ class Settings(BaseSettings):
     # GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
     GCP_SERVICE_ACCOUNT_INFO: Optional[str] = None
 
+    # Web3
+    INFURA_PROJECT_ID: Optional[str] = None
+    NMR_CONTRACT_ADDRESS: Optional[str] = "0x1776e1f26f98b1a5df9cd347953a26dd3cb46671"
+
     # NumerBay
     PENDING_ORDER_EXPIRE_MINUTES: int = 45
     ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES: int = 10

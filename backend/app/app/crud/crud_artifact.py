@@ -11,12 +11,12 @@ from app.schemas.artifact import ArtifactCreate, ArtifactUpdate
 
 
 class CRUDArtifact(CRUDBase[Artifact, ArtifactCreate, ArtifactUpdate]):
-    """ CRUD for artifact """
+    """CRUD for artifact"""
 
     def get_multi_by_product_round(
         self, db: Session, *, product: models.Product, round_tournament: int
     ) -> List[Artifact]:
-        """ Get multiple artifacts by product and tournament round """
+        """Get multiple artifacts by product and tournament round"""
         if product.category.is_per_round:
             return (
                 db.query(self.model)

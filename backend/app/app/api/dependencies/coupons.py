@@ -14,7 +14,7 @@ from app.utils import send_new_coupon_email
 
 
 def generate_promo_code(num_chars: int) -> str:
-    """ Generate promo code """
+    """Generate promo code"""
     code_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     code = ""
     for _ in range(0, num_chars):
@@ -26,10 +26,11 @@ def generate_promo_code(num_chars: int) -> str:
 def return_or_raise(
     value_to_return: Any, exception_msg: str, raise_exceptions: bool = True
 ) -> Any:
-    """ Return value or raise exception """
+    """Return value or raise exception"""
     if raise_exceptions:
         raise HTTPException(
-            status_code=400, detail=exception_msg,
+            status_code=400,
+            detail=exception_msg,
         )
     return value_to_return
 
@@ -42,7 +43,7 @@ def calculate_option_price(  # pylint: disable=too-many-return-statements,too-ma
     raise_exceptions: bool = True,
     user: Optional[models.User] = None,
 ) -> schemas.ProductOption:
-    """ Calculate option price """
+    """Calculate option price"""
     option.price *= qty
     option.quantity *= qty  # type: ignore
 
@@ -125,7 +126,7 @@ def calculate_option_price(  # pylint: disable=too-many-return-statements,too-ma
 
 
 def send_new_coupon_email_for_coupon(coupon_obj: models.Coupon) -> None:
-    """ Send new coupon email for coupon """
+    """Send new coupon email for coupon"""
     if settings.EMAILS_ENABLED:
         # Send new coupon email to buyer
         if coupon_obj.owner.email:
@@ -145,7 +146,7 @@ def send_new_coupon_email_for_coupon(coupon_obj: models.Coupon) -> None:
 def create_coupon_for_order(
     db: Session, order_obj: models.Order
 ) -> Optional[models.Coupon]:
-    """ Create coupon for order """
+    """Create coupon for order"""
     if order_obj.coupon and order_obj.coupon_specs:
         if order_obj.price >= Decimal(
             order_obj.coupon_specs.get("reward_min_spend", "0")  # type: ignore

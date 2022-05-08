@@ -22,7 +22,7 @@ from app.utils import (
 
 
 def validate_existing_order(db: Session, order_id: int) -> models.Order:
-    """ Validate existing order """
+    """Validate existing order"""
     order = crud.order.get(db=db, id=order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -30,7 +30,7 @@ def validate_existing_order(db: Session, order_id: int) -> models.Order:
 
 
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:
-    """ Match transaction for order """
+    """Match transaction for order"""
     matched_transaction = None
     try:
         numerai_wallet_transactions = numerai.get_numerai_wallet_transactions(
@@ -76,7 +76,7 @@ def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optiona
 def on_order_confirmed(
     db: Session, order_obj: models.Order, transaction: Optional[str] = None
 ) -> None:
-    """ On order confirmed """
+    """On order confirmed"""
     # update order
     # order_obj.transaction_hash = transaction
     # order_obj.state = "confirmed"
@@ -114,7 +114,9 @@ def on_order_confirmed(
             f"Round {site_globals.active_round} is open, search for artifact to upload"
         )
         artifacts = crud.artifact.get_multi_by_product_round(
-            db, product=order_obj.product, round_tournament=selling_round,
+            db,
+            product=order_obj.product,
+            round_tournament=selling_round,
         )
         if artifacts:
             csv_artifacts = [
@@ -154,7 +156,7 @@ def on_order_confirmed(
 
 
 def update_payment(db: Session, order_id: int) -> None:
-    """ Update payment for order """
+    """Update payment for order"""
     order_obj = crud.order.get(db, id=order_id)
     if order_obj:
         if order_obj.currency == "NMR":
@@ -172,8 +174,10 @@ def update_payment(db: Session, order_id: int) -> None:
                 on_order_confirmed(db, order_obj, matched_transaction)
 
             # expiration
-            if order_obj.state != "confirmed" and datetime.now() - order_obj.date_order > timedelta(
-                minutes=settings.PENDING_ORDER_EXPIRE_MINUTES
+            if (
+                order_obj.state != "confirmed"
+                and datetime.now() - order_obj.date_order
+                > timedelta(minutes=settings.PENDING_ORDER_EXPIRE_MINUTES)
             ):
                 print(f"Order {order_id} expired")
                 order_obj.state = "expired"
@@ -188,7 +192,7 @@ def update_payment(db: Session, order_id: int) -> None:
 
 
 def send_order_confirmation_emails(order_obj: models.Order) -> None:
-    """ Send order confirmation emails """
+    """Send order confirmation emails"""
     if settings.EMAILS_ENABLED:
         product = order_obj.product
         # Send seller email
@@ -223,7 +227,7 @@ def send_order_confirmation_emails(order_obj: models.Order) -> None:
 
 
 def send_order_expired_emails(order_obj: models.Order) -> None:
-    """ Send order expired emails """
+    """Send order expired emails"""
     if settings.EMAILS_ENABLED:
         # Send buyer email
         product = order_obj.product

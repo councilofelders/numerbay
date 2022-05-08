@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 # Shared properties
 class OrderArtifactBase(BaseModel):
-    """ Base data schema for order artifact """
+    """Base data schema for order artifact"""
 
     date: Optional[datetime] = None
     round_tournament: Optional[int] = None
@@ -22,7 +22,7 @@ class OrderArtifactBase(BaseModel):
 
 # Properties to receive on order_artifact creation
 class OrderArtifactCreate(OrderArtifactBase):
-    """ Create data schema for order artifact """
+    """Create data schema for order artifact"""
 
     id: str
     order_id: int
@@ -30,12 +30,12 @@ class OrderArtifactCreate(OrderArtifactBase):
 
 # Properties to receive on order_artifact update
 class OrderArtifactUpdate(OrderArtifactBase):
-    """ Update data schema for order artifact """
+    """Update data schema for order artifact"""
 
 
 # Properties shared by models stored in DB
 class OrderArtifactInDBBase(OrderArtifactBase):
-    """ Base database data schema for order artifact """
+    """Base database data schema for order artifact"""
 
     id: str
     order_id: int
@@ -46,9 +46,9 @@ class OrderArtifactInDBBase(OrderArtifactBase):
 
 # Properties to return to client
 class OrderArtifact(OrderArtifactInDBBase):
-    """ API data schema for order artifact """
+    """API data schema for order artifact"""
 
 
 # Properties properties stored in DB
 class OrderArtifactInDB(OrderArtifactInDBBase):
-    """ Database data schema for order artifact """
+    """Database data schema for order artifact"""

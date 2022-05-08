@@ -12,7 +12,7 @@ from app.schemas.user import GenericOwner
 
 
 class PollBase(BaseModel):
-    """ Base data schema for poll """
+    """Base data schema for poll"""
 
     date_finish: Optional[date] = None
     description: Optional[str] = None
@@ -20,7 +20,7 @@ class PollBase(BaseModel):
 
 
 class PollOption(BaseModel):
-    """ API Data schema for poll option """
+    """API Data schema for poll option"""
 
     value: int
     text: str
@@ -28,7 +28,7 @@ class PollOption(BaseModel):
 
 # Properties to receive on poll creation
 class PollCreate(PollBase):
-    """ Create data schema for poll """
+    """Create data schema for poll"""
 
     id: Optional[str] = None
     date_creation: Optional[datetime] = None
@@ -50,14 +50,14 @@ class PollCreate(PollBase):
 
 # Properties to receive on poll update
 class PollUpdate(PollBase):
-    """ Update data schema for poll """
+    """Update data schema for poll"""
 
     options: Optional[List[PollOption]] = None
 
 
 # Properties shared by models stored in DB
 class PollInDBBase(PollBase):
-    """ Base database data schema for poll """
+    """Base database data schema for poll"""
 
     id: str
     date_creation: datetime
@@ -81,14 +81,14 @@ class PollInDBBase(PollBase):
 
 # Properties to return to client
 class Poll(PollInDBBase):
-    """ API data schema for poll """
+    """API data schema for poll"""
 
     owner: Optional[GenericOwner] = None
     has_voted: Optional[bool] = False
 
     @root_validator(pre=True)
     def set_votes(cls, values):  # type: ignore
-        """ Set votes """
+        """Set votes"""
         if not values["is_blind"] or values["is_finished"]:
             votes = values.get("votes", None)
             if votes:
@@ -114,6 +114,6 @@ class Poll(PollInDBBase):
 
 # Properties properties stored in DB
 class PollInDB(PollInDBBase):
-    """ Database data schema for poll """
+    """Database data schema for poll"""
 
     owner_id: int

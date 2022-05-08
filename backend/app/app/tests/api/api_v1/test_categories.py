@@ -31,7 +31,9 @@ def test_create_category(
 
 def test_read_categories(client: TestClient) -> None:
     # category = create_random_category(db)
-    response = client.get(f"{settings.API_V1_STR}/categories",)
+    response = client.get(
+        f"{settings.API_V1_STR}/categories",
+    )
     assert response.status_code == 200
     content = response.json()
     assert content
@@ -40,7 +42,9 @@ def test_read_categories(client: TestClient) -> None:
 
 def test_read_category(client: TestClient, db: Session) -> None:
     category = create_random_category(db)
-    response = client.get(f"{settings.API_V1_STR}/categories/{category.id}",)
+    response = client.get(
+        f"{settings.API_V1_STR}/categories/{category.id}",
+    )
     assert response.status_code == 200
     content = response.json()
     assert content["id"] == category.id

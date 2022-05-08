@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 # Shared properties
 class ModelBase(BaseModel):
-    """ Base data schema for Numerai model """
+    """Base data schema for Numerai model"""
 
     name: Optional[str] = None
     tournament: Optional[int] = None
@@ -25,7 +25,7 @@ class ModelBase(BaseModel):
 
 # Properties to receive on model creation
 class ModelCreate(ModelBase):
-    """ Create data schema for Numerai model """
+    """Create data schema for Numerai model"""
 
     id: str
     name: str
@@ -35,12 +35,12 @@ class ModelCreate(ModelBase):
 
 # Properties to receive on model update
 class ModelUpdate(ModelBase):
-    """ Update data schema for Numerai model """
+    """Update data schema for Numerai model"""
 
 
 # Properties shared by models stored in DB
 class ModelInDBBase(ModelBase):
-    """ Base database data schema for Numerai model """
+    """Base database data schema for Numerai model"""
 
     id: str
     name: str
@@ -53,17 +53,17 @@ class ModelInDBBase(ModelBase):
 
 # Properties to return to client
 class Model(ModelInDBBase):
-    """ API data schema for Numerai model """
+    """API data schema for Numerai model"""
 
 
 # Properties properties stored in DB
 class ModelInDB(ModelInDBBase):
-    """ Database data schema for Numerai model """
+    """Database data schema for Numerai model"""
 
 
 # Minimal model information
 class ModelMinimal(BaseModel):
-    """ Minimal API data schema for Numerai model """
+    """Minimal API data schema for Numerai model"""
 
     id: str
     name: Optional[str] = None
@@ -76,7 +76,7 @@ class ModelMinimal(BaseModel):
 
 # Summary model performance for products
 class ModelSummary(BaseModel):
-    """ API data schema for Numerai model summary """
+    """API data schema for Numerai model summary"""
 
     name: Optional[str] = None
     tournament: Optional[int] = None

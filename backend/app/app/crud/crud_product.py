@@ -73,7 +73,7 @@ _SORT_OPTION_LOOKUP = {
 
 
 def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) -> Any:
-    """ Parse sort option """
+    """Parse sort option"""
     if category is not None and category.tournament:
         if category.tournament == 8:
             default_option = (
@@ -92,7 +92,7 @@ def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) 
 
 
 def parse_platform_filter(filter_item: Dict) -> Any:
-    """ Parse platform filter """
+    """Parse platform filter"""
     with_on_platform = "on-platform" in filter_item["in"]
     with_off_platform = "off-platform" in filter_item["in"]
     platform_list = []
@@ -106,7 +106,7 @@ def parse_platform_filter(filter_item: Dict) -> Any:
 
 
 def parse_status_filter(filter_item: Dict) -> Any:
-    """ Parse status filter """
+    """Parse status filter"""
     with_active = "active" in filter_item["in"]
     with_inactive = "inactive" in filter_item["in"]
     status_list = []
@@ -120,7 +120,7 @@ def parse_status_filter(filter_item: Dict) -> Any:
 
 
 def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
-    """ Parse rank filter """
+    """Parse rank filter"""
     try:
         if len(filter_item["in"]) > 0:
             rank_range = filter_item["in"][0]
@@ -139,7 +139,7 @@ def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
 
 
 def parse_stake_filter(filter_item: Dict, stake_step: float) -> Optional[Any]:
-    """ Parse stake filter """
+    """Parse stake filter"""
     try:
         if len(filter_item["in"]) > 0:
             stake_range = filter_item["in"][0]
@@ -161,7 +161,7 @@ def parse_stake_filter(filter_item: Dict, stake_step: float) -> Optional[Any]:
 def parse_return3m_filter(
     filter_item: Dict, return3m_step: Union[int, float]
 ) -> Optional[Any]:
-    """ Parse 3M return filter """
+    """Parse 3M return filter"""
     try:
         if len(filter_item["in"]) > 0:
             return3m_range = filter_item["in"][0]
@@ -189,7 +189,7 @@ def parse_filters(
     stake_step: Union[int, float] = 1,
     return3m_step: float = 0.01,
 ) -> List:
-    """ Parse filters """
+    """Parse filters"""
     if not isinstance(query_filters, list):
         query_filters = []
 
@@ -220,7 +220,7 @@ def parse_filters(
 def generate_aggregations(
     agg_stats: Any, return3m_step: Union[int, float], stake_step: float
 ) -> List:
-    """ Generate aggregations """
+    """Generate aggregations"""
     aggregations = [
         {
             "attribute_code": "status",
@@ -278,7 +278,7 @@ def generate_aggregations(
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
-    """ CRUD for product """
+    """CRUD for product"""
 
     def create_with_owner(
         self,
@@ -290,7 +290,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         model_id: Optional[str] = None,
         tournament: Optional[int] = 8,
     ) -> Product:
-        """ Create product with owner """
+        """Create product with owner"""
         obj_in_data = jsonable_encoder(obj_in)
 
         if model_id is None:
@@ -309,13 +309,13 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         return db_obj
 
     def get_by_sku(self, db: Session, *, sku: str) -> Product:
-        """ Get product by sku """
+        """Get product by sku"""
         return db.query(self.model).filter(Product.sku == sku).first()
 
     def get_multi_by_owner(
         self, db: Session, *, owner_id: int, skip: int = 0, limit: int = None
     ) -> List[Product]:
-        """ Get multiple products by owner """
+        """Get multiple products by owner"""
         return (
             db.query(self.model)
             .filter(Product.owner_id == owner_id)
@@ -327,7 +327,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
     def get_multi_by_category(
         self, db: Session, *, category_id: int, skip: int = 0, limit: int = None
     ) -> List[Product]:
-        """ Get multiple products by category """
+        """Get multiple products by category"""
         all_child_categories = crud.category.get_all_subcategories(
             db, category_id=category_id
         )
@@ -341,7 +341,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         )
 
     def bulk_expire(self, db: Session, current_round: int) -> None:
-        """ Bulk expire products """
+        """Bulk expire products"""
         products_to_expire = (
             db.query(self.model).filter(Product.expiration_round < current_round).all()
         )
@@ -351,7 +351,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         db.commit()
 
     def bulk_unmark_is_ready(self, db: Session) -> None:
-        """ Bulk unmark product readiness flag"""
+        """Bulk unmark product readiness flag"""
         products_to_unmark = db.query(self.model).filter(Product.is_ready).all()
         for product_obj in products_to_unmark:
             if product_obj.category.is_per_round:
@@ -373,7 +373,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         category_slug: str = None,
         sort: str = None,
     ) -> Any:
-        """ Search products """
+        """Search products"""
         all_child_categories = crud.category.get_all_subcategories(
             db, category_id=category_id  # type: ignore
         )
