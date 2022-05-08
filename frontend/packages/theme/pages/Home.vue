@@ -167,6 +167,15 @@ export default {
         },
         {
           id: 4,
+          img: 'https://res.cloudinary.com/numerbay/image/upload/v1651997905/dashboard-aventurine_orsa68.webp',
+          avatar: 'https://forum.numer.ai/user_avatar/forum.numer.ai/aventurine/90/790_2.png',
+          title: 'Numerai Dune Dashboard',
+          desc: 'Dune Dashboard for NMR and NFTee\'s',
+          author: '@Aventurine',
+          link: 'https://dune.com/aventurine/NumeraiNMR'
+        },
+        {
+          id: 5,
           img: 'https://res.cloudinary.com/numerbay/image/upload/v1651305377/plugin-wigglemuse_nlu8qy.webp',
           avatar: 'https://forum.numer.ai/user_avatar/forum.numer.ai/wigglemuse/90/593_2.png',
           title: 'USD Payout Plugin',
@@ -175,7 +184,7 @@ export default {
           link: 'https://forum.numer.ai/t/payouts-as-usd-unofficial-improvement-implemented/5074'
         },
         {
-          id: 5,
+          id: 6,
           img: 'https://res.cloudinary.com/numerbay/image/upload/v1651307200/lib-opensignals-jrdi_qxwzy1.webp',
           avatar: 'https://forum.numer.ai/user_avatar/forum.numer.ai/jrdi/240/1067_2.png',
           title: 'Open Signals',
@@ -184,7 +193,7 @@ export default {
           link: 'https://github.com/councilofelders/opensignals'
         },
         {
-          id: 6,
+          id: 7,
           img: 'https://res.cloudinary.com/numerbay/image/upload/v1651313166/lib-numerblox-crowdcent_fkpvqp.webp',
           avatar: 'https://res.cloudinary.com/numerbay/image/upload/v1651312887/avatar-crowdcent_bbmydw.webp',
           title: 'NumerBlox',
@@ -247,6 +256,15 @@ export default {
           desc: 'A monthly newsletter for all Numerai participants',
           author: '@Aventurine',
           link: 'https://coenumerainewsletter.substack.com/'
+        },
+        {
+          id: 6,
+          img: 'https://res.cloudinary.com/numerbay/image/upload/v1651997154/resource-uuazed_xymyh0.webp',
+          avatar: 'https://forum.numer.ai/user_avatar/forum.numer.ai/uuazed/90/1229_2.png',
+          title: 'Awesome Numerai',
+          desc: 'A curated list of awesome numerai libraries, tutorials and other resources',
+          author: '@uuazed',
+          link: 'https://github.com/uuazed/awesome-numerai'
         }
       ],
       SectionData
