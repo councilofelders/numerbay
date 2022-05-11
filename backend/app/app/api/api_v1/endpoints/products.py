@@ -227,7 +227,8 @@ def create_product(
             product_option_in.wallet = product_option_in.wallet.lower()
         if product_option_in.coupon_specs:
             if (
-                product.id
+                len(product_option_in.coupon_specs["applicable_product_ids"]) == 0
+                and product.id
                 not in product_option_in.coupon_specs["applicable_product_ids"]
             ):
                 product_option_in.coupon_specs["applicable_product_ids"].append(
@@ -311,7 +312,13 @@ def update_product(  # pylint: disable=too-many-branches
                     json_product_option_in.pop("coupon_specs", None)
                 else:
                     if (
-                        product.id
+                        len(
+                            json_product_option_in.get("coupon_specs")[
+                                "applicable_product_ids"
+                            ]
+                        )
+                        == 0
+                        and product.id
                         not in json_product_option_in.get("coupon_specs")[
                             "applicable_product_ids"
                         ]
@@ -329,7 +336,13 @@ def update_product(  # pylint: disable=too-many-branches
                 json_product_option_in["product_id"] = product.id
                 if json_product_option_in.get("coupon_specs", False):
                     if (
-                        product.id
+                        len(
+                            json_product_option_in.get("coupon_specs")[
+                                "applicable_product_ids"
+                            ]
+                        )
+                        == 0
+                        and product.id
                         not in json_product_option_in.get("coupon_specs")[
                             "applicable_product_ids"
                         ]
