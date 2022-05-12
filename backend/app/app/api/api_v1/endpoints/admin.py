@@ -19,23 +19,16 @@ from app.models import Artifact, Order, Product
 router = APIRouter()
 
 
-# @router.post("/create-coupon")
-# def create_coupon(*, db: Session = Depends(deps.get_db),) -> Any:
-#     from datetime import datetime
-#
-#     data = {
-#         "date_creation": datetime.utcnow(),
-#         "applicability": "specific_seller",
-#         "code": "TEST",
-#         "applicable_seller_id": 148,
-#         "discount_mode": "percent",
-#         "discount_percent": 50,
-#         "max_discount": 7,
-#         "min_spend": 10,
-#         "quantity_total": 1,
-#     }
-#     crud.coupon.create(db, obj_in=schemas.CouponCreate(**data))
-
+@router.post("/fill-coupon-creator")
+def fill_coupon_creator(*, db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_superuser)) -> Any:
+    coupons = crud.coupon.get_multi(db, limit=None)
+    for coupon in coupons:
+        if coupon.applicable_product_ids and len(coupon.applicable_product_ids) > 0:
+            product = crud.product.get(db, coupon.applicable_product_ids[0])
+            if product:
+                coupon.creator_id = product.owner_id
+    db.commit()
+    return {"msg": "success!"}
 
 # @router.post("/resend-seller-order-emails")
 # def resend_seller_order_emails(

@@ -60,11 +60,18 @@ class CouponOwner(BaseModel):
         orm_mode = True
 
 
+class CouponCreator(CouponOwner):
+    """API data schema for coupon creator"""
+
+    pass
+
+
 # Properties to return to client
 class Coupon(CouponInDBBase):
     """API data schema for coupon"""
 
     owner: Optional[CouponOwner] = None
+    creator: Optional[CouponCreator] = None
     quantity_remaining: Optional[int] = None
 
     @root_validator(pre=True)
@@ -87,3 +94,4 @@ class CouponInDB(CouponInDBBase):
     """Database data schema for coupon"""
 
     owner_id: int
+    creator_id: Optional[int]
