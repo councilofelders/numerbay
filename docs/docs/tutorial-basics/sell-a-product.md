@@ -115,17 +115,17 @@ Total number of rounds for an order will be `[order quantity] x [bundled number 
 
 :::
 
-### Reward coupons
+### Reward coupons on sale
 If you want to reward coupons to buyers meeting certain conditions, tick the **Reward coupons to buyers** box and configure as shown below.
+
+You can also [create coupons manually](/docs/tutorial-basics/sell-a-product#create-coupons-manually) for specific users.
 
 <img alt="Listing Coupon Specs" src="/img/tutorial/listingCouponSpecs.png" width="800"/>
 
 * Min spend for reward
     - Minimum spend in NMR required for the currently edited product to reward the buyer with a coupon
     - This is not the min spend for the actual coupon rewarded
-* Applicable products:
-    - Your *other* listings that the rewarded coupon can be applied to
-    - The currently edited product is always included in the applicable products list
+* Applicable products: Your listings that the rewarded coupons can be applied to
 * Discount %: 0-100 integer, 100 being free
 * Max discount: Maximum discount cap in NMR for the rewarded coupons
 * Min spend for redemption: Minimum spend in NMR required for the applicable products in order for a buyer to use the rewarded coupons
@@ -174,3 +174,22 @@ Once artifacts are uploaded, your product will be tagged with a `Instant` badge 
 Your sales are viewable in the **[Sales](https://numerbay.ai/sales)** page. You can click on the order IDs to view order details.
 
 ![Sales History](/img/tutorial/salesHistory.png)
+
+## Create coupons manually
+
+In the **[My Coupons](https://numerbay.ai/coupons)** page you can create coupons manually for specific buyers, this can be useful when you have other payment arrangements and simply want to use NumerBay as a delivery service.
+
+<img alt="Coupon Creation" src="/img/tutorial/couponCreation.png" width="800"/>
+
+* Username of recipient: Case-sensitive NumerBay username 
+* Applicable products: Your listings that the coupons can be applied to
+* Discount %: 0-100 integer, 100 being free
+* Number of redemptions: Number of times the coupon code can be redeemed
+* Max discount: Maximum discount cap in NMR for the rewarded coupons
+* Min spend for redemption: Minimum spend in NMR required for the applicable products in order for a buyer to use the rewarded coupons
+* Custom coupon code: optional custom coupon code, needs to have at least 6 characters
+* Expiration date: optional expiration date of the coupons
+
+You can also delete created coupons:
+
+<img alt="Coupon Deletion" src="/img/tutorial/couponDeletion.png" width="800"/>

@@ -117,4 +117,4 @@ If you made your order with auto-submission set up during checkout, submissions 
 ## Manage coupons
 Some sellers may reward you with coupons for your orders. Your coupons are viewable in the **[My Coupons](https://numerbay.ai/coupons)** page. 
 
-![My Coupons](/img/tutorial/myCoupons.png)
+<img alt="My Coupons" src="/img/tutorial/myCoupons.png" width="800"/>
