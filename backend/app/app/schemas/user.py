@@ -75,6 +75,7 @@ class User(UserInDBBase):
     encrypted_private_key: Optional[str] = None
     models: Optional[List[ModelMinimal]] = []
     coupons: Optional[List[Coupon]] = []
+    created_coupons: Optional[List[Coupon]] = []
 
 
 # Additional properties stored in DB

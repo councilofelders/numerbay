@@ -39,7 +39,16 @@ class Coupon(Base):
     quantity_total = Column(Integer, index=True)
     is_owned_by_seller = Column(Boolean, default=False, nullable=False)
     owner_id = Column(Integer, ForeignKey("user.id"))
-    owner = relationship("User", back_populates="coupons")
+    owner = relationship(
+        "User", foreign_keys=owner_id, back_populates="coupons", lazy="subquery"
+    )
+    creator_id = Column(Integer, ForeignKey("user.id"))
+    creator = relationship(
+        "User",
+        foreign_keys=creator_id,
+        back_populates="created_coupons",
+        lazy="subquery",
+    )
     redemptions = relationship(
         "Order", back_populates="applied_coupon", cascade="all, delete-orphan"
     )

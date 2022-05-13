@@ -193,3 +193,16 @@ export interface UsePoll<POLLS, POLL_SEARCH_PARAMS> {
   vote(params: { id: string, options: any[] }): Promise<void>;
   [x: string]: any;
 }
+
+export interface UseCouponErrors {
+    create: Error;
+    delete: Error;
+}
+
+export interface UseCoupon<COUPONS, COUPON_SEARCH_PARAMS> {
+  loading: ComputedProperty<boolean>;
+  error: ComputedProperty<UseCouponErrors>;
+  createCoupon(params: { coupon: any }): Promise<void>;
+  deleteCoupon(params: { id: number }): Promise<void>;
+  [x: string]: any;
+}
