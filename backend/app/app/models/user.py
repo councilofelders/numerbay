@@ -49,5 +49,9 @@ class User(Base):
     reviews = relationship("Review", back_populates="reviewer")
     favorites = relationship("Favorite", back_populates="user")
     polls = relationship("Poll", back_populates="owner")
-    coupons = relationship("Coupon", foreign_keys="Coupon.owner_id", back_populates="owner")
-    created_coupons = relationship("Coupon", foreign_keys="Coupon.creator_id", back_populates="creator")
+    coupons = relationship(
+        "Coupon", foreign_keys="Coupon.owner_id", back_populates="owner"
+    )
+    created_coupons = relationship(
+        "Coupon", foreign_keys="Coupon.creator_id", back_populates="creator"
+    )

@@ -7,6 +7,7 @@ export { default as useContent } from './useContent';
 export { default as useFacet } from './useFacet';
 export { default as useMakeOrder } from './useMakeOrder';
 export { default as useProduct } from './useProduct';
+export { default as useCoupon } from './useCoupon';
 export { default as useReview } from './useReview';
 export { default as useShipping } from './useShipping';
 export { default as useShippingProvider } from './useShippingProvider';

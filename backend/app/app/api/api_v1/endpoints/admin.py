@@ -20,7 +20,11 @@ router = APIRouter()
 
 
 @router.post("/fill-coupon-creator")
-def fill_coupon_creator(*, db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_superuser)) -> Any:
+def fill_coupon_creator(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
     coupons = crud.coupon.get_multi(db, limit=None)
     for coupon in coupons:
         if coupon.applicable_product_ids and len(coupon.applicable_product_ids) > 0:
@@ -29,6 +33,7 @@ def fill_coupon_creator(*, db: Session = Depends(deps.get_db), current_user: mod
                 coupon.creator_id = product.owner_id
     db.commit()
     return {"msg": "success!"}
+
 
 # @router.post("/resend-seller-order-emails")
 # def resend_seller_order_emails(

@@ -15,22 +15,26 @@
       </p>
     </div><!-- end alert -->
     <div class="profile-setting-panel-wrap">
-      <router-link :to="`/explore/numerai-predictions`" class="btn btn-outline-dark mb-4"
-                   :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''">Start
-        Shopping
+      <router-link :to="`/create-coupon`" class="btn btn-outline-dark mb-4"
+                   :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''">Create Coupon
       </router-link>
       <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
-          <li class="nav-item" role="presentation">
-              <button class="nav-link" :class="'active'" :id="'received'" type="button">Received coupons</button>
-          </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" :class="'active'" :id="'received'" type="button">Received coupons</button>
+        </li>
       </ul>
       <div class="row g-gs">
-        <div class="col-xl-12" v-if="!displayedProductCoupons || displayedProductCoupons.length === 0">You have not received any coupon</div>
-        <div class="col-xl-6" v-for="(productCoupon, i) in displayedProductCoupons" :key="i" v-if="displayedProductCoupons">
+        <div class="col-xl-12" v-if="!displayedProductCoupons || displayedProductCoupons.length === 0">You have not
+          received any coupon
+        </div>
+        <div class="col-xl-6" v-for="(productCoupon, i) in displayedProductCoupons" :key="i"
+             v-if="displayedProductCoupons">
           <div class="card card-full">
             <div class="card-body card-body-s1">
-              <p class="mb-3 fs-13 mb-4">{{ productCoupon.quantity_remaining }} / {{ productCoupon.quantity_total }} remaining<span
-                v-if="productCoupon.date_expiration"><span class="dot-separeted"></span>expires on {{ productCoupon.date_expiration }}</span></p>
+              <p class="mb-3 fs-13 mb-4">{{ productCoupon.quantity_remaining }} / {{ productCoupon.quantity_total }}
+                remaining<span
+                  v-if="productCoupon.date_expiration"><span
+                  class="dot-separeted"></span>expires on {{ productCoupon.date_expiration }}</span></p>
               <div class="card-media mb-3">
                 <div class="card-media-img flex-shrink-0">
                   <img :src="productGetters.getCoverImage(productCoupon.product)" alt="avatar image">
@@ -77,17 +81,23 @@
         <Pagination :records="productCoupons.length" v-model="page" :per-page="perPage"></Pagination>
       </div>
       <ul class="nav nav-tabs nav-tabs-s3 mb-2 mt-4" role="tablist">
-          <li class="nav-item" role="presentation">
-              <button class="nav-link" :id="'created'" type="button">Created coupons</button>
-          </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" :id="'created'" type="button">Created coupons</button>
+        </li>
       </ul>
       <div class="row g-gs">
-        <div class="col-xl-12" v-if="!displayedCreatedProductCoupons || displayedCreatedProductCoupons.length === 0">You have not created any coupon</div>
-        <div class="col-xl-6" v-for="(productCoupon, i) in displayedCreatedProductCoupons" :key="i" v-if="displayedCreatedProductCoupons">
+        <div class="col-xl-12" v-if="!displayedCreatedProductCoupons || displayedCreatedProductCoupons.length === 0">You
+          have not created any coupon
+        </div>
+        <div class="col-xl-6" v-for="(productCoupon, i) in displayedCreatedProductCoupons" :key="i"
+             v-if="displayedCreatedProductCoupons">
           <div class="card card-full">
             <div class="card-body card-body-s1">
-              <p class="mb-3 fs-13 mb-4">@{{ productCoupon.owner.username }}<span class="dot-separeted"></span>{{ productCoupon.quantity_remaining }} / {{ productCoupon.quantity_total }} remaining<span
-                v-if="productCoupon.date_expiration"><span class="dot-separeted"></span>expires on {{ productCoupon.date_expiration }}</span></p>
+              <p class="mb-3 fs-13 mb-4">@{{ productCoupon.owner.username }}<span
+                class="dot-separeted"></span>{{ productCoupon.quantity_remaining }} / {{ productCoupon.quantity_total }}
+                remaining<span
+                  v-if="productCoupon.date_expiration"><span
+                  class="dot-separeted"></span>expires on {{ productCoupon.date_expiration }}</span></p>
               <div class="card-media mb-3">
                 <div class="card-media-img flex-shrink-0">
                   <img :src="productGetters.getCoverImage(productCoupon.product)" alt="avatar image">
@@ -125,13 +135,22 @@
                     {{ productCoupon.max_discount }} NMR</p>
                 </div>
               </div><!-- end d-flex -->
+              <ul class="btns-group">
+                <li>
+                  <a href="javascript:void(0);" @click="handleDeleteCoupon(productCoupon.id)"
+                     class="btn-link fw-medium fs-13 text-danger"
+                     title="Delete coupon">Delete
+                  </a>
+                </li>
+              </ul>
             </div><!-- end card-body -->
           </div><!-- end card -->
         </div><!-- end col -->
       </div><!-- end row -->
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="createdProductCoupons.length" v-model="page" :per-page="perPage"></Pagination>
+        <Pagination :records="createdProductCoupons.length" v-model="createdCouponsPage"
+                    :per-page="perPage"></Pagination>
       </div>
     </div><!-- end profile-setting-panel-wrap-->
   </div><!-- end col-lg-8 -->
@@ -145,6 +164,7 @@ import Pagination from "vue-pagination-2";
 import {onSSR} from '@vue-storefront/core';
 import {computed} from '@vue/composition-api';
 import {
+  useCoupon,
   productGetters,
   useProduct,
   useUser,
@@ -176,8 +196,9 @@ export default {
     }
   },
   setup() {
-    const {user, loading: userLoading} = useUser();
+    const {user, load: loadUser, loading: userLoading} = useUser();
     const {products, search, loading: productLoading} = useProduct('coupons');
+    const {deleteCoupon} = useCoupon('coupons');
 
     const couponProductIds = [...new Set(user?.value.coupons.map(c => c.applicable_product_ids || []).flat()), ...new Set(user?.value.created_coupons.map(c => c.applicable_product_ids || []).flat())];
 
@@ -185,7 +206,10 @@ export default {
       await search({filters: {id: {in: couponProductIds}}, sort: 'latest'});
     });
 
-    const productLookUp = computed(() => Object.assign({}, ...(products?.value?.data ? products.value.data : []).map(({id,...rest}) => ({[id]: {id,...rest}}))));
+    const productLookUp = computed(() => Object.assign({}, ...(products?.value?.data ? products.value.data : []).map(({
+                                                                                                                        id,
+                                                                                                                        ...rest
+                                                                                                                      }) => ({[id]: {id, ...rest}}))));
 
     const productCoupons = computed(() => {
       const productCoupons = [];
@@ -216,7 +240,13 @@ export default {
       }, 1000);
     };
 
+    const handleDeleteCoupon = async (id) => {
+      await deleteCoupon({id: id})
+      await loadUser();
+    }
+
     return {
+      handleDeleteCoupon,
       productCoupons,
       createdProductCoupons,
       productGetters,

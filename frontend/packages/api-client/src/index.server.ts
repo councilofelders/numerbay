@@ -6,6 +6,8 @@ import createFavorite from './api/createFavorite';
 import createOrder from './api/createOrder';
 import createPoll from './api/createPoll';
 import createProduct from './api/createProduct';
+import createCoupon from './api/createCoupon';
+import deleteCoupon from './api/deleteCoupon';
 import createReview from './api/createReview';
 import deleteArtifact from './api/deleteArtifact';
 import deleteFavorite from './api/deleteFavorite';
@@ -124,6 +126,8 @@ const { createApiClient } = apiClientFactory<any, any>({
     createProduct,
     updateProduct,
     deleteProduct,
+    createCoupon,
+    deleteCoupon,
     testProductWebhook,
     getCategory,
     getReview,

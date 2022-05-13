@@ -28,6 +28,8 @@ class CouponCreate(CouponBase):
     applicability: str
     code: Optional[str] = None
     applicable_seller_id: Optional[int] = None
+    username: Optional[str] = None
+    creator_id: Optional[int] = None
 
 
 # Properties to receive on coupon update
