@@ -11,11 +11,18 @@
     </div><!-- end user-panel-title-box -->
     <div v-if="!displayedOrders || displayedOrders.length === 0">You have not made any purchase</div>
     <div class="profile-setting-panel-wrap" v-else>
-        <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" :class="'active'" :id="'all'" type="button">All purchases</button>
-            </li>
-        </ul>
+        <div class="row">
+          <div class="col-9">
+          <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
+              <li class="nav-item" role="presentation">
+                  <button class="nav-link" :class="'active'" :id="'all'" type="button">All purchases</button>
+              </li>
+          </ul>
+          </div>
+          <div class="col-3">
+          <a href="javascript:void(0);" @click="downloadOrders" class="float-end">Export CSV</a>
+          </div>
+        </div>
         <div class="tab-content mt-4 tab-content-desktop">
             <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="all-tab">
                 <div class="activity-tab-wrap">
@@ -153,6 +160,57 @@ export default {
       }
     };
 
+    const downloadFile = (file, name) => {
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style = 'display: none';
+
+      const url = window.URL.createObjectURL(file);
+      a.href = url;
+      a.download = name;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    };
+
+    const downloadOrders = async () => {
+      let csvContent = [
+        'Order ID',
+        'Date',
+        'Round',
+        'Product',
+        'Quantity (Round)',
+        'Seller',
+        'Amount (NMR)',
+        'Mode',
+        'Transaction Hash',
+        'Status',
+        'Submit to Model',
+        'Submission Status',
+        'Stake Limit'
+      ].join(',') + '\r\n';
+
+      orders.value.data.forEach((order) => {
+        const row = [
+          order.id,
+          order.date_order,
+          orderGetters.getRound(order),
+          orderGetters.getItemSku(orderGetters.getProduct(order)),
+          parseInt(orderGetters.getItemQty(order)),
+          productGetters.getOwner(orderGetters.getProduct(order)),
+          orderGetters.getFormattedPrice(order, false, 4),
+          order.mode,
+          orderGetters.getTransactionHash(order),
+          orderGetters.getStatus(order),
+          orderGetters.getSubmitModelName(order),
+          orderGetters.getSubmissionStatus(order),
+          orderGetters.getStakeLimit(order)
+        ].join(',');
+        csvContent += row + '\r\n';
+      });
+      // convertToCSV(JSON.stringify(orders.value))
+      downloadFile(new Blob([csvContent], {type: 'application/csv'}), 'orders.csv');
+    };
+
     return {
       orders: computed(() => orders?.value?.data ? orders.value?.data : []),
       loading,
@@ -161,6 +219,7 @@ export default {
       productGetters,
       search,
       getStatusTextClass,
+      downloadOrders,
     };
   }
 };
