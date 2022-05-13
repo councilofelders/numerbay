@@ -5,7 +5,7 @@
     <!-- header btn -->
     <ul class="menu-btns menu-btns-2">
       <li class="d-none d-lg-inline-block dropdown">
-        <button type="button" class="icon-btn icon-btn-s1" data-bs-toggle="dropdown"><em class="ni ni-user"></em>
+        <button class="icon-btn icon-btn-s1" data-bs-toggle="dropdown" type="button"><em class="ni ni-user"></em>
         </button>
         <ul class="dropdown-menu card-generic card-generic-s3 dropdown-menu-end mt-2">
           <li><h6 class="dropdown-header">Hello {{ username }}!</h6></li>
@@ -14,7 +14,7 @@
               Settings
             </router-link>
           </li>
-          <li><a href="#" class="dropdown-item card-generic-item theme-toggler" title="Toggle Dark/Light mode"><em
+          <li><a class="dropdown-item card-generic-item theme-toggler" href="#" title="Toggle Dark/Light mode"><em
             class="ni ni-moon me-2"></em> Dark Mode</a></li>
           <li>
             <hr class="dropdown-divider">

@@ -2,32 +2,32 @@
   <div class="filter-box">
     <div class="filter-box-filter">
       <div class="filter-box-filter-item dropdown d-none">
-        <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">
+        <button class="btn dropdown-toggle filter-btn" data-bs-toggle="dropdown" type="button">
           {{ SectionData.filterCatData.title }}
         </button>
         <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
           <div class="generic-scroll">
-            <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in []" :key="i"
-                         :class="list.class">{{ list.title }}
+            <router-link v-for="(list, i) in []" :key="i" :class="list.class" :to="list.path"
+                         class="dropdown-item card-generic-item">{{ list.title }}
             </router-link>
           </div>
         </div>
       </div><!-- end dropdwon -->
       <div class="filter-box-filter-item dropdown d-none">
-        <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">
+        <button class="btn dropdown-toggle filter-btn" data-bs-toggle="dropdown" type="button">
           {{ SectionData.filterCollectionData.title }}
         </button>
         <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
           <div class="generic-scroll">
-            <router-link class="dropdown-item card-generic-item" :to="list.path" v-for="(list, i) in []" :key="i"
-                         :class="list.class">{{ list.title }}
+            <router-link v-for="(list, i) in []" :key="i" :class="list.class" :to="list.path"
+                         class="dropdown-item card-generic-item">{{ list.title }}
             </router-link>
           </div>
           <hr class="my-2">
           <div class="card-generic-footer p-2">
             <ul class="btns-group">
-              <li v-for="(btn, i) in SectionData.filterCollectionData.btnData" :key="i"><a href="#"
-                                                                                           class="btn btn-sm btn-light">{{
+              <li v-for="(btn, i) in SectionData.filterCollectionData.btnData" :key="i"><a class="btn btn-sm btn-light"
+                                                                                           href="#">{{
                   btn
                 }}</a></li>
             </ul>
@@ -35,21 +35,21 @@
         </div>
       </div><!-- end dropdwon -->
       <div class="filter-box-filter-item dropdown d-none">
-        <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">
+        <button class="btn dropdown-toggle filter-btn" data-bs-toggle="dropdown" type="button">
           {{ SectionData.filterSaleTypeData.title }}
         </button>
         <div class="dropdown-menu card-generic card-generic-s2 my-2 keep-open">
           <div class="generic-scroll">
-            <router-link class="dropdown-item card-generic-item" :to="list.path"
-                         v-for="(list, i) in SectionData.filterSaleTypeData.saleTypeList" :key="i" :class="list.class">
+            <router-link v-for="(list, i) in SectionData.filterSaleTypeData.saleTypeList" :key="i"
+                         :class="list.class" :to="list.path" class="dropdown-item card-generic-item">
               {{ list.title }}
             </router-link>
           </div>
           <hr class="my-2">
           <div class="card-generic-footer p-2">
             <ul class="btns-group">
-              <li v-for="(btn, i) in SectionData.filterSaleTypeData.btnData" :key="i"><a href="#"
-                                                                                         class="btn btn-sm btn-light">{{
+              <li v-for="(btn, i) in SectionData.filterSaleTypeData.btnData" :key="i"><a class="btn btn-sm btn-light"
+                                                                                         href="#">{{
                   btn
                 }}</a></li>
             </ul>
@@ -58,14 +58,14 @@
       </div><!-- end dropdwon -->
       <div class="filter-box-filter-item ms-md-auto">
         <div class="dropdown">
-          <button class="btn dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown">{{
+          <button class="btn dropdown-toggle filter-btn" data-bs-toggle="dropdown" type="button">{{
               menuTabs.title
             }}
           </button>
           <div class="dropdown-menu card-generic card-generic-s2 my-2 dropdown-menu-end keep-open">
             <div class="text-secondary py-2 px-3 filter-box-sort-text"><span>Sort by</span></div>
-            <a href="#" class="dropdown-item card-generic-item" v-for="tab in menuTabs" @click.prevent="setTab(tab)"
-               :key="tab.id">{{ tab.title }}</a>
+            <a v-for="tab in menuTabs" :key="tab.id" class="dropdown-item card-generic-item" href="#"
+               @click.prevent="setTab(tab)">{{ tab.title }}</a>
           </div>
 
         </div>

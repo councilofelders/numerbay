@@ -1,10 +1,6 @@
 /* eslint-disable no-undef */
 <template>
-  <swiper :modules="modules"
-          :slides-per-view="2"
-          :loop="true"
-          :autoHeight="true"
-          :pagination="{ clickable: true }"
+  <swiper :autoHeight="true"
           :breakpoints='{
         "320": {
           "slidesPerView": 1
@@ -12,7 +8,11 @@
         "768": {
           "slidesPerView": 2,
         }
-      }' class="swiper-button-s1">
+      }'
+          :loop="true"
+          :modules="modules"
+          :pagination="{ clickable: true }"
+          :slides-per-view="2" class="swiper-button-s1">
     <swiper-slide v-for="item in SectionData.howItWorkData.howItWorkListFour" :key="item.id">
       <div class="card card-hiw card-hiw-s3">
         <div class="card-body">

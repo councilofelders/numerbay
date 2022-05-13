@@ -1,5 +1,5 @@
 <template>
-  <div class="header-main is-sticky" :class="isTransparent">
+  <div :class="isTransparent" class="header-main is-sticky">
     <div class="container">
       <div class="header-wrap">
         <!-- logo -->

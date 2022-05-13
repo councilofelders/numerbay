@@ -3,16 +3,16 @@
     <div class="container">
       <div class="row ">
         <div class="col-lg-8 col-xl-6 mx-auto">
-          <ul class="row g-gs nav nav-tabs nav-tabs-s2 justify-content-center" id="myTab" role="tablist">
+          <ul id="myTab" class="row g-gs nav nav-tabs nav-tabs-s2 justify-content-center" role="tablist">
             <li class="nav-item col-sm-6 col-6" role="presentation">
-              <button class="nav-link active" id="meta-mask-tab" data-bs-toggle="tab" data-bs-target="#meta-mask"
+              <button id="meta-mask-tab" class="nav-link active" data-bs-target="#meta-mask" data-bs-toggle="tab"
                       type="button">
                 <img :src="require('@/images/brand/metamask.svg')" alt="" class="icon icon-svg">
                 <span class="nav-link-title mt-2 mt-sm-3 d-block">MetaMask</span>
               </button>
             </li>
-            <li class="nav-item col-sm-6 col-6" role="presentation" v-if="!authenticated">
-              <button class="nav-link" id="wallet-connect-tab" data-bs-toggle="tab" data-bs-target="#wallet-connect"
+            <li v-if="!authenticated" class="nav-item col-sm-6 col-6" role="presentation">
+              <button id="wallet-connect-tab" class="nav-link" data-bs-target="#wallet-connect" data-bs-toggle="tab"
                       type="button">
                 <img :src="require('@/images/thumb/icon-users.svg')" alt="" class="icon icon-svg">
                 <span class="nav-link-title mt-2 mt-sm-3 d-block">Username (Legacy)</span>
@@ -20,31 +20,31 @@
             </li>
           </ul>
           <div class="gap-2x"></div><!-- end gap -->
-          <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="meta-mask" role="tabpanel" aria-labelledby="meta-mask-tab">
+          <div id="myTabContent" class="tab-content">
+            <div id="meta-mask" aria-labelledby="meta-mask-tab" class="tab-pane fade show active" role="tabpanel">
               <div class="card-media card-media-s3 text-center">
                 <div class="card-media-body">
                   <h3 class="mb-4">{{ SectionData.loginDataTwo.title }}</h3>
-                  <button @click="onWalletConnect" class="btn btn-dark" :disabled="connecting">
+                  <button :disabled="connecting" class="btn btn-dark" @click="onWalletConnect">
                     <span v-if="connecting"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Connecting...</span>
                     <span v-else>Connect</span>
                   </button>
-                  <p class="mt-3" v-if="SectionData.loginDataTwo.btnTextLink"><a
-                    :href="SectionData.loginDataTwo.btnTextLink" target="_blank"
-                    class=" fs-13 btn-link fw-regular">{{ SectionData.loginDataTwo.btnTextTwo }}</a></p>
+                  <p v-if="SectionData.loginDataTwo.btnTextLink" class="mt-3"><a
+                    :href="SectionData.loginDataTwo.btnTextLink" class=" fs-13 btn-link fw-regular"
+                    target="_blank">{{ SectionData.loginDataTwo.btnTextTwo }}</a></p>
                 </div>
               </div><!-- end card-media -->
             </div><!-- end tab-pane -->
-            <div class="tab-pane fade" id="wallet-connect" role="tabpanel" aria-labelledby="wallet-connect-tab">
+            <div id="wallet-connect" aria-labelledby="wallet-connect-tab" class="tab-pane fade" role="tabpanel">
               <div class="card-media card-media-s3 text-center">
                 <div class="card-media-body">
                   <h3 class="mb-4">{{ SectionData.loginDataTwo.titleTwo }}</h3>
                   <router-link :to="SectionData.loginDataTwo.btnLink" class="btn btn-dark">
                     {{ SectionData.loginDataTwo.btnTextFour }}
                   </router-link>
-                  <p class="mt-3" v-if="SectionData.loginDataTwo.btnTextLinkTwo">
-                    <router-link :to="SectionData.loginDataTwo.btnTextLinkTwo" target="_blank"
-                                 class=" fs-13 btn-link fw-regular">{{ SectionData.loginDataTwo.btnTextThree }}
+                  <p v-if="SectionData.loginDataTwo.btnTextLinkTwo" class="mt-3">
+                    <router-link :to="SectionData.loginDataTwo.btnTextLinkTwo" class=" fs-13 btn-link fw-regular"
+                                 target="_blank">{{ SectionData.loginDataTwo.btnTextThree }}
                     </router-link>
                   </p>
                 </div>

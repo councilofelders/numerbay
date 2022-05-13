@@ -1,6 +1,6 @@
 <template>
   <div class="row g-gs">
-    <div class="col-lg-4 col-sm-6" v-for="item in []" :key="item.id">
+    <div v-for="item in []" :key="item.id" class="col-lg-4 col-sm-6">
       <div class="card card-creator-s1">
         <div class="card-body">
           <router-link :to="item.path" class="avatar avatar-1 flex-shrink-0">

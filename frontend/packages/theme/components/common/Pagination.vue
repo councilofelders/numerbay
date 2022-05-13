@@ -2,7 +2,7 @@
   <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center mt-5 pagination-s1">
       <li class="page-item">
-        <a class="page-link" href="#" aria-label="Previous">
+        <a aria-label="Previous" class="page-link" href="#">
           <span aria-hidden="true" class="ni ni-chevron-left"></span>
         </a>
       </li>
@@ -10,7 +10,7 @@
       <li class="page-item"><a class="page-link" href="#">2</a></li>
       <li class="page-item"><a class="page-link" href="#">3</a></li>
       <li class="page-item">
-        <a class="page-link" href="#" aria-label="Next">
+        <a aria-label="Next" class="page-link" href="#">
           <span aria-hidden="true" class="ni ni-chevron-right"></span>
         </a>
       </li>

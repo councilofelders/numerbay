@@ -2,13 +2,13 @@
   <section class="section-space-b featured-creator-section">
     <div class="container">
       <!-- section heading -->
-      <SectionHeading classname="text-center" :text="SectionData.featuredCreatorsData.title"
-                      :content="SectionData.featuredCreatorsData.content" isMargin="mb-3"></SectionHeading>
+      <SectionHeading :content="SectionData.featuredCreatorsData.content" :text="SectionData.featuredCreatorsData.title"
+                      classname="text-center" isMargin="mb-3"></SectionHeading>
       <!-- swiper sldier -->
       <FeaturedCreatorSlider></FeaturedCreatorSlider>
       <div class="text-center mt-5">
-        <ButtonLink :text="SectionData.featuredCreatorsData.btnText" link="/author"
-                    classname="btn-link btn-link-s1"></ButtonLink>
+        <ButtonLink :text="SectionData.featuredCreatorsData.btnText" classname="btn-link btn-link-s1"
+                    link="/author"></ButtonLink>
       </div>
     </div><!-- .container -->
   </section><!-- end featured-creator-section -->

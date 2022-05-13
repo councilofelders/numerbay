@@ -1,12 +1,12 @@
 <template>
-  <div class="modal fade" :id="modalId" :ref="modalId" tabindex="-1" aria-hidden="true" :data-bs-backdrop="backdrop">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" :class="modalClass">
+  <div :id="modalId" :ref="modalId" :data-bs-backdrop="backdrop" aria-hidden="true" class="modal fade" tabindex="-1">
+    <div :class="modalClass" class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div v-if="$slots.title" class="modal-header">
           <h4 class="modal-title">
             <slot name="title"/>
           </h4>
-          <button type="button" class="btn-close icon-btn" data-bs-dismiss="modal" aria-label="Close">
+          <button aria-label="Close" class="btn-close icon-btn" data-bs-dismiss="modal" type="button">
             <em class="ni ni-cross"></em>
           </button>
         </div>

@@ -14,26 +14,26 @@
           <div class="col-lg-8">
             <ValidationObserver v-slot="{ handleSubmit }">
               <form action="#" class="form-create mb-5 mb-lg-0">
-                <ValidationProvider rules="required|min:2" v-slot="{ errors }" key="username" slim>
+                <ValidationProvider key="username" v-slot="{ errors }" rules="required|min:2" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Username of
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Username of
                         recipient</label>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
+                      <input v-model="form.username" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                              placeholder="Username of recipient of coupons (case sensitive)"
-                             v-model="form.username">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                             type="text">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
                 <div class="form-item mb-4">
                   <label class="mb-2 form-label">Applicable products</label>
                   <client-only>
-                    <multiselect ref="couponMultiSelect" placeholder="Applicable Products"
-                                 v-model="form.applicable_products" class="coupon-multiselect"
-                                 :options="groupedProducts" :multiple="true" :close-on-select="false"
-                                 group-values="products" group-label="category" :group-select="true" track-by="id"
-                                 label="sku"
+                    <multiselect ref="couponMultiSelect" v-model="form.applicable_products"
+                                 :close-on-select="false" :group-select="true"
+                                 :multiple="true" :options="groupedProducts" class="coupon-multiselect"
+                                 group-label="category" group-values="products" label="sku" placeholder="Applicable Products"
+                                 track-by="id"
                     >
                       <template slot="option" slot-scope="props">
                         <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
@@ -41,76 +41,77 @@
                     </multiselect>
                   </client-only>
                 </div>
-                <ValidationProvider rules="required|integer|min_value:1|max_value:100" v-slot="{ errors }"
-                                    key="discountPercent" slim>
+                <ValidationProvider key="discountPercent" v-slot="{ errors }"
+                                    rules="required|integer|min_value:1|max_value:100" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Discount %</label>
-                      <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Coupon Discount % (0-100, 100 being free)" min="1"
-                             v-model="form.discount_percent">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Discount %</label>
+                      <input v-model="form.discount_percent" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             min="1" placeholder="Coupon Discount % (0-100, 100 being free)"
+                             type="number">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" key="quantityTotal" slim>
+                <ValidationProvider key="quantityTotal" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Number of
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Number of
                         redemptions</label>
-                      <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Number of times this coupon can be redeemed" min="1" v-model="form.quantity_total">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <input v-model="form.quantity_total" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             min="1" placeholder="Number of times this coupon can be redeemed"
+                             type="number">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }" key="maxDiscount" slim>
+                <ValidationProvider key="maxDiscount" v-slot="{ errors }" rules="required|decimal|min_value:0" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Max discount</label>
-                      <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Coupon Max Discount (in NMR)" min="0" v-model="form.max_discount">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Max discount</label>
+                      <input v-model="form.max_discount" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             min="0" placeholder="Coupon Max Discount (in NMR)" type="number">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" key="minSpend" slim>
+                <ValidationProvider key="minSpend" v-slot="{ errors }" rules="decimal|min_value:0" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Min spend for
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Min spend for
                         redemption</label>
-                      <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="(Optional) Min Spend (in NMR) for Redeeming Coupon" min="0"
-                             v-model="form.min_spend">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <input v-model="form.min_spend" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             min="0" placeholder="(Optional) Min Spend (in NMR) for Redeeming Coupon"
+                             type="number">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="min:6" v-slot="{ errors }" key="code" slim>
+                <ValidationProvider key="code" v-slot="{ errors }" rules="min:6" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Custom coupon
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Custom coupon
                         code</label>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
+                      <input v-model="form.code" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                              placeholder="(Optional) Leave empty to auto-generate coupon code"
-                             v-model="form.code">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                             type="text">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="" v-slot="{ errors }" key="dateExpiration" slim>
+                <ValidationProvider key="dateExpiration" v-slot="{ errors }" rules="" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Expiration
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Expiration
                         date</label>
-                      <input type="date" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Expiration Date in UTC" v-model="form.date_expiration">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <input v-model="form.date_expiration" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             placeholder="Expiration Date in UTC" type="date">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <button class="btn btn-dark" type="button" @click="handleSubmit(saveCoupon)"
-                        :disabled="productLoading">
+                <button :disabled="productLoading" class="btn btn-dark" type="button"
+                        @click="handleSubmit(saveCoupon)">
                   <span v-if="productLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...</span>
                   <span v-else>Save</span>
                 </button>

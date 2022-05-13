@@ -5,8 +5,8 @@
     <!-- header btn -->
     <ul class="menu-btns">
       <li>
-        <ButtonLink :text="SectionData.headerData.btnText" link="/login-v2" classname="btn"
-                    :class="classname"></ButtonLink>
+        <ButtonLink :class="classname" :text="SectionData.headerData.btnText" classname="btn"
+                    link="/login-v2"></ButtonLink>
       </li>
       <li>
         <ThemeSwitcher></ThemeSwitcher>

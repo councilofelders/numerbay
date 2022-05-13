@@ -11,13 +11,13 @@
       </div><!-- end sidebar-head-action -->
     </div><!-- end sidebar-head -->
     <div class="sidebar sidebar-user-mobile">
-      <a href="#" class="icon-btn menu-toggler-user-close">
+      <a class="icon-btn menu-toggler-user-close" href="#">
         <em class="ni ni-cross"></em>
       </a>
       <div class="sidebar-widget">
         <ul class="user-nav">
           <li v-for="(list, i) in lists" :key="i" :class="list.title === title ? 'active' : ''">
-            <nuxt-link :to="list.path"><em class="ni me-2" :class="list.icon"></em>{{ list.title }}</nuxt-link>
+            <nuxt-link :to="list.path"><em :class="list.icon" class="ni me-2"></em>{{ list.title }}</nuxt-link>
           </li>
         </ul>
       </div><!-- end sidebar-widget -->

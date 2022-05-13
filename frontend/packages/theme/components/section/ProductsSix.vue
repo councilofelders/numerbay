@@ -6,37 +6,37 @@
           <img :src="product.avatar" alt="avatar">
         </router-link>
         <span class="custom-tooltip-wrap card-author-by-wrap">
-                    <span class="card-author-by card-author-by-2">Owned by</span>
-                    <router-link :to="product.authorLink" class="custom-tooltip author-link">{{
-                        product.author
-                      }}</router-link>
-                    <div class="card-generic custom-tooltip-dropdown">
-                        <div class="author-action d-flex flex-wrap align-items-center mb-3">
-                            <div class="flex-shrink-0 avatar">
-                                <img :src="product.avatar" alt="avatar">
-                            </div>
-                            <div class="ms-2">
-                                <span class="author-username">{{ product.userName }}</span>
-                                <span class="author-follow-text">{{ product.followersText }}</span>
-                            </div>
-                        </div>
-                        <h6 class="author-name mb-1">{{ product.authorName }}</h6>
-                        <p class="author-desc smaller mb-3">{{ product.desc }}</p>
-                        <div class="follow-wrap mb-3">
-                            <h6 class="mb-1 smaller text-uppercase">Followed by</h6>
-                            <div class="avatar-group">
-                                <router-link :to="avatar.path" v-for="avatar in product.avatars" :key="avatar.id">
-                                    <img :src="avatar.img" alt="avatar">
-                                </router-link>
-                            </div>
-                        </div><!-- end follow-wrap  -->
-                        <router-link :to="product.authorLink" class="btn btn-sm bg-dark-dim">Follow</router-link>
-                    </div><!-- end dropdown-menu -->
-                </span>
+          <span class="card-author-by card-author-by-2">Owned by</span>
+          <router-link :to="product.authorLink" class="custom-tooltip author-link">{{
+              product.author
+            }}</router-link>
+          <div class="card-generic custom-tooltip-dropdown">
+              <div class="author-action d-flex flex-wrap align-items-center mb-3">
+                  <div class="flex-shrink-0 avatar">
+                      <img :src="product.avatar" alt="avatar">
+                  </div>
+                  <div class="ms-2">
+                      <span class="author-username">{{ product.userName }}</span>
+                      <span class="author-follow-text">{{ product.followersText }}</span>
+                  </div>
+              </div>
+              <h6 class="author-name mb-1">{{ product.authorName }}</h6>
+              <p class="author-desc smaller mb-3">{{ product.desc }}</p>
+              <div class="follow-wrap mb-3">
+                  <h6 class="mb-1 smaller text-uppercase">Followed by</h6>
+                  <div class="avatar-group">
+                      <router-link v-for="avatar in product.avatars" :key="avatar.id" :to="avatar.path">
+                          <img :src="avatar.img" alt="avatar">
+                      </router-link>
+                  </div>
+              </div><!-- end follow-wrap  -->
+              <router-link :to="product.authorLink" class="btn btn-sm bg-dark-dim">Follow</router-link>
+          </div><!-- end dropdown-menu -->
+        </span>
       </div>
     </div><!-- end card-author -->
     <div class="card-image">
-      <img :src="product.img" class="card-img" alt="art image">
+      <img :src="product.img" alt="art image" class="card-img">
     </div>
     <div class="card-body px-0 pb-0">
       <h5 class="card-title text-truncate">{{ product.title }}</h5>
@@ -54,7 +54,6 @@
       <span class="btn btn-sm btn-dark">Place Bid</span>
     </div><!-- end card-body -->
     <router-link
-      class="details"
       :to="{
                 name: 'ProductDetail',
                 params: {
@@ -70,6 +69,7 @@
                 content: product.content,
                 }
             }"
+      class="details"
     >
     </router-link>
   </div><!-- end card -->

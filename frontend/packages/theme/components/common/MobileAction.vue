@@ -3,13 +3,13 @@
 <template>
   <div class="header-mobile-action">
     <div class="header-search-mobile dropdown me-2">
-      <a class="icon-btn" href="javascript:void(0)" data-bs-toggle="dropdown" @click="toggleMobileSearchDropdown"><em
+      <a class="icon-btn" data-bs-toggle="dropdown" href="javascript:void(0)" @click="toggleMobileSearchDropdown"><em
         class="ni ni-search"></em></a>
-      <div class="dropdown-menu dropdown-menu-end card-generic" :class="showMobileSearchDropdown? 'show' : ''">
+      <div :class="showMobileSearchDropdown? 'show' : ''" class="dropdown-menu dropdown-menu-end card-generic">
         <div class="input-group">
-          <input type="search" class="form-control form-control-s1" placeholder="Search item here..."
-                 v-model="searchTerm" @keydown.enter="handleSearch">
-          <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary" @click="handleSearch"><em
+          <input v-model="searchTerm" class="form-control form-control-s1" placeholder="Search item here..."
+                 type="search" @keydown.enter="handleSearch">
+          <a class="btn btn-sm btn-outline-secondary" href="javascript:void(0)" @click="handleSearch"><em
             class="ni ni-search"></em></a>
         </div>
       </div>

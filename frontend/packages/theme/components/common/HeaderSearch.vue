@@ -1,6 +1,6 @@
 <template>
-  <div class="header-search-form" :class="classname">
-    <input type="search" class="form-control form-control-s1" placeholder="Search item here..." v-model="searchTerm"
+  <div :class="classname" class="header-search-form">
+    <input v-model="searchTerm" class="form-control form-control-s1" placeholder="Search item here..." type="search"
            @keydown.enter="handleSearch">
   </div>
 </template>

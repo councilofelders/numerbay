@@ -14,7 +14,7 @@
                 </div><!-- end item-detail-content -->
               </div><!-- end col -->
               <h1 class="item-detail-title mb-2 text-break">
-                <a :href="modelUrl" class="" target="_blank" v-if="Boolean(modelUrl)">{{ title }}</a>
+                <a v-if="Boolean(modelUrl)" :href="modelUrl" class="" target="_blank">{{ title }}</a>
                 <span v-else>{{ title }}</span>
               </h1>
               <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
@@ -25,9 +25,13 @@
                 <span class="dot-separeted"></span>
                 <span class="item-detail-text-meta">Sold <span
                   class="text-primary fw-semibold">{{ productGetters.getQtySales(product) }}</span></span>
-                <span class="dot-separeted" v-if="productGetters.getOnTimeRating(product)"></span>
-                <span class="item-detail-text-meta" v-if="productGetters.getOnTimeRating(product)">On time <span
-                  class="text-primary fw-semibold" :class="getDeliveryRateTextClass(productGetters.getOnTimeRating(product))" :title="`${productGetters.getQtyDelivered(product)} / ${productGetters.getQtySales(product)} quantity delivered on time`">{{ productGetters.getOnTimeRating(product) }}</span></span>
+                <span v-if="productGetters.getOnTimeRating(product)" class="dot-separeted"></span>
+                <span v-if="productGetters.getOnTimeRating(product)" class="item-detail-text-meta">On time <span
+                  :class="getDeliveryRateTextClass(productGetters.getOnTimeRating(product))"
+                  :title="`${productGetters.getQtyDelivered(product)} / ${productGetters.getQtySales(product)} quantity delivered on time`"
+                  class="text-primary fw-semibold">{{
+                    productGetters.getOnTimeRating(product)
+                  }}</span></span>
               </div>
               <div class="item-credits">
                 <div class="row g-4">
@@ -36,18 +40,18 @@
                       <div class="card-media-body">
                         <p class="fw-semibold text-black text-break">@{{ owner }}</p>
                         <span class="fw-medium small">Owner</span>
-                        <ul class="social-links mt-2" v-if="hasSocials">
-                          <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span class="ni icon"
-                                                                                                        :class="`ni-chat`"></span>RocketChat</a>
+                        <ul v-if="hasSocials" class="social-links mt-2">
+                          <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span :class="`ni-chat`"
+                                                                                                        class="ni icon"></span>RocketChat</a>
                           </li>
-                          <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span class="ni icon"
-                                                                                                    :class="`ni-linkedin`"></span>LinkedIn</a>
+                          <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span :class="`ni-linkedin`"
+                                                                                                    class="ni icon"></span>LinkedIn</a>
                           </li>
-                          <li v-if="socialTwitter"><a :href="socialTwitter" target="_blank"><span class="ni icon"
-                                                                                                  :class="`ni-twitter`"></span>Twitter</a>
+                          <li v-if="socialTwitter"><a :href="socialTwitter" target="_blank"><span :class="`ni-twitter`"
+                                                                                                  class="ni icon"></span>Twitter</a>
                           </li>
-                          <li v-if="socialWebsite"><a :href="socialWebsite" target="_blank"><span class="ni icon"
-                                                                                                  :class="`ni-globe`"></span>Website</a>
+                          <li v-if="socialWebsite"><a :href="socialWebsite" target="_blank"><span :class="`ni-globe`"
+                                                                                                  class="ni icon"></span>Website</a>
                           </li>
                         </ul>
                       </div>
@@ -58,43 +62,47 @@
               <div class="item-detail-btns mt-2">
                 <ul class="btns-group d-flex">
                   <li class="flex-grow-1">
-                    <a href="javascript:void(0);" @click="togglePlaceBidModal"
-                       :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`">{{
+                    <a :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`" href="javascript:void(0);"
+                       @click="togglePlaceBidModal">{{
                         productGetters.getIsActive(product) ? 'Buy' : 'Not for sale'
                       }}</a>
                   </li>
                 </ul>
               </div><!-- end item-detail-btns -->
               <ModelMetricsCard
-                class="mt-2"
                 v-show="Boolean(productGetters.getCategory(product).is_per_model)"
-                :tournament="productGetters.getCategory(product).tournament"
-                :nmr-staked="nmrStaked"
-                :stake-info="stakeInfo"
-                :latest-returns="latestReturns"
-                :latest-reps="latestReps"
                 :latest-ranks="latestRanks"
+                :latest-reps="latestReps"
+                :latest-returns="latestReturns"
+                :nmr-staked="nmrStaked"
                 :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
+                :stake-info="stakeInfo"
+                :tournament="productGetters.getCategory(product).tournament"
+                class="mt-2"
               ></ModelMetricsCard>
             </div><!-- end item-detail-content -->
           </div><!-- end col -->
           <div class="col-lg-9 ms-auto">
             <div class="item-detail-content">
-              <div class="item-detail-chart-container mb-4" v-if="Boolean(productGetters.getCategory(product).is_per_model)">
+              <div v-if="Boolean(productGetters.getCategory(product).is_per_model)"
+                   class="item-detail-chart-container mb-4">
                 <div class="card-border card-full">
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
-                    <div class="item-detail-list" v-if="isNumeraiChartReady">
-                      <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrTcChartData" v-if="productGetters.getCategory(product).tournament==8"></NumeraiChart>
-                      <NumeraiChart class="numerai-chart" :chartdata="numeraiCorrMmcChartData" v-if="productGetters.getCategory(product).tournament==11"></NumeraiChart>
-                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" class="numerai-chart"
-                                    :chartdata="numeraiIcChartData"></NumeraiChart>
+                    <div v-if="isNumeraiChartReady" class="item-detail-list">
+                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==8" :chartdata="numeraiCorrTcChartData"
+                                    class="numerai-chart"></NumeraiChart>
+                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiCorrMmcChartData"
+                                    class="numerai-chart"></NumeraiChart>
+                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiIcChartData"
+                                    class="numerai-chart"></NumeraiChart>
                     </div>
-                    <div class="item-detail-list placeholder-glow" v-else>
-                      <svg class="bd-placeholder-img placeholder" width="100%" :height="productGetters.getCategory(product).tournament==8 ? 240 : 480"
-                           xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder"
-                           preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title>
-                        <rect width="100%" height="100%" fill="#868e96"></rect>
+                    <div v-else class="item-detail-list placeholder-glow">
+                      <svg :height="productGetters.getCategory(product).tournament==8 ? 240 : 480" aria-label="Placeholder"
+                           class="bd-placeholder-img placeholder"
+                           focusable="false" preserveAspectRatio="xMidYMid slice" role="img"
+                           width="100%" xmlns="http://www.w3.org/2000/svg"><title>Placeholder</title>
+                        <rect fill="#868e96" height="100%" width="100%"></rect>
                       </svg>
                     </div>
                   </div><!-- end card-body -->
@@ -115,17 +123,17 @@
         </div><!-- end row -->
       </div><!-- .container -->
       <!-- Modal -->
-      <Modal modal-id="placeBidModal" @registeredModal="placeBidModal = $event" ref="placeBidModal">
+      <Modal ref="placeBidModal" modal-id="placeBidModal" @registeredModal="placeBidModal = $event">
         <template slot="title">{{ paymentStep === 1 ? `Place an Order` : `Payment` }}</template>
         <div v-if="paymentStep === 1">
           <p class="mb-3">You are about to buy <strong>{{ title }}</strong> from <strong>{{ owner }}</strong></p>
           <ValidationObserver v-slot="{ handleSubmit }">
             <div class="mb-3">
               <label class="form-label">Select an option</label>
-              <v-select class="generic-select generic-select-s1" ref="optionDropdown" v-model="optionIdx"
-                        v-if="!!product" label="id"
-                        :options="productGetters.getOrderedOptions(product)" :reduce="option => option.index"
-                        :clearable=false @input="handleSubmit(onOptionChange)">
+              <v-select v-if="!!product" ref="optionDropdown" v-model="optionIdx"
+                        :clearable=false :options="productGetters.getOrderedOptions(product)"
+                        :reduce="option => option.index" class="generic-select generic-select-s1"
+                        label="id" @input="handleSubmit(onOptionChange)">
                 <template #selected-option="option">
                   {{ productGetters.getFormattedOption(option) }}
                 </template>
@@ -134,37 +142,37 @@
                 </template>
               </v-select>
             </div>
-            <ValidationProvider rules="required|integer|min_value:1|max_value:10" v-slot="{ errors }"
-                                v-if="isOnPlatform" slim>
+            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
+                                rules="required|integer|min_value:1|max_value:10" slim>
               <div class="mb-3">
-                <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Enter quantity</label>
-                <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                       v-model="quantity" min="1" max="10" step="1" @change="handleSubmit(onQuantityChange)">
-                <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity</label>
+                <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                       max="10" min="1" step="1" type="number" @change="handleSubmit(onQuantityChange)">
+                <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
               </div>
             </ValidationProvider>
             <div v-if="isAuthenticated">
-              <div class="d-flex flex-wrap align-items-center justify-content-between"
-                 v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission">
+              <div v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission"
+                   class="d-flex flex-wrap align-items-center justify-content-between">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" v-model="autoSubmit" id="autoSubmit"
-                         :disabled="!isAutoSubmitOptional">
+                  <input id="autoSubmit" v-model="autoSubmit" :disabled="!isAutoSubmitOptional" class="form-check-input"
+                         type="checkbox">
                   <label class="form-check-label form-check-label-s1" for="autoSubmit"> {{ autoSubmitText }} </label>
                 </div>
               </div>
-              <ValidationProvider rules="required" v-slot="{ errors }" v-if="autoSubmit" slim>
+              <ValidationProvider v-if="autoSubmit" v-slot="{ errors }" rules="required" slim>
                 <div class="mb-3">
-                  <label class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Select a submission
+                  <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Select a submission
                     slot</label>
-                  <v-select class="generic-select generic-select-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                            ref="slotDropdown" v-model="submitSlot" v-if="!!product && !numeraiLoading" label="name"
-                            :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
-                            :reduce="model => model.id" :clearable=true></v-select>
-                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                  <v-select v-if="!!product && !numeraiLoading" ref="slotDropdown"
+                            v-model="submitSlot" :class="!errors[0] ? '' : 'is-invalid'" :clearable=true :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
+                            :reduce="model => model.id"
+                            class="generic-select generic-select-s1" label="name"></v-select>
+                  <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                 </div>
               </ValidationProvider>
             </div>
-            <ul class="total-bid-list mt-4" v-if="isOnPlatform">
+            <ul v-if="isOnPlatform" class="total-bid-list mt-4">
               <li><span>{{
                   (!!product && productGetters.getCategory(product).is_per_round) ? 'Total number of rounds' : 'Total order quantity'
                 }}</span> <span>{{
@@ -175,41 +183,42 @@
             <div v-if="isAuthenticated">
               <div class="d-flex flex-wrap align-items-center justify-content-between mt-2">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" v-model="useCoupon" id="useCoupon"
-                         :disabled="Boolean(couponApplied)">
+                  <input id="useCoupon" v-model="useCoupon" :disabled="Boolean(couponApplied)" class="form-check-input"
+                         type="checkbox">
                   <label class="form-check-label form-check-label-s1" for="useCoupon"> (Optional) Apply coupon
                     code </label>
                 </div>
               </div>
-              <div class="mb-3 mt-2" v-show="useCoupon">
+              <div v-show="useCoupon" class="mb-3 mt-2">
                 <div class="row g-4">
                   <div class="col-8">
-                    <input type="text" class="form-control form-control-s1" :class="!couponError ? '' : 'is-invalid'"
-                           placeholder="Coupon code" v-model="coupon" :disabled="Boolean(couponApplied)">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(couponError) }">{{ couponError }}</div>
+                    <input v-model="coupon" :class="!couponError ? '' : 'is-invalid'" :disabled="Boolean(couponApplied)"
+                           class="form-control form-control-s1" placeholder="Coupon code" type="text">
+                    <div :class="{ 'show': Boolean(couponError) }" class="text-danger fade">{{ couponError }}</div>
                   </div>
                   <div class="col-4">
                     <button class="btn btn-dark" @click="handleCoupon">{{ couponApplied ? 'Remove' : 'Apply' }}</button>
                   </div>
                 </div>
               </div>
-              <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4"
-                   v-if="!!product && isOnPlatform">
+              <div v-if="!!product && isOnPlatform"
+                   class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" v-model="terms" id="terms">
+                  <input id="terms" v-model="terms" class="form-check-input" type="checkbox">
                   <label class="form-check-label form-check-label-s1" for="terms"> I understand that I need to make
                     payment in <strong>1 single transaction</strong>, and neither Numerai nor NumerBay is liable for any
                     loss resulted from this transaction. </label>
                 </div>
               </div>
-              <button @click="handleSubmit(onPlaceOrder)" class="btn btn-dark btn-full d-flex justify-content-center"
-                      :disabled="isOnPlatform && (makeOrderLoading || !terms)">
+              <button :disabled="isOnPlatform && (makeOrderLoading || !terms)" class="btn btn-dark btn-full d-flex justify-content-center"
+                      @click="handleSubmit(onPlaceOrder)">
                 <span v-if="makeOrderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Placing Order...</span>
                 <span v-else>{{ buyBtnText }}</span>
               </button>
             </div>
             <div v-else>
-              <router-link to="/login-v2" class="btn btn-dark btn-full d-flex justify-content-center mt-4">Login</router-link>
+              <router-link class="btn btn-dark btn-full d-flex justify-content-center mt-4" to="/login-v2">Login
+              </router-link>
             </div>
           </ValidationObserver>
         </div>
@@ -218,7 +227,7 @@
           <div class="mb-3">
             <label class="form-label">Seller wallet address</label>
             <div class="d-flex align-items-center border p-3 rounded-3">
-              <input type="text" class="copy-input copy-input-s1" v-model="toAddress" id="copy-input-address" readonly>
+              <input id="copy-input-address" v-model="toAddress" class="copy-input copy-input-s1" readonly type="text">
               <div class="tooltip-s1">
                 <button v-clipboard:copy="toAddress" v-clipboard:success="onCopy" class="copy-text" type="button">
                   <span class="tooltip-s1-text tooltip-text">Copy</span>
@@ -230,7 +239,7 @@
           <div class="mb-3">
             <label class="form-label">Amount to send</label>
             <div class="d-flex align-items-center border p-3 rounded-3">
-              <input type="text" class="copy-input copy-input-s1" v-model="amount" id="copy-input-amount" readonly>
+              <input id="copy-input-amount" v-model="amount" class="copy-input copy-input-s1" readonly type="text">
               <div class="tooltip-s1">
                 <button v-clipboard:copy="JSON.stringify(amount)" v-clipboard:success="onCopy" class="copy-text"
                         type="button">
@@ -241,12 +250,13 @@
             </div>
           </div>
           <div class="mb-2">
-          <a href="https://numer.ai/wallet" target="_blank" class="btn btn-dark d-block">Open Numerai Wallet (Gas-free)</a>
+            <a class="btn btn-dark d-block" href="https://numer.ai/wallet" target="_blank">Open Numerai Wallet
+              (Gas-free)</a>
           </div>
           <div class="mb-2">
-          <a href="javascript:void(0);" @click="pay" class="btn btn-light d-block">Pay with MetaMask</a>
+            <a class="btn btn-light d-block" href="javascript:void(0);" @click="pay">Pay with MetaMask</a>
           </div>
-          <div class="mb-2" v-if="paymentMessage">
+          <div v-if="paymentMessage" class="mb-2">
             <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
             <span class="text-primary">{{ paymentMessage }}</span>
           </div>
@@ -254,8 +264,8 @@
       </Modal><!-- end modal-->
     </section><!-- end item-detail-section -->
     <!-- Related product -->
-    <RelatedProducts title="Featured by seller" :products="relatedProducts"
-                     v-if="Boolean(relatedProducts) && relatedProducts.length > 0"></RelatedProducts>
+    <RelatedProducts v-if="Boolean(relatedProducts) && relatedProducts.length > 0" :products="relatedProducts"
+                     title="Featured by seller"></RelatedProducts>
   </div><!-- end page-wrap -->
 </template>
 
@@ -284,7 +294,7 @@ import {
   userGetters
 } from '@vue-storefront/numerbay';
 import {useUiNotification} from '~/composables';
-import { ethers } from 'ethers';
+import {ethers} from 'ethers';
 import {contractAddress, transferAbi} from "../plugins/nmr";
 
 export default {

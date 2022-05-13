@@ -1,36 +1,36 @@
 <template>
   <ul class="menu-list ms-lg-auto">
     <li class="menu-item">
-      <nuxt-link to="/" class="menu-link menu-toggle">Home</nuxt-link>
+      <nuxt-link class="menu-link menu-toggle" to="/">Home</nuxt-link>
     </li>
     <li class="menu-item has-sub">
-      <nuxt-link to="/explore/numerai-predictions" class="menu-link menu-toggle">Numerai</nuxt-link>
+      <nuxt-link class="menu-link menu-toggle" to="/explore/numerai-predictions">Numerai</nuxt-link>
       <div class="menu-sub">
         <ul class="menu-list">
           <li class="menu-item">
-            <nuxt-link to="/explore/numerai-predictions" class="menu-link">Predictions</nuxt-link>
+            <nuxt-link class="menu-link" to="/explore/numerai-predictions">Predictions</nuxt-link>
           </li>
           <li class="menu-item">
-            <nuxt-link to="/explore/numerai-models" class="menu-link">Models</nuxt-link>
+            <nuxt-link class="menu-link" to="/explore/numerai-models">Models</nuxt-link>
           </li>
         </ul>
       </div>
     </li>
     <li class="menu-item has-sub">
-      <nuxt-link to="/explore/signals-predictions" class="menu-link menu-toggle">Signals</nuxt-link>
+      <nuxt-link class="menu-link menu-toggle" to="/explore/signals-predictions">Signals</nuxt-link>
       <div class="menu-sub">
         <ul class="menu-list">
           <li class="menu-item">
-            <nuxt-link to="/explore/signals-predictions" class="menu-link">Predictions</nuxt-link>
+            <nuxt-link class="menu-link" to="/explore/signals-predictions">Predictions</nuxt-link>
           </li>
           <li class="menu-item">
-            <nuxt-link to="/explore/signals-data" class="menu-link">Data</nuxt-link>
+            <nuxt-link class="menu-link" to="/explore/signals-data">Data</nuxt-link>
           </li>
         </ul>
       </div>
     </li>
     <li class="menu-item">
-      <a href="https://docs.numerbay.ai/" target="_blank" class="menu-link">Docs</a>
+      <a class="menu-link" href="https://docs.numerbay.ai/" target="_blank">Docs</a>
     </li>
   </ul>
 </template>

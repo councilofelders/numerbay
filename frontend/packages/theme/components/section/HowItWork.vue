@@ -2,12 +2,12 @@
   <section class="section-space how-it-work-section">
     <div class="container">
       <!-- section heading -->
-      <SectionHeading classname="text-center" :text="title" :content="subtitle"
-                      :isMargin="gutterBottom"></SectionHeading>
+      <SectionHeading :content="subtitle" :isMargin="gutterBottom" :text="title"
+                      classname="text-center"></SectionHeading>
       <div class="row g-gs justify-content-center">
-        <div class="col-10 col-sm-6 col-md-6" v-for="item in SectionData.howItWorkData.howItWorkList" :key="item.id"
-             :class="classname">
-          <div class="card-htw text-center" :class="classnameTwo">
+        <div v-for="item in SectionData.howItWorkData.howItWorkList" :key="item.id" :class="classname"
+             class="col-10 col-sm-6 col-md-6">
+          <div :class="classnameTwo" class="card-htw text-center">
             <span :class="item.icon"></span>
             <h4 class="mb-3">{{ item.title }}</h4>
             <p class="card-text-s1" v-html="item.content"></p>

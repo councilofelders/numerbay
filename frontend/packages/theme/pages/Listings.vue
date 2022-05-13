@@ -5,8 +5,8 @@
       <div class="container">
         <div class="row">
           <!-- user sidebar -->
-          <UserSidebar title="My Listings" :lists="SectionData.accountSidebarData.navList"
-                       :navs="SectionData.editProfileData.editProfileTabNavMobile"></UserSidebar>
+          <UserSidebar :lists="SectionData.accountSidebarData.navList" :navs="SectionData.editProfileData.editProfileTabNavMobile"
+                       title="My Listings"></UserSidebar>
           <!-- offer -->
           <ListingsSection></ListingsSection>
         </div><!-- end row -->

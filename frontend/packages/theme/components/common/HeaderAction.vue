@@ -1,13 +1,13 @@
 <template>
   <div class="header-menu-action d-flex">
     <div class="header-search-mobile dropdown mx-2 d-none d-xl-none d-lg-flex">
-      <a class="icon-btn" href="#" data-bs-toggle="dropdown">
+      <a class="icon-btn" data-bs-toggle="dropdown" href="#">
         <em class="ni ni-search"></em>
       </a>
       <div class="dropdown-menu dropdown-menu-end card-generic">
         <div class="input-group">
-          <input type="search" class="form-control form-control-s1" placeholder="Search item here...">
-          <a href="#" class="btn btn-sm btn-outline-secondary"><em class="ni ni-search"></em></a>
+          <input class="form-control form-control-s1" placeholder="Search item here..." type="search">
+          <a class="btn btn-sm btn-outline-secondary" href="#"><em class="ni ni-search"></em></a>
         </div>
       </div>
     </div><!-- end header-search-mobile -->

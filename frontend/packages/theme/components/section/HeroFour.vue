@@ -1,5 +1,5 @@
 <template>
-  <div class="hero-wrap sub-header" :class="classnameTwo">
+  <div :class="classnameTwo" class="hero-wrap sub-header">
     <div class="container">
       <div class="hero-content text-center py-0">
         <h1 :class="classname">{{ title }}</h1>
@@ -8,7 +8,7 @@
             <li class="breadcrumb-item">
               <router-link to="/">Home</router-link>
             </li>
-            <li class="breadcrumb-item" v-for="(list, i) in lists" :key="i">
+            <li v-for="(list, i) in lists" :key="i" class="breadcrumb-item">
               {{ list.title }}
             </li>
           </ol>

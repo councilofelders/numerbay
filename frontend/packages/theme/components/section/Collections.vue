@@ -1,7 +1,7 @@
 <template>
   <section class="collection-section section-space">
     <div class="container">
-      <div class="section-head-sm" :class="classname">
+      <div :class="classname" class="section-head-sm">
         <h2>Collections</h2>
       </div>
       <!-- collection slider -->

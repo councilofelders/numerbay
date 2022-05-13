@@ -5,27 +5,24 @@
       <div class="filter-box pb-5">
         <div class="filter-box-filter justify-content-between align-items-center">
           <div class="filter-box-filter-item">
-            <v-select class="generic-select generic-select-s2" label="value" v-model="selectedSortBy"
-                      :options="sortBy.options" :clearable=false @input="onChangeSorting"></v-select>
+            <v-select v-model="selectedSortBy" :clearable=false :options="sortBy.options"
+                      class="generic-select generic-select-s2" label="value" @input="onChangeSorting"></v-select>
           </div><!-- end filter-box-filter-item -->
           <div class="filter-box-filter-item filter-btn-wrap">
-            <button class="icon-btn icon-btn-s1" @click="toggleFilterSidebar"
-                    :class="isFilterSidebarOpen ? 'text-primary':''"><em class="ni ni-filter"></em></button>
+            <button :class="isFilterSidebarOpen ? 'text-primary':''" class="icon-btn icon-btn-s1"
+                    @click="toggleFilterSidebar"><em class="ni ni-filter"></em></button>
           </div><!-- end filter-box-filter-item -->
           <div class="filter-box-filter-item ms-lg-auto filter-btn-wrap">
             <div class="filter-btn-group">
-              <div class="menu-item d-inline-block" v-for="subcategory in getSubcategories(categoryTree)"
-                   :key="subcategory.id">
-                <a href="javascript:void(0);" class="btn filter-btn"
-                   :class="getActiveClass(subcategory.id)"
+              <div v-for="subcategory in getSubcategories(categoryTree)" :key="subcategory.id"
+                   class="menu-item d-inline-block">
+                <a :class="getActiveClass(subcategory.id)" class="btn filter-btn"
+                   href="javascript:void(0);"
                    @click.prevent="activeId = subcategory.id">{{ subcategory.label }}
                 </a>
                 <div class="menu-sub" style="z-index: 10000;">
                   <ul class="menu-list">
-                    <!--                    <li class="menu-item">
-                                          <router-link :to="localePath(th.getCatLink(subcategory))" class="menu-link">All</router-link>
-                                        </li>-->
-                    <li class="menu-item" v-for="subsubcategory in getSubcategories(subcategory)">
+                    <li v-for="subsubcategory in getSubcategories(subcategory)" class="menu-item">
                       <nuxt-link :to="localePath(th.getCatLink(subsubcategory))" class="menu-link">
                         {{ subsubcategory.label }}
                       </nuxt-link>
@@ -37,7 +34,7 @@
           </div><!-- end filter-box-filter-item -->
         </div><!-- end filter-box-filter -->
         <transition name="fade">
-          <div class="justify-content-between align-items-center mt-2 filter-btn-wrap" v-show="isFilterSidebarOpen">
+          <div v-show="isFilterSidebarOpen" class="justify-content-between align-items-center mt-2 filter-btn-wrap">
             <div class="row">
               <div class="col-9">
                 <div class="row">
@@ -45,21 +42,19 @@
                     <h5>{{ facet.label }}</h5>
                     <div
                       v-if="isFacetCheckbox(facet)"
-                      class="d-flex"
                       :key="`${facet.id}-colors`"
+                      class="d-flex"
                     >
                       <div v-for="option in facet.options" :key="`${facet.id}-${option.value}`" class="d-flex me-2">
-                        <input class="form-check-input me-1" type="checkbox" :id="`${facet.id}-${option.value}`"
-                               :checked="isFilterSelected(facet, option)" @change="() => selectFilter(facet, option)">
-                        <label class="form-check-label form-check-label-s1" :for="`${facet.id}-${option.value}`">
+                        <input :id="`${facet.id}-${option.value}`" :checked="isFilterSelected(facet, option)" class="form-check-input me-1"
+                               type="checkbox" @change="() => selectFilter(facet, option)">
+                        <label :for="`${facet.id}-${option.value}`" class="form-check-label form-check-label-s1">
                           {{ option.id + `${option.count ? ` (${option.count})` : ''}` }} </label>
                       </div>
                     </div>
                     <div v-else>
                       <Range
                         :id="facet.id"
-                        :disabled="false"
-                        :value="getSelectedRangeFilterValue(facet)"
                         :config='{
                       "start":[getRangeFilterOption(facet.options, "from"), getRangeFilterOption(facet.options, "to")],
                       "range":{
@@ -72,6 +67,8 @@
                         from: (v) => parseFloat(parseFloat(v).toFixed(getRangeFilterOption(facet.options, "decimals")))
                       }
                     }'
+                        :disabled="false"
+                        :value="getSelectedRangeFilterValue(facet)"
                         class="form-range"
                         @change="(values) => updateRangeFilter(facet, values)"
                       />
@@ -90,11 +87,11 @@
         </transition>
       </div><!-- end filter-box -->
       <!-- Product -->
-      <div class="row g-gs" v-if="loading">
-        <div class="col-lg-6" v-for="index in pagination.itemsPerPage" :key="index">
+      <div v-if="loading" class="row g-gs">
+        <div v-for="index in pagination.itemsPerPage" :key="index" class="col-lg-6">
           <div class="card card-full flex-sm-row product-s2">
             <div class="card-image">
-              <img src="https://numer.ai/img/profile_picture_light.jpg" class="product-img" alt="avatar image">
+              <img alt="avatar image" class="product-img" src="https://numer.ai/img/profile_picture_light.jpg">
             </div>
             <div class="card-body card-justified p-4">
               <h5 class="card-title text-truncate mb-0 placeholder-glow"><span class="placeholder col-8"></span></h5>
@@ -115,15 +112,15 @@
           </div><!-- end card -->
         </div>
       </div><!-- end placeholder row -->
-      <div class="row g-gs" v-else>
-        <div class="col-lg-6" v-for="product in products" :key="product.id">
+      <div v-else class="row g-gs">
+        <div v-for="product in products" :key="product.id" class="col-lg-6">
           <ProductCard :product="product"></ProductCard>
         </div>
       </div><!-- end row -->
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="pagination.totalItems" v-model="page" :per-page="pagination.itemsPerPage"
-                    @paginate="goToPage" v-if="pagination.totalItems"></Pagination>
+        <Pagination v-if="pagination.totalItems" v-model="page" :per-page="pagination.itemsPerPage"
+                    :records="pagination.totalItems" @paginate="goToPage"></Pagination>
         <span v-else>No more items</span>
       </div>
     </div><!-- .container -->

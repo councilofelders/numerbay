@@ -1,11 +1,11 @@
 <template>
   <div class="page-wrap">
     <!-- hero -->
-    <HeroFour classname="hero-title" :title="'Vote'" :lists="[
+    <HeroFour :lists="[
       {
         title: 'Vote'
       }
-    ]"></HeroFour>
+    ]" :title="'Vote'" classname="hero-title"></HeroFour>
     <VoteSection></VoteSection>
   </div><!-- end page-wrap -->
 </template>

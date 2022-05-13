@@ -5,7 +5,7 @@
       <div class="container">
         <div class="row">
           <!-- user sidebar -->
-          <UserSidebar title="Numerai Settings" :lists="SectionData.accountSidebarData.navList"></UserSidebar>
+          <UserSidebar :lists="SectionData.accountSidebarData.navList" title="Numerai Settings"></UserSidebar>
           <NumeraiSettingSection></NumeraiSettingSection>
         </div><!-- end row -->
       </div><!-- end container -->

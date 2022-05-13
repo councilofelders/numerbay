@@ -14,48 +14,48 @@
           <div class="col-lg-8">
             <ValidationObserver v-slot="{ handleSubmit }">
               <form action="#" class="form-create mb-5 mb-lg-0">
-                <ValidationProvider rules="required|min:2" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="required|min:2" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Poll topic</label>
-                      <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Set the poll topic. This
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Poll topic</label>
+                      <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text mb-3">Set the poll topic. This
                         cannot be changed later.</p>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Poll Topic" v-model="form.topic" :disabled="Boolean(currentPoll)">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <input v-model="form.topic" :class="!errors[0] ? '' : 'is-invalid'" :disabled="Boolean(currentPoll)"
+                             class="form-control form-control-s1" placeholder="Poll Topic" type="text">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="required" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">End date</label>
-                      <input type="date" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="End Date in UTC" v-model="form.dateFinish">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">End date</label>
+                      <input v-model="form.dateFinish" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             placeholder="End Date in UTC" type="date">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="min:2" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="min:2" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Description</label>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="(Optional) Short Description" v-model="form.description">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Description</label>
+                      <input v-model="form.description" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             placeholder="(Optional) Short Description" type="text">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="min:2|alpha_dash" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="min:2|alpha_dash" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Short link</label>
-                      <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Set a short URL for the
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Short link</label>
+                      <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text mb-3">Set a short URL for the
                         poll. This cannot be changed later.</p>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="(Optional) Custom Poll ID for Shorthand URL" v-model="form.id"
-                             :disabled="Boolean(currentPoll)">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <input v-model="form.id" :class="!errors[0] ? '' : 'is-invalid'" :disabled="Boolean(currentPoll)"
+                             class="form-control form-control-s1" placeholder="(Optional) Custom Poll ID for Shorthand URL"
+                             type="text">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
@@ -67,22 +67,22 @@
                         <p class="form-text">Voter can choose multiple options. This cannot be changed later</p>
                       </div>
                       <div class="form-check form-switch form-switch-s1">
-                        <input class="form-check-input" type="checkbox" v-model="form.isMultiple"
-                               @change="onIsMultipleChange(form.isMultiple)" :disabled="Boolean(currentPoll)">
+                        <input v-model="form.isMultiple" :disabled="Boolean(currentPoll)" class="form-check-input"
+                               type="checkbox" @change="onIsMultipleChange(form.isMultiple)">
                       </div><!-- end form-check -->
                     </div><!-- end d-flex -->
                   </div>
                 </div><!-- end form-item -->
                 <div v-if="form.isMultiple">
-                  <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="required|integer|min_value:1" slim>
                     <div class="form-item mb-4">
                       <div class="mb-4">
-                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Maximum options to
+                        <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Maximum options to
                           select</label>
-                        <input type="number" class="form-control form-control-s1"
-                               :class="!errors[0] ? '' : 'is-invalid'" placeholder="Maximum Options for a Vote" min="1"
-                               v-model="form.maxOptions" :disabled="Boolean(currentPoll)">
-                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                        <input v-model="form.maxOptions" :class="!errors[0] ? '' : 'is-invalid'"
+                               :disabled="Boolean(currentPoll)" class="form-control form-control-s1" min="1"
+                               placeholder="Maximum Options for a Vote" type="number">
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                       </div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
@@ -94,7 +94,7 @@
                         <h5 class="mb-1">Show advanced settings</h5>
                       </div>
                       <div class="form-check form-switch form-switch-s1">
-                        <input class="form-check-input" type="checkbox" v-model="showAdvanced">
+                        <input v-model="showAdvanced" class="form-check-input" type="checkbox">
                       </div><!-- end form-check -->
                     </div><!-- end d-flex -->
                   </div>
@@ -108,8 +108,8 @@
                           <p class="form-text">Results will be kept blind until poll ends</p>
                         </div>
                         <div class="form-check form-switch form-switch-s1">
-                          <input class="form-check-input" type="checkbox" v-model="form.isBlind"
-                                 @change="onIsBlindChange(form.isBlind)" :disabled="Boolean(currentPoll)">
+                          <input v-model="form.isBlind" :disabled="Boolean(currentPoll)" class="form-check-input"
+                                 type="checkbox" @change="onIsBlindChange(form.isBlind)">
                         </div><!-- end form-check -->
                       </div><!-- end d-flex -->
                     </div>
@@ -123,8 +123,8 @@
                             <p class="form-text">Determine NMR stake for weight calculation as of poll creation</p>
                           </div>
                           <div class="form-check form-switch form-switch-s1">
-                            <input class="form-check-input" type="checkbox" v-model="form.isStakePredetermined"
-                                   :disabled="Boolean(currentPoll) || !form.isBlind">
+                            <input v-model="form.isStakePredetermined" :disabled="Boolean(currentPoll) || !form.isBlind" class="form-check-input"
+                                   type="checkbox">
                           </div><!-- end form-check -->
                         </div><!-- end d-flex -->
                       </div>
@@ -138,86 +138,86 @@
                           <p class="form-text">Voter IDs will be anonymized in the backend</p>
                         </div>
                         <div class="form-check form-switch form-switch-s1">
-                          <input class="form-check-input" type="checkbox" v-model="form.isAnonymous"
-                                 :disabled="Boolean(currentPoll)">
+                          <input v-model="form.isAnonymous" :disabled="Boolean(currentPoll)" class="form-check-input"
+                                 type="checkbox">
                         </div><!-- end form-check -->
                       </div><!-- end d-flex -->
                     </div>
                   </div><!-- end form-item -->
-                  <ValidationProvider rules="" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="" slim>
                     <div class="form-item mb-4">
-                      <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Choose min participation</h5>
-                      <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Select the minimum
+                      <h5 :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-1">Choose min participation</h5>
+                      <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text mb-3">Select the minimum
                         duration of staked participation required to vote.</p>
-                      <v-select class="generic-select" :class="!errors[0] ? '' : 'is-invalid'"
-                                placeholder="Select Minimum Participation" label="label" v-model="form.minRounds"
-                                :options="minParticipationOptions" :reduce="option => option.value"
-                                :disabled="Boolean(currentPoll)" :clearable=false></v-select>
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <v-select v-model="form.minRounds" :class="!errors[0] ? '' : 'is-invalid'"
+                                :clearable=false :disabled="Boolean(currentPoll)" :options="minParticipationOptions"
+                                :reduce="option => option.value" class="generic-select"
+                                label="label" placeholder="Select Minimum Participation"></v-select>
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
-                  <ValidationProvider rules="integer|min_value:0" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="integer|min_value:0" slim>
                     <div class="form-item mb-4">
                       <div class="mb-4">
-                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Stake basis
+                        <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Stake basis
                           round</label>
-                        <input type="number" class="form-control form-control-s1"
-                               :class="!errors[0] ? '' : 'is-invalid'"
-                               placeholder="(Optional) Use Stake Snapshot as of Tournament Round" min="0"
-                               v-model="form.stakeBasisRound" :disabled="Boolean(currentPoll)">
-                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                        <input v-model="form.stakeBasisRound" :class="!errors[0] ? '' : 'is-invalid'"
+                               :disabled="Boolean(currentPoll)"
+                               class="form-control form-control-s1" min="0"
+                               placeholder="(Optional) Use Stake Snapshot as of Tournament Round" type="number">
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                       </div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
-                  <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="decimal|min_value:0" slim>
                     <div class="form-item mb-4">
                       <div class="mb-4">
-                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Min stake</label>
-                        <input type="number" class="form-control form-control-s1"
-                               :class="!errors[0] ? '' : 'is-invalid'"
-                               placeholder="(Optional) Minimum Staked NMR Required for Voter" step=0.0001 min="0"
-                               v-model="form.minStake" :disabled="Boolean(currentPoll)">
-                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                        <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Min stake</label>
+                        <input v-model="form.minStake" :class="!errors[0] ? '' : 'is-invalid'"
+                               :disabled="Boolean(currentPoll)"
+                               class="form-control form-control-s1" min="0" placeholder="(Optional) Minimum Staked NMR Required for Voter"
+                               step=0.0001 type="number">
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                       </div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
-                  <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="decimal|min_value:0" slim>
                     <div class="form-item mb-4">
                       <div class="mb-4">
-                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Clipping for low
+                        <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Clipping for low
                           stake</label>
-                        <input type="number" class="form-control form-control-s1"
-                               :class="!errors[0] ? '' : 'is-invalid'"
-                               placeholder="(Optional) Clip lower NMR values to this value" step=0.0001 min="0"
-                               v-model="form.clipLow" :disabled="Boolean(currentPoll)">
-                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                        <input v-model="form.clipLow" :class="!errors[0] ? '' : 'is-invalid'"
+                               :disabled="Boolean(currentPoll)"
+                               class="form-control form-control-s1" min="0" placeholder="(Optional) Clip lower NMR values to this value"
+                               step=0.0001 type="number">
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                       </div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
-                  <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="decimal|min_value:0" slim>
                     <div class="form-item mb-4">
                       <div class="mb-4">
-                        <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Clipping for high
+                        <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Clipping for high
                           stake</label>
-                        <input type="number" class="form-control form-control-s1"
-                               :class="!errors[0] ? '' : 'is-invalid'"
-                               placeholder="(Optional) Clip higher NMR values to this value" step=0.0001 min="0"
-                               v-model="form.clipHigh" :disabled="Boolean(currentPoll)">
-                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                        <input v-model="form.clipHigh" :class="!errors[0] ? '' : 'is-invalid'"
+                               :disabled="Boolean(currentPoll)"
+                               class="form-control form-control-s1" min="0" placeholder="(Optional) Clip higher NMR values to this value"
+                               step=0.0001 type="number">
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                       </div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
                 </div>
                 <div class="form-item mb-4">
                   <h5 class="mb-3">Select mode</h5>
-                  <ul class="row g-3 nav nav-tabs nav-tabs-s2" id="myTab" role="tablist">
-                    <li class="nav-item col-4 col-sm-4 col-lg-3 tooltip-s1" role="presentation"
-                        v-for="mode in weightModes" :key="mode.id">
-                      <button class="nav-link" :class="form.weightMode === mode.value ? 'active':''" :id="mode.value"
-                              data-bs-toggle="tab" type="button" @click="form.weightMode = mode.value"
-                              :disabled="Boolean(currentPoll)">
+                  <ul id="myTab" class="row g-3 nav nav-tabs nav-tabs-s2" role="tablist">
+                    <li v-for="mode in weightModes" :key="mode.id"
+                        class="nav-item col-4 col-sm-4 col-lg-3 tooltip-s1" role="presentation">
+                      <button :id="mode.value" :class="form.weightMode === mode.value ? 'active':''" :disabled="Boolean(currentPoll)"
+                              class="nav-link" data-bs-toggle="tab" type="button"
+                              @click="form.weightMode = mode.value">
                         <span class="tooltip-s1-text tooltip-s1-text-lg tooltip-text">{{ mode.description }}</span>
-                        <em class="ni nav-link-icon" :class="mode.icon"></em>
+                        <em :class="mode.icon" class="ni nav-link-icon"></em>
                         <span class="nav-link-title mt-1 d-block">{{ mode.title }}</span>
                       </button>
                     </li>
@@ -225,20 +225,20 @@
                 </div><!-- end form-item -->
                 <div class="form-item mb-4">
                   <h5 class="mb-3">Poll options</h5>
-                  <div class="row" v-for="(option, index) in form.options" :key="index">
+                  <div v-for="(option, index) in form.options" :key="index" class="row">
                     <div class="col-11">
-                      <ValidationProvider rules="required" v-slot="{ errors }" slim>
+                      <ValidationProvider v-slot="{ errors }" rules="required" slim>
                         <div class="form-item mb-4">
                           <div class="mb-4">
-                            <input type="text" class="form-control form-control-s1"
-                                   :class="!errors[0] ? '' : 'is-invalid'" placeholder="Option" v-model="option.text">
-                            <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                            <input v-model="option.text" :class="!errors[0] ? '' : 'is-invalid'"
+                                   class="form-control form-control-s1" placeholder="Option" type="text">
+                            <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                           </div>
                         </div><!-- end form-item -->
                       </ValidationProvider>
                     </div>
                     <div class="col-1">
-                      <button class="icon-btn ms-auto" type="button" title="Delete" @click="deleteOption(index)"><em
+                      <button class="icon-btn ms-auto" title="Delete" type="button" @click="deleteOption(index)"><em
                         class="ni ni-trash"></em></button>
                     </div>
                   </div>
@@ -251,7 +251,7 @@
                   </div>
                 </div><!-- end form-item -->
                 <div class="form-item">
-                  <button class="btn btn-dark" type="button" @click="handleSubmit(savePoll)" :disabled="pollLoading">
+                  <button :disabled="pollLoading" class="btn btn-dark" type="button" @click="handleSubmit(savePoll)">
                     <span v-if="pollLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...</span>
                     <span v-else>Save</span>
                   </button>

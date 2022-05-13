@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer-section" :class="classname">
+  <footer :class="classname" class="footer-section">
     <!-- footer section -->
     <FooterSection></FooterSection>
   </footer><!-- end footer-section -->

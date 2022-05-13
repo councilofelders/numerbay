@@ -12,29 +12,29 @@
           </div>
           <ValidationObserver v-slot="{ handleSubmit }">
             <form @submit.prevent="handleSubmit(handleLogin)">
-              <ValidationProvider rules="required|min:2" v-slot="{ errors }">
+              <ValidationProvider v-slot="{ errors }" rules="required|min:2">
                 <div class="form-floating mb-4">
-                  <input class="form-control" :class="!errors[0] ? '' : 'is-invalid border-danger'" id="username"
-                         placeholder="username" v-model="form.username">
-                  <label for="username" :class="{ 'text-danger': Boolean(errors[0]) }">Username</label>
-                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                  <input id="username" v-model="form.username" :class="!errors[0] ? '' : 'is-invalid border-danger'"
+                         class="form-control" placeholder="username">
+                  <label :class="{ 'text-danger': Boolean(errors[0]) }" for="username">Username</label>
+                  <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                 </div><!-- end form-floating -->
               </ValidationProvider>
-              <ValidationProvider rules="required|min:6" v-slot="{ errors }">
+              <ValidationProvider v-slot="{ errors }" rules="required|min:6">
                 <div class="form-floating mb-4">
-                  <input type="password" class="form-control password"
-                         :class="!errors[0] ? '' : 'is-invalid border-danger'" id="password" placeholder="Password"
-                         v-model="form.password">
-                  <label for="password" :class="{ 'text-danger': Boolean(errors[0]) }">Password</label>
-                  <a href="password" class="password-toggle" :class="!errors[0] ? '' : 'text-danger'"
+                  <input id="password" v-model="form.password"
+                         :class="!errors[0] ? '' : 'is-invalid border-danger'" class="form-control password" placeholder="Password"
+                         type="password">
+                  <label :class="{ 'text-danger': Boolean(errors[0]) }" for="password">Password</label>
+                  <a :class="!errors[0] ? '' : 'text-danger'" class="password-toggle" href="password"
                      title="Toggle show/hide pasword">
                     <em class="password-shown ni ni-eye-off"></em>
                     <em class="password-hidden ni ni-eye"></em>
                   </a>
-                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                  <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                 </div><!-- end form-floating -->
               </ValidationProvider>
-              <button class="btn btn-dark btn-full d-flex justify-content-center" type="submit" :disabled="loading">
+              <button :disabled="loading" class="btn btn-dark btn-full d-flex justify-content-center" type="submit">
                 <span v-if="loading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Logging In...</span>
                 <span v-else>{{ SectionData.loginData.btnText }}</span>
               </button>

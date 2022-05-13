@@ -5,9 +5,9 @@
         <h3>Numerai Settings</h3>
         <div class="ms-auto d-flex">
           <span class="my-auto me-2">Last sync: {{ userGetters.getNumeraiLastSyncDate(user) }}</span>
-          <button class="icon-btn" title="Sync with Numerai" :disabled="userLoading" @click="sync"><em
-            class="ni ni-reload" v-if="!userLoading"></em><span class="spinner-border spinner-border-sm" role="status"
-                                                                v-else></span></button>
+          <button :disabled="userLoading" class="icon-btn" title="Sync with Numerai" @click="sync"><em
+            v-if="!userLoading" class="ni ni-reload"></em><span v-else class="spinner-border spinner-border-sm"
+                                                                role="status"></span></button>
         </div>
       </div>
     </div><!-- end user-panel-title-box -->
@@ -17,49 +17,49 @@
         Account</strong></a> page. Make sure it has at least <strong>View user info</strong> permission. NumerBay only
         uses essential information to verify model ownership.</p>
       <div class="row mt-4">
-        <div class="col-lg-6"><p class="fs-14"><strong>View user info</strong>: <strong class="text-success"
-                                                                                        v-if="user.numerai_api_key_can_read_user_info">Granted</strong><strong
-          class="text-warning" v-else>Restricted</strong></p></div>
-        <div class="col-lg-6"><p class="fs-14"><strong>View submission info</strong>: <strong class="text-success"
-                                                                                              v-if="user.numerai_api_key_can_read_submission_info">Granted</strong><strong
-          class="text-warning" v-else>Restricted</strong></p></div>
+        <div class="col-lg-6"><p class="fs-14"><strong>View user info</strong>: <strong v-if="user.numerai_api_key_can_read_user_info"
+                                                                                        class="text-success">Granted</strong><strong
+          v-else class="text-warning">Restricted</strong></p></div>
+        <div class="col-lg-6"><p class="fs-14"><strong>View submission info</strong>: <strong v-if="user.numerai_api_key_can_read_submission_info"
+                                                                                              class="text-success">Granted</strong><strong
+          v-else class="text-warning">Restricted</strong></p></div>
       </div>
       <div class="row">
-        <div class="col-lg-6"><p class="fs-14"><strong>Upload submissions</strong>: <strong class="text-success"
-                                                                                            v-if="user.numerai_api_key_can_upload_submission">Granted</strong><strong
-          class="text-warning" v-else>Restricted</strong></p></div>
-        <div class="col-lg-6 mb-3"><p class="fs-14 mb-3"><strong>Adjust stake</strong>: <strong class="text-success"
-                                                                                                v-if="user.numerai_api_key_can_stake">Granted</strong><strong
-          class="text-warning" v-else>Restricted</strong></p></div>
+        <div class="col-lg-6"><p class="fs-14"><strong>Upload submissions</strong>: <strong v-if="user.numerai_api_key_can_upload_submission"
+                                                                                            class="text-success">Granted</strong><strong
+          v-else class="text-warning">Restricted</strong></p></div>
+        <div class="col-lg-6 mb-3"><p class="fs-14 mb-3"><strong>Adjust stake</strong>: <strong v-if="user.numerai_api_key_can_stake"
+                                                                                                class="text-success">Granted</strong><strong
+          v-else class="text-warning">Restricted</strong></p></div>
       </div>
       <ValidationObserver v-slot="{ handleSubmit, reset }">
-        <ValidationProvider rules="required|min:2" v-slot="{ errors }" slim>
+        <ValidationProvider v-slot="{ errors }" rules="required|min:2" slim>
           <div class="mb-3">
-            <label for="numeraiApiKeyPublicId" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Numerai
+            <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="numeraiApiKeyPublicId">Numerai
               API Key Public Id</label>
-            <input type="text" id="numeraiApiKeyPublicId" class="form-control form-control-s1"
-                   :class="!errors[0] ? '' : 'is-invalid'" v-model="form.numeraiApiKeyPublicId">
-            <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+            <input id="numeraiApiKeyPublicId" v-model="form.numeraiApiKeyPublicId" :class="!errors[0] ? '' : 'is-invalid'"
+                   class="form-control form-control-s1" type="text">
+            <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
           </div>
         </ValidationProvider>
-        <ValidationProvider rules="required|min:2" v-slot="{ errors }" slim>
+        <ValidationProvider v-slot="{ errors }" rules="required|min:2" slim>
           <div class="mb-3">
-            <label for="numeraiApiKeySecret" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Numerai
+            <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="numeraiApiKeySecret">Numerai
               API Key Secret</label>
             <div class="position-relative">
-              <input type="password" id="numeraiApiKeySecret" class="form-control form-control-s1"
-                     :class="!errors[0] ? '' : 'is-invalid'" v-model="form.numeraiApiKeySecret">
-              <a href="numeraiApiKeySecret" class="password-toggle" :class="!errors[0] ? '' : 'text-danger'"
+              <input id="numeraiApiKeySecret" v-model="form.numeraiApiKeySecret" :class="!errors[0] ? '' : 'is-invalid'"
+                     class="form-control form-control-s1" type="password">
+              <a :class="!errors[0] ? '' : 'text-danger'" class="password-toggle" href="numeraiApiKeySecret"
                  title="Toggle show/hide pasword">
                 <em class="password-shown ni ni-eye-off"></em>
                 <em class="password-hidden ni ni-eye"></em>
               </a>
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div>
         </ValidationProvider>
-        <button class="btn btn-dark mt-3 d-flex justify-content-center" type="button"
-                @click="handleSubmit(submitForm(reset))" :disabled="userLoading">
+        <button :disabled="userLoading" class="btn btn-dark mt-3 d-flex justify-content-center"
+                type="button" @click="handleSubmit(submitForm(reset))">
           <span v-if="userLoading"><span class="spinner-border spinner-border-sm me-2"
                                          role="status"></span>Saving...</span>
           <span v-else>Save</span>

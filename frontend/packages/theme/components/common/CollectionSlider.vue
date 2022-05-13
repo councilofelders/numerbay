@@ -1,8 +1,6 @@
 /* eslint-disable no-undef */
 <template>
   <swiper
-    :modules="modules"
-    :slides-per-view="4"
     :breakpoints="{
         0: {
           slidesPerView: 1
@@ -15,10 +13,12 @@
         }
      }"
     :loop="true"
-    :pagination="{ clickable: true }" class="swiper-container-space">
+    :modules="modules"
+    :pagination="{ clickable: true }"
+    :slides-per-view="4" class="swiper-container-space">
     <swiper-slide v-for="item in []" :key="item.id" class="h-auto">
       <router-link :to="item.path" class="card card-full card-collection">
-        <img :src="item.img" class="card-img-top" alt="birds art image">
+        <img :src="item.img" alt="birds art image" class="card-img-top">
         <div class="card-body card-body-s1">
           <div class="avatar avatar-1">
             <img :src="item.avatar" alt="avatar" class="rounded-circle">

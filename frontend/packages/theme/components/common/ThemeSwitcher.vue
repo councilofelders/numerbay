@@ -1,5 +1,5 @@
 <template>
-  <a href="#" class="theme-toggler" title="Toggle Dark/Light mode">
+  <a class="theme-toggler" href="#" title="Toggle Dark/Light mode">
         <span>
           <em class="ni ni-moon icon theme-toggler-show"></em>
           <em class="ni ni-sun icon theme-toggler-hide"></em>

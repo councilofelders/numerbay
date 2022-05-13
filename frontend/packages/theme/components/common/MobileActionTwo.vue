@@ -3,19 +3,19 @@
 <template>
   <div class="header-mobile-action">
     <div class="header-search-mobile dropdown me-2">
-      <a class="icon-btn" href="javascript:void(0)" data-bs-toggle="dropdown" @click="toggleMobileSearchDropdown"><em
+      <a class="icon-btn" data-bs-toggle="dropdown" href="javascript:void(0)" @click="toggleMobileSearchDropdown"><em
         class="ni ni-search"></em></a>
-      <div class="dropdown-menu dropdown-menu-end card-generic" :class="showMobileSearchDropdown? 'show' : ''">
+      <div :class="showMobileSearchDropdown? 'show' : ''" class="dropdown-menu dropdown-menu-end card-generic">
         <div class="input-group">
-          <input type="search" class="form-control form-control-s1" placeholder="Search item here..."
-                 v-model="searchTerm" @keydown.enter="handleSearch">
-          <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary" @click="handleSearch"><em
+          <input v-model="searchTerm" class="form-control form-control-s1" placeholder="Search item here..."
+                 type="search" @keydown.enter="handleSearch">
+          <a class="btn btn-sm btn-outline-secondary" href="javascript:void(0)" @click="handleSearch"><em
             class="ni ni-search"></em></a>
         </div>
       </div>
     </div><!-- end header-search-mobile -->
     <div class="header-mobile-user-menu me-2">
-      <button type="button" class="icon-btn" data-bs-toggle="dropdown"><em class="ni ni-user"></em></button>
+      <button class="icon-btn" data-bs-toggle="dropdown" type="button"><em class="ni ni-user"></em></button>
       <ul class="dropdown-menu card-generic card-generic-s3 dropdown-menu-end mt-2">
         <li><h6 class="dropdown-header">Hello {{ username }}!</h6></li>
         <li>
@@ -25,7 +25,7 @@
         </li>
         <li><a class="dropdown-item card-generic-item" href="https://docs.numerbay.ai/" target="_blank"><em
           class="ni ni-question-alt me-2"></em>Docs</a></li>
-        <li><a href="#" class="dropdown-item card-generic-item theme-toggler" title="Toggle Dark/Light mode"><em
+        <li><a class="dropdown-item card-generic-item theme-toggler" href="#" title="Toggle Dark/Light mode"><em
           class="ni ni-moon me-2"></em> Dark Mode</a></li>
         <li>
           <hr class="dropdown-divider">

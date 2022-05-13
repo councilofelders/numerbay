@@ -3,32 +3,32 @@
     <div class="user-panel-title-box">
       <h3>My Coupons</h3>
     </div><!-- end user-panel-title-box -->
-    <div class="alert alert-danger d-flex mb-4" role="alert" v-if="!userGetters.getNumeraiApiKeyPublicId(user)">
-      <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="#ff6a8e">
+    <div v-if="!userGetters.getNumeraiApiKeyPublicId(user)" class="alert alert-danger d-flex mb-4" role="alert">
+      <svg class="flex-shrink-0 me-3" fill="#ff6a8e" height="30" viewBox="0 0 24 24" width="30">
         <path
           d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
       </svg>
       <p class="fs-14">
         In order to make a purchase, you must
-        <router-link to="/numerai-settings" class="btn-link">set up a Numerai API key.</router-link>
+        <router-link class="btn-link" to="/numerai-settings">set up a Numerai API key.</router-link>
         It only takes a few minutes!
       </p>
     </div><!-- end alert -->
     <div class="profile-setting-panel-wrap">
-      <router-link :to="`/create-coupon`" class="btn btn-outline-dark mb-4"
-                   :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''">Create Coupon
+      <router-link :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''" :to="`/create-coupon`"
+                   class="btn btn-outline-dark mb-4">Create Coupon
       </router-link>
       <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link" :class="'active'" :id="'received'" type="button">Received coupons</button>
+          <button :id="'received'" :class="'active'" class="nav-link" type="button">Received coupons</button>
         </li>
       </ul>
       <div class="row g-gs">
-        <div class="col-xl-12" v-if="!displayedProductCoupons || displayedProductCoupons.length === 0">You have not
+        <div v-if="!displayedProductCoupons || displayedProductCoupons.length === 0" class="col-xl-12">You have not
           received any coupon
         </div>
-        <div class="col-xl-6" v-for="(productCoupon, i) in displayedProductCoupons" :key="i"
-             v-if="displayedProductCoupons">
+        <div v-for="(productCoupon, i) in displayedProductCoupons" v-if="displayedProductCoupons" :key="i"
+             class="col-xl-6">
           <div class="card card-full">
             <div class="card-body card-body-s1">
               <p class="mb-3 fs-13 mb-4">{{ productCoupon.quantity_remaining }} / {{ productCoupon.quantity_total }}
@@ -78,19 +78,19 @@
       </div><!-- end row -->
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="productCoupons.length" v-model="page" :per-page="perPage"></Pagination>
+        <Pagination v-model="page" :per-page="perPage" :records="productCoupons.length"></Pagination>
       </div>
       <ul class="nav nav-tabs nav-tabs-s3 mb-2 mt-4" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link" :id="'created'" type="button">Created coupons</button>
+          <button :id="'created'" class="nav-link" type="button">Created coupons</button>
         </li>
       </ul>
       <div class="row g-gs">
-        <div class="col-xl-12" v-if="!displayedCreatedProductCoupons || displayedCreatedProductCoupons.length === 0">You
+        <div v-if="!displayedCreatedProductCoupons || displayedCreatedProductCoupons.length === 0" class="col-xl-12">You
           have not created any coupon
         </div>
-        <div class="col-xl-6" v-for="(productCoupon, i) in displayedCreatedProductCoupons" :key="i"
-             v-if="displayedCreatedProductCoupons">
+        <div v-for="(productCoupon, i) in displayedCreatedProductCoupons" v-if="displayedCreatedProductCoupons" :key="i"
+             class="col-xl-6">
           <div class="card card-full">
             <div class="card-body card-body-s1">
               <p class="mb-3 fs-13 mb-4">@{{ productCoupon.owner.username }}<span
@@ -137,9 +137,9 @@
               </div><!-- end d-flex -->
               <ul class="btns-group">
                 <li>
-                  <a href="javascript:void(0);" @click="handleDeleteCoupon(productCoupon.id)"
-                     class="btn-link fw-medium fs-13 text-danger"
-                     title="Delete coupon">Delete
+                  <a class="btn-link fw-medium fs-13 text-danger" href="javascript:void(0);"
+                     title="Delete coupon"
+                     @click="handleDeleteCoupon(productCoupon.id)">Delete
                   </a>
                 </li>
               </ul>
@@ -149,8 +149,8 @@
       </div><!-- end row -->
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="createdProductCoupons.length" v-model="createdCouponsPage"
-                    :per-page="perPage"></Pagination>
+        <Pagination v-model="createdCouponsPage" :per-page="perPage"
+                    :records="createdProductCoupons.length"></Pagination>
       </div>
     </div><!-- end profile-setting-panel-wrap-->
   </div><!-- end col-lg-8 -->

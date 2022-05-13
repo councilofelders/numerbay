@@ -1,7 +1,7 @@
 <template>
-  <section class="top-creator-section" :class="classname">
+  <section :class="classname" class="top-creator-section">
     <div class="container">
-      <div class="section-head-sm" :class="isCenter">
+      <div :class="isCenter" class="section-head-sm">
         <h2>Featured Creators</h2>
       </div>
       <!-- creators -->

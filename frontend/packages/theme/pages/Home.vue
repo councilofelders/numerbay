@@ -20,91 +20,95 @@
     <!--        <HowItWork classname="col-lg-3" :title="SectionData.howItWorkData.title" :subtitle="SectionData.howItWorkData.content" gutterBottom="mb-3"></HowItWork>-->
     <!-- Community Apps  -->
     <section class="section-space app-section">
-        <div class="container">
-            <!-- section heading -->
-            <SectionHeading classname="text-center" text="Community Apps" content="Featured apps created by the Numerai community members." isMargin="mb-3"></SectionHeading>
-            <!-- product -->
-            <div class="row g-gs">
-              <div class="col-xl-3 col-lg-4 col-sm-6" v-for="app in apps" :key="app.id">
-                <div class="card card-full card-blog">
-                    <div class="d-block card-image">
-                        <img :src="app.img" class="card-img-top" alt="">
-                        <div class="bg-dark-transparent card-overlay">
-                            <div class="d-flex align-items-center card-author">
-                                <div class="flex-shrink-0 avatar avatar-2">
-                                    <img :src="app.avatar" alt="" class="rounded-circle">
-                                </div>
-                                <div class="flex-grow-1 ms-2 text-white">
-                                    <span>{{ app.author }}</span>
-                                </div>
-                            </div>
-                        </div>
+      <div class="container">
+        <!-- section heading -->
+        <SectionHeading classname="text-center" content="Featured apps created by the Numerai community members."
+                        isMargin="mb-3"
+                        text="Community Apps"></SectionHeading>
+        <!-- product -->
+        <div class="row g-gs">
+          <div v-for="app in apps" :key="app.id" class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="card card-full card-blog">
+              <div class="d-block card-image">
+                <img :src="app.img" alt="" class="card-img-top">
+                <div class="bg-dark-transparent card-overlay">
+                  <div class="d-flex align-items-center card-author">
+                    <div class="flex-shrink-0 avatar avatar-2">
+                      <img :src="app.avatar" alt="" class="rounded-circle">
                     </div>
-                    <div class="card-body card-body-s1">
-                        <h4 class="card-title mb-3">{{ app.title }}</h4>
-                        <p class="card-text">{{ app.desc }}</p>
-                    </div><!-- end card-body -->
-                    <a class="details" :href="app.link" target="_blank">
-                    </a>
-                </div><!-- end card -->
-<!--                <div class="card">
-                  <div class="card-image">
-                      <img :src="app.img" alt="" class="card-img-top">
+                    <div class="flex-grow-1 ms-2 text-white">
+                      <span>{{ app.author }}</span>
+                    </div>
                   </div>
-                  <div class="card-body d-flex align-items-center">
-                      <div class="avatar flex-shrink-0 me-2">
-                          <img :src="app.avatar" alt="">
-                      </div>
-                      <div class="text-truncate">
-                          <h6 class="card-title text-truncate mb-0">{{ app.title }}</h6>
-                          <span class="small text-secondary author-link">{{ app.author }}</span>
-                      </div>
-                  </div>&lt;!&ndash; end card-body &ndash;&gt;
-                  <a
-                      class="details"
-                      :href="app.link"
-                  >
-                  </a>
-              </div>&lt;!&ndash; end card &ndash;&gt;-->
+                </div>
               </div>
-            </div>
-<!--            <div class="text-center mt-4 mt-md-5">
-                <ButtonLink text="View more" link="/" classname="btn-link btn-link-s1"></ButtonLink>
-            </div>-->
-        </div><!-- .container -->
+              <div class="card-body card-body-s1">
+                <h4 class="card-title mb-3">{{ app.title }}</h4>
+                <p class="card-text">{{ app.desc }}</p>
+              </div><!-- end card-body -->
+              <a :href="app.link" class="details" target="_blank">
+              </a>
+            </div><!-- end card -->
+            <!--                <div class="card">
+                              <div class="card-image">
+                                  <img :src="app.img" alt="" class="card-img-top">
+                              </div>
+                              <div class="card-body d-flex align-items-center">
+                                  <div class="avatar flex-shrink-0 me-2">
+                                      <img :src="app.avatar" alt="">
+                                  </div>
+                                  <div class="text-truncate">
+                                      <h6 class="card-title text-truncate mb-0">{{ app.title }}</h6>
+                                      <span class="small text-secondary author-link">{{ app.author }}</span>
+                                  </div>
+                              </div>&lt;!&ndash; end card-body &ndash;&gt;
+                              <a
+                                  class="details"
+                                  :href="app.link"
+                              >
+                              </a>
+                          </div>&lt;!&ndash; end card &ndash;&gt;-->
+          </div>
+        </div>
+        <!--            <div class="text-center mt-4 mt-md-5">
+                        <ButtonLink text="View more" link="/" classname="btn-link btn-link-s1"></ButtonLink>
+                    </div>-->
+      </div><!-- .container -->
     </section><!-- app-section -->
     <!-- Community Content  -->
     <section class="section-space content-section bg-gray">
-        <div class="container">
-            <!-- section heading -->
-            <SectionHeading classname="text-center" text="Community Content" content="Numerai educational content created by the community." isMargin="mb-3"></SectionHeading>
-            <!-- product -->
-            <div class="row g-gs">
-              <div class="col-xl-4 col-lg-4 col-sm-6" v-for="content in contents" :key="content.id">
-                <div class="card card-full card-blog">
-                    <div class="d-block card-image">
-                        <img :src="content.img" class="card-img-top" alt="">
-                        <div class="bg-dark-transparent card-overlay">
-                            <div class="d-flex align-items-center card-author">
-                                <div class="flex-shrink-0 avatar avatar-2">
-                                    <img :src="content.avatar" alt="" class="rounded-circle">
-                                </div>
-                                <div class="flex-grow-1 ms-2 text-white">
-                                    <span>{{ content.author }}</span>
-                                </div>
-                            </div>
-                        </div>
+      <div class="container">
+        <!-- section heading -->
+        <SectionHeading classname="text-center" content="Numerai educational content created by the community."
+                        isMargin="mb-3"
+                        text="Community Content"></SectionHeading>
+        <!-- product -->
+        <div class="row g-gs">
+          <div v-for="content in contents" :key="content.id" class="col-xl-4 col-lg-4 col-sm-6">
+            <div class="card card-full card-blog">
+              <div class="d-block card-image">
+                <img :src="content.img" alt="" class="card-img-top">
+                <div class="bg-dark-transparent card-overlay">
+                  <div class="d-flex align-items-center card-author">
+                    <div class="flex-shrink-0 avatar avatar-2">
+                      <img :src="content.avatar" alt="" class="rounded-circle">
                     </div>
-                    <div class="card-body card-body-s1">
-                        <h4 class="card-title mb-3">{{ content.title }}</h4>
-                        <p class="card-text">{{ content.desc }}</p>
-                    </div><!-- end card-body -->
-                    <a class="details" :href="content.link" target="_blank">
-                    </a>
-                </div><!-- end card -->
+                    <div class="flex-grow-1 ms-2 text-white">
+                      <span>{{ content.author }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-        </div><!-- .container -->
+              <div class="card-body card-body-s1">
+                <h4 class="card-title mb-3">{{ content.title }}</h4>
+                <p class="card-text">{{ content.desc }}</p>
+              </div><!-- end card-body -->
+              <a :href="content.link" class="details" target="_blank">
+              </a>
+            </div><!-- end card -->
+          </div>
+        </div>
+      </div><!-- .container -->
     </section><!-- content-section -->
     <!-- Newsletter  -->
     <Newsletter></Newsletter>

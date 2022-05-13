@@ -2,10 +2,9 @@
   <section class="related-product-section section-space-b">
     <div class="container">
       <!-- section heading -->
-      <SectionHeading classname="text-center" :text="title"></SectionHeading>
+      <SectionHeading :text="title" classname="text-center"></SectionHeading>
       <!-- product -->
       <swiper
-        :slides-per-view="4"
         :breakpoints="{
               0: {
                   slidesPerView: 1
@@ -20,7 +19,8 @@
                   slidesPerView: 4
               }
             }"
-        :pagination="{ clickable: true }">
+        :pagination="{ clickable: true }"
+        :slides-per-view="4">
         <swiper-slide v-for="product in products" :key="product.id">
           <ProductCardSmall :product="product"></ProductCardSmall>
         </swiper-slide>

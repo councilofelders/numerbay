@@ -16,8 +16,8 @@
               <div class="form-item mb-4">
                 <h5 class="mb-3">Upload file</h5>
                 <client-only>
-                  <multiple-dropzone :key="componentKey" id="foo" ref="foo" :options="dropzoneOptions" :awss3="gcs"
-                                     :destroyDropzone="false"
+                  <multiple-dropzone id="foo" :key="componentKey" ref="foo" :awss3="gcs" :destroyDropzone="false"
+                                     :options="dropzoneOptions"
                                      v-on:vdropzone-error="s3UploadError"
                                      v-on:vdropzone-success="s3UploadSuccess"
                                      v-on:vdropzone-total-upload-progress="s3TotalUploadProgress"
@@ -25,9 +25,9 @@
                                      v-on:vdropzone-removed-file="onRemove"
                                      v-on:vdropzone-file-added="onFileAdd"
                   >
-                    <p class="file-name mb-4" id="file-name">An encrypted copy will be added for each active order<br/>Allowed
+                    <p id="file-name" class="file-name mb-4">An encrypted copy will be added for each active order<br/>Allowed
                       extentions: {{ this.dropzoneOptions.acceptedFiles }}.</p>
-                    <input id="file-upload" class="file-upload-input" data-target="file-name" type="file" hidden>
+                    <input id="file-upload" class="file-upload-input" data-target="file-name" hidden type="file">
                     <label class="input-label btn btn-dark">Choose File</label>
                   </multiple-dropzone>
                 </client-only>
@@ -36,41 +36,43 @@
                 <table class="table mb-0 table-s2">
                   <thead class="fs-14">
                   <tr>
-                    <th scope="col" v-for="(list, i) in [
+                    <th v-for="(list, i) in [
                                           'Upload',
                                           '#',
                                           'Buyer',
                                           'Mode',
                                           'Files Uploaded',
                                           'Numerai Submission'
-                                        ]" :key="i">{{ list }}
+                                        ]" :key="i" scope="col">{{ list }}
                     </th>
                   </tr>
                   </thead>
                   <tbody class="fs-13">
                   <tr v-if="!orders || orders.length===0">
-                    <td colspan="3" class="text-secondary">No active sale order to upload for</td>
+                    <td class="text-secondary" colspan="3">No active sale order to upload for</td>
                   </tr>
                   <tr v-for="order in orders" :key="orderGetters.getId(order)">
                     <th scope="row">
                       <div class="form-check form-switch form-switch-s1">
-                        <input class="form-check-input" type="checkbox"
-                               @change="toggleUploadOrder(orderGetters.getId(order))"
-                               :checked="Boolean(uploadOrders && uploadOrders.includes(orderGetters.getId(order)))"
+                        <input :key="orderGetters.getId(order)" :checked="Boolean(uploadOrders && uploadOrders.includes(orderGetters.getId(order)))"
                                :name="String(orderGetters.getId(order))"
-                               :key="orderGetters.getId(order)">
+                               class="form-check-input"
+                               type="checkbox"
+                               @change="toggleUploadOrder(orderGetters.getId(order))">
                       </div>
                     </th>
-                    <th scope="row"><a href="javascript:void(0);" @click="toggleModal(order)" title="Click for details">{{
+                    <th scope="row"><a href="javascript:void(0);" title="Click for details" @click="toggleModal(order)">{{
                         orderGetters.getId(order)
                       }}<span v-if="!order.buyer_public_key">&nbsp;(Unencrypted)</span></a></th>
                     <td>{{ orderGetters.getBuyer(order) }}</td>
                     <td>{{ order.mode }}</td>
                     <td>
-                      {{ (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length }}
+                      {{
+                        (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length
+                      }}
                       / {{ getMaxOrderArtifactsCount() }}
                     </td>
-                    <td><span class="badge fw-medium" :class="getSubmissionStatusTextClass(order)">{{
+                    <td><span :class="getSubmissionStatusTextClass(order)" class="badge fw-medium">{{
                         orderGetters.getSubmissionStatus(order)
                       }}</span></td>
                   </tr>
@@ -78,23 +80,23 @@
                 </table>
               </div><!-- end table-responsive -->
               <div class="table-responsive mt-4">
-                <table class="table mb-0 table-s2" v-if="artifacts">
+                <table v-if="artifacts" class="table mb-0 table-s2">
                   <thead class="fs-14">
                   <tr>
-                    <th scope="col" v-for="(list, i) in [
+                    <th v-for="(list, i) in [
                                           '#',
                                           'File Name',
                                           'State',
                                           'Recipient',
                                           'Action'
-                                        ]" :key="i">{{ list }}
+                                        ]" :key="i" scope="col">{{ list }}
                     </th>
                   </tr>
                   </thead>
                   <tbody class="fs-13">
                   <tr
                     v-if="(!getAllOrderArtifacts() || getAllOrderArtifacts().length===0) && (!artifacts.data || artifacts.data.length===0)">
-                    <td colspan="3" class="text-secondary">Please upload artifacts after the round opens</td>
+                    <td class="text-secondary" colspan="3">Please upload artifacts after the round opens</td>
                   </tr>
                   <tr v-for="artifact in getAllOrderArtifacts()" :key="artifactGetters.getId(artifact)">
                     <th scope="row">{{ artifact.order_id }}</th>
@@ -102,37 +104,37 @@
                                                                                  title="Download not available">{{
                         artifactGetters.getObjectName(artifact)
                       }}</a></span></td>
-                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span>
+                    <td><span :class="getStatusTextClass(artifact)" class="badge fw-medium">{{ artifact.state }}</span>
                     </td>
                     <td>{{ artifact.is_numerai_direct ? 'Numerai' : 'Buyer' }}</td>
                     <td>
                       <div class="d-flex justify-content-between">
-                        <button class="icon-btn ms-auto" title="Delete" @click="onManualRemoveOrderArtifact(artifact)"
-                                :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)">
-                          <span class="spinner-border spinner-border-sm text-secondary" role="status"
-                                v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)"></span>
-                          <em class="ni ni-trash" v-else></em>
+                        <button :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)" class="icon-btn ms-auto" title="Delete"
+                                @click="onManualRemoveOrderArtifact(artifact)">
+                          <span v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)" class="spinner-border spinner-border-sm text-secondary"
+                                role="status"></span>
+                          <em v-else class="ni ni-trash"></em>
                         </button>
                       </div>
                     </td>
                   </tr>
                   <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
                     <th scope="row">{{ artifact.order_id }}</th>
-                    <td><span class="text-break" style="white-space: normal;"><a href="javascript:void(0);"
-                                                                                 @click="download(artifact)"
-                                                                                 :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                    <td><span class="text-break" style="white-space: normal;"><a :title="`Download ${artifactGetters.getObjectName(artifact)}`"
+                                                                                 href="javascript:void(0);"
+                                                                                 @click="download(artifact)">{{
                         artifactGetters.getObjectName(artifact)
                       }}</a></span></td>
-                    <td><span class="badge fw-medium" :class="getStatusTextClass(artifact)">{{ artifact.state }}</span>
+                    <td><span :class="getStatusTextClass(artifact)" class="badge fw-medium">{{ artifact.state }}</span>
                     </td>
                     <td></td>
                     <td>
                       <div class="d-flex justify-content-between">
-                        <button class="icon-btn ms-auto" title="Delete" @click="onManualRemove(artifact)"
-                                :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)">
-                          <span class="spinner-border spinner-border-sm text-secondary" role="status"
-                                v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)"></span>
-                          <em class="ni ni-trash" v-else></em>
+                        <button :disabled="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)" class="icon-btn ms-auto" title="Delete"
+                                @click="onManualRemove(artifact)">
+                          <span v-if="(componentLoading || productArtifactLoading) && isActiveArtifact(artifact)" class="spinner-border spinner-border-sm text-secondary"
+                                role="status"></span>
+                          <em v-else class="ni ni-trash"></em>
                         </button>
                       </div>
                     </td>
@@ -143,7 +145,7 @@
             </form>
           </div><!-- endn col -->
         </div><!-- row-->
-        <OrderInfoModal :order="currentOrder" modelId="orderInfoModal" ref="orderInfoModal"></OrderInfoModal>
+        <OrderInfoModal ref="orderInfoModal" :order="currentOrder" modelId="orderInfoModal"></OrderInfoModal>
       </div><!-- container -->
     </section><!-- create-section -->
   </div><!-- end page-wrap -->

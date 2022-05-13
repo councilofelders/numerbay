@@ -5,8 +5,8 @@
       <div class="container">
         <div class="row">
           <!-- user sidebar -->
-          <UserSidebar title="Edit Profile" :lists="SectionData.accountSidebarData.navList"
-                       :navs="SectionData.editProfileData.editProfileTabNavMobile"></UserSidebar>
+          <UserSidebar :lists="SectionData.accountSidebarData.navList" :navs="SectionData.editProfileData.editProfileTabNavMobile"
+                       title="Edit Profile"></UserSidebar>
           <AccountSection></AccountSection>
         </div><!-- end row -->
       </div><!-- end container -->

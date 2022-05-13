@@ -1,5 +1,5 @@
 <template>
-  <div ref="range" type="range" class="range-slider" :disabled="disabled">
+  <div ref="range" :disabled="disabled" class="range-slider" type="range">
     <slot v-bind="$attrs"/>
   </div>
 </template>

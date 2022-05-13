@@ -1,6 +1,6 @@
 <template>
   <div class="row g-gs">
-    <div class="col-xl-3 col-lg-4 col-sm-6" v-for="product in []" :key="product.id">
+    <div v-for="product in []" :key="product.id" class="col-xl-3 col-lg-4 col-sm-6">
       <Products :product="product"></Products>
     </div>
   </div>

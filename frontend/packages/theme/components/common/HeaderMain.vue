@@ -1,7 +1,7 @@
 <template>
-  <div class="header-main is-sticky" :class="isTransparent">
+  <div :class="isTransparent" class="header-main is-sticky">
     <div class="container">
-      <div class="header-wrap" v-if="!isAuthenticated">
+      <div v-if="!isAuthenticated" class="header-wrap">
         <!-- logo -->
         <Logo></Logo>
         <!-- mobile action -->
@@ -12,7 +12,7 @@
         <Menu classname="btn-dark"></Menu>
         <div class="header-overlay"></div>
       </div><!-- .header-warp-->
-      <div class="header-wrap" v-else>
+      <div v-else class="header-wrap">
         <!-- logo -->
         <Logo></Logo>
         <!-- mobile action -->

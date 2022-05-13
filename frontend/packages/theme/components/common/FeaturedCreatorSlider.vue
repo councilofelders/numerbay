@@ -1,7 +1,5 @@
 <template>
   <swiper
-    :modules="modules"
-    :slides-per-view="3"
     :breakpoints="{
     0: {
       slidesPerView: 1
@@ -13,11 +11,13 @@
       slidesPerView: 3
     }
   }"
-    :pagination="{ clickable: true }">
+    :modules="modules"
+    :pagination="{ clickable: true }"
+    :slides-per-view="3">
     <swiper-slide v-for="item in []" :key="item.id">
       <div class="card card-full card-creator">
         <router-link :to="item.btnLink" class="d-block">
-          <img :src="item.img" class="card-img-top" alt="birds art image">
+          <img :src="item.img" alt="birds art image" class="card-img-top">
         </router-link>
         <div class="card-body card-body-s1">
           <router-link :to="item.btnLink" class="avatar avatar-1">

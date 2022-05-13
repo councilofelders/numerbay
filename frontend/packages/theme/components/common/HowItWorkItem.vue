@@ -1,6 +1,6 @@
 <template>
   <div class="row g-gs justify-content-center">
-    <div class="col-10 col-sm-6 col-lg-3" v-for="item in SectionData.howItWorkData.howItWorkListThree" :key="item.id">
+    <div v-for="item in SectionData.howItWorkData.howItWorkListThree" :key="item.id" class="col-10 col-sm-6 col-lg-3">
       <div class="card-hiw card-hiw-s3">
         <div class="d-flex align-items-center mb-3">
           <span :class="item.icon"></span>

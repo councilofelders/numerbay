@@ -1,74 +1,74 @@
 <template>
-  <Modal :modal-id="modalId" @registeredModal="modal = $event" modal-class="modal-lg">
+  <Modal :modal-id="modalId" modal-class="modal-lg" @registeredModal="modal = $event">
     <template slot="title">Artifact Files</template>
     <div class="row g-2">
       <div class="col-xl-12">
-        <table class="table mb-0 table-s2"
-               v-if="artifacts && orderGetters.getStatus(order)=='confirmed' && !order.buyer_public_key">
+        <table v-if="artifacts && orderGetters.getStatus(order)=='confirmed' && !order.buyer_public_key"
+               class="table mb-0 table-s2">
           <thead class="fs-14">
           <tr>
-            <th scope="col" v-for="(list, i) in [
+            <th v-for="(list, i) in [
                       'Download File',
                       'Numerai Submission'
-                    ]" :key="i">{{ list }}
+                    ]" :key="i" scope="col">{{ list }}
             </th>
           </tr>
           </thead>
           <tbody>
           <tr v-if="!artifacts || artifacts.total===0">
-            <td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round
+            <td class="text-secondary" colspan="2">Please wait for the seller to upload artifacts after the round
               opens
             </td>
           </tr>
           <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
             <td>
               <span class="text-break" style="white-space: normal;">
-                <a href="javascript:void(0);" @click="download(artifact)"
-                   :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                <a :title="`Download ${artifactGetters.getObjectName(artifact)}`" href="javascript:void(0);"
+                   @click="download(artifact)">{{
                     artifactGetters.getObjectName(artifact)
                   }}</a>
-                <span class="spinner-border spinner-border-sm text-primary" role="status"
-                      v-if="isActiveArtifact(artifact)"></span>
+                <span v-if="isActiveArtifact(artifact)" class="spinner-border spinner-border-sm text-primary"
+                      role="status"></span>
               </span>
             </td>
             <td>
-              <div class="d-flex justify-content-between"
-                   v-if="Boolean(artifact) && !!artifact.object_name && !!order.submit_model_id">
+              <div v-if="Boolean(artifact) && !!artifact.object_name && !!order.submit_model_id"
+                   class="d-flex justify-content-between">
                 <button class="icon-btn ms-auto" title="Submit to Numerai" @click="submit(artifact)">
-                  <span class="spinner-border spinner-border-sm" role="status" v-if="loading"></span>
-                  <em class="ni ni-upload-cloud" v-else></em>
+                  <span v-if="loading" class="spinner-border spinner-border-sm" role="status"></span>
+                  <em v-else class="ni ni-upload-cloud"></em>
                 </button>
               </div>
             </td>
           </tr>
           </tbody>
         </table>
-        <table class="table mb-0 table-s2"
-               v-if="orderArtifacts && orderGetters.getStatus(order)=='confirmed' && Boolean(order.buyer_public_key)">
+        <table v-if="orderArtifacts && orderGetters.getStatus(order)=='confirmed' && Boolean(order.buyer_public_key)"
+               class="table mb-0 table-s2">
           <thead class="fs-14">
           <tr>
-            <th scope="col" v-for="(list, i) in [
+            <th v-for="(list, i) in [
                       'Download File',
                       'Numerai Submission'
-                    ]" :key="i">{{ list }}
+                    ]" :key="i" scope="col">{{ list }}
             </th>
           </tr>
           </thead>
           <tbody>
           <tr v-if="!orderArtifacts || orderArtifacts.total===0">
-            <td colspan="2" class="text-secondary">Please wait for the seller to upload artifacts after the round
+            <td class="text-secondary" colspan="2">Please wait for the seller to upload artifacts after the round
               opens
             </td>
           </tr>
           <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
             <td>
               <span class="text-break" style="white-space: normal;">
-                <a href="javascript:void(0);" @click="downloadAndDecrypt(artifact)"
-                   :title="`Download ${artifactGetters.getObjectName(artifact)}`">{{
+                <a :title="`Download ${artifactGetters.getObjectName(artifact)}`" href="javascript:void(0);"
+                   @click="downloadAndDecrypt(artifact)">{{
                     artifactGetters.getObjectName(artifact)
                   }}</a>
-                <span class="spinner-border spinner-border-sm text-primary" role="status"
-                      v-if="isActiveArtifact(artifact)"></span>
+                <span v-if="isActiveArtifact(artifact)" class="spinner-border spinner-border-sm text-primary"
+                      role="status"></span>
               </span>
             </td>
             <td>

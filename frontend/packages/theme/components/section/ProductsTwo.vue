@@ -1,7 +1,7 @@
 <template>
   <div class="card card-full flex-sm-row product-s2">
     <div class="card-image">
-      <img :src="product.img" class="product-img" alt="art image">
+      <img :src="product.img" alt="art image" class="product-img">
     </div>
     <div class="card-body p-4">
       <h5 class="card-title text-truncate mb-0">{{ product.title }}</h5>
@@ -24,7 +24,7 @@
             <div class="follow-wrap mb-3">
               <h6 class="mb-1 smaller text-uppercase">Followed by</h6>
               <div class="avatar-group">
-                <router-link :to="avatar.path" v-for="avatar in product.avatars" :key="avatar.id">
+                <router-link v-for="avatar in product.avatars" :key="avatar.id" :to="avatar.path">
                   <img :src="avatar.img" alt="avatar">
                 </router-link>
               </div>
@@ -43,10 +43,9 @@
           <span class="card-price-number">{{ product.priceTwo }} ETH</span>
         </div>
       </div><!-- end card-price-wrap -->
-      <router-link to="item-details" class="btn btn-sm btn-dark">Place Bid</router-link>
+      <router-link class="btn btn-sm btn-dark" to="item-details">Place Bid</router-link>
     </div><!-- end card-body -->
     <router-link
-      class="details"
       :to="{
                 name: 'ProductDetail',
                 params: {
@@ -62,6 +61,7 @@
                 content: product.content,
                 }
             }"
+      class="details"
     >
     </router-link>
   </div><!-- end card -->

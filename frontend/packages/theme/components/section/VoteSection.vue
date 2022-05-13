@@ -2,21 +2,21 @@
   <section class="explore-section pt-4 section-space">
     <div class="container">
       <div class="row g-gs">
-        <div class="col-lg-6 mx-auto" v-if="poll.options">
+        <div v-if="poll.options" class="col-lg-6 mx-auto">
           <client-only>
             <vue-poll
-              :owner="pollGetters.getOwner(poll) ? pollGetters.getOwner(poll).toUpperCase() : '-'"
+              :answers="poll.options"
+              :can-show-results="!poll.is_blind || poll.is_finished"
               :deadline="pollGetters.getEndDate(poll)"
-              :weightMode="poll.weight_mode ? poll.weight_mode.toUpperCase() : '-'"
-              :question="poll.topic"
               :description="poll.description"
               :loading="pollLoading"
-              :can-show-results="!poll.is_blind || poll.is_finished"
-              :multiple="poll.is_multiple"
               :maxOptions="poll.max_options"
-              :answers="poll.options"
-              @addvote="addVote"
-              :showResults="poll.has_voted || poll.is_finished"/>
+              :multiple="poll.is_multiple"
+              :owner="pollGetters.getOwner(poll) ? pollGetters.getOwner(poll).toUpperCase() : '-'"
+              :question="poll.topic"
+              :showResults="poll.has_voted || poll.is_finished"
+              :weightMode="poll.weight_mode ? poll.weight_mode.toUpperCase() : '-'"
+              @addvote="addVote"/>
           </client-only>
         </div>
       </div><!-- Poll -->

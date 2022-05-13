@@ -3,12 +3,12 @@
   <section class="section-space-b feature-section">
     <div class="container">
       <!-- section heading -->
-      <SectionHeading classname="text-center" :text="SectionData.featuredData.title"
-                      :content="SectionData.featuredData.content" isMargin="mb-3"></SectionHeading>
+      <SectionHeading :content="SectionData.featuredData.content" :text="SectionData.featuredData.title"
+                      classname="text-center" isMargin="mb-3"></SectionHeading>
       <div class="row g-gs">
-        <div class="col-sm-6 col-md-6 col-lg-3" v-for="item in []" :key="item.id">
+        <div v-for="item in []" :key="item.id" class="col-sm-6 col-md-6 col-lg-3">
           <router-link :to="item.path" class="card card-full">
-            <img :src="item.img" class="card-img-top" alt="featured image">
+            <img :src="item.img" alt="featured image" class="card-img-top">
             <div class="card-body p-4">
               <h5 class="card-title">{{ item.title }}</h5>
               <p class="small">{{ item.content }}</p>

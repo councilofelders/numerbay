@@ -1,22 +1,22 @@
 <template>
-  <transition-group tag="div" class="notifications" name="slide-fade">
-    <div class="toast align-items-center text-white border-0 show my-3" :class="notification.type" role="alert"
-         aria-live="assertive" aria-atomic="true"
-         v-for="notification in notifications"
-         :key="notification.id"
+  <transition-group class="notifications" name="slide-fade" tag="div">
+    <div v-for="notification in notifications" :key="notification.id" :class="notification.type"
+         aria-atomic="true" aria-live="assertive"
+         class="toast align-items-center text-white border-0 show my-3"
+         role="alert"
     >
       <div class="d-flex">
-        <span class="mx-1 m-auto ni fs-12" :class="notification.icon"
-                v-if="Boolean(notification.icon)"></span>
+        <span v-if="Boolean(notification.icon)" :class="notification.icon"
+              class="mx-1 m-auto ni fs-12"></span>
         <div class="toast-body">
           {{ notification.message }}
           <div v-if="Boolean(notification.action) && Boolean(notification.action.text)">
-            <a type="button" class="btn-link fw-regular text-white"
+            <a class="btn-link fw-regular text-white" type="button"
                @click="notification.action.onClick()">{{ notification.action.text }}</a>
           </div>
         </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                aria-label="Close"></button>
+        <button aria-label="Close" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                type="button"></button>
       </div>
     </div>
   </transition-group>
@@ -36,7 +36,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .notifications {
   position: fixed;
   width: 100%;

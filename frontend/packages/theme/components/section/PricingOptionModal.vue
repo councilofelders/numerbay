@@ -1,12 +1,12 @@
 <template>
-  <Modal :modal-id="modalId" @registeredModal="modal = $event" backdrop="static" modal-class="modal-lg">
+  <Modal :modal-id="modalId" backdrop="static" modal-class="modal-lg" @registeredModal="modal = $event">
     <template slot="title">Update Option</template>
-    <ValidationObserver v-slot="{ handleSubmit }" key="options">
+    <ValidationObserver key="options" v-slot="{ handleSubmit }">
       <div class="form-item mb-4">
         <div class="mb-4">
           <label class="mb-2 form-label">Option description</label>
-          <input type="text" class="form-control form-control-s1" placeholder="Option description"
-                 v-model="description">
+          <input v-model="description" class="form-control form-control-s1" placeholder="Option description"
+                 type="text">
         </div>
       </div><!-- end form-item -->
       <div class="form-item mb-4">
@@ -17,7 +17,7 @@
               <p class="form-text">Sell natively on NumerBay</p>
             </div>
             <div class="form-check form-switch form-switch-s1">
-              <input class="form-check-input" type="checkbox" v-model="isOnPlatform"
+              <input v-model="isOnPlatform" class="form-check-input" type="checkbox"
                      @change="onPlatformChange(isOnPlatform)">
             </div><!-- end form-check -->
           </div><!-- end d-flex -->
@@ -29,63 +29,67 @@
             <div class="d-flex align-items-center justify-content-between">
               <div class="me-2">
                 <h5 class="mb-1">Use Numerai wallet</h5>
-                <p class="form-text text-break">Receive payments with your Numerai wallet <a class="link-secondary"
-                                                                                             :href="`https://etherscan.io/address/${user.numerai_wallet_address}`"
-                                                                                             target="_blank">{{ user.numerai_wallet_address }}</a>
+                <p class="form-text text-break">Receive payments with your Numerai wallet <a :href="`https://etherscan.io/address/${user.numerai_wallet_address}`"
+                                                                                             class="link-secondary"
+                                                                                             target="_blank">{{
+                    user.numerai_wallet_address
+                  }}</a>
                 </p>
               </div>
               <div class="form-check form-switch form-switch-s1">
-                <input class="form-check-input" type="checkbox" v-model="useNumeraiWallet">
+                <input v-model="useNumeraiWallet" class="form-check-input" type="checkbox">
               </div><!-- end form-check -->
             </div><!-- end d-flex -->
             <div class="mt-4">
-              <input type="text" class="form-control form-control-s1"
-                     placeholder="Alternative wallet for receiving payments" v-if="!useNumeraiWallet" v-model="wallet">
+              <input v-if="!useNumeraiWallet" v-model="wallet"
+                     class="form-control form-control-s1" placeholder="Alternative wallet for receiving payments" type="text">
             </div>
           </div>
         </div><!-- end form-item -->
         <div class="form-item mb-4">
           <h5 class="mb-3">Select mode</h5>
-          <ul class="row g-3 nav nav-tabs nav-tabs-s2" id="myTab" role="tablist">
-            <li class="nav-item col-4 col-sm-4 col-lg-3 tooltip-s1" role="presentation" v-for="list in listingModes"
-                :key="list.id">
-              <button class="nav-link" :class="[mode === list.value ? 'active':'', isListingModeDisabled(list.value) ? 'disabled':'']" :id="list.value" data-bs-toggle="tab"
-                      type="button" @click="mode = list.value" :disabled="isListingModeDisabled(list.value)">
+          <ul id="myTab" class="row g-3 nav nav-tabs nav-tabs-s2" role="tablist">
+            <li v-for="list in listingModes" :key="list.id" class="nav-item col-4 col-sm-4 col-lg-3 tooltip-s1"
+                role="presentation">
+              <button :id="list.value"
+                      :class="[mode === list.value ? 'active':'', isListingModeDisabled(list.value) ? 'disabled':'']"
+                      :disabled="isListingModeDisabled(list.value)" class="nav-link"
+                      data-bs-toggle="tab" type="button" @click="mode = list.value">
                 <span class="tooltip-s1-text tooltip-s1-text-lg tooltip-text">{{ list.description }}</span>
-                <em class="ni nav-link-icon" :class="list.icon"></em>
+                <em :class="list.icon" class="ni nav-link-icon"></em>
                 <span class="nav-link-title mt-1 d-block">{{ list.title }}</span>
               </button>
             </li>
           </ul>
         </div><!-- end form-item -->
-        <ValidationProvider rules="required|decimal|min_value:1" v-slot="{ errors }" v-if="mode === 'stake_with_limit'"
+        <ValidationProvider v-if="mode === 'stake_with_limit'" v-slot="{ errors }" rules="required|decimal|min_value:1"
                             slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Stake limit</label>
-              <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                     placeholder="Stake limit in NMR" min="1" v-model="stakeLimit">
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Stake limit</label>
+              <input v-model="stakeLimit" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Stake limit in NMR" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
         </ValidationProvider>
-        <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" key="onPlatformQuantity" slim>
+        <ValidationProvider key="onPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Bundled quantity</label>
-              <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                     placeholder="Quantity or number of rounds per unit" min="1" v-model="quantity">
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
+              <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Quantity or number of rounds per unit" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
         </ValidationProvider>
-        <ValidationProvider rules="required|decimal|min_value:1" v-slot="{ errors }" key="onPlatformPrice" slim>
+        <ValidationProvider key="onPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Total price</label>
-              <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                     placeholder="Total Price in NMR" min="1" v-model="price">
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
+              <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Total Price in NMR" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
         </ValidationProvider>
@@ -96,30 +100,30 @@
                 <h5 class="mb-1">Reward coupons to buyers</h5>
               </div>
               <div class="form-check form-switch form-switch-s1">
-                <input class="form-check-input" type="checkbox" v-model="coupon">
+                <input v-model="coupon" class="form-check-input" type="checkbox">
               </div><!-- end form-check -->
             </div><!-- end d-flex -->
             <div v-if="coupon">
-              <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" key="rewardMinSpend" slim>
+              <ValidationProvider key="rewardMinSpend" v-slot="{ errors }" rules="decimal|min_value:0" slim>
                 <div class="form-item mb-4">
                   <div class="mb-4">
-                    <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Min spend for
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Min spend for
                       reward</label>
-                    <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="(Optional) Min Spend on This Product (in NMR) for Rewarding Coupon" min="0"
-                           v-model="couponSpecs.reward_min_spend">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <input v-model="couponSpecs.reward_min_spend" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                           min="0" placeholder="(Optional) Min Spend on This Product (in NMR) for Rewarding Coupon"
+                           type="number">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div>
                 </div><!-- end form-item -->
               </ValidationProvider>
               <div class="form-item mb-4">
                 <label class="mb-2 form-label">Applicable products</label>
                 <client-only>
-                  <multiselect ref="couponMultiSelect" placeholder="Applicable Products (in Addition to This Product)"
-                               v-model="couponSpecs.applicable_products" class="coupon-multiselect"
-                               :options="groupedProducts" :multiple="true" :close-on-select="false"
-                               group-values="products" group-label="category" :group-select="true" track-by="id"
-                               label="sku"
+                  <multiselect ref="couponMultiSelect" v-model="couponSpecs.applicable_products"
+                               :close-on-select="false" :group-select="true"
+                               :multiple="true" :options="groupedProducts" class="coupon-multiselect"
+                               group-label="category" group-values="products" label="sku" placeholder="Applicable Products (in Addition to This Product)"
+                               track-by="id"
                   >
                     <template slot="option" slot-scope="props">
                       <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
@@ -127,37 +131,37 @@
                   </multiselect>
                 </client-only>
               </div>
-              <ValidationProvider rules="required|integer|min_value:1|max_value:100" v-slot="{ errors }"
-                                  key="discountPercent" slim>
+              <ValidationProvider key="discountPercent" v-slot="{ errors }"
+                                  rules="required|integer|min_value:1|max_value:100" slim>
                 <div class="form-item mb-4">
                   <div class="mb-4">
-                    <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Discount %</label>
-                    <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="Coupon Discount % (0-100, 100 being free)" min="1"
-                           v-model="couponSpecs.discount_percent">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Discount %</label>
+                    <input v-model="couponSpecs.discount_percent" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                           min="1" placeholder="Coupon Discount % (0-100, 100 being free)"
+                           type="number">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div>
                 </div><!-- end form-item -->
               </ValidationProvider>
-              <ValidationProvider rules="required|decimal|min_value:0" v-slot="{ errors }" key="maxDiscount" slim>
+              <ValidationProvider key="maxDiscount" v-slot="{ errors }" rules="required|decimal|min_value:0" slim>
                 <div class="form-item mb-4">
                   <div class="mb-4">
-                    <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Max discount</label>
-                    <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="Coupon Max Discount (in NMR)" min="0" v-model="couponSpecs.max_discount">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Max discount</label>
+                    <input v-model="couponSpecs.max_discount" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                           min="0" placeholder="Coupon Max Discount (in NMR)" type="number">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div>
                 </div><!-- end form-item -->
               </ValidationProvider>
-              <ValidationProvider rules="decimal|min_value:0" v-slot="{ errors }" key="minSpend" slim>
+              <ValidationProvider key="minSpend" v-slot="{ errors }" rules="decimal|min_value:0" slim>
                 <div class="form-item mb-4">
                   <div class="mb-4">
-                    <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Min spend for
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Min spend for
                       redemption</label>
-                    <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="(Optional) Min Spend (in NMR) for Redeeming Coupon" min="0"
-                           v-model="couponSpecs.min_spend">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <input v-model="couponSpecs.min_spend" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                           min="0" placeholder="(Optional) Min Spend (in NMR) for Redeeming Coupon"
+                           type="number">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div>
                 </div><!-- end form-item -->
               </ValidationProvider>
@@ -166,35 +170,35 @@
         </div><!-- end form-item -->
       </div>
       <div v-else>
-        <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" key="offPlatformQuantity" slim>
+        <ValidationProvider key="offPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Bundled quantity</label>
-              <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                     placeholder="Quantity or number of rounds per unit" min="1" v-model="quantity">
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
+              <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Quantity or number of rounds per unit" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
         </ValidationProvider>
-        <ValidationProvider rules="required|decimal|min_value:1" v-slot="{ errors }" key="offPlatformPrice" slim>
+        <ValidationProvider key="offPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Total price</label>
-              <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                     placeholder="Price in USD equivalent" min="1" v-model="price">
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
+              <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Price in USD equivalent" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
         </ValidationProvider>
-        <ValidationProvider rules="url" v-slot="{ errors }" slim>
+        <ValidationProvider v-slot="{ errors }" rules="url" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }" for="thirdPartyUrl">Third-party
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label" for="thirdPartyUrl">Third-party
                 listing URL</label>
-              <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                     placeholder="e.g. Gumroad product link" id="thirdPartyUrl" v-model="thirdPartyUrl"
+              <input id="thirdPartyUrl" v-model="thirdPartyUrl" :class="!errors[0] ? '' : 'is-invalid'"
+                     class="form-control form-control-s1" placeholder="e.g. Gumroad product link" type="text"
                      @change="encodeURL">
-              <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
         </ValidationProvider>

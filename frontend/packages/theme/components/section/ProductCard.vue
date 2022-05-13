@@ -1,7 +1,7 @@
 <template>
   <div class="card card-full flex-sm-row product-s2">
     <div class="card-image">
-      <img :src="productGetters.getCoverImage(product)" class="product-img" alt="avatar image">
+      <img :src="productGetters.getCoverImage(product)" alt="avatar image" class="product-img">
     </div>
     <div class="card-body card-justified p-4">
       <h5 class="card-title text-truncate mb-0">{{ productGetters.getName(product).toUpperCase() }}</h5>
@@ -10,22 +10,22 @@
           <div class="custom-tooltip-wrap">
             <div class="card-author-by-2">
               <span class="item-detail-text-meta">{{ productGetters.getCategory(product).slug }}</span>
-              <span class="badge fw-medium bg-success" v-if="product.is_ready">Ready</span>
+              <span v-if="product.is_ready" class="badge fw-medium bg-success">Ready</span>
             </div>
-            <a href="javascript:void(0);" class="custom-tooltip author-link"
-               v-show="!!productGetters.getCategory(product).is_per_model">Metrics...</a>
+            <a v-show="!!productGetters.getCategory(product).is_per_model" class="custom-tooltip author-link"
+               href="javascript:void(0);">Metrics...</a>
             <div class="card-generic custom-tooltip-dropdown">
               <div class="metrics-wrap mb-3">
                 <h6 class="mb-1 smaller text-uppercase">Model Metrics</h6>
               </div><!-- end metrics-wrap  -->
               <ModelMetricsCard
-                :tournament="productGetters.getCategory(product).tournament"
-                :nmr-staked="nmrStaked"
-                :stake-info="stakeInfo"
-                :latest-returns="latestReturns"
-                :latest-reps="latestReps"
                 :latest-ranks="latestRanks"
+                :latest-reps="latestReps"
+                :latest-returns="latestReturns"
+                :nmr-staked="nmrStaked"
                 :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
+                :stake-info="stakeInfo"
+                :tournament="productGetters.getCategory(product).tournament"
               ></ModelMetricsCard>
             </div><!-- end dropdown-menu -->
           </div><!-- end custom-tooltip-wrap -->
@@ -40,13 +40,12 @@
                 productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx))
               }}</span>
           </div>
-          <span class="btn btn-sm"
-                :class="productGetters.getIsActive(product)?'btn-dark':'btn-light disabled'">Buy</span>
+          <span :class="productGetters.getIsActive(product)?'btn-dark':'btn-light disabled'"
+                class="btn btn-sm">Buy</span>
         </div><!-- end card-price-wrap -->
       </div>
     </div><!-- end card-body -->
     <nuxt-link
-      class="details"
       :title="product.is_ready ? `Seller has uploaded file or has delivered to at least one buyer for current round` : ``"
       :to="{
                 name: 'ProductDetailsByFullName',
@@ -80,6 +79,7 @@
                 imgLg: productGetters.getCoverImage(product),
                 }
             }"
+      class="details"
     >
     </nuxt-link>
   </div><!-- end card -->

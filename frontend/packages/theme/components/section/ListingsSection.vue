@@ -3,29 +3,31 @@
     <div class="user-panel-title-box">
       <h3>My Listings</h3>
     </div><!-- end user-panel-title-box -->
-    <div class="alert alert-danger d-flex mb-4" role="alert" v-if="!userGetters.getNumeraiApiKeyPublicId(user)">
-      <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="#ff6a8e">
+    <div v-if="!userGetters.getNumeraiApiKeyPublicId(user)" class="alert alert-danger d-flex mb-4" role="alert">
+      <svg class="flex-shrink-0 me-3" fill="#ff6a8e" height="30" viewBox="0 0 24 24" width="30">
         <path
-            d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+          d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
       </svg>
       <p class="fs-14">
         In order to list Numerai products for sale, you must
-        <router-link to="/numerai-settings" class="btn-link">set up a Numerai API key.</router-link>
+        <router-link class="btn-link" to="/numerai-settings">set up a Numerai API key.</router-link>
         It only takes a few minutes!
       </p>
     </div><!-- end alert -->
     <div class="profile-setting-panel">
-      <router-link :to="`/create-listing`" class="btn btn-outline-dark mb-4"
-                   :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''"><em
-          class="ni ni-plus"></em> New Listing
+      <router-link :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''" :to="`/create-listing`"
+                   class="btn btn-outline-dark mb-4"><em
+        class="ni ni-plus"></em> New Listing
       </router-link>
       <div class="row g-gs">
-        <div class="col-xl-12" v-if="!displayedProducts || displayedProducts.length === 0">You currently have no listing</div>
-        <div class="col-xl-6" v-for="product in displayedProducts" :key="productGetters.getId(product)">
+        <div v-if="!displayedProducts || displayedProducts.length === 0" class="col-xl-12">You currently have no
+          listing
+        </div>
+        <div v-for="product in displayedProducts" :key="productGetters.getId(product)" class="col-xl-6">
           <div class="card card-full">
             <div class="card-body card-body-s1">
               <p class="mb-3 fs-13 mb-4">Sold {{ productGetters.getQtySales(product) }}<span
-                  v-if="productGetters.getQtySales(product) > 0"><span class="dot-separeted"></span>{{
+                v-if="productGetters.getQtySales(product) > 0"><span class="dot-separeted"></span>{{
                   productGetters.getQtyDelivered(product)
                 }} / {{ productGetters.getQtySales(product) }} on time</span></p>
               <div class="card-media mb-3">
@@ -35,13 +37,13 @@
                 <div class="card-media-body">
                   <h4>
                     <router-link
-                        :to="`/product/${productGetters.getCategory(product).slug}/${productGetters.getName(product)}`">
+                      :to="`/product/${productGetters.getCategory(product).slug}/${productGetters.getName(product)}`">
                       {{ productGetters.getName(product).toUpperCase() }}
                     </router-link>
                   </h4>
                   <p class="fw-medium fs-14">{{ productGetters.getCategory(product).slug }}</p>
-                  <p class="fs-15" v-if="productGetters.getUseEncryption(product)">Encrypted</p>
-                  <p class="fs-15" v-else>Unencrypted</p>
+                  <p v-if="productGetters.getUseEncryption(product)" class="fs-15">Encrypted</p>
+                  <p v-else class="fs-15">Unencrypted</p>
                 </div><!-- end card-media-body -->
               </div><!-- end card-media -->
               <div class="card-media mb-3">
@@ -57,7 +59,7 @@
                 </div>
               </div><!-- end d-flex -->
               <ul class="btns-group">
-                <li><span class="badge fw-medium" :class="getStatusTextClass(product)">{{
+                <li><span :class="getStatusTextClass(product)" class="badge fw-medium">{{
                     getStatusText(product)
                   }}</span></li>
                 <li>
@@ -81,7 +83,7 @@
       </div><!-- end row -->
       <!-- pagination -->
       <div class="text-center mt-4 mt-md-5">
-        <Pagination :records="products.length" v-model="page" :per-page="perPage"></Pagination>
+        <Pagination v-model="page" :per-page="perPage" :records="products.length"></Pagination>
       </div>
     </div><!-- end profile-setting-panel -->
   </div><!-- end col-lg-8 -->

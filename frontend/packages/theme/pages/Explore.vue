@@ -1,8 +1,8 @@
 <template>
   <div class="page-wrap">
     <!-- Hero -->
-    <HeroFour classname="hero-title" :title="SectionData.breadcrumbData.breadcrumbList.title"
-              :lists="SectionData.breadcrumbData.breadcrumbList.navList"></HeroFour>
+    <HeroFour :lists="SectionData.breadcrumbData.breadcrumbList.navList" :title="SectionData.breadcrumbData.breadcrumbList.title"
+              classname="hero-title"></HeroFour>
     <!-- Explore section  -->
     <ExploreSection></ExploreSection>
     <!-- top creators -->

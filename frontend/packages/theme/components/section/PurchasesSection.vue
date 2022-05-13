@@ -3,75 +3,91 @@
     <div class="user-panel-title-box">
       <div class="d-flex">
         <h3>Purchases</h3>
-        <button class="icon-btn ms-auto" title="Refresh" :disabled="loading" @click="refresh">
-          <em class="ni ni-reload" v-if="!loading"></em><span class="spinner-border spinner-border-sm" role="status"
-                                                              v-else></span>
+        <button :disabled="loading" class="icon-btn ms-auto" title="Refresh" @click="refresh">
+          <em v-if="!loading" class="ni ni-reload"></em><span v-else class="spinner-border spinner-border-sm"
+                                                              role="status"></span>
         </button>
       </div>
     </div><!-- end user-panel-title-box -->
     <div v-if="!displayedOrders || displayedOrders.length === 0">You have not made any purchase</div>
-    <div class="profile-setting-panel-wrap" v-else>
-        <div class="row">
-          <div class="col-9">
+    <div v-else class="profile-setting-panel-wrap">
+      <div class="row">
+        <div class="col-9">
           <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
-              <li class="nav-item" role="presentation">
-                  <button class="nav-link" :class="'active'" :id="'all'" type="button">All purchases</button>
-              </li>
+            <li class="nav-item" role="presentation">
+              <button :id="'all'" :class="'active'" class="nav-link" type="button">All purchases</button>
+            </li>
           </ul>
-          </div>
-          <div class="col-3">
-          <a href="javascript:void(0);" @click="downloadOrders" class="float-end">Export CSV</a>
-          </div>
         </div>
-        <div class="tab-content mt-4 tab-content-desktop">
-            <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="all-tab">
-                <div class="activity-tab-wrap">
-                    <div class="card card-creator-s1 mb-4" v-for="order in displayedOrders" :key="order.id">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="card-media-img flex-shrink-0">
-                                <img :src="productGetters.getCoverImage(orderGetters.getProduct(order))" alt="avatar">
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="card-s1-title">
-                                  <router-link class="btn-link"
-                                               :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`">
-                                    {{ productGetters.getName(orderGetters.getProduct(order)).toUpperCase() }}</router-link>
-                                </h6>
-                                <p class="card-s1-text">
-                                  <span>
-                                    <span class="btn-link text-decoration-none fw-medium">
-                                      {{ productGetters.getCategory(orderGetters.getProduct(order)).slug }}
-                                    </span> {{ orderGetters.getMode(order) }} x {{ orderGetters.getItemQty(order) }} for round
-                                    <span class="btn-link text-decoration-none fw-medium">{{ orderGetters.getRound(order) }}</span><span class="btn-link text-decoration-none fw-medium"
-                                          v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
-                                    >-{{ parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1 }}
-                                    </span> by
-                                    <span class="btn-link text-decoration-none fw-medium">{{ orderGetters.getBuyer(order) }}</span>
-                                    <span> for <span class="btn-link text-decoration-none fw-medium">{{ orderGetters.getFormattedPrice(order, withCurrency = true, decimals = 4) }}</span></span>
-                                  </span>
-                                </p>
-                                <p class="card-s1-text">{{ orderGetters.getDate(order) }}</p>
-                                <p class="card-s1-text">
-                                  <span class="badge fw-medium" :class="getStatusTextClass(order)">{{ orderGetters.getStatus(order) }}</span>
-                                  <a href="javascript:void(0);" @click="toggleInfoModal(order)" title="Click for details" class="ms-2 text-secondary">View details</a>
-                                  <a href="javascript:void(0);" @click="toggleArtifactModal(order)" title="Click for files" class="ms-2 text-primary" v-if="orderGetters.getStatus(order)=='confirmed'">Download</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div><!-- end card -->
-                </div><!-- end activity-tab-wrap -->
-                <!-- pagination -->
-                <div class="text-center mt-4 mt-md-5">
-                  <Pagination :records="orders.length" v-model="page" :per-page="perPage"></Pagination>
+        <div class="col-3">
+          <a class="float-end" href="javascript:void(0);" @click="downloadOrders">Export CSV</a>
+        </div>
+      </div>
+      <div class="tab-content mt-4 tab-content-desktop">
+        <div aria-labelledby="all-tab" class="tab-pane fade show active" role="tabpanel">
+          <div class="activity-tab-wrap">
+            <div v-for="order in displayedOrders" :key="order.id" class="card card-creator-s1 mb-4">
+              <div class="card-body d-flex align-items-center">
+                <div class="card-media-img flex-shrink-0">
+                  <img :src="productGetters.getCoverImage(orderGetters.getProduct(order))" alt="avatar">
                 </div>
-            </div><!-- end tab-pane -->
-        </div><!-- end tab-content -->
+                <div class="flex-grow-1">
+                  <h6 class="card-s1-title">
+                    <router-link
+                      :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`"
+                      class="btn-link">
+                      {{ productGetters.getName(orderGetters.getProduct(order)).toUpperCase() }}
+                    </router-link>
+                  </h6>
+                  <p class="card-s1-text">
+                    <span>
+                      <span class="btn-link text-decoration-none fw-medium">
+                        {{ productGetters.getCategory(orderGetters.getProduct(order)).slug }}
+                      </span> {{ orderGetters.getMode(order) }} x {{ orderGetters.getItemQty(order) }} for round
+                      <span class="btn-link text-decoration-none fw-medium">{{
+                          orderGetters.getRound(order)
+                        }}</span><span
+                      v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
+                      class="btn-link text-decoration-none fw-medium"
+                    >-{{
+                        parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1
+                      }}
+                      </span> by
+                      <span class="btn-link text-decoration-none fw-medium">{{
+                          orderGetters.getBuyer(order)
+                        }}</span>
+                      <span> for <span class="btn-link text-decoration-none fw-medium">{{
+                          orderGetters.getFormattedPrice(order, withCurrency = true, decimals = 4)
+                        }}</span></span>
+                    </span>
+                  </p>
+                  <p class="card-s1-text">{{ orderGetters.getDate(order) }}</p>
+                  <p class="card-s1-text">
+                    <span :class="getStatusTextClass(order)" class="badge fw-medium">{{
+                        orderGetters.getStatus(order)
+                      }}</span>
+                    <a class="ms-2 text-secondary" href="javascript:void(0);" title="Click for details"
+                       @click="toggleInfoModal(order)">View details</a>
+                    <a v-if="orderGetters.getStatus(order)=='confirmed'" class="ms-2 text-primary"
+                       href="javascript:void(0);"
+                       title="Click for files" @click="toggleArtifactModal(order)">Download</a>
+                  </p>
+                </div>
+              </div>
+            </div><!-- end card -->
+          </div><!-- end activity-tab-wrap -->
+          <!-- pagination -->
+          <div class="text-center mt-4 mt-md-5">
+            <Pagination v-model="page" :per-page="perPage" :records="orders.length"></Pagination>
+          </div>
+        </div><!-- end tab-pane -->
+      </div><!-- end tab-content -->
     </div><!-- end profile-setting-panel-wrap-->
-    <OrderInfoModal :order="currentOrder" modelId="orderInfoModal" ref="orderInfoModal"
-                    :withCopyButtons="true"></OrderInfoModal>
+    <OrderInfoModal ref="orderInfoModal" :order="currentOrder" :withCopyButtons="true"
+                    modelId="orderInfoModal"></OrderInfoModal>
     <div v-if="currentOrder && currentOrder.product">
-      <ArtifactModal :order="currentOrder" :encryptedPrivateKey="user.encrypted_private_key"
-                     :publicKey="user.public_key" modelId="artifactModal" ref="artifactModal"></ArtifactModal>
+      <ArtifactModal ref="artifactModal" :encryptedPrivateKey="user.encrypted_private_key"
+                     :order="currentOrder" :publicKey="user.public_key" modelId="artifactModal"></ArtifactModal>
     </div>
   </div><!-- end col-lg-8 -->
 </template>

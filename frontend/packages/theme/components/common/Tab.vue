@@ -2,19 +2,19 @@
   <div class="nav-tabs-wrap">
     <div class="row">
       <div class="col-lg-8 mx-auto">
-        <ul class="nav nav-pills nav-pills-s1 mb-5 justify-content-center" id="pills-tab" role="tablist">
-          <li class="nav-item" role="presentation" v-for="list in SectionData.howItWorkData.tabNav" :key="list.id">
-            <button class="nav-link" :class="list.isActive" :id="list.slug" data-bs-toggle="pill"
-                    :data-bs-target="list.bsTarget" type="button">
+        <ul id="pills-tab" class="nav nav-pills nav-pills-s1 mb-5 justify-content-center" role="tablist">
+          <li v-for="list in SectionData.howItWorkData.tabNav" :key="list.id" class="nav-item" role="presentation">
+            <button :id="list.slug" :class="list.isActive" :data-bs-target="list.bsTarget" class="nav-link"
+                    data-bs-toggle="pill" type="button">
               {{ list.title }}
             </button>
           </li>
         </ul>
       </div><!-- end col -->
       <div class="col-lg-12">
-        <div class="tab-content" id="pills-tabContent">
-          <div class="tab-pane show active" id="pills-connect-wallet" role="tabpanel"
-               aria-labelledby="pills-connect-wallet-tab">
+        <div id="pills-tabContent" class="tab-content">
+          <div id="pills-connect-wallet" aria-labelledby="pills-connect-wallet-tab" class="tab-pane show active"
+               role="tabpanel">
             <div class="row align-items-center justify-content-center">
               <div class="col-lg-4">
                 <div class="card-tab-img mb-5 mb-lg-0">
@@ -37,14 +37,14 @@
                       accounts in a jiffy
                     </li>
                   </ul>
-                  <ButtonLink :text="SectionData.howItWorkData.btnText" link="/wallet"
-                              classname="btn btn-outline-dark"></ButtonLink>
+                  <ButtonLink :text="SectionData.howItWorkData.btnText" classname="btn btn-outline-dark"
+                              link="/wallet"></ButtonLink>
                 </div><!-- end card-tab -->
               </div><!-- end col -->
             </div><!-- end row -->
           </div><!-- end tab-pane -->
-          <div class="tab-pane" id="pills-create-nft-store" role="tabpanel"
-               aria-labelledby="pills-create-nft-store-tab">
+          <div id="pills-create-nft-store" aria-labelledby="pills-create-nft-store-tab" class="tab-pane"
+               role="tabpanel">
             <div class="row align-items-center justify-content-center">
               <div class="col-lg-4">
                 <div class="card-tab-img mb-5 mb-lg-0">
@@ -67,13 +67,13 @@
                       with 1 click
                     </li>
                   </ul>
-                  <ButtonLink :text="SectionData.howItWorkData.btnText" link="/wallet"
-                              classname="btn btn-outline-dark"></ButtonLink>
+                  <ButtonLink :text="SectionData.howItWorkData.btnText" classname="btn btn-outline-dark"
+                              link="/wallet"></ButtonLink>
                 </div><!-- end card-tab -->
               </div><!-- end col -->
             </div><!-- end row -->
           </div><!-- end tab-pane -->
-          <div class="tab-pane" id="pills-start-selling" role="tabpanel" aria-labelledby="pills-start-selling-tab">
+          <div id="pills-start-selling" aria-labelledby="pills-start-selling-tab" class="tab-pane" role="tabpanel">
             <div class="row align-items-center justify-content-center">
               <div class="col-lg-4">
                 <div class="card-tab-img mb-5 mb-lg-0">
@@ -96,8 +96,8 @@
                       enable NFT based ticketing for viewing them
                     </li>
                   </ul>
-                  <ButtonLink :text="SectionData.howItWorkData.btnText" link="/wallet"
-                              classname="btn btn-outline-dark"></ButtonLink>
+                  <ButtonLink :text="SectionData.howItWorkData.btnText" classname="btn btn-outline-dark"
+                              link="/wallet"></ButtonLink>
                 </div><!-- end card-tab -->
               </div><!-- end col -->
             </div><!-- end row -->

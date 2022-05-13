@@ -2,8 +2,8 @@
   <div class="wrapper">
     <div class="row mb-2">
       <div class="col-10"><h4>{{ question }}</h4></div>
-      <div class="col-2"><span class="spinner-border spinner-border-sm text-primary float-end" role="status"
-                               v-if="loading"></span></div>
+      <div class="col-2"><span v-if="loading" class="spinner-border spinner-border-sm text-primary float-end"
+                               role="status"></span></div>
     </div>
     <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
       <span class="item-detail-text-meta">By <span class="text-primary fw-semibold">{{ owner }}</span></span>
@@ -15,27 +15,27 @@
         <span class="item-detail-text-meta">Results to be shown after poll ends</span>
       </div>
     </div>
-    <div class="row mb-2" v-if="Boolean(description)">
+    <div v-if="Boolean(description)" class="row mb-2">
       <div class="col-12">{{ description }}</div>
     </div>
     <div class="poll-area">
       <div v-for="(a,index) in calcAnswers" :key="index">
-        <input :type="multiple ? `checkbox` : `radio`" name="poll" :id="`opt-${index}`" @click.prevent="handleVote(a)">
-        <label :for="`opt-${index}`" :class="[(a.selected ? 'selected' : ''), (visibleResults ? 'selectall' : '')]">
+        <input :id="`opt-${index}`" :type="multiple ? `checkbox` : `radio`" name="poll" @click.prevent="handleVote(a)">
+        <label :class="[(a.selected ? 'selected' : ''), (visibleResults ? 'selectall' : '')]" :for="`opt-${index}`">
               <span class="poll-row">
                   <span class="poll-column">
                       <span class="circle"></span>
                       <span class="text">{{ a.text }}</span>
                   </span>
-                  <span class="percent" v-if="canShowResults">{{ getPercent(a) }}%</span>
+                  <span v-if="canShowResults" class="percent">{{ getPercent(a) }}%</span>
               </span>
-          <div class="progress" :style='`--w:${getPercent(a)};`' v-if="canShowResults"></div>
+          <div v-if="canShowResults" :style='`--w:${getPercent(a)};`' class="progress"></div>
         </label>
       </div>
     </div>
     <transition name="fade">
-      <div class="text-center mt-4" v-if="multiple && canSubmit && totalSelections > 0">
-        <button type="button" class="btn btn-outline-dark" @click.prevent="handleMultiple">{{
+      <div v-if="multiple && canSubmit && totalSelections > 0" class="text-center mt-4">
+        <button class="btn btn-outline-dark" type="button" @click.prevent="handleMultiple">{{
             submitButtonText
           }}
         </button>

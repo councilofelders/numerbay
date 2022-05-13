@@ -1,12 +1,12 @@
 <template>
-  <section class="category-section" :class="classname">
+  <section :class="classname" class="category-section">
     <div class="container">
       <!-- section heading -->
-      <SectionHeading classname="text-center" :text="SectionData.categoryData.title"
-                      :content="SectionData.categoryData.content" isMargin="mb-3"></SectionHeading>
+      <SectionHeading :content="SectionData.categoryData.content" :text="SectionData.categoryData.title"
+                      classname="text-center" isMargin="mb-3"></SectionHeading>
       <div class="row g-gs">
-        <div class="col-lg-4 col-6" v-for="item in SectionData.categoryData.categoryList" :key="item.id">
-          <router-link :to="item.path" class="card card-cat text-center h-100" :class="item.class">
+        <div v-for="item in SectionData.categoryData.categoryList" :key="item.id" class="col-lg-4 col-6">
+          <router-link :class="item.class" :to="item.path" class="card card-cat text-center h-100">
             <div class="card-body card-body-s1">
               <span :class="item.icon"></span>
               <h5 class="card-cat-title">{{ item.title }}</h5>

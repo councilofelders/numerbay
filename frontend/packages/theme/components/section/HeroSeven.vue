@@ -8,7 +8,7 @@
             <p class="hero-text hero-text-s2 px-lg-5">{{ SectionData.heroDataSix.content }}</p>
             <ButtonGroup :btns="SectionData.btnDataThree" classname="hero-btns"></ButtonGroup>
             <div class="row g-gs justify-content-center counter-wrap">
-              <div class="col-sm-4" :class="item.className" v-for="item in countItemData" :key="item.id">
+              <div v-for="item in countItemData" :key="item.id" :class="item.className" class="col-sm-4">
                 <div class="count-item">
                   <h3 class="count-title">{{ item.title }}</h3>
                   <span class="count-text small">{{ item.text }}</span>

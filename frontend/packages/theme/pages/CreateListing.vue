@@ -14,77 +14,81 @@
           <div class="col-lg-8">
             <ValidationObserver v-slot="{ handleSubmit }">
               <form action="#" class="form-create mb-5 mb-lg-0">
-                <ValidationProvider rules="required" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="required" slim>
                   <div class="form-item mb-4">
-                    <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Choose category</h5>
-                    <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Select the category of
+                    <h5 :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-1">Choose category</h5>
+                    <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text mb-3">Select the category of
                       listing. This cannot be changed later.</p>
-                    <v-select class="generic-select" :class="!errors[0] ? '' : 'is-invalid'"
-                              placeholder="Select Category" label="slug" v-model="form.category"
-                              :options="leafCategories" :reduce="option => option.id"
-                              :disabled="Boolean(currentListing)" :clearable=false @input="onCategoryChange"></v-select>
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <v-select v-model="form.category" :class="!errors[0] ? '' : 'is-invalid'"
+                              :clearable=false :disabled="Boolean(currentListing)" :options="leafCategories"
+                              :reduce="option => option.id" class="generic-select"
+                              label="slug" placeholder="Select Category" @input="onCategoryChange"></v-select>
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required" v-slot="{ errors }" v-if="isPerModelCategory(form.category)"
+                <ValidationProvider v-if="isPerModelCategory(form.category)" v-slot="{ errors }" rules="required"
                                     slim>
                   <div class="form-item mb-4">
-                    <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Select model</h5>
-                    <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Select the tournament model
+                    <h5 :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-1">Select model</h5>
+                    <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text mb-3">Select the tournament model
                       for listing. This cannot be changed later.</p>
-                    <v-select class="generic-select" :class="!errors[0] ? '' : 'is-invalid'" placeholder="Select Model"
-                              label="name" v-model="form.name" :options="getFilteredModels(form.category)"
-                              :reduce="option => option.name" :disabled="Boolean(currentListing)" :clearable=false
+                    <v-select v-model="form.name" :class="!errors[0] ? '' : 'is-invalid'" :clearable=false
+                              :disabled="Boolean(currentListing)" :options="getFilteredModels(form.category)" :reduce="option => option.name"
+                              class="generic-select" label="name" placeholder="Select Model"
                               @input="populateModelInfo"></v-select>
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required|min:2|alpha_dash" v-slot="{ errors }" v-else slim>
+                <ValidationProvider v-else v-slot="{ errors }" rules="required|min:2|alpha_dash" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Product name</label>
-                      <p class="form-text mb-3" :class="{ 'text-danger': Boolean(errors[0]) }">Set the product name.
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Product name</label>
+                      <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text mb-3">Set the product name.
                         This cannot be changed later.</p>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Product Name" v-model="form.name" :disabled="Boolean(currentListing)">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <input v-model="form.name" :class="!errors[0] ? '' : 'is-invalid'" :disabled="Boolean(currentListing)"
+                             class="form-control form-control-s1" placeholder="Product Name" type="text">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="secureUrl" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="secureUrl" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
-                      <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Avatar</label>
-                      <input type="text" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Https URL to an image (optional)" v-model="form.avatar" @change="encodeURL">
-                      <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Avatar</label>
+                      <input v-model="form.avatar" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             placeholder="Https URL to an image (optional)" type="text" @change="encodeURL">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
-                    <object v-if="Boolean(form.avatar)" :data="form.avatar" type="image/png"
-                            class="col-xs-12 col-md-3 rounded-3" style="max-width: 100%">
-                      <img src="https://numer.ai/img/profile_picture_light.jpg" alt=""
-                           class="col-xs-12 col-md-3 rounded-3" style="max-width: 100%">
+                    <object v-if="Boolean(form.avatar)" :data="form.avatar" class="col-xs-12 col-md-3 rounded-3"
+                            style="max-width: 100%" type="image/png">
+                      <img alt="" class="col-xs-12 col-md-3 rounded-3"
+                           src="https://numer.ai/img/profile_picture_light.jpg" style="max-width: 100%">
                     </object>
                   </div><!-- end form-item -->
                 </ValidationProvider>
                 <div v-if="!Boolean(currentListing) && isTournamentCategory(form.category)">
-                  <div class="alert alert-success d-flex mb-4" role="alert" v-if="!isSignalsDataCategory(form.category)">
-                    <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                  <div v-if="!isSignalsDataCategory(form.category)" class="alert alert-success d-flex mb-4"
+                       role="alert">
+                    <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
                       <path
                         d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
                     </svg>
                     <p class="fs-14">
                       Buyer-side encryption is enabled by default, uploading artifact files requires active sales.<br/>
-                      <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank"><em class="ni ni-help"></em> Learn more about encryption</a>
+                      <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank"><em
+                        class="ni ni-help"></em> Learn more about encryption</a>
                     </p>
                   </div><!-- end alert -->
-                  <div class="alert alert-warning d-flex mb-4" role="alert" v-else>
-                    <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                  <div v-else class="alert alert-warning d-flex mb-4" role="alert">
+                    <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
                       <path
                         d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
                     </svg>
                     <p class="fs-14">
-                      Buyer-side encryption is disabled by default due to large files, you can enable it in advanced settings.<br/>
-                      <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank"><em class="ni ni-help"></em> Learn more about encryption</a>
+                      Buyer-side encryption is disabled by default due to large files, you can enable it in advanced
+                      settings.<br/>
+                      <a class="link-secondary" href="https://docs.numerbay.ai/updates/encryption" target="_blank"><em
+                        class="ni ni-help"></em> Learn more about encryption</a>
                     </p>
                   </div><!-- end alert -->
                 </div>
@@ -95,7 +99,7 @@
                         <h5 class="mb-1">Show advanced settings</h5>
                       </div>
                       <div class="form-check form-switch form-switch-s1">
-                        <input class="form-check-input" type="checkbox" v-model="showAdvanced">
+                        <input v-model="showAdvanced" class="form-check-input" type="checkbox">
                       </div><!-- end form-check -->
                     </div><!-- end d-flex -->
                   </div>
@@ -109,7 +113,7 @@
                           <p class="form-text">People will be able to buy this product</p>
                         </div>
                         <div class="form-check form-switch form-switch-s1">
-                          <input class="form-check-input" type="checkbox" v-model="form.isActive">
+                          <input v-model="form.isActive" class="form-check-input" type="checkbox">
                         </div><!-- end form-check -->
                       </div><!-- end d-flex -->
                     </div>
@@ -122,18 +126,18 @@
                           <p class="form-text">Whether to auto delist after a certain tournament round</p>
                         </div>
                         <div class="form-check form-switch form-switch-s1">
-                          <input class="form-check-input" data-target="switch-content-expiration" type="checkbox"
-                                 v-model="form.autoExpiration" @change="onIsPerpetualChange(form.autoExpiration)">
+                          <input v-model="form.autoExpiration" class="form-check-input" data-target="switch-content-expiration"
+                                 type="checkbox" @change="onIsPerpetualChange(form.autoExpiration)">
                         </div><!-- end form-check -->
                       </div><!-- end d-flex -->
-                      <ValidationProvider rules="required|integer|min_value:0" v-slot="{ errors }"
-                                          v-if="form.autoExpiration" slim>
+                      <ValidationProvider v-if="form.autoExpiration" v-slot="{ errors }"
+                                          rules="required|integer|min_value:0" slim>
                         <div class="mt-4">
-                          <input type="number" class="form-control form-control-s1"
-                                 :class="!errors[0] ? '' : 'is-invalid'"
-                                 placeholder="Round after which this product will be delisted" min="0"
-                                 v-model="form.expirationRound">
-                          <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                          <input v-model="form.expirationRound" :class="!errors[0] ? '' : 'is-invalid'"
+                                 class="form-control form-control-s1"
+                                 min="0" placeholder="Round after which this product will be delisted"
+                                 type="number">
+                          <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                         </div>
                       </ValidationProvider>
                     </div>
@@ -148,36 +152,36 @@
                             more about encryption <em class="ni ni-help"></em></a>
                         </div>
                         <div class="form-check form-switch form-switch-s1">
-                          <input class="form-check-input" type="checkbox" v-model="form.useEncryption">
+                          <input v-model="form.useEncryption" class="form-check-input" type="checkbox">
                         </div><!-- end form-check -->
                       </div><!-- end d-flex -->
                     </div>
                   </div><!-- end form-item -->
-                  <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                  <ValidationProvider v-slot="{ errors }" rules="url" slim>
                     <div class="form-item mb-4">
                       <div class="mb-4">
-                        <h5 class="mb-1" :class="{ 'text-danger': Boolean(errors[0]) }">Webhook url</h5>
-                        <p class="form-text" :class="{ 'text-danger': Boolean(errors[0]) }">Url to call on new sale
+                        <h5 :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-1">Webhook url</h5>
+                        <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text">Url to call on new sale
                           order. Useful for products using client-side encryption</p>
                         <a class="link-secondary"
                            href="https://docs.numerbay.ai/docs/tutorial-basics/sell-a-product#advanced-settings"
                            target="_blank">Learn more about webhook <em class="ni ni-help"></em></a>
                         <div class="row g-4">
                           <div class="col-lg-10 col-sm-8">
-                            <input type="text" class="form-control form-control-s1"
-                                   :class="[(Boolean(errors[0]) || (Boolean(webhookResponseCode) && webhookResponseCode!==200)) ? 'is-invalid' : '',  webhookResponseCode===200 ? 'is-valid' : '']"
-                                   placeholder="Webhook URL (optional)" v-model="form.webhook" @change="encodeURL">
+                            <input v-model="form.webhook" :class="[(Boolean(errors[0]) || (Boolean(webhookResponseCode) && webhookResponseCode!==200)) ? 'is-invalid' : '',  webhookResponseCode===200 ? 'is-valid' : '']"
+                                   class="form-control form-control-s1"
+                                   placeholder="Webhook URL (optional)" type="text" @change="encodeURL">
                           </div>
                           <div class="col-lg-2 col-sm-4">
-                            <button class="btn btn-dark" type="button" @click="handleTestProductWebhook(form.webhook)"
-                                    :disabled="productWebhookLoading">
+                            <button :disabled="productWebhookLoading" class="btn btn-dark" type="button"
+                                    @click="handleTestProductWebhook(form.webhook)">
                               <span v-if="productWebhookLoading"><span class="spinner-border spinner-border-sm"
                                                                        role="status"></span></span>
                               <span v-else>Test</span>
                             </button>
                           </div>
                         </div>
-                        <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                       </div>
                     </div><!-- end form-item -->
                   </ValidationProvider>
@@ -185,11 +189,11 @@
                     <h5 class="mb-1">Featured products</h5>
                     <p class="form-text mb-3">Other products to display in the product page (optional)</p>
                     <client-only>
-                      <multiselect ref="featuredProductsMultiSelect" placeholder="" v-model="form.featuredProducts"
-                                   class="featured-products-multiselect"
-                                   :options="groupedProducts" :multiple="true" :close-on-select="false"
-                                   group-values="products" group-label="category" :group-select="true" track-by="id"
-                                   label="sku"
+                      <multiselect ref="featuredProductsMultiSelect" v-model="form.featuredProducts" :close-on-select="false"
+                                   :group-select="true"
+                                   :multiple="true" :options="groupedProducts" class="featured-products-multiselect"
+                                   group-label="category" group-values="products" label="sku" placeholder=""
+                                   track-by="id"
                       >
                         <template slot="option" slot-scope="props">
                           <span>{{ props.option.$isLabel ? props.option.$groupLabel : props.option.name }}</span>
@@ -200,10 +204,10 @@
                 </div>
                 <div class="form-item mb-4">
                   <h5 class="mb-3">Pricing options</h5>
-                  <a class="btn" :class="form.options.length > 0 ? 'btn-outline-dark' : 'btn-dark'"
+                  <a :class="form.options.length > 0 ? 'btn-outline-dark' : 'btn-dark'" class="btn"
                      @click="changeOption(-1)"><em class="ni ni-plus"></em> New Option</a>
                   <div class="row g-gs mt-1">
-                    <div class="col-xl-6" v-for="option in orderedOptions" :key="option.id">
+                    <div v-for="option in orderedOptions" :key="option.id" class="col-xl-6">
                       <div class="card card-full">
                         <div class="card-body card-body-s1">
                           <p class="mb-3 fs-13 mb-4">{{ option.is_on_platform ? `On-platform` : `Off-platform` }}</p>
@@ -226,9 +230,9 @@
                             </div>
                           </div><!-- end d-flex -->
                           <ul class="btns-group">
-                            <li><a href="javascript:void(0);" class="btn-link flex-grow-1 fw-medium fs-13 text-success"
+                            <li><a class="btn-link flex-grow-1 fw-medium fs-13 text-success" href="javascript:void(0);"
                                    @click="changeOption(option.key)">Change</a></li>
-                            <li><a href="javascript:void(0);" class="btn-link flex-grow-1 fw-medium fs-13 text-danger"
+                            <li><a class="btn-link flex-grow-1 fw-medium fs-13 text-danger" href="javascript:void(0);"
                                    @click="deleteOption(option.key)">Delete</a></li>
                           </ul>
                         </div><!-- end card-body -->
@@ -238,23 +242,23 @@
                 </div><!-- end form-item -->
                 <div class="form-item mb-4">
                   <label class="mb-2 form-label">Description</label>
-                  <a href="https://docs.numerbay.ai/docs/tutorial-basics/sell-a-product#product-description"
-                     target="_blank" class="float-end fs-15"><em class="ni ni-help"></em> Markdown shortcuts</a>
+                  <a class="float-end fs-15"
+                     href="https://docs.numerbay.ai/docs/tutorial-basics/sell-a-product#product-description" target="_blank"><em class="ni ni-help"></em> Markdown shortcuts</a>
                   <client-only>
                     <div class="mb-4 editor">
                       <quill-editor
                         ref="descriptionEditor"
-                        name="description"
                         v-model="form.description"
                         :options="editorOption"
+                        name="description"
                       />
-                      <input ref="imageInput" class="d-none" type="file" accept="image/*" @change="_doImageUpload"
-                             style="display: none">
+                      <input ref="imageInput" accept="image/*" class="d-none" style="display: none" type="file"
+                             @change="_doImageUpload">
                     </div>
                   </client-only>
                 </div><!-- end form-item -->
-                <button class="btn btn-dark" type="button" @click="handleSubmit(saveListing)"
-                        :disabled="productLoading">
+                <button :disabled="productLoading" class="btn btn-dark" type="button"
+                        @click="handleSubmit(saveListing)">
                   <span v-if="productLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...</span>
                   <span v-else>Save</span>
                 </button>
@@ -263,15 +267,15 @@
           </div><!-- endn col -->
         </div><!-- row-->
         <PricingOptionModal
-          modalId="pricingOptionModal"
           ref="pricingOptionModal"
-          :is-modal-open="isModalOpen"
-          :options="form.options"
           :groupedProducts="groupedProducts"
-          :isTournamentCategory="isTournamentCategory(form.category)"
-          :isSubmissionCategory="isSubmissionCategory(form.category)"
+          :is-modal-open="isModalOpen"
           :isPerRoundCategory="isPerRoundCategory(form.category)"
+          :isSubmissionCategory="isSubmissionCategory(form.category)"
+          :isTournamentCategory="isTournamentCategory(form.category)"
+          :options="form.options"
           :user="user"
+          modalId="pricingOptionModal"
           @update:pricing="refresh"
         ></PricingOptionModal>
       </div><!-- container -->

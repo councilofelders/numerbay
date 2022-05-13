@@ -132,11 +132,11 @@
               <td>
                 Payout Multipliers
               </td>
-              <td class="stats" :class="[stakeInfo.tcMultiplier ? 'colortc':'']" v-if="tournament === 8">
+              <td v-if="tournament === 8" :class="[stakeInfo.tcMultiplier ? 'colortc':'']" class="stats">
                 <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
                 <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
               </td>
-              <td class="stats" :class="[stakeInfo.mmcMultiplier ? 'colormmc':'']" v-else>
+              <td v-else :class="[stakeInfo.mmcMultiplier ? 'colormmc':'']" class="stats">
                 <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
                 <span v-if="stakeInfo.mmcMultiplier"> {{ stakeInfo.mmcMultiplier }}xMMC</span>
                 <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
@@ -208,6 +208,7 @@ export default {
 .colormmc {
   color: #ff6e40;
 }
+
 .colortc {
   color: #a278dc;
 }

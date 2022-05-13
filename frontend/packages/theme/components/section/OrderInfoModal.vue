@@ -1,5 +1,5 @@
 <template>
-  <Modal :modal-id="modalId" @registeredModal="modal = $event" modal-class="modal-lg">
+  <Modal :modal-id="modalId" modal-class="modal-lg" @registeredModal="modal = $event">
     <template slot="title">Order Details</template>
     <div class="row g-2">
       <div class="col-xl-12">
@@ -65,7 +65,7 @@
             <td>
               <a :href="`https://etherscan.io/address/${orderGetters.getToAddress(order)}`"
                  target="_blank">{{ orderGetters.getToAddress(order) }}</a>
-              <div class="d-flex align-items-center float-end" v-if="withCopyButtons">
+              <div v-if="withCopyButtons" class="d-flex align-items-center float-end">
                 <div class="tooltip-s1">
                   <button v-clipboard:copy="orderGetters.getToAddress(order)" v-clipboard:success="onCopy"
                           class="copy-text ms-2" type="button">
@@ -82,7 +82,7 @@
             </th>
             <td>
               {{ orderGetters.getFormattedPrice(order, withCurrency = true, decimals = 4) }}
-              <div class="d-flex align-items-center float-end" v-if="withCopyButtons">
+              <div v-if="withCopyButtons" class="d-flex align-items-center float-end">
                 <div class="tooltip-s1">
                   <button v-clipboard:copy="JSON.stringify(orderGetters.getPrice(order))" v-clipboard:success="onCopy"
                           class="copy-text ms-2" type="button">

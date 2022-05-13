@@ -1,9 +1,9 @@
 <template>
-  <ul class="btns-group" :class="classname">
+  <ul :class="classname" class="btns-group">
     <li v-for="(btn, i) in btns" :key="i">
-      <router-link :to="btn.path" class="btn" :class="btn.btnClass">
+      <router-link :class="btn.btnClass" :to="btn.path" class="btn">
         {{ btn.title }}
-        <span class="d-none d-xl-inline-block" v-if="istext">{{ btn.titleTwo }}</span>
+        <span v-if="istext" class="d-none d-xl-inline-block">{{ btn.titleTwo }}</span>
       </router-link>
     </li>
   </ul>

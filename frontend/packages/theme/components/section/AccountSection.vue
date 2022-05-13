@@ -4,91 +4,91 @@
       <h3>Edit Profile</h3>
     </div><!-- end user-panel-title-box -->
     <div class="profile-setting-panel-wrap">
-      <ul class="nav nav-tabs nav-tabs-s1 nav-tabs-mobile-size" id="myTab" role="tablist">
-        <li class="nav-item" role="presentation" v-for="list in SectionData.editProfileData.editProfileTabNav"
-            :key="list.id">
-          <button class="nav-link" :class="list.isActive" :id="list.slug" data-bs-toggle="tab"
-                  :data-bs-target="list.bsTarget" type="button">{{ list.title }}
+      <ul id="myTab" class="nav nav-tabs nav-tabs-s1 nav-tabs-mobile-size" role="tablist">
+        <li v-for="list in SectionData.editProfileData.editProfileTabNav" :key="list.id" class="nav-item"
+            role="presentation">
+          <button :id="list.slug" :class="list.isActive" :data-bs-target="list.bsTarget" class="nav-link"
+                  data-bs-toggle="tab" type="button">{{ list.title }}
           </button>
         </li>
       </ul>
-      <div class="tab-content mt-4" id="myTabContent">
-        <div class="tab-pane fade show active" id="account-information" role="tabpanel"
-             aria-labelledby="account-information-tab">
+      <div id="myTabContent" class="tab-content mt-4">
+        <div id="account-information" aria-labelledby="account-information-tab" class="tab-pane fade show active"
+             role="tabpanel">
           <div class="profile-setting-panel">
             <h5 class="mb-4">Edit Profile</h5>
-            <ValidationObserver v-slot="{ handleSubmit }" key="profile">
+            <ValidationObserver key="profile" v-slot="{ handleSubmit }">
               <div class="row mt-4">
-                <ValidationProvider rules="required|min:2" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="required|min:2" slim>
                   <div class="col-lg-6 mb-3">
-                    <label for="username" class="form-label"
-                           :class="{ 'text-danger': Boolean(errors[0]) }">Username</label>
-                    <input type="text" id="username" class="form-control form-control-s1"
-                           :class="!errors[0] ? '' : 'is-invalid'" v-model="form.username" required>
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label"
+                           for="username">Username</label>
+                    <input id="username" v-model="form.username" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1" required type="text">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
-                <ValidationProvider rules="email" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="email" slim>
                   <div class="col-lg-6 mb-3">
-                    <label for="email" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Email</label>
-                    <input type="email" id="email" class="form-control form-control-s1"
-                           :class="!errors[0] ? '' : 'is-invalid'" v-model="form.email">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="email">Email</label>
+                    <input id="email" v-model="form.email" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1" type="email">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
               </div><!-- end row -->
               <div class="row">
-                <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="url" slim>
                   <div class="col-lg-6 mb-3">
-                    <label for="rocketChatLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">RocketChat
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="rocketChatLink">RocketChat
                       Link</label>
-                    <input type="text" id="rocketChatLink" class="form-control form-control-s1"
-                           :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="E.g. https://rocketchat.numer.ai/direct/slyfox" v-model="form.socialRocketChat">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <input id="rocketChatLink" v-model="form.socialRocketChat" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1"
+                           placeholder="E.g. https://rocketchat.numer.ai/direct/slyfox" type="text">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
-                <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="url" slim>
                   <div class="col-lg-6 mb-3">
-                    <label for="linkedInLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">LinkedIn
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="linkedInLink">LinkedIn
                       Link</label>
-                    <input type="text" id="linkedInLink" class="form-control form-control-s1"
-                           :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="E.g. https://www.linkedin.com/in/richardcraib" v-model="form.socialLinkedIn">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <input id="linkedInLink" v-model="form.socialLinkedIn" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1"
+                           placeholder="E.g. https://www.linkedin.com/in/richardcraib" type="text">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
-                <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="url" slim>
                   <div class="col-lg-6 mb-3">
-                    <label for="twitterLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Twitter
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="twitterLink">Twitter
                       Link</label>
-                    <input type="text" id="twitterLink" class="form-control form-control-s1"
-                           :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="E.g. https://twitter.com/numerai" v-model="form.socialTwitter">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <input id="twitterLink" v-model="form.socialTwitter" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1"
+                           placeholder="E.g. https://twitter.com/numerai" type="text">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
-                <ValidationProvider rules="url" v-slot="{ errors }" slim>
+                <ValidationProvider v-slot="{ errors }" rules="url" slim>
                   <div class="col-lg-6 mb-3">
-                    <label for="webLink" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Web
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="webLink">Web
                       Link</label>
-                    <input type="text" id="webLink" class="form-control form-control-s1"
-                           :class="!errors[0] ? '' : 'is-invalid'"
-                           placeholder="E.g. https://numer.ai/" v-model="form.socialWebsite">
-                    <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                    <input id="webLink" v-model="form.socialWebsite" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1"
+                           placeholder="E.g. https://numer.ai/" type="text">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
               </div><!-- end row -->
-              <button class="btn btn-dark mt-3 d-flex justify-content-center" type="button"
-                      @click="handleSubmit(onUpdateProfile)" :disabled="userLoading">
+              <button :disabled="userLoading" class="btn btn-dark mt-3 d-flex justify-content-center"
+                      type="button" @click="handleSubmit(onUpdateProfile)">
                 <span v-if="userLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...</span>
                 <span v-else>Update Profile</span>
               </button>
             </ValidationObserver>
             <hr class="my-4">
             <h5 class="mb-4">Encryption Key</h5>
-            <div class="alert alert-warning d-flex mb-4" role="alert" v-if="!Boolean(userGetters.getPublicKey(user))">
-              <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+            <div v-if="!Boolean(userGetters.getPublicKey(user))" class="alert alert-warning d-flex mb-4" role="alert">
+              <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
                 <path
                   d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
               </svg>
@@ -98,20 +98,20 @@
             </div><!-- end alert -->
             <div class="row mt-4">
               <div class="col-lg-8">
-                <a class="btn" :class="Boolean(userGetters.getPublicKey(user)) ? 'btn-outline-dark' : 'btn-dark'"
+                <a :class="Boolean(userGetters.getPublicKey(user)) ? 'btn-outline-dark' : 'btn-dark'" class="btn"
                    @click="generateKeyPair">Generate key pair</a>
-                <button class="copy-text ms-2" type="button" v-if="Boolean(userGetters.getPublicKey(user))"
+                <button v-if="Boolean(userGetters.getPublicKey(user))" class="copy-text ms-2" type="button"
                         @click="exportKeyPair"><em class="ni ni-download"></em> Export key file
                 </button>
               </div>
             </div>
             <hr class="my-4">
             <h5 class="mb-4">Wallet</h5>
-            <div class="row mt-4" v-if="userGetters.getPublicAddress(user)">
+            <div v-if="userGetters.getPublicAddress(user)" class="row mt-4">
               <div class="col-lg-8">
                 <div class="d-flex align-items-center">
-                  <input type="text" class="copy-input copy-input-s1" v-model="userGetters.getPublicAddress(user)"
-                         id="copy-input" readonly>
+                  <input id="copy-input" v-model="userGetters.getPublicAddress(user)" class="copy-input copy-input-s1"
+                         readonly type="text">
                   <div class="tooltip-s1">
                     <button v-clipboard:copy="userGetters.getPublicAddress(user)" v-clipboard:success="onCopy"
                             class="copy-text ms-2" type="button">
@@ -122,8 +122,8 @@
                 </div>
               </div>
             </div>
-            <div class="alert alert-warning d-flex mb-4" role="alert" v-else>
-              <svg class="flex-shrink-0 me-3" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+            <div v-else class="alert alert-warning d-flex mb-4" role="alert">
+              <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
                 <path
                   d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
               </svg>
@@ -144,45 +144,45 @@
             </div>
           </div><!-- end profile-setting-panel -->
         </div><!-- end tab-pane -->
-        <div class="tab-pane fade" id="change-password" role="tabpanel" aria-labelledby="change-password-tab">
+        <div id="change-password" aria-labelledby="change-password-tab" class="tab-pane fade" role="tabpanel">
           <div class="profile-setting-panel">
             <h5 class="mb-4">Change Password</h5>
-            <ValidationObserver v-slot="{ handleSubmit, reset }" key="password">
-              <ValidationProvider vid="newPassword" rules="required|min:6" v-slot="{ errors }" slim>
+            <ValidationObserver key="password" v-slot="{ handleSubmit, reset }">
+              <ValidationProvider v-slot="{ errors }" rules="required|min:6" slim vid="newPassword">
                 <div class="mb-3">
-                  <label for="newPassword" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">New
+                  <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="newPassword">New
                     Password</label>
                   <div class="position-relative">
-                    <input type="password" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                           id="newPassword" name="newPassword" placeholder="New password" v-model="pwdForm.password">
-                    <a href="newPassword" class="password-toggle" :class="!errors[0] ? '' : 'text-danger'"
+                    <input id="newPassword" v-model="pwdForm.password" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1" name="newPassword" placeholder="New password" type="password">
+                    <a :class="!errors[0] ? '' : 'text-danger'" class="password-toggle" href="newPassword"
                        title="Toggle show/hide pasword">
                       <em class="password-shown ni ni-eye-off"></em>
                       <em class="password-hidden ni ni-eye"></em>
                     </a>
                   </div>
-                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                  <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                 </div>
               </ValidationProvider>
-              <ValidationProvider rules="required|min:6|confirmed:newPassword" v-slot="{ errors }" slim>
+              <ValidationProvider v-slot="{ errors }" rules="required|min:6|confirmed:newPassword" slim>
                 <div class="mb-3">
-                  <label for="confirmNewPassword" class="form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Confirm
+                  <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="confirmNewPassword">Confirm
                     New Password</label>
                   <div class="position-relative">
-                    <input type="password" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                           id="confirmNewPassword" name="confirmPassword" placeholder="Confirm new password"
-                           v-model="pwdForm.confirmPassword">
-                    <a href="confirmNewPassword" class="password-toggle" :class="!errors[0] ? '' : 'text-danger'"
+                    <input id="confirmNewPassword" v-model="pwdForm.confirmPassword" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1" name="confirmPassword" placeholder="Confirm new password"
+                           type="password">
+                    <a :class="!errors[0] ? '' : 'text-danger'" class="password-toggle" href="confirmNewPassword"
                        title="Toggle show/hide pasword">
                       <em class="password-shown ni ni-eye-off"></em>
                       <em class="password-hidden ni ni-eye"></em>
                     </a>
                   </div>
-                  <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
+                  <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                 </div>
               </ValidationProvider>
-              <button class="btn btn-dark mt-3 d-flex justify-content-center" type="button"
-                      @click="handleSubmit(onUpdatePassword(reset))" :disabled="userLoading">
+              <button :disabled="userLoading" class="btn btn-dark mt-3 d-flex justify-content-center"
+                      type="button" @click="handleSubmit(onUpdatePassword(reset))">
                 <span v-if="userLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...</span>
                 <span v-else>Update Password</span>
               </button>
