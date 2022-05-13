@@ -8,6 +8,7 @@ from app.api.dependencies.coupons import generate_promo_code
 from app.api.dependencies.orders import update_payment
 from app.core.config import settings
 from app.tests.utils.product import get_random_product
+from app.tests.utils.user import get_random_user
 from app.tests.utils.utils import random_lower_string
 
 
@@ -776,3 +777,88 @@ def test_coupon_calculation(
             assert content["data"][0]["options"][0]["error"] == "Coupon invalid"
 
         crud.coupon.remove(db, id=coupon.id)  # type: ignore
+
+
+def test_create_coupon_manually(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
+    current_user = r.json()
+    current_user_obj = crud.user.get(db, id=current_user["id"])
+    crud.user.update(
+        db,
+        db_obj=current_user_obj,  # type: ignore
+        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    )
+    n_coupons_initial = len(current_user_obj.created_coupons)  # type: ignore
+
+    # Create product
+    with get_random_product(
+        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+    ) as product:
+        # Create recipient
+        with get_random_user(db) as user:
+            # Create coupon
+            coupon_data = {
+                "applicability": "specific_products",
+                "applicable_product_ids": [product.id],
+                "discount_percent": 50,
+                "quantity_total": 1,
+                "max_discount": 5,
+                "code": "TESTCODE",
+            }
+            response = client.post(
+                f"{settings.API_V1_STR}/coupons/{user.username}",
+                headers=superuser_token_headers,
+                json=coupon_data,
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert content["creator"]["id"] == current_user["id"]
+            assert content["owner"]["id"] == user.id
+            assert content["code"] == "TESTCODE"
+            assert content["quantity_total"] == 1
+
+            # check coupon
+            current_user_obj = crud.user.get(db, id=current_user["id"])
+            assert (len(current_user_obj.created_coupons) - n_coupons_initial) == 1  # type: ignore
+
+            # Delete coupon
+            response = client.delete(
+                f"{settings.API_V1_STR}/coupons/{content['id']}",
+                headers=superuser_token_headers,
+            )
+            assert response.status_code == 200
+
+
+def test_invalid_create_coupon_manually(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
+    current_user = r.json()
+    current_user_obj = crud.user.get(db, id=current_user["id"])
+    crud.user.update(
+        db,
+        db_obj=current_user_obj,  # type: ignore
+        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    )
+
+    # Create non-owner product
+    with get_random_product(db, is_on_platform=True, mode="file") as product:
+        # Create recipient
+        with get_random_user(db) as user:
+            # Create coupon
+            coupon_data = {
+                "applicability": "specific_products",
+                "applicable_product_ids": [product.id],
+                "discount_percent": 50,
+                "quantity_total": 1,
+                "max_discount": 5,
+                "code": "TESTCODE",
+            }
+            response = client.post(
+                f"{settings.API_V1_STR}/coupons/{user.username}",
+                headers=superuser_token_headers,
+                json=coupon_data,
+            )
+            assert response.status_code == 400
