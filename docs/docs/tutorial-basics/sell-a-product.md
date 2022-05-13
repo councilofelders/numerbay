@@ -161,14 +161,14 @@ repetition. The process needs to be manually repeated for any subsequent sale or
 For Stake Only sales and sales where the buyer designated an auto-submission slot, any Numerai submission is also done
 during the upload in your browser instead of being automated by the NumerBay backend.
 
+Once you upload for at least one buyer, your product will be tagged with a `Ready` badge in the catalog page. However, you still need to deliver for any subsequent order.
+
 <img alt="Listing Order Artifacts" src="/img/tutorial/listingOrderArtifacts.png" width="800"/>
 
 ### For products without client-side encryption
 If you opted not to use client-side encryption, upload can happen at any time. It is recommended to upload artifacts after tournament round opens and regardless if you have active buyers.
 
-Once artifacts are uploaded, your product will be tagged with a `Instant` badge in the catalog page which might make it more likely to be purchased.
-
-<img alt="Product Ready" src="/img/tutorial/productReady.png" width="600"/>
+Once artifacts are uploaded, your product will be tagged with a `Ready` badge in the catalog page.
 
 ## Manage sales
 Your sales are viewable in the **[Sales](https://numerbay.ai/sales)** page. You can click on the order IDs to view order details.

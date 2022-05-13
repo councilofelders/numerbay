@@ -10,8 +10,7 @@
           <div class="custom-tooltip-wrap">
             <div class="card-author-by-2">
               <span class="item-detail-text-meta">{{ productGetters.getCategory(product).slug }}</span>
-              <span class="badge fw-medium bg-success" v-if="product.is_ready"
-                    title="Artifact files are available for immediate download/submission">Instant</span>
+              <span class="badge fw-medium bg-success" v-if="product.is_ready">Ready</span>
             </div>
             <a href="javascript:void(0);" class="custom-tooltip author-link"
                v-show="!!productGetters.getCategory(product).is_per_model">Metrics...</a>
@@ -48,6 +47,7 @@
     </div><!-- end card-body -->
     <nuxt-link
       class="details"
+      :title="product.is_ready ? `Seller has uploaded file or has delivered to at least one buyer for current round` : ``"
       :to="{
                 name: 'ProductDetailsByFullName',
                 params: {

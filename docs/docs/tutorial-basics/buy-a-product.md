@@ -48,7 +48,7 @@ Learn more about [client-side encryption](/updates/encryption).
     - `File Mode`: You can download artifact files and optionally designate a model slot for submission
     - `Stake Only Mode`: Submit for you automatically without distributing artifact files, without stake limit. [only available for "numerai-predictions" and "signals-predictions" categories]
     - `Stake Only Mode with Limit`: Submit for you automatically without distributing artifact files, with a stake limit (in NMR). [only available for "numerai-predictions" and "signals-predictions" categories]
-* Instant: If an `Instant` badge is shown for a product, this means the product artifact files are ready for download immediately after purchasing. If not shown, artifacts will be available when seller uploads files after your purchase. 
+* Ready: If an `Ready` badge is shown for a product, this means the product artifact files are ready for download immediately after purchasing (for unencrypted listings), or the seller has delivered for at least one buyer (for encrypted listings). If not shown, you will need to wait for seller to upload after your purchase. 
   This badge is reset every week for per-round categories `numerai-predictions`, `signals-predictions` and `signals-data`.
 
 

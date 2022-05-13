@@ -223,6 +223,12 @@ def validate_upload(
         db, db_obj=artifact, obj_in={"state": "active"}  # type: ignore
     )
 
+    # mark product as ready
+    product = crud.product.get(db, id=artifact.order.product_id)  # type: ignore
+    if product:
+        if not product.is_ready:
+            crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
+
     return artifact
 
 
