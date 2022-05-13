@@ -5,7 +5,6 @@ from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -15,10 +14,11 @@ from app.api.dependencies.coupons import generate_promo_code
 router = APIRouter()
 
 
-@router.post("/", response_model=schemas.Coupon)
+@router.post("/{username}", response_model=schemas.Coupon)
 def create_coupon(
     *,
     db: Session = Depends(deps.get_db),
+    username: str,
     coupon_in: schemas.CouponCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -27,12 +27,7 @@ def create_coupon(
     """
     # todo tests
     # validate recipient
-    if not isinstance(coupon_in.username, str):
-        raise HTTPException(
-            status_code=400, detail="Recipient username must be provided"
-        )
-
-    recipient = crud.user.get_by_username(db, username=coupon_in.username)
+    recipient = crud.user.get_by_username(db, username=username)
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient user not found")
 
@@ -118,11 +113,7 @@ def create_coupon(
         coupon_in.quantity_total = 1
 
     coupon_in.creator_id = current_user.id
-    coupon_in_json = jsonable_encoder(coupon_in)
-    coupon_in_json.pop("username")
-    coupon = crud.coupon.create_with_owner(
-        db, obj_in=coupon_in_json, owner_id=recipient.id
-    )
+    coupon = crud.coupon.create_with_owner(db, obj_in=coupon_in, owner_id=recipient.id)
 
     return coupon
 
