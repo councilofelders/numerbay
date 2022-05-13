@@ -53,13 +53,13 @@
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
-                <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" key="quantity" slim>
+                <ValidationProvider rules="required|integer|min_value:1" v-slot="{ errors }" key="quantityTotal" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
                       <label class="mb-2 form-label" :class="{ 'text-danger': Boolean(errors[0]) }">Number of
                         redemptions</label>
                       <input type="number" class="form-control form-control-s1" :class="!errors[0] ? '' : 'is-invalid'"
-                             placeholder="Number of times this coupon can be redeemed" min="1" v-model="form.quantity">
+                             placeholder="Number of times this coupon can be redeemed" min="1" v-model="form.quantity_total">
                       <div class="text-danger fade" :class="{ 'show': Boolean(errors[0]) }">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
@@ -228,7 +228,7 @@ export default {
       username: null,
       applicable_products: [],
       discount_percent: null,
-      quantity: 1,
+      quantity_total: 1,
       max_discount: null,
       min_spend: null,
       code: null,
