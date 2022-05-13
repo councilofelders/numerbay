@@ -4,13 +4,12 @@ import { authHeaders } from '../utils';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/explicit-module-boundary-types
 export default async function createProduct(context, params, customQuery?: CustomQuery) {
   // Create URL object containing full endpoint URL
-  const url = new URL('coupons/', context.config.api.url);
+  const url = new URL(`coupons/${params.username}`, context.config.api.url);
   const token = context.config.auth.onTokenRead();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = {
     applicability: params.applicability,
-    username: params.username,
     code: params.code,
     // eslint-disable-next-line camelcase
     date_expiration: params.date_expiration,
