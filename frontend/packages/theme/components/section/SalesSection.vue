@@ -50,7 +50,7 @@
                       v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
                       class="btn-link text-decoration-none fw-medium"
                     >-{{
-                        parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1
+                        orderGetters.getEndRound(order)
                       }}
                       </span> by
                       <span class="btn-link text-decoration-none fw-medium">{{

@@ -50,7 +50,78 @@
                       v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
                       class="btn-link text-decoration-none fw-medium"
                     >-{{
-                        parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1
+                        orderGetters.getEndRound(order)
+                      }}
+                      </span> by
+                      <span class="btn-link text-decoration-none fw-medium">{{
+                          orderGetters.getBuyer(order)
+                        }}</span>
+                      <span> for <span class="btn-link text-decoration-none fw-medium">{{
+                          orderGetters.getFormattedPrice(order, withCurrency = true, decimals = 4)
+                        }}</span></span>
+                    </span>
+                  </p>
+                  <p class="card-s1-text">{{ orderGetters.getDate(order) }}</p>
+                  <p class="card-s1-text">
+                    <span :class="getStatusTextClass(order)" class="badge fw-medium">{{
+                        orderGetters.getStatus(order)
+                      }}</span>
+                    <a class="ms-2 text-secondary" href="javascript:void(0);" title="Click for details"
+                       @click="toggleInfoModal(order)">View details</a>
+                    <a v-if="orderGetters.getStatus(order)=='confirmed'" class="ms-2 text-primary"
+                       href="javascript:void(0);"
+                       title="Click for files" @click="toggleArtifactModal(order)">Download</a>
+                  </p>
+                </div>
+              </div>
+            </div><!-- end card -->
+          </div><!-- end activity-tab-wrap -->
+          <!-- pagination -->
+          <div class="text-center mt-4 mt-md-5">
+            <Pagination v-model="page" :per-page="perPage" :records="orders.length"></Pagination>
+          </div>
+        </div><!-- end tab-pane -->
+      </div><!-- end tab-content -->
+      <div class="row">
+        <div class="col-9">
+          <ul class="nav nav-tabs nav-tabs-s3 mb-2" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button :id="'all'" :class="'active'" class="nav-link" type="button">All purchases</button>
+            </li>
+          </ul>
+        </div>
+        <div class="col-3">
+          <a class="float-end" href="javascript:void(0);" @click="downloadOrders">Export CSV</a>
+        </div>
+      </div>
+      <div class="tab-content mt-4 tab-content-desktop">
+        <div aria-labelledby="all-tab" class="tab-pane fade show active" role="tabpanel">
+          <div class="activity-tab-wrap">
+            <div v-for="order in displayedOrders" :key="order.id" class="card card-creator-s1 mb-4">
+              <div class="card-body d-flex align-items-center">
+                <div class="card-media-img flex-shrink-0">
+                  <img :src="productGetters.getCoverImage(orderGetters.getProduct(order))" alt="avatar">
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="card-s1-title">
+                    <router-link
+                      :to="`/product/${productGetters.getCategory(orderGetters.getProduct(order)).slug}/${productGetters.getName(orderGetters.getProduct(order))}`"
+                      class="btn-link">
+                      {{ productGetters.getName(orderGetters.getProduct(order)).toUpperCase() }}
+                    </router-link>
+                  </h6>
+                  <p class="card-s1-text">
+                    <span>
+                      <span class="btn-link text-decoration-none fw-medium">
+                        {{ productGetters.getCategory(orderGetters.getProduct(order)).slug }}
+                      </span> {{ orderGetters.getMode(order) }} x {{ orderGetters.getItemQty(order) }} for round
+                      <span class="btn-link text-decoration-none fw-medium">{{
+                          orderGetters.getRound(order)
+                        }}</span><span
+                      v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
+                      class="btn-link text-decoration-none fw-medium"
+                    >-{{
+                        orderGetters.getEndRound(order)
                       }}
                       </span> by
                       <span class="btn-link text-decoration-none fw-medium">{{

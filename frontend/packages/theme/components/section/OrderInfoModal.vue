@@ -23,7 +23,7 @@
               Rounds
             </th>
             <td>{{
-                `${orderGetters.getRound(order)}-${parseInt(orderGetters.getRound(order)) + parseInt(orderGetters.getItemQty(order)) - 1}`
+                `${orderGetters.getRound(order)}-${orderGetters.getEndRound(order)}`
               }}
             </td>
           </tr>
