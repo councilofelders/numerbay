@@ -26,7 +26,8 @@
       <div class="tab-content mt-4 tab-content-desktop">
         <div aria-labelledby="all-tab" class="tab-pane fade show active" role="tabpanel">
           <div class="activity-tab-wrap">
-            <div v-for="order in ActiveOrders" :key="order.id" class="card card-creator-s1 mb-4">
+            <div v-for="order in ActiveOrders" :key="order.id" class="card card-creator-s1 mb-4"
+                 :class="isDelivered(order)? '': 'highlight'">
               <div class="card-body d-flex align-items-center">
                 <div class="card-media-img flex-shrink-0">
                   <img :src="productGetters.getCoverImage(orderGetters.getProduct(order))" alt="avatar">
@@ -182,6 +183,10 @@ export default {
     }
   },
   methods: {
+    isDelivered(order) {
+      const useEncryption = Boolean(order?.buyer_public_key);
+      return useEncryption ? order?.artifacts?.filter(a => a.state === 'active')?.length > 0 : order?.product?.is_ready;
+    },
     toggleInfoModal(order) {
       this.currentOrder = order;
       this.$refs.orderInfoModal.show();
@@ -293,3 +298,10 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.highlight {
+  //border: 1px solid var(--bs-primary);
+  box-shadow: 0 1px 10px var(--bs-primary)
+}
+</style>
