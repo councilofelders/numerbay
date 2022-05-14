@@ -10,7 +10,7 @@ export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/c
 import {ProductVariant} from '@vue-storefront/numerbay-api';
 import {getNumeraiLastSyncDate, getPublicKey} from '../getters/userGetters';
 import {getProductQtySales} from "../getters/productGetters";
-import {getMode} from "../getters/orderGetters";
+import {getEndRound, getMode} from "../getters/orderGetters";
 
 export type Address = Record<string, unknown>;
 
@@ -207,6 +207,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getSubmissionStatus: (order: ORDER) => string;
     getStakeLimit: (order: ORDER) => string;
     getRound: (order: ORDER) => string;
+    getEndRound: (order: ORDER) => string;
     getPrice: (order: ORDER) => number;
     getCurrency: (order: ORDER) => string;
     getFromAddress: (order: ORDER) => string;
