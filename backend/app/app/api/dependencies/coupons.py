@@ -167,6 +167,7 @@ def create_coupon_for_order(
                 ),
                 "min_spend": order_obj.coupon_specs.get("min_spend", None),  # type: ignore
                 "quantity_total": 1,
+                "creator_id": order_obj.product.owner_id,  # type: ignore
             }
             coupon_obj = crud.coupon.create_with_owner(
                 db,
