@@ -55,7 +55,7 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 
     order = crud.order.get(db, id=order_id)
     validate_new_order_artifact(
-        order=order, current_user=current_user, url=None, filename=filename
+        order=order, current_user=current_user, filename=filename
     )
 
     # not during round rollover

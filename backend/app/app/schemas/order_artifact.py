@@ -12,8 +12,6 @@ class OrderArtifactBase(BaseModel):
 
     date: Optional[datetime] = None
     round_tournament: Optional[int] = None
-    description: Optional[str] = None
-    url: Optional[str] = None
     object_name: Optional[str] = None
     object_size: Optional[int] = None
     state: Optional[str] = None

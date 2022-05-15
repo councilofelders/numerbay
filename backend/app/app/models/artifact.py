@@ -17,8 +17,6 @@ class Artifact(Base):
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, index=True, nullable=False)
     round_tournament = Column(Integer, index=True)
-    description = Column(String)
-    url = Column(String)
     object_name = Column(String, index=True, nullable=True)
     object_size = Column(Integer, nullable=True)
     state = Column(String, nullable=False, default="pending", server_default="pending")

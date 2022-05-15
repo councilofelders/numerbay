@@ -6,8 +6,6 @@ export interface UseOrderArtifactFactoryParams<ARTIFACTS, ARTIFACT_SEARCH_PARAMS
   searchArtifacts: (context: Context, params: ARTIFACT_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ARTIFACTS>;
   downloadArtifact: (context: Context, params: any) => Promise<any>;
   submitArtifact: (context: Context, params: any) => Promise<any>;
-  createArtifact: (context: Context, params: any) => Promise<any>;
-  updateArtifact: (context: Context, params: any) => Promise<any>;
   deleteArtifact: (context: Context, params: any) => Promise<any>;
 }
 
@@ -21,8 +19,6 @@ export function useOrderArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(facto
       search: null,
       downloadArtifact: null,
       submitArtifact: null,
-      createArtifact: null,
-      updateArtifact: null,
       deleteArtifact: null
     });
     const error: Ref<UseOrderArtifactErrors> = sharedRef(errorsFactory(), `useOrderArtifact-error-${ssrKey}`);
@@ -79,38 +75,6 @@ export function useOrderArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(facto
       }
     };
 
-    const createArtifact = async ({productId, artifact: providedArtifact}) => {
-      Logger.debug('useOrderArtifactFactory.createArtifact', productId, providedArtifact);
-      resetErrorValue();
-
-      try {
-        loading.value = true;
-        await _factoryParams.createArtifact({productId, artifact: providedArtifact});
-        error.value.createArtifact = null;
-      } catch (err) {
-        error.value.createArtifact = err;
-        Logger.error('useOrderArtifact/createArtifact', err);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const updateArtifact = async ({productId, artifactId, description}) => {
-      Logger.debug('useOrderArtifactFactory.updateArtifact', productId, artifactId, description);
-      resetErrorValue();
-
-      try {
-        loading.value = true;
-        await _factoryParams.updateArtifact({productId, artifactId, description});
-        error.value.updateArtifact = null;
-      } catch (err) {
-        error.value.updateArtifact = err;
-        Logger.error('useOrderArtifact/updateArtifact', JSON.stringify(err));
-      } finally {
-        loading.value = false;
-      }
-    };
-
     const deleteArtifact = async ({productId, artifactId}) => {
       Logger.debug(`useOrderArtifactFactory.deleteArtifact ${productId}/${artifactId}`);
       resetErrorValue();
@@ -131,8 +95,6 @@ export function useOrderArtifactFactory<ARTIFACTS, ARTIFACT_SEARCH_PARAMS>(facto
       search,
       downloadArtifact,
       submitArtifact,
-      createArtifact,
-      updateArtifact,
       deleteArtifact,
       artifacts: computed(() => artifacts.value),
       loading: computed(() => loading.value),

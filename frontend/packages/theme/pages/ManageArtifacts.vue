@@ -589,7 +589,6 @@ export default {
     const {
       artifacts,
       search: productArtifactSearch,
-      createArtifact,
       downloadArtifact,
       deleteArtifact,
       loading: productArtifactLoading,
@@ -651,7 +650,6 @@ export default {
       product: computed(() => products.value?.data ? products.value.data[0] : null),
       artifacts: computed(() => artifacts ? artifacts.value : null),
       orders: computed(() => orders?.value?.data ? orders.value.data : []),
-      createArtifact,
       downloadArtifact,
       downloadOrderArtifact,
       deleteArtifact,
