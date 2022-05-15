@@ -387,7 +387,6 @@ def generate_upload_url(  # pylint: disable=too-many-locals
     filesize: int = Form(None, description="file size (optional)"),
     action: str = Form(None, description="method for upload"),
     filename_suffix: str = Form(None, description="file name suffix"),
-    description: str = Form(None, description="artifact description"),
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -428,8 +427,6 @@ def generate_upload_url(  # pylint: disable=too-many-locals
         product_id=product_id,
         date=datetime.utcnow(),
         round_tournament=selling_round,
-        description=description,
-        url=None,
         object_name=object_name,
         object_size=filesize,
     )
