@@ -405,19 +405,27 @@ export default {
       window.URL.revokeObjectURL(url);
     },
     async exportKeyPair() {
-      if (!this.$wallet.account) {
-        await this.$wallet.connect();
+      try {
+        if (!this.$wallet.account) {
+          await this.$wallet.connect();
+        }
+
+        const privateKeyStr = await window.ethereum.request({
+          method: 'eth_decrypt',
+          params: [this.form.encryptedPrivateKey, this.$wallet.account]
+        });
+
+        const privateKey = encodeBase64(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))));
+        // eslint-disable-next-line camelcase
+        const keyJson = JSON.stringify({public_key: this.form.publicKey, private_key: privateKey});
+        this.downloadFile(new Blob([keyJson], {type: 'application/json'}), 'numerbay.json');
+      } catch (err) {
+        this.send({
+          message: err?.message || 'Failed to export key pair.',
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
       }
-
-      const privateKeyStr = await window.ethereum.request({
-        method: 'eth_decrypt',
-        params: [this.form.encryptedPrivateKey, this.$wallet.account]
-      });
-
-      const privateKey = encodeBase64(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))));
-      // eslint-disable-next-line camelcase
-      const keyJson = JSON.stringify({public_key: this.form.publicKey, private_key: privateKey});
-      this.downloadFile(new Blob([keyJson], {type: 'application/json'}), 'numerbay.json');
     }
   },
   setup() {

@@ -184,37 +184,45 @@ export default {
       }
     },
     async decryptfile(objFile) {
-      const cipherbytes = await readfile(objFile)
-        .catch((err) => {
-          console.error(err);
+      try {
+        const cipherbytes = await readfile(objFile)
+          .catch((err) => {
+            console.error(err);
+          });
+
+        if (!this.$wallet.account) {
+          await this.$wallet.connect();
+        }
+
+        const privateKeyStr = await window.ethereum.request({
+          method: 'eth_decrypt',
+          params: [this.encryptedPrivateKey, this.$wallet.account]
         });
 
-      if (!this.$wallet.account) {
-        await this.$wallet.connect();
+        const privateKey = new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item)));
+
+        const plaintextbytes = nacl.sealedbox.open(new Uint8Array(cipherbytes), decodeBase64(this.publicKey), privateKey);
+
+        if (!plaintextbytes) {
+          console.log('Error decrypting file.');
+        }
+
+        console.log('ciphertext decrypted');
+
+        const blob = new Blob([plaintextbytes], {type: 'application/download'});
+        const blobUrl = URL.createObjectURL(blob);
+
+        // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+        return new Promise((resolve, reject) => {
+          resolve(blobUrl);
+        });
+      } catch (err) {
+        this.send({
+          message: err?.message || 'Failed to decrypt file.',
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
       }
-
-      const privateKeyStr = await window.ethereum.request({
-        method: 'eth_decrypt',
-        params: [this.encryptedPrivateKey, this.$wallet.account]
-      });
-
-      const privateKey = new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item)));
-
-      const plaintextbytes = nacl.sealedbox.open(new Uint8Array(cipherbytes), decodeBase64(this.publicKey), privateKey);
-
-      if (!plaintextbytes) {
-        console.log('Error decrypting file.');
-      }
-
-      console.log('ciphertext decrypted');
-
-      const blob = new Blob([plaintextbytes], {type: 'application/download'});
-      const blobUrl = URL.createObjectURL(blob);
-
-      // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-      return new Promise((resolve, reject) => {
-        resolve(blobUrl);
-      });
     },
     async downloadAndDecrypt(artifact) {
       if (!artifact.object_name && artifact.url) {
