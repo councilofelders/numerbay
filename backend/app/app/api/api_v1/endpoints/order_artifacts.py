@@ -39,7 +39,6 @@ def generate_upload_url(  # pylint: disable=too-many-locals
     filesize: int = Form(None, description="file size"),
     action: str = Form(None, description="method for upload"),
     filename_suffix: str = Form(None, description="file name suffix"),
-    description: str = Form(None, description="order artifact description"),
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -55,7 +54,7 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 
     order = crud.order.get(db, id=order_id)
     validate_new_order_artifact(
-        order=order, current_user=current_user, url=None, filename=filename
+        order=order, current_user=current_user, filename=filename
     )
 
     # not during round rollover
@@ -114,8 +113,6 @@ def generate_upload_url(  # pylint: disable=too-many-locals
         order_id=order_id,
         date=datetime.utcnow(),
         round_tournament=selling_round,
-        description=description,
-        url=None,
         object_name=object_name,
         object_size=filesize,
         is_numerai_direct=is_numerai_direct,

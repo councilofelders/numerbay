@@ -30,7 +30,6 @@ class Coupon(Base):
     code = Column(String, index=True, nullable=False)
     applicability = Column(String, index=True, nullable=False)
     applicable_product_ids = Column(ARRAY(Integer))
-    applicable_seller_id = Column(Integer)
     min_spend = Column(Numeric)
     max_discount = Column(Numeric)
     discount_mode = Column(String, nullable=False)

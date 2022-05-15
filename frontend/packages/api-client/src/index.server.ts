@@ -1,7 +1,6 @@
 import {ApiClientExtension, Logger, apiClientFactory} from '@vue-storefront/core';
 import axios from 'axios';
 import closePoll from './api/closePoll';
-import createArtifact from './api/createArtifact';
 import createFavorite from './api/createFavorite';
 import createOrder from './api/createOrder';
 import createPoll from './api/createPoll';
@@ -38,7 +37,6 @@ import logInGetTokenWeb3 from './api/logInGetTokenWeb3';
 import logOutUser from './api/logOutUser';
 import signUpUser from './api/signUpUser';
 import submitArtifact from './api/submitArtifact';
-import updateArtifact from './api/updateArtifact';
 import updatePoll from './api/updatePoll';
 import updateProduct from './api/updateProduct';
 import userUpdateMe from './api/userUpdateMe';
@@ -158,9 +156,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     validatePayment,
     getArtifact,
     getOrderArtifact,
-    createArtifact,
     submitArtifact,
-    updateArtifact,
     deleteArtifact,
     deleteOrderArtifact,
     getPoll,

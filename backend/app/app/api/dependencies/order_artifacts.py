@@ -52,7 +52,6 @@ def generate_gcs_signed_url(
 def validate_new_order_artifact(
     order: Optional[models.Order],
     current_user: models.User,
-    url: str = None,
     filename: str = None,
 ) -> None:
     """Validate new order artifact"""
@@ -68,24 +67,6 @@ def validate_new_order_artifact(
         raise HTTPException(
             status_code=403,
             detail="Not enough permissions",
-        )
-
-    # Input validation
-    # if not url and not filename:
-    #     raise HTTPException(
-    #         status_code=400, detail="You must either provide a URL or upload a file",
-    #     )
-
-    if url and filename:
-        raise HTTPException(
-            status_code=400,
-            detail="You can either provide a URL or upload a file, but not both",
-        )
-
-    if url and not (url.startswith("http://") or url.startswith("https://")):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid URL",
         )
 
     # todo filename suffix / desc validation
@@ -119,7 +100,7 @@ def validate_existing_order_artifact(
 
 
 def send_artifact_emails_for_active_orders(
-    db: Session, artifact: models.Artifact, is_file: bool = True
+    db: Session, artifact: models.Artifact
 ) -> None:
     """Send artifact emails for active orders"""
     if settings.EMAILS_ENABLED:
@@ -139,7 +120,7 @@ def send_artifact_emails_for_active_orders(
                         round_order=order.round_order,
                         product=order.product.sku,
                         order_id=order.id,
-                        artifact=artifact.object_name if is_file else artifact.url,  # type: ignore
+                        artifact=artifact.object_name,  # type: ignore
                     )
 
         # Send new artifact email notification to seller
@@ -149,5 +130,5 @@ def send_artifact_emails_for_active_orders(
                 username=artifact.product.owner.username,
                 round_tournament=artifact.round_tournament,  # type: ignore
                 product=artifact.product.sku,
-                artifact=artifact.object_name if is_file else artifact.url,  # type: ignore
+                artifact=artifact.object_name,  # type: ignore
             )

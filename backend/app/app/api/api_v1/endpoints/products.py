@@ -13,7 +13,6 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import (
-    send_artifact_emails_for_active_orders,
     validate_existing_artifact,
     validate_new_artifact,
 )
@@ -388,16 +387,13 @@ def generate_upload_url(  # pylint: disable=too-many-locals
     filesize: int = Form(None, description="file size (optional)"),
     action: str = Form(None, description="method for upload"),
     filename_suffix: str = Form(None, description="file name suffix"),
-    description: str = Form(None, description="artifact description"),
     db: Session = Depends(deps.get_db),
     bucket: Bucket = Depends(deps.get_gcs_bucket),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Generate upload URL"""
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(
-        product=product, current_user=current_user, url=None, filename=filename
-    )
+    validate_new_artifact(product=product, current_user=current_user, filename=filename)
 
     # not during round rollover
     site_globals = validate_not_during_rollover(db)
@@ -431,8 +427,6 @@ def generate_upload_url(  # pylint: disable=too-many-locals
         product_id=product_id,
         date=datetime.utcnow(),
         round_tournament=selling_round,
-        description=description,
-        url=None,
         object_name=object_name,
         object_size=filesize,
     )
@@ -493,7 +487,6 @@ def validate_upload(
     validate_new_artifact(
         product=product,
         current_user=current_user,
-        url=artifact.url,
         filename=artifact.object_name,  # type: ignore
     )
 
@@ -523,105 +516,6 @@ def validate_upload(
         kwargs=dict(artifact_id=artifact.id, skip_if_active=False),
     )
 
-    return artifact
-
-
-@router.post("/{product_id}/artifacts", response_model=schemas.Artifact)
-async def create_product_artifact(
-    *,
-    product_id: int,
-    url: str = Body(...),
-    description: str = Body(None),
-    # filename: str = Body(None),
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """Create product artifact"""
-    product = crud.product.get(db, id=product_id)
-
-    validate_new_artifact(
-        product=product, current_user=current_user, url=url, filename=None
-    )
-
-    all_modes = [option.mode for option in product.options]  # type: ignore
-
-    if "stake" in all_modes or "stake_with_limit" in all_modes:
-        raise HTTPException(
-            status_code=400,
-            detail="Stake modes require native artifact uploads for automated submissions",
-        )
-
-    # not during round rollover
-    site_globals = validate_not_during_rollover(db)
-
-    selling_round = site_globals.selling_round  # type: ignore
-
-    # Create artifact
-    artifact_in = schemas.ArtifactCreate(
-        product_id=product_id,
-        date=datetime.utcnow(),
-        round_tournament=selling_round,
-        description=description,
-        url=url,
-        # object_name=object_name,
-    )
-    artifact = crud.artifact.create(db=db, obj_in=artifact_in)
-
-    # mark product as ready
-    if product:
-        if not product.is_ready:
-            crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
-
-    # Send notification emails
-    send_artifact_emails_for_active_orders(db, artifact, is_file=False)
-    return artifact
-
-
-@router.put("/{product_id}/artifacts/{artifact_id}")
-async def update_product_artifact(
-    *,
-    product_id: int,
-    artifact_id: int,
-    description: str = Body(None),
-    url: str = Body(None),
-    filename: str = Body(None),
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """Update product artifact"""
-    product = crud.product.get(db, id=product_id)
-    validate_new_artifact(
-        product=product, current_user=current_user, url=url, filename=filename
-    )
-
-    # not during round rollover
-    site_globals = validate_not_during_rollover(db)
-
-    selling_round = site_globals.selling_round  # type: ignore
-
-    artifact = crud.artifact.get(db, id=artifact_id)
-    artifact = validate_existing_artifact(
-        artifact=artifact, product_id=product_id, selling_round=selling_round
-    )
-
-    # object_name = None
-    # if file_obj:
-    #     object_name = get_object_name(sku=product.sku,
-    #     selling_round=selling_round, original_filename=file_obj.filename,
-    #                                   override_filename=filename)
-    #     upload_obj = upload_file(driver=driver, file_obj=file_obj, object_name=object_name)
-    #     if not upload_obj:
-    #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #                             detail="File could not be uploaded")
-
-    # Update artifact
-    artifact_dict = {"description": description}
-    if url:
-        artifact_dict["url"] = url
-    # if file_obj:
-    #     artifact_dict['object_name'] = object_name
-
-    artifact = crud.artifact.update(db=db, db_obj=artifact, obj_in=artifact_dict)
     return artifact
 
 

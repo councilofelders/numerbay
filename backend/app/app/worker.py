@@ -120,7 +120,7 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
             if not artifact:
                 return None
 
-            send_artifact_emails_for_active_orders(db, artifact, is_file=True)
+            send_artifact_emails_for_active_orders(db, artifact)
         finally:
             db.close()
     return None

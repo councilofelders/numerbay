@@ -27,7 +27,6 @@ class CouponCreate(CouponBase):
     date_creation: Optional[datetime] = None
     applicability: str
     code: Optional[str] = None
-    applicable_seller_id: Optional[int] = None
     creator_id: Optional[int] = None
 
 
@@ -43,7 +42,6 @@ class CouponInDBBase(CouponBase):
     id: int
     date_creation: datetime
     code: str
-    applicable_seller_id: Optional[int] = None
     state: Optional[str] = None
     is_owned_by_seller: bool
 
