@@ -189,9 +189,13 @@ export default {
           console.error(err);
         });
 
+      if (!this.$wallet.account) {
+        await this.$wallet.connect();
+      }
+
       const privateKeyStr = await window.ethereum.request({
         method: 'eth_decrypt',
-        params: [this.encryptedPrivateKey, window.ethereum.selectedAddress]
+        params: [this.encryptedPrivateKey, this.$wallet.account]
       });
 
       const privateKey = new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item)));
