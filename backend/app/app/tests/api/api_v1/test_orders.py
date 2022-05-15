@@ -1,9 +1,12 @@
 # import pytest
+from datetime import datetime
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.core.config import settings
+from app.schemas import ArtifactCreate
 from app.tests.utils.order import get_random_order
 from app.tests.utils.product import get_random_product
 from app.tests.utils.utils import random_lower_string
@@ -271,13 +274,14 @@ def test_order_artifact(
         data = {"url": url}
 
         # Create product artifact
-        r = client.post(
-            f"{settings.API_V1_STR}/products/{product.id}/artifacts",
-            headers=normal_user_token_headers,
-            json=data,
+        artifact_in = ArtifactCreate(
+            product_id=product.id,
+            date=datetime.utcnow(),
+            round_tournament=crud.globals.get_singleton(db).selling_round,  # type: ignore
+            object_name="test_order_artifact.csv",
         )
-        assert r.status_code == 200
-        artifact_id = r.json()["id"]
+        artifact = crud.artifact.create(db=db, obj_in=artifact_in)
+        artifact_id = artifact.id
 
         # Create order
         order_data = {
@@ -326,7 +330,7 @@ def test_order_artifact(
             headers=superuser_token_headers,
             json=data,
         )
-        assert r.status_code == 400
+        assert r.status_code == 200
 
         crud.artifact.remove(db, id=artifact_id)
         crud.order.remove(db, id=order.id)

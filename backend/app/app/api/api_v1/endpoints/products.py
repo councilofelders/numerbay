@@ -13,7 +13,6 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import (
-    send_artifact_emails_for_active_orders,
     validate_existing_artifact,
     validate_new_artifact,
 )
@@ -395,9 +394,7 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 ) -> Any:
     """Generate upload URL"""
     product = crud.product.get(db, id=product_id)
-    validate_new_artifact(
-        product=product, current_user=current_user, filename=filename
-    )
+    validate_new_artifact(product=product, current_user=current_user, filename=filename)
 
     # not during round rollover
     site_globals = validate_not_during_rollover(db)
