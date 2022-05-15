@@ -405,9 +405,13 @@ export default {
       window.URL.revokeObjectURL(url);
     },
     async exportKeyPair() {
+      if (!this.$wallet.account) {
+        await this.$wallet.connect();
+      }
+
       const privateKeyStr = await window.ethereum.request({
         method: 'eth_decrypt',
-        params: [this.form.encryptedPrivateKey, window.ethereum.selectedAddress]
+        params: [this.form.encryptedPrivateKey, this.$wallet.account]
       });
 
       const privateKey = encodeBase64(new Uint8Array(privateKeyStr.split(',').map((item) => parseInt(item))));
