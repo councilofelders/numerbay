@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.dependencies.coupons import generate_promo_code
+from app.api.dependencies.coupons import (
+    generate_promo_code,
+    send_new_coupon_email_for_coupon,
+)
 
 router = APIRouter()
 
@@ -115,6 +118,8 @@ def create_coupon(
     coupon_in.creator_id = current_user.id
     coupon = crud.coupon.create_with_owner(db, obj_in=coupon_in, owner_id=recipient.id)
 
+    # send email
+    send_new_coupon_email_for_coupon(coupon)
     return coupon
 
 
