@@ -50,6 +50,6 @@ class Order(Base):
     buyer = relationship("User", back_populates="orders")
     product_id = Column(Integer, ForeignKey("product.id"))
     product = relationship("Product", lazy="subquery")
-    applied_coupon_id = Column(Integer, ForeignKey("coupon.id", ondelete="CASCADE"))
+    applied_coupon_id = Column(Integer, ForeignKey("coupon.id"))
     applied_coupon = relationship("Coupon", back_populates="redemptions")
     artifacts = relationship("OrderArtifact", back_populates="order")

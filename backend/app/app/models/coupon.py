@@ -48,6 +48,4 @@ class Coupon(Base):
         back_populates="created_coupons",
         lazy="subquery",
     )
-    redemptions = relationship(
-        "Order", back_populates="applied_coupon", cascade="all, delete-orphan"
-    )
+    redemptions = relationship("Order", back_populates="applied_coupon")
