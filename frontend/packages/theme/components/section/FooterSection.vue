@@ -75,8 +75,9 @@
     </div>
     <hr class="bg-white-slim my-0">
     <div class="copyright-wrap d-flex flex-wrap py-3 align-items-center justify-content-between">
-      <p class="footer-copy-text py-2">Logo: <a href="https://numer.ai/" target="_blank">Numerai</a>, 2022. Maintained
-        by the Numerai Community.</p>
+      <p class="footer-copy-text py-2">Logo: <a href="https://numer.ai/" target="_blank">Numerai</a>, 2022. <a
+        href="http://docs.numerbay.ai/docs/intro#disclaimer" target="_blank">Unofficial - Maintained
+        by the Numerai Community.</a></p>
       <ul class="list-item list-item-s1 list-item-inline">
         <li>
           <router-link to="/explore/numerai-predictions">Explore</router-link>

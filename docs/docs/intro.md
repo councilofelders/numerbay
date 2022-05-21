@@ -28,3 +28,11 @@ Learn how to [get your Numerai products listed](./tutorial-basics/sell-a-product
 
 ### Vote
 Learn how to [create a poll](./tutorial-basics/vote.md) with support for NMR stake weighting.
+
+## Disclaimer
+NumerBay is an unofficial project developed by the Numerai community. 
+NumerBay is not an investment platform and products listed on NumerBay are not investment products. 
+NumerBay does not own nor offer any warranty for the products listed. 
+
+By using this platform, you agree that NumerBay and Numerai are not liable for any loss resulted from transactions on the platform.
+ 
