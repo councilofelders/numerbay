@@ -139,6 +139,12 @@ export interface UseGlobals {
   globals: ComputedProperty<any>;
 }
 
+export interface UseStats {
+  getStats: (identifier: string) => Promise<void>;
+  loading: ComputedProperty<boolean>;
+  stats: ComputedProperty<any>;
+}
+
 export interface UseReviewErrors {
   search: Error;
   addReview: Error;

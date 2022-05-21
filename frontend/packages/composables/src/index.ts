@@ -21,4 +21,5 @@ export { default as useWishlist } from './useWishlist';
 export { default as useNumerai } from './useNumerai';
 export { default as usePoll } from './usePoll';
 export { default as useGlobals } from './useGlobals';
+export { default as useStats } from './useStats';
 export * from './getters';

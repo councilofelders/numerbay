@@ -27,7 +27,12 @@
                   <li>
                     <router-link to="/explore/onlyfams">OnlyFams</router-link>
                   </li>
-                  <li><a href="https://docs.numerbay.ai/" target="_blank">Docs</a></li>
+                  <li>
+                    <a href="https://docs.numerbay.ai/" target="_blank">Docs</a>
+                  </li>
+                  <li>
+                    <router-link to="/stats">Stats</router-link>
+                  </li>
                 </ul>
               </div><!-- end footer-item -->
             </div><!-- end col -->

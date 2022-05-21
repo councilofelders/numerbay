@@ -19,6 +19,16 @@ from app.models import Artifact, Order, Product
 router = APIRouter()
 
 
+@router.post("/generate-stats")
+def generate_stats(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    stats = crud.stats.update_stats(db)
+    return stats
+
+
 @router.post("/fill-coupon-creator")
 def fill_coupon_creator(
     *,
