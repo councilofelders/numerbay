@@ -16,6 +16,7 @@ from app.api.api_v1.endpoints import (  # pylint: disable=redefined-builtin
     products,
     reviews,
     scheduler,
+    stats,
     users,
     utils,
 )
@@ -38,3 +39,4 @@ api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(scheduler.router, prefix="/scheduler", tags=["scheduler"])
 api_router.include_router(globals.router, prefix="/globals", tags=["globals"])
+api_router.include_router(stats.router, prefix="/stats", tags=["stats"])

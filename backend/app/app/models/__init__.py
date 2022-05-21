@@ -13,5 +13,6 @@ from .product import Product
 from .product_option import ProductOption
 from .review import Review
 from .stake_snapshot import StakeSnapshot
+from .stats import Stats
 from .user import User
 from .vote import Vote

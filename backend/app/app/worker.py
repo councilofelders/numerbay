@@ -352,6 +352,7 @@ def update_globals_stats_task() -> None:
     db = SessionLocal()
     try:
         crud.globals.update_stats(db)
+        crud.stats.update_stats(db)
     finally:
         db.close()
 

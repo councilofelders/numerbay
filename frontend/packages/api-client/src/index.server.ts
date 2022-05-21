@@ -20,6 +20,7 @@ import getArtifactUploadUrl from './api/getArtifactUploadUrl';
 import getCategory from './api/getCategory';
 import getFavorite from './api/getFavorite';
 import getGlobals from './api/getGlobals';
+import getStats from './api/getStats';
 import getMe from './api/getMe';
 import getNumeraiModelInfo from './api/getNumeraiModelInfo';
 import getNumeraiModels from './api/getNumeraiModels';
@@ -147,6 +148,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     getOrder,
     createOrder,
     getGlobals,
+    getStats,
     getArtifactDownloadUrl,
     getOrderArtifactDownloadUrl,
     getArtifactUploadUrl,
