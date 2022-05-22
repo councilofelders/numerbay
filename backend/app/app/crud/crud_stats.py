@@ -3,19 +3,21 @@
 from typing import Dict, List, Optional, Union
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import func
+from sqlalchemy import distinct, func
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.models import Order
+from app.models import Category, Order, Product
 from app.models.stats import Stats
 from app.schemas.stats import StatsCreate, StatsUpdate
 
 
-def parse_round_stats(series: List[Dict], fill_value: Union[int, float]) -> List[Dict]:
+def parse_round_stats(
+    series: List[Dict], fill_value: Union[int, float], min_round: int, max_round: int
+) -> List[Dict]:
     transposed = {k: [dic[k] for dic in series] for k in series[0]}
-    min_round = transposed["round_tournament"][0]
-    max_round = transposed["round_tournament"][-1]
+    # min_round = transposed["round_tournament"][0]
+    # max_round = transposed["round_tournament"][-1]
     zipped = dict(zip(transposed["round_tournament"], transposed["value"]))
     for round_tournament in range(min_round, max_round + 1):
         if round_tournament not in zipped:
@@ -44,20 +46,61 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
         """Update stats stats"""
         instance = self.get_singleton(db)
         stats = {}
+
+        sales_value_base_query = db.query(
+            Order.round_order.label("round_tournament"),
+            func.sum(Order.price).label("value"),
+        )
         stats["sales_value"] = jsonable_encoder(
-            db.query(
-                Order.round_order.label("round_tournament"),
-                func.sum(Order.price).label("value"),
-            )
-            .filter(Order.state == "confirmed")
+            sales_value_base_query.filter(Order.state == "confirmed")
             .group_by(Order.round_order)
             .order_by(Order.round_order)
             .all()
         )
+        stats["sales_value_numerai"] = jsonable_encoder(
+            sales_value_base_query.join(Order.product, Product.category)
+            .filter(Order.state == "confirmed", Category.tournament == 8)
+            .group_by(Order.round_order)
+            .order_by(Order.round_order)
+            .all()
+        )
+        stats["sales_value_signals"] = jsonable_encoder(
+            sales_value_base_query.join(Order.product, Product.category)
+            .filter(Order.state == "confirmed", Category.tournament == 11)
+            .group_by(Order.round_order)
+            .order_by(Order.round_order)
+            .all()
+        )
+
+        sales_quantity_base_query = db.query(
+            Order.round_order.label("round_tournament"),
+            func.sum(Order.quantity).label("value"),
+        )
         stats["sales_quantity"] = jsonable_encoder(
+            sales_quantity_base_query.filter(Order.state == "confirmed")
+            .group_by(Order.round_order)
+            .order_by(Order.round_order)
+            .all()
+        )
+        stats["sales_quantity_numerai"] = jsonable_encoder(
+            sales_quantity_base_query.join(Order.product, Product.category)
+            .filter(Order.state == "confirmed", Category.tournament == 8)
+            .group_by(Order.round_order)
+            .order_by(Order.round_order)
+            .all()
+        )
+        stats["sales_quantity_signals"] = jsonable_encoder(
+            sales_quantity_base_query.join(Order.product, Product.category)
+            .filter(Order.state == "confirmed", Category.tournament == 11)
+            .group_by(Order.round_order)
+            .order_by(Order.round_order)
+            .all()
+        )
+
+        stats["unique_buyers"] = jsonable_encoder(
             db.query(
                 Order.round_order.label("round_tournament"),
-                func.sum(Order.quantity).label("value"),
+                func.count(distinct(Order.buyer_id)).label("value"),
             )
             .filter(Order.state == "confirmed")
             .group_by(Order.round_order)
@@ -65,9 +108,46 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
             .all()
         )
 
-        stats["sales_value"] = parse_round_stats(stats["sales_value"], fill_value=0)
+        min_round = stats["sales_value"][0]["round_tournament"]
+        max_round = stats["sales_value"][-1]["round_tournament"]
+        stats["sales_value"] = parse_round_stats(
+            stats["sales_value"], fill_value=0, min_round=min_round, max_round=max_round
+        )
+        stats["sales_value_numerai"] = parse_round_stats(
+            stats["sales_value_numerai"],
+            fill_value=0,
+            min_round=min_round,
+            max_round=max_round,
+        )
+        stats["sales_value_signals"] = parse_round_stats(
+            stats["sales_value_signals"],
+            fill_value=0,
+            min_round=min_round,
+            max_round=max_round,
+        )
         stats["sales_quantity"] = parse_round_stats(
-            stats["sales_quantity"], fill_value=0
+            stats["sales_quantity"],
+            fill_value=0,
+            min_round=min_round,
+            max_round=max_round,
+        )
+        stats["sales_quantity_numerai"] = parse_round_stats(
+            stats["sales_quantity_numerai"],
+            fill_value=0,
+            min_round=min_round,
+            max_round=max_round,
+        )
+        stats["sales_quantity_signals"] = parse_round_stats(
+            stats["sales_quantity_signals"],
+            fill_value=0,
+            min_round=min_round,
+            max_round=max_round,
+        )
+        stats["unique_buyers"] = parse_round_stats(
+            stats["unique_buyers"],
+            fill_value=0,
+            min_round=min_round,
+            max_round=max_round,
         )
 
         return super().update(

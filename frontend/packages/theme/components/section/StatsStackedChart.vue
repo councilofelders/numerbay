@@ -1,9 +1,9 @@
 <script>
-import {Line} from 'vue-chartjs';
+import {Bar} from 'vue-chartjs';
 
 export default {
-  name: 'StatsChart',
-  extends: Line,
+  name: 'StatsStackedChart',
+  extends: Bar,
   props: {
     height: {
       type: Number,
@@ -19,7 +19,11 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
+          xAxes: [{
+            stacked: true
+          }],
           yAxes: [{
+            stacked: true,
             ticks: {
               suggestedMin: 0
             }
