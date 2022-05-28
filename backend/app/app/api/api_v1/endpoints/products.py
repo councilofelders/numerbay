@@ -73,6 +73,11 @@ def search_products(  # pylint: disable=too-many-arguments
     products_to_return = []
     for product in products["data"]:
         product_to_return = schemas.Product.from_orm(product)
+
+        # hide webhook
+        product_to_return.webhook = None
+
+        # calculate prices
         for option in product_to_return.options:  # type: ignore
             calculate_option_price(
                 option,
@@ -129,6 +134,12 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
     products_to_return = []
     for product in products["data"]:
         product_to_return = schemas.Product.from_orm(product)
+
+        # hide webhook for non-owners
+        if product.owner_id != current_user.id:
+            product_to_return.webhook = None
+
+        # calculate prices
         for option in product_to_return.options:  # type: ignore
             calculate_option_price(
                 option,
