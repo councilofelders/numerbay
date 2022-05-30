@@ -163,6 +163,24 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 secret_key=user_json.get("numerai_api_key_secret"),  # type: ignore
             )  # type: ignore
 
+            # check for duplicated numerai wallet
+            duplicated_user = (
+                db.query(User)
+                .filter(
+                    and_(
+                        User.id != user_json["id"],
+                        User.numerai_wallet_address == account["walletAddress"],
+                    )
+                )
+                .first()
+            )
+            if duplicated_user is not None:
+                print(
+                    f"Update failed user (API Key): {user_json['username']} "
+                    f"(Duplicated wallet {account['walletAddress']})"
+                )
+                return False
+
             api_key = list(
                 filter(
                     lambda token: token["publicId"]
