@@ -52,6 +52,7 @@ import SectionData from '@/store/store.js';
 // Composables
 import {reactive, ref} from '@vue/composition-api';
 import {useUser} from '@vue-storefront/numerbay';
+import {useUiNotification} from '~/composables';
 
 export default {
   name: 'LoginSection',
@@ -91,6 +92,7 @@ export default {
     // const createAccount = ref(false);
     // const rememberMe = ref(false);
     const {login, loading, setUser, error: userError} = useUser();
+    const {send} = useUiNotification();
 
     const error = reactive({
       login: null,
@@ -103,10 +105,13 @@ export default {
     };
 
     const handleUserErrors = () => {
-      const hasUserErrors = userError.value.register || userError.value.login;
+      const hasUserErrors = userError.value.login;
       if (hasUserErrors) {
-        error.login = userError.value.login?.message;
-        error.register = userError.value.register?.message;
+        send({
+          message: userError.value.login?.message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
         return true;
       }
       return false;
@@ -122,8 +127,6 @@ export default {
       context.root.$router.push('/account');
     };
 
-    // const handleRegister = async () => handleForm(register)();
-
     const handleLogin = async () => handleForm(login)();
 
     return {
@@ -131,7 +134,7 @@ export default {
       userError,
       setUser,
       loading,
-      handleLogin
+      handleLogin,
     };
   }
 };
