@@ -1,9 +1,10 @@
 """ Dependencies for numerai endpoints """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
+import pandas as pd
 from fastapi import HTTPException
 from numerapi import NumerAPI
 from sqlalchemy.orm import Session
@@ -653,4 +654,17 @@ def validate_numerai_submission(
         print(f"submission_id: {submission_id}")
         return submission_id
     print("Submission failed")
+    return None
+
+
+def validate_round_open() -> None:
+    active_round = get_numerai_active_round()
+    utc_time = datetime.now(timezone.utc)
+    close_staking_time = pd.to_datetime(
+        active_round["closeStakingTime"]
+    ).to_pydatetime()
+    if (  # pylint: disable=no-else-return
+        utc_time > close_staking_time
+    ):  # previous round closed for staking, next round not yet opened
+        raise HTTPException(status_code=400, detail="Tournament round is not open")
     return None

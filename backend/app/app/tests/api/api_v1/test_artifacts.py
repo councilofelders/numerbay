@@ -10,9 +10,9 @@ from app.tests.utils.product import get_random_product
 
 
 def test_generate_upload_url(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     with get_random_product(
@@ -26,7 +26,7 @@ def test_generate_upload_url(
 
         r = client.post(
             f"{settings.API_V1_STR}/products/{product_id}/artifacts/generate-upload-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             data=artifact_data,
         )
         assert r.status_code == 200
@@ -40,15 +40,15 @@ def test_generate_upload_url(
 
         response = client.delete(
             f"{settings.API_V1_STR}/products/{product_id}/artifacts/{artifact.id}",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
         )
         assert response.status_code == 200
 
 
 def test_generate_download_url(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     with get_random_product(
@@ -62,7 +62,7 @@ def test_generate_download_url(
 
         r = client.post(
             f"{settings.API_V1_STR}/products/{product_id}/artifacts/generate-upload-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             data=artifact_data,
         )
         assert r.status_code == 200
@@ -77,7 +77,7 @@ def test_generate_download_url(
         r = client.get(
             f"{settings.API_V1_STR}/products/{product_id}"
             f"/artifacts/{artifact.id}/generate-download-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
         )
         assert r.status_code == 200
 

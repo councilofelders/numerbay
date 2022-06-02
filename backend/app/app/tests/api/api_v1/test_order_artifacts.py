@@ -7,9 +7,9 @@ from app.tests.utils.order import get_random_order
 
 
 def test_generate_upload_url(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     with get_random_order(db, owner_id=current_user["id"]) as order:
@@ -21,7 +21,7 @@ def test_generate_upload_url(
 
         r = client.post(
             f"{settings.API_V1_STR}/artifacts/generate-upload-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             data=artifact_data,
         )
         assert r.status_code == 200
@@ -36,15 +36,15 @@ def test_generate_upload_url(
 
         response = client.delete(
             f"{settings.API_V1_STR}/artifacts/{artifact.id}",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
         )
         assert response.status_code == 200
 
 
 def test_invalid_generate_upload_url(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     artifact_data = {
@@ -55,7 +55,7 @@ def test_invalid_generate_upload_url(
 
     response = client.post(
         f"{settings.API_V1_STR}/artifacts/generate-upload-url",
-        headers=normal_user_token_headers,
+        headers=superuser_token_headers,
         data=artifact_data,
     )
     assert response.status_code == 404
@@ -70,7 +70,7 @@ def test_invalid_generate_upload_url(
 
         response = client.post(
             f"{settings.API_V1_STR}/artifacts/generate-upload-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             data=artifact_data,
         )
         assert response.status_code == 403
@@ -78,9 +78,9 @@ def test_invalid_generate_upload_url(
 
 
 def test_generate_download_url(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     with get_random_order(db, owner_id=current_user["id"]) as order:
@@ -92,7 +92,7 @@ def test_generate_download_url(
 
         r = client.post(
             f"{settings.API_V1_STR}/artifacts/generate-upload-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             data=artifact_data,
         )
         assert r.status_code == 200
@@ -106,7 +106,7 @@ def test_generate_download_url(
 
         r = client.get(
             f"{settings.API_V1_STR}/artifacts/{artifact.id}/generate-download-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
         )
         assert r.status_code == 200
 
@@ -114,9 +114,9 @@ def test_generate_download_url(
 
 
 def test_read_order_artifact(
-    client: TestClient, normal_user_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
 
     with get_random_order(db, owner_id=current_user["id"]) as order:
@@ -128,7 +128,7 @@ def test_read_order_artifact(
 
         r = client.post(
             f"{settings.API_V1_STR}/artifacts/generate-upload-url",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             data=artifact_data,
         )
         assert r.status_code == 200
@@ -144,7 +144,7 @@ def test_read_order_artifact(
 
         r = client.get(
             f"{settings.API_V1_STR}/artifacts",
-            headers=normal_user_token_headers,
+            headers=superuser_token_headers,
             params={"order_id": order.id},
         )
         assert r.status_code == 200
