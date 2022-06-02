@@ -268,6 +268,7 @@ export default {
             type: 'bg-danger',
             icon: 'ni-alert-circle'
           });
+          throw Error(signed.detail)
         }
         // eslint-disable-next-line no-use-before-define
         this.$refs.foo.setOption('headers', {

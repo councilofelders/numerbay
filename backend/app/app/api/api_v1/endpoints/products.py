@@ -18,6 +18,7 @@ from app.api.dependencies.artifacts import (
 )
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
+from app.api.dependencies.numerai import validate_round_open
 from app.api.dependencies.order_artifacts import (
     generate_gcs_signed_url,
     get_object_name,
@@ -408,6 +409,10 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 
     # not during round rollover
     site_globals = validate_not_during_rollover(db)
+
+    # not when round is not open for per-round products
+    if product.category.is_per_round and not current_user.is_superuser:  # type: ignore
+        validate_round_open()
 
     selling_round = site_globals.selling_round
 

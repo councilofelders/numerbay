@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
+from app.api.dependencies.numerai import validate_round_open
 from app.api.dependencies.order_artifacts import (  # send_artifact_emails_for_active_orders,
     generate_gcs_signed_url,
     get_object_name,
@@ -59,6 +60,10 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 
     # not during round rollover
     site_globals = validate_not_during_rollover(db)
+
+    # not when round is not open for per-round products
+    if order.product.category.is_per_round and not current_user.is_superuser:  # type: ignore
+        validate_round_open()
 
     selling_round = site_globals.selling_round
 
