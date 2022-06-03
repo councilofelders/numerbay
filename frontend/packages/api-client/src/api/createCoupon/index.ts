@@ -14,7 +14,7 @@ export default async function createProduct(context, params, customQuery?: Custo
     // eslint-disable-next-line camelcase
     date_expiration: params.date_expiration,
     // eslint-disable-next-line camelcase
-    applicable_product_ids: params.applicable_products ? params.applicable_products.map(p => p.id) : null,
+    applicable_product_ids: params.applicable_product_ids,
     // eslint-disable-next-line camelcase
     discount_percent: Number(params.discount_percent),
     // eslint-disable-next-line camelcase
