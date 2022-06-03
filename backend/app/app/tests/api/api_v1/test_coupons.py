@@ -800,12 +800,14 @@ def test_create_coupon_manually(
         with get_random_user(db) as user:
             # Create coupon
             coupon_data = {
-                "applicability": "specific_products",
-                "applicable_product_ids": [product.id],
-                "discount_percent": 50,
-                "quantity_total": 1,
-                "max_discount": 5,
-                "code": "TESTCODE",
+                "coupon_in": {
+                    "applicability": "specific_products",
+                    "applicable_product_ids": [product.id],
+                    "discount_percent": 50,
+                    "quantity_total": 1,
+                    "max_discount": 5,
+                    "code": "TESTCODE",
+                }
             }
             response = client.post(
                 f"{settings.API_V1_STR}/coupons/{user.username}",
@@ -849,12 +851,14 @@ def test_invalid_create_coupon_manually(
         with get_random_user(db) as user:
             # Create coupon
             coupon_data = {
-                "applicability": "specific_products",
-                "applicable_product_ids": [product.id],
-                "discount_percent": 50,
-                "quantity_total": 1,
-                "max_discount": 5,
-                "code": "TESTCODE",
+                "coupon_in": {
+                    "applicability": "specific_products",
+                    "applicable_product_ids": [product.id],
+                    "discount_percent": 50,
+                    "quantity_total": 1,
+                    "max_discount": 5,
+                    "code": "TESTCODE",
+                }
             }
             response = client.post(
                 f"{settings.API_V1_STR}/coupons/{user.username}",
