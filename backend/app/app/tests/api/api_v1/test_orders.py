@@ -369,3 +369,19 @@ def test_search_seller_orders(
         content = response.json()
         assert content["total"] > 0
         assert order.product.name == content["data"][0]["product"]["name"]
+
+
+def test_cancel_order(
+    client: TestClient, normal_user_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    with get_random_order(db, buyer_id=current_user["id"]) as order:
+        crud.order.update(db, db_obj=order, obj_in={"state": "pending"})
+        response = client.delete(
+            f"{settings.API_V1_STR}/orders/{order.id}",
+            headers=normal_user_token_headers,
+        )
+        assert response.status_code == 200
+        content = response.json()
+        assert content["state"] == "expired"

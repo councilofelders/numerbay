@@ -89,12 +89,14 @@ export interface UseNumerai {
 export interface UseUserOrderErrors {
   search: Error;
   validatePayment: Error;
+  cancelOrder: Error;
 }
 
 export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
   orders: ComputedProperty<ORDERS>;
   search(params: ComposableFunctionArgs<ORDER_SEARCH_PARAMS>): Promise<void>;
   validatePayment(params: { orderId: number, transactionHash: string }): Promise<void>;
+  cancelOrder(params: { orderId: number }): Promise<void>;
   loading: ComputedProperty<boolean>;
   error: ComputedProperty<UseUserOrderErrors>;
 }

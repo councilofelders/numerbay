@@ -23,6 +23,15 @@ const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
     }
     return response;
   },
+
+  cancelOrder: async (context: Context, {orderId}) => {
+    Logger.debug('cancelOrder');
+    const response = await context.$numerbay.api.cancelOrder({orderId});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
 };
 
 export default useUserOrderFactory<OrdersResponse, OrderSearchParams>(params);
