@@ -125,7 +125,9 @@ def calculate_option_price(  # pylint: disable=too-many-return-statements,too-ma
     return option
 
 
-def send_new_coupon_email_for_coupon(coupon_obj: models.Coupon) -> None:
+def send_new_coupon_email_for_coupon(
+    coupon_obj: models.Coupon, message: Optional[str] = None
+) -> None:
     """Send new coupon email for coupon"""
     if settings.EMAILS_ENABLED:
         # Send new coupon email to buyer
@@ -140,6 +142,7 @@ def send_new_coupon_email_for_coupon(coupon_obj: models.Coupon) -> None:
                 max_discount=coupon_obj.max_discount,
                 discount_percent=coupon_obj.discount_percent,  # type: ignore
                 quantity_total=coupon_obj.quantity_total,  # type: ignore
+                message=message,
             )
 
 
