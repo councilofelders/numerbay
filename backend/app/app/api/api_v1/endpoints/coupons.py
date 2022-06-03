@@ -121,7 +121,9 @@ def create_coupon(
     coupon = crud.coupon.create_with_owner(db, obj_in=coupon_in, owner_id=recipient.id)
 
     # send email
-    send_new_coupon_email_for_coupon(coupon, message=html.escape(message))
+    send_new_coupon_email_for_coupon(
+        coupon, message=html.escape(message) if message is not None else message
+    )
     return coupon
 
 
