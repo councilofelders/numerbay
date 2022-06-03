@@ -13,7 +13,11 @@ from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
-from app.api.dependencies.orders import on_order_confirmed, validate_existing_order
+from app.api.dependencies.orders import (
+    on_order_confirmed,
+    send_order_canceled_emails,
+    validate_existing_order,
+)
 from app.api.dependencies.products import (
     validate_existing_product,
     validate_existing_product_option,
@@ -415,3 +419,22 @@ def validate_payment(
         return order
 
     raise HTTPException(status_code=400, detail="Invalid transaction hash")
+
+
+@router.delete("/{order_id}", response_model=schemas.Order)
+def cancel_order(
+    *,
+    order_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Cancel order"""
+    order = validate_existing_order(db, order_id)
+    if order.buyer_id != current_user.id:  # pylint: disable=consider-using-in
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.state != "pending":
+        raise HTTPException(status_code=403, detail="Order not pending")
+
+    order = crud.order.update(db, db_obj=order, obj_in={"state": "expired"})
+    send_order_canceled_emails(order)
+    return order

@@ -71,6 +71,9 @@
                     <a v-if="orderGetters.getStatus(order)=='confirmed'" class="ms-2 text-primary"
                        href="javascript:void(0);"
                        title="Click for files" @click="toggleArtifactModal(order)">Download</a>
+                    <a v-if="orderGetters.getStatus(order)=='pending'" class="ms-2 text-danger"
+                       href="javascript:void(0);"
+                       title="Cancel this order" @click="handleCancelOrder(order)">Cancel</a>
                   </p>
                 </div>
               </div>
@@ -205,6 +208,10 @@ export default {
         this.$refs.artifactModal.show();
       });
     },
+    async handleCancelOrder(order) {
+      await this.cancelOrder({orderId: order?.id});
+      this.refresh();
+    },
     refresh() {
       this.search({role: 'buyer'});
     }
@@ -227,7 +234,7 @@ export default {
   },
   setup() {
     const {user} = useUser();
-    const {orders, search, loading} = useUserOrder('order-history');
+    const {orders, search, cancelOrder, loading} = useUserOrder('order-history');
     const {globals, getGlobals, loading: globalsLoading} = useGlobals();
 
     onSSR(async () => {
@@ -310,6 +317,7 @@ export default {
       search,
       getStatusTextClass,
       downloadOrders,
+      cancelOrder,
     };
   }
 };

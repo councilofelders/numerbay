@@ -16,6 +16,7 @@ from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import (
     send_new_confirmed_sale_email,
+    send_order_canceled_email,
     send_order_confirmed_email,
     send_order_expired_email,
 )
@@ -233,6 +234,25 @@ def send_order_expired_emails(order_obj: models.Order) -> None:
         product = order_obj.product
         if order_obj.buyer.email:
             send_order_expired_email(
+                email_to=order_obj.buyer.email,
+                username=order_obj.buyer.username,
+                round_order=order_obj.round_order,
+                date_order=order_obj.date_order,
+                product=product.sku,
+                from_address=order_obj.from_address,  # type: ignore
+                to_address=order_obj.to_address,  # type: ignore
+                amount=order_obj.price,
+                currency=order_obj.currency,  # type: ignore
+            )
+
+
+def send_order_canceled_emails(order_obj: models.Order) -> None:
+    """Send order canceled emails"""
+    if settings.EMAILS_ENABLED:
+        # Send buyer email
+        product = order_obj.product
+        if order_obj.buyer.email:
+            send_order_canceled_email(
                 email_to=order_obj.buyer.email,
                 username=order_obj.buyer.username,
                 round_order=order_obj.round_order,

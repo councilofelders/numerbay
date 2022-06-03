@@ -359,6 +359,60 @@ def send_order_expired_email(  # pylint: disable=too-many-arguments
     )
 
 
+def send_order_canceled_email(  # pylint: disable=too-many-arguments
+    email_to: str,
+    username: str,
+    round_order: int,
+    date_order: datetime,
+    product: str,
+    from_address: str,
+    to_address: str,
+    amount: float,
+    currency: str,
+) -> None:
+    """
+    Send order canceled email
+
+    Args:
+        email_to (str): recipient email
+        username (str): buyer username
+        round_order (int): tournament round for order
+        date_order (datetime): datetime for order
+        product (str): product full name
+        from_address (str): buyer wallet address
+        to_address (str): seller wallet address
+        amount (float): order price amount
+        currency (str): order currency
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Order canceled for {username}"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "order_canceled.html", encoding="utf8"
+    ) as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/purchases"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "round_order": round_order,
+                "date_order": date_order,
+                "product": product,
+                "from_address": from_address,
+                "to_address": to_address,
+                "amount": amount,
+                "currency": currency,
+                "link": link,
+            },
+        ),
+    )
+
+
 def send_new_artifact_email(
     email_to: str,
     username: str,

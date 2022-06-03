@@ -45,6 +45,7 @@ import userSyncNumerai from './api/userSyncNumerai';
 import validateArtifactUpload from './api/validateArtifactUpload';
 import validateOrderArtifactUpload from './api/validateOrderArtifactUpload';
 import validatePayment from './api/validatePayment';
+import cancelOrder from './api/cancelOrder';
 import votePoll from './api/votePoll';
 
 // const defaultSettings = {};
@@ -156,6 +157,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     validateArtifactUpload,
     validateOrderArtifactUpload,
     validatePayment,
+    cancelOrder,
     getArtifact,
     getOrderArtifact,
     submitArtifact,
