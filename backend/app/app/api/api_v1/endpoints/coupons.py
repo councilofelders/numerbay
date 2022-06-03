@@ -1,10 +1,11 @@
 """ Coupons endpoints """
 
+import html
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -23,6 +24,7 @@ def create_coupon(
     db: Session = Depends(deps.get_db),
     username: str,
     coupon_in: schemas.CouponCreate,
+    message: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -119,7 +121,7 @@ def create_coupon(
     coupon = crud.coupon.create_with_owner(db, obj_in=coupon_in, owner_id=recipient.id)
 
     # send email
-    send_new_coupon_email_for_coupon(coupon)
+    send_new_coupon_email_for_coupon(coupon, message=html.escape(message))
     return coupon
 
 

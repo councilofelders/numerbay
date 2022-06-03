@@ -75,6 +75,15 @@
                     </div>
                   </div><!-- end form-item -->
                 </ValidationProvider>
+                <div v-if="form.max_discount && form.max_discount > 10" class="alert alert-warning d-flex mb-4" role="alert">
+                  <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
+                    <path
+                      d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+                  </svg>
+                  <p class="fs-14">
+                    Be sure to set a reasonable max discount (applied per order) to avoid unintended exploitation.
+                  </p>
+                </div><!-- end alert -->
                 <ValidationProvider key="minSpend" v-slot="{ errors }" rules="decimal|min_value:0" slim>
                   <div class="form-item mb-4">
                     <div class="mb-4">
@@ -106,6 +115,18 @@
                         date</label>
                       <input v-model="form.date_expiration" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                              placeholder="Expiration Date in UTC" type="date">
+                      <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+                    </div>
+                  </div><!-- end form-item -->
+                </ValidationProvider>
+                <ValidationProvider key="message" v-slot="{ errors }" rules="min:6" slim>
+                  <div class="form-item mb-4">
+                    <div class="mb-4">
+                      <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Short message to recipient
+                        code</label>
+                      <input v-model="form.message" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                             placeholder="(Optional) Short message to recipient"
+                             type="text">
                       <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                     </div>
                   </div><!-- end form-item -->
@@ -233,7 +254,8 @@ export default {
       max_discount: null,
       min_spend: null,
       code: null,
-      date_expiration: null
+      date_expiration: null,
+      message: null,
     })
 
     const form = ref(resetForm());

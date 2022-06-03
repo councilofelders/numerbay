@@ -510,6 +510,7 @@ def send_new_coupon_email(  # pylint: disable=too-many-arguments
     max_discount: Optional[float],
     discount_percent: int,
     quantity_total: int,
+    message: Optional[str] = None,
 ) -> None:
     """
     Send new coupon email
@@ -548,6 +549,7 @@ def send_new_coupon_email(  # pylint: disable=too-many-arguments
                 "max_discount": max_discount,
                 "discount_percent": discount_percent,
                 "quantity_total": quantity_total,
+                "message": message,
                 "link": link,
             },
         ),
