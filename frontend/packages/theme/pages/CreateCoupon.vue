@@ -258,6 +258,7 @@ export default {
     };
 
     const saveCoupon = async () => {
+      form.value.applicable_product_ids = form.value.applicable_products ? form.value.applicable_products.map(p => p.id) : [];
       return handleForm(createCoupon)();
     };
 
