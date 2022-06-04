@@ -80,6 +80,26 @@
                     class="numerai-chart"></StatsStackedChart>
       </div><!-- end container -->
     </section>
+    <!-- Total Unique Models Sold Chart -->
+    <section class="section-space bg-gray">
+      <div class="container">
+        <!-- section heading -->
+        <SectionHeading :content="`By tournament round`" :text="`Total Unique Models Sold`"
+                        classname="text-center" isMargin="mb-3"></SectionHeading>
+        <StatsChart :chartdata="getStatsChartData(stats, 'unique_models_sold', 'Unique Models', false)"
+                    class="numerai-chart"></StatsChart>
+      </div><!-- end container -->
+    </section>
+    <!-- Unique Models Sold by Tournament Chart -->
+    <section class="section-space bg-gray">
+      <div class="container">
+        <!-- section heading -->
+        <SectionHeading :content="`By tournament round`" :text="`Unique Models Sold by Tournament`"
+                        classname="text-center" isMargin="mb-3"></SectionHeading>
+        <StatsStackedChart :chartdata="getStatsStackedChartData(stats, ['unique_models_sold_numerai', 'unique_models_sold_signals'], ['Numerai', 'Signals'], false)"
+                    class="numerai-chart"></StatsStackedChart>
+      </div><!-- end container -->
+    </section>
     <!-- Unique Buyers Chart -->
     <section class="section-space">
       <div class="container">
