@@ -39,6 +39,7 @@
     "swiper": "^6.8.4",
     "swiper-vue2": "^1.0.6",
     "tweetnacl-sealedbox-js": "^1.2.0",
+    "v-sanitize": "^0.0.6",
     "vee-validate": "^3.2.3",
     "vue-chartjs": "^3.5.1",
     "vue-clipboard2": "^0.3.1",

@@ -89,8 +89,36 @@ export default {
     'cookie-universal-nuxt',
     'vue-scrollto/nuxt',
     '@vue-storefront/middleware/nuxt',
-    '@nuxtjs/sentry'
+    '@nuxtjs/sentry',
+    ['v-sanitize/nuxt', {}]
   ],
+  sanitize: {
+    allowedTags: [
+      "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
+      "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
+      "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
+      "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
+      "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
+      "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
+      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr",
+      "img"
+    ],
+    disallowedTagsMode: 'discard',
+    allowedAttributes: {
+      a: [ 'href', 'name', 'target' ],
+      img: [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
+      pre: ['class'],
+      ul: ['data-checked']
+    },
+    selfClosing: [ 'img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta' ],
+    allowedSchemes: [ 'http', 'https', 'ftp', 'mailto', 'tel' ],
+    allowedSchemesByTag: {
+      img: [ 'data' ]
+    },
+    allowedSchemesAppliedToAttributes: [ 'href', 'src', 'cite' ],
+    allowProtocolRelative: true,
+    enforceHtmlBoundary: false
+  },
   sentry: {
     dsn: `${process.env.SENTRY_DSN || 'https://9408b20ebf9e4d8e9c2466c9d8fe50b2@o920394.ingest.sentry.io/5865987'}`,
     tracing: {
