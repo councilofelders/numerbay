@@ -1,11 +1,9 @@
-from datetime import datetime
-
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
-from app.api.dependencies.coupons import generate_promo_code
+from app import crud
 from app.core.config import settings
+from app.tests.utils.coupon import assert_coupon_calulation_error, create_random_coupon
 from app.tests.utils.model import create_model_for_product
 from app.tests.utils.order import place_and_confirm_order
 from app.tests.utils.product import get_random_product
@@ -422,22 +420,10 @@ def test_order_coupon_redemption(
             db, is_on_platform=True, mode="file"
         ) as another_product:
             # Create buyer-owned coupon applicable to product
-            coupon = crud.coupon.create_with_owner(
+            coupon = create_random_coupon(
                 db,
-                obj_in=schemas.CouponCreate(
-                    **{
-                        "date_creation": datetime.utcnow(),
-                        "applicability": "specific_products",
-                        "code": generate_promo_code(8),
-                        "applicable_product_ids": [product.id, another_product.id],
-                        "discount_mode": "percent",
-                        "discount_percent": 50,
-                        "max_discount": 5,
-                        "min_spend": None,
-                        "quantity_total": 1,
-                    }
-                ),
-                owner_id=current_user_obj.id,  # type: ignore
+                owner_id=current_user_obj.id,
+                applicable_product_ids=[product.id, another_product.id],
             )
 
             order = place_and_confirm_order(
@@ -498,22 +484,11 @@ def test_order_invalid_coupon_redemption(
             db, is_on_platform=True, mode="file"
         ) as another_product:
             # Create buyer-owned coupon applicable to product
-            coupon = crud.coupon.create_with_owner(
+            coupon = create_random_coupon(
                 db,
-                obj_in=schemas.CouponCreate(
-                    **{
-                        "date_creation": datetime.utcnow(),
-                        "applicability": "specific_products",
-                        "code": generate_promo_code(8),
-                        "applicable_product_ids": [product.id],
-                        "discount_mode": "percent",
-                        "discount_percent": 50,
-                        "max_discount": 5,
-                        "min_spend": 8,
-                        "quantity_total": 1,
-                    }
-                ),
-                owner_id=current_user_obj.id,  # type: ignore
+                owner_id=current_user_obj.id,
+                applicable_product_ids=[product.id],
+                min_spend=8,
             )
 
             # non-existent coupon
@@ -573,117 +548,93 @@ def test_coupon_calculation(
 
     with get_random_product(db, price=5) as product:
         # Create buyer-owned coupon applicable to product
-        coupon = crud.coupon.create_with_owner(
+        coupon = create_random_coupon(
             db,
-            obj_in=schemas.CouponCreate(
-                **{
-                    "date_creation": datetime.utcnow(),
-                    "applicability": "specific_products",
-                    "code": generate_promo_code(8),
-                    "applicable_product_ids": [product.id],
-                    "discount_mode": "percent",
-                    "discount_percent": 50,
-                    "max_discount": 5,
-                    "min_spend": 8,
-                    "quantity_total": 1,
-                }
-            ),
-            owner_id=current_user_obj.id,  # type: ignore
+            owner_id=current_user_obj.id,
+            applicable_product_ids=[product.id],
+            min_spend=8,
         )
 
         # non-existent coupon
-        response = client.post(
-            f"{settings.API_V1_STR}/products/search-authenticated",
-            json={"id": product.id, "qty": 1, "coupon": "WRONG"},
-            headers=superuser_token_headers,
+        assert_coupon_calulation_error(
+            client=client,
+            token_headers=superuser_token_headers,
+            product_id=product.id,
+            coupon_code="WRONG",
+            quantity=1,
+            expected_price=5,
+            expected_special_price=None,
+            expected_applied_coupon=None,
+            error="Coupon not found",
         )
-        assert response.status_code == 200
-        content = response.json()
-        assert product.name == content["data"][0]["name"]
-        assert content["data"][0]["options"][0]["price"] == 5
-        assert content["data"][0]["options"][0]["quantity"] == 1
-        assert content["data"][0]["options"][0]["special_price"] is None
-        assert content["data"][0]["options"][0]["applied_coupon"] is None
-        assert content["data"][0]["options"][0]["error"] == "Coupon not found"
 
         # not meeting min spend
-        response = client.post(
-            f"{settings.API_V1_STR}/products/search-authenticated",
-            json={"id": product.id, "qty": 1, "coupon": coupon.code},
-            headers=superuser_token_headers,
-        )
-        assert response.status_code == 200
-        content = response.json()
-        assert product.name == content["data"][0]["name"]
-        assert content["data"][0]["options"][0]["price"] == 5
-        assert content["data"][0]["options"][0]["quantity"] == 1
-        assert content["data"][0]["options"][0]["special_price"] is None
-        assert content["data"][0]["options"][0]["applied_coupon"] is None
-        assert (
-            content["data"][0]["options"][0]["error"]
-            == f"Requires min spend of {8} NMR"
+        assert_coupon_calulation_error(
+            client=client,
+            token_headers=superuser_token_headers,
+            product_id=product.id,
+            coupon_code=coupon.code,
+            quantity=1,
+            expected_price=5,
+            expected_special_price=None,
+            expected_applied_coupon=None,
+            error=f"Requires min spend of {8} NMR",
         )
 
         # normal discount
-        response = client.post(
-            f"{settings.API_V1_STR}/products/search-authenticated",
-            json={"id": product.id, "qty": 2, "coupon": coupon.code},
-            headers=superuser_token_headers,
+        assert_coupon_calulation_error(
+            client=client,
+            token_headers=superuser_token_headers,
+            product_id=product.id,
+            coupon_code=coupon.code,
+            quantity=2,
+            expected_price=10,
+            expected_special_price=8,
+            expected_applied_coupon=coupon.code,
+            error=None,
         )
-        assert response.status_code == 200
-        content = response.json()
-        assert product.name == content["data"][0]["name"]
-        assert content["data"][0]["options"][0]["price"] == 10
-        assert content["data"][0]["options"][0]["quantity"] == 2
-        assert content["data"][0]["options"][0]["special_price"] == 8
-        assert content["data"][0]["options"][0]["applied_coupon"] == coupon.code
 
         # clipped discount
-        response = client.post(
-            f"{settings.API_V1_STR}/products/search-authenticated",
-            json={"id": product.id, "qty": 3, "coupon": coupon.code},
-            headers=superuser_token_headers,
+        assert_coupon_calulation_error(
+            client=client,
+            token_headers=superuser_token_headers,
+            product_id=product.id,
+            coupon_code=coupon.code,
+            quantity=3,
+            expected_price=15,
+            expected_special_price=10,
+            expected_applied_coupon=coupon.code,
+            error=None,
         )
-        assert response.status_code == 200
-        content = response.json()
-        assert product.name == content["data"][0]["name"]
-        assert content["data"][0]["options"][0]["price"] == 15
-        assert content["data"][0]["options"][0]["quantity"] == 3
-        assert content["data"][0]["options"][0]["special_price"] == 10
-        assert content["data"][0]["options"][0]["applied_coupon"] == coupon.code
 
         # used up coupon
         crud.coupon.update(db, db_obj=coupon, obj_in={"quantity_total": 0})
-        response = client.post(
-            f"{settings.API_V1_STR}/products/search-authenticated",
-            json={"id": product.id, "qty": 2, "coupon": coupon.code},
-            headers=superuser_token_headers,
+        assert_coupon_calulation_error(
+            client=client,
+            token_headers=superuser_token_headers,
+            product_id=product.id,
+            coupon_code=coupon.code,
+            quantity=2,
+            expected_price=10,
+            expected_special_price=None,
+            expected_applied_coupon=None,
+            error="Coupon used up",
         )
-        assert response.status_code == 200
-        content = response.json()
-        assert product.name == content["data"][0]["name"]
-        assert content["data"][0]["options"][0]["price"] == 10
-        assert content["data"][0]["options"][0]["quantity"] == 2
-        assert content["data"][0]["options"][0]["special_price"] is None
-        assert content["data"][0]["options"][0]["applied_coupon"] is None
-        assert content["data"][0]["options"][0]["error"] == "Coupon used up"
         crud.coupon.update(db, db_obj=coupon, obj_in={"quantity_total": 1})
 
         # non-applicable product
         with get_random_product(db, price=5) as another_product:
-            response = client.post(
-                f"{settings.API_V1_STR}/products/search-authenticated",
-                json={"id": another_product.id, "qty": 2, "coupon": coupon.code},
-                headers=superuser_token_headers,
+            assert_coupon_calulation_error(
+                client=client,
+                token_headers=superuser_token_headers,
+                product_id=another_product.id,
+                coupon_code=coupon.code,
+                quantity=2,
+                expected_price=10,
+                expected_special_price=None,
+                expected_applied_coupon=None,
+                error="Coupon invalid",
             )
-            assert response.status_code == 200
-            content = response.json()
-            assert another_product.name == content["data"][0]["name"]
-            assert content["data"][0]["options"][0]["price"] == 10
-            assert content["data"][0]["options"][0]["quantity"] == 2
-            assert content["data"][0]["options"][0]["special_price"] is None
-            assert content["data"][0]["options"][0]["applied_coupon"] is None
-            assert content["data"][0]["options"][0]["error"] == "Coupon invalid"
 
         crud.coupon.remove(db, id=coupon.id)  # type: ignore
 
@@ -705,42 +656,26 @@ def test_coupon_calculation_min_spend(
             db, is_on_platform=True, mode="file", price=5
         ) as product3:
             # Create buyer-owned coupon applicable to product1 and product2
-            coupon = crud.coupon.create_with_owner(
+            coupon = create_random_coupon(
                 db,
-                obj_in=schemas.CouponCreate(
-                    **{
-                        "date_creation": datetime.utcnow(),
-                        "applicability": "specific_products",
-                        "code": generate_promo_code(8),
-                        "applicable_product_ids": [product1.id, product2.id],
-                        "discount_mode": "percent",
-                        "discount_percent": 50,
-                        "max_discount": 5,
-                        "min_spend": 8,
-                        "quantity_total": 1,
-                        "creator_id": product1.owner_id,
-                    }
-                ),
-                owner_id=current_user_obj.id,  # type: ignore
+                owner_id=current_user_obj.id,
+                applicable_product_ids=[product1.id, product2.id],
+                min_spend=8,
+                creator_id=product1.owner_id,
             )
 
             # nothing spent, not meeting min spend
-            response = client.post(
-                f"{settings.API_V1_STR}/products/search-authenticated",
-                json={"id": product1.id, "qty": 1, "coupon": coupon.code},
-                headers=superuser_token_headers,
+            assert_coupon_calulation_error(
+                client=client,
+                token_headers=superuser_token_headers,
+                product_id=product1.id,
+                coupon_code=coupon.code,
+                quantity=1,
+                expected_price=5,
+                expected_special_price=None,
+                expected_applied_coupon=None,
+                error=f"Requires min spend of {8} NMR",
             )
-            assert response.status_code == 200
-            content = response.json()
-            assert product1.name == content["data"][0]["name"]
-            assert content["data"][0]["options"][0]["price"] == 5
-            assert content["data"][0]["options"][0]["quantity"] == 1
-            assert content["data"][0]["options"][0]["special_price"] is None
-            assert content["data"][0]["options"][0]["applied_coupon"] is None
-            # assert (
-            #     content["data"][0]["options"][0]["error"]
-            #     == f"Requires min spend of {8} NMR"
-            # )
 
             # spent on product3 (different owner), not meeting min spend
             order = place_and_confirm_order(
@@ -751,21 +686,16 @@ def test_coupon_calculation_min_spend(
                 quantity=1,
             )
 
-            response = client.post(
-                f"{settings.API_V1_STR}/products/search-authenticated",
-                json={"id": product1.id, "qty": 1, "coupon": coupon.code},
-                headers=superuser_token_headers,
-            )
-            assert response.status_code == 200
-            content = response.json()
-            assert product1.name == content["data"][0]["name"]
-            assert content["data"][0]["options"][0]["price"] == 5
-            assert content["data"][0]["options"][0]["quantity"] == 1
-            assert content["data"][0]["options"][0]["special_price"] is None
-            assert content["data"][0]["options"][0]["applied_coupon"] is None
-            assert (
-                content["data"][0]["options"][0]["error"]
-                == f"Requires min spend of {8} NMR"
+            assert_coupon_calulation_error(
+                client=client,
+                token_headers=superuser_token_headers,
+                product_id=product1.id,
+                coupon_code=coupon.code,
+                quantity=1,
+                expected_price=5,
+                expected_special_price=None,
+                expected_applied_coupon=None,
+                error=f"Requires min spend of {8} NMR",
             )
             crud.order.remove(db, id=order.id)
 
@@ -778,18 +708,17 @@ def test_coupon_calculation_min_spend(
                 quantity=1,
             )
 
-            response = client.post(
-                f"{settings.API_V1_STR}/products/search-authenticated",
-                json={"id": product1.id, "qty": 1, "coupon": coupon.code},
-                headers=superuser_token_headers,
+            assert_coupon_calulation_error(
+                client=client,
+                token_headers=superuser_token_headers,
+                product_id=product1.id,
+                coupon_code=coupon.code,
+                quantity=1,
+                expected_price=5,
+                expected_special_price=3,
+                expected_applied_coupon=coupon.code,
+                error=None,
             )
-            assert response.status_code == 200
-            content = response.json()
-            assert product1.name == content["data"][0]["name"]
-            assert content["data"][0]["options"][0]["price"] == 5
-            assert content["data"][0]["options"][0]["quantity"] == 1
-            assert content["data"][0]["options"][0]["special_price"] == 3
-            assert content["data"][0]["options"][0]["applied_coupon"] == coupon.code
 
             crud.coupon.remove(db, id=coupon.id)  # type: ignore
             crud.order.remove(db, id=order.id)
