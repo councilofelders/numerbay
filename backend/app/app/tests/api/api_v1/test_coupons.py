@@ -722,7 +722,7 @@ def test_coupon_calculation(
         assert product.name == content["data"][0]["name"]
         assert content["data"][0]["options"][0]["price"] == 10
         assert content["data"][0]["options"][0]["quantity"] == 2
-        assert content["data"][0]["options"][0]["special_price"] == 5
+        assert content["data"][0]["options"][0]["special_price"] == 8
         assert content["data"][0]["options"][0]["applied_coupon"] == coupon.code
 
         # clipped discount
@@ -777,6 +777,175 @@ def test_coupon_calculation(
             assert content["data"][0]["options"][0]["error"] == "Coupon invalid"
 
         crud.coupon.remove(db, id=coupon.id)  # type: ignore
+
+
+def test_coupon_calculation_min_spend(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
+    current_user = r.json()
+    current_user_obj = crud.user.get(db, id=current_user["id"])
+    crud.user.update(
+        db,
+        db_obj=current_user_obj,  # type: ignore
+        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    )
+
+    with get_random_product(db, is_on_platform=True, mode="file") as product1:
+        crud.user.update(
+            db,
+            db_obj=crud.user.get(db, id=product1.owner_id),  # type: ignore
+            obj_in={"numerai_wallet_address": f"0xtoaddress{random_lower_string()}"},
+        )
+
+        with get_random_product(
+            db, owner_id=product1.owner_id, is_on_platform=True, mode="file"
+        ) as product2, get_random_product(
+            db, is_on_platform=True, mode="file"
+        ) as product3:
+            crud.user.update(
+                db,
+                db_obj=crud.user.get(db, id=product3.owner_id),  # type: ignore
+                obj_in={
+                    "numerai_wallet_address": f"0xtoaddress2{random_lower_string()}"
+                },
+            )
+
+            crud.product_option.update(
+                db, db_obj=product1.options[0], obj_in={"price": 5}
+            )
+            crud.product_option.update(
+                db, db_obj=product2.options[0], obj_in={"price": 5}
+            )
+            crud.product_option.update(
+                db, db_obj=product3.options[0], obj_in={"price": 5}
+            )
+
+            # Create buyer-owned coupon applicable to product1 and product2
+            coupon = crud.coupon.create_with_owner(
+                db,
+                obj_in=schemas.CouponCreate(
+                    **{
+                        "date_creation": datetime.utcnow(),
+                        "applicability": "specific_products",
+                        "code": generate_promo_code(8),
+                        "applicable_product_ids": [product1.id, product2.id],
+                        "discount_mode": "percent",
+                        "discount_percent": 50,
+                        "max_discount": 5,
+                        "min_spend": 8,
+                        "quantity_total": 1,
+                        "creator_id": product1.owner_id,
+                    }
+                ),
+                owner_id=current_user_obj.id,  # type: ignore
+            )
+
+            # nothing spent, not meeting min spend
+            response = client.post(
+                f"{settings.API_V1_STR}/products/search-authenticated",
+                json={"id": product1.id, "qty": 1, "coupon": coupon.code},
+                headers=superuser_token_headers,
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert product1.name == content["data"][0]["name"]
+            assert content["data"][0]["options"][0]["price"] == 5
+            assert content["data"][0]["options"][0]["quantity"] == 1
+            assert content["data"][0]["options"][0]["special_price"] is None
+            assert content["data"][0]["options"][0]["applied_coupon"] is None
+            # assert (
+            #     content["data"][0]["options"][0]["error"]
+            #     == f"Requires min spend of {8} NMR"
+            # )
+
+            # spent on product3 (different owner), not meeting min spend
+            order_data = {
+                "id": product3.id,
+                "option_id": product3.options[0].id,  # type: ignore
+                "quantity": 1,
+            }
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/",
+                headers=superuser_token_headers,
+                json=order_data,
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert content["buyer"]["id"] == current_user["id"]
+            assert content["product"]["id"] == product3.id
+            assert content["quantity"] == 1
+            # manual confirm order
+            order = crud.order.update(
+                db,
+                db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
+                obj_in={
+                    "transaction_hash": random_lower_string(),
+                    "round_order": crud.globals.get_singleton(db).selling_round,  # type: ignore
+                },
+            )
+            update_payment(db, order_id=content["id"])
+
+            response = client.post(
+                f"{settings.API_V1_STR}/products/search-authenticated",
+                json={"id": product1.id, "qty": 1, "coupon": coupon.code},
+                headers=superuser_token_headers,
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert product1.name == content["data"][0]["name"]
+            assert content["data"][0]["options"][0]["price"] == 5
+            assert content["data"][0]["options"][0]["quantity"] == 1
+            assert content["data"][0]["options"][0]["special_price"] is None
+            assert content["data"][0]["options"][0]["applied_coupon"] is None
+            assert (
+                content["data"][0]["options"][0]["error"]
+                == f"Requires min spend of {8} NMR"
+            )
+            crud.order.remove(db, id=order.id)
+
+            # spent on product2 (same owner), should meet min spend
+            order_data = {
+                "id": product2.id,
+                "option_id": product2.options[0].id,  # type: ignore
+                "quantity": 1,
+            }
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/",
+                headers=superuser_token_headers,
+                json=order_data,
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert content["buyer"]["id"] == current_user["id"]
+            assert content["product"]["id"] == product2.id
+            assert content["quantity"] == 1
+            # manual confirm order
+            order = crud.order.update(
+                db,
+                db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
+                obj_in={
+                    "transaction_hash": random_lower_string(),
+                    "round_order": crud.globals.get_singleton(db).selling_round,  # type: ignore
+                },
+            )
+            update_payment(db, order_id=content["id"])
+
+            response = client.post(
+                f"{settings.API_V1_STR}/products/search-authenticated",
+                json={"id": product1.id, "qty": 1, "coupon": coupon.code},
+                headers=superuser_token_headers,
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert product1.name == content["data"][0]["name"]
+            assert content["data"][0]["options"][0]["price"] == 5
+            assert content["data"][0]["options"][0]["quantity"] == 1
+            assert content["data"][0]["options"][0]["special_price"] == 3
+            assert content["data"][0]["options"][0]["applied_coupon"] == coupon.code
+
+            crud.coupon.remove(db, id=coupon.id)  # type: ignore
+            crud.order.remove(db, id=order.id)
 
 
 def test_create_coupon_manually(

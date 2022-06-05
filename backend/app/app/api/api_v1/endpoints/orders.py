@@ -216,6 +216,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         coupon_obj = crud.coupon.get_by_code(db, code=coupon)
         product_option_obj = schemas.ProductOption.from_orm(product_option)
         product_option_obj = calculate_option_price(
+            db,
             product_option_obj,
             coupon=coupon,
             coupon_obj=coupon_obj,
