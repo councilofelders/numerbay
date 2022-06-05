@@ -3,12 +3,16 @@ from datetime import datetime
 from typing import Generator, Optional
 
 from eth_account import Account
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud, models
+from app.api.dependencies.orders import update_payment
+from app.core.config import settings
 from app.schemas import OrderCreate
 from app.tests.utils.product import create_random_product
 from app.tests.utils.user import create_random_user
+from app.tests.utils.utils import random_lower_string
 
 
 def create_random_order(
@@ -16,7 +20,7 @@ def create_random_order(
     *,
     buyer_id: Optional[int] = None,
     owner_id: Optional[int] = None,
-    mode: Optional[str] = "file"
+    mode: Optional[str] = "file",
 ) -> models.Order:
     if buyer_id:
         buyer = crud.user.get(db, id=buyer_id)
@@ -63,7 +67,7 @@ def get_random_order(
     *,
     buyer_id: Optional[int] = None,
     owner_id: Optional[int] = None,
-    mode: Optional[str] = "file"
+    mode: Optional[str] = "file",
 ) -> Generator:
     order = create_random_order(db, buyer_id=buyer_id, owner_id=owner_id, mode=mode)
     try:
@@ -80,3 +84,39 @@ def get_random_order(
         crud.model.remove(db, id=model_id)  # type: ignore
         if owner_id is None:
             crud.user.remove(db, id=owner_id_tmp)  # type: ignore
+
+
+def place_and_confirm_order(
+    *,
+    client: TestClient,
+    token_headers: dict,
+    db: Session,
+    product: models.Product,
+    quantity: Optional[int] = 1,
+    coupon_code: Optional[str] = None,
+) -> models.Order:
+    order_data = {
+        "id": product.id,
+        "option_id": product.options[0].id,  # type: ignore
+        "quantity": quantity,
+    }
+    if coupon_code is not None:
+        order_data["coupon"] = coupon_code
+    response = client.post(
+        f"{settings.API_V1_STR}/orders/",
+        headers=token_headers,
+        json=order_data,
+    )
+    content = response.json()
+
+    # manual confirm order
+    crud.order.update(
+        db,
+        db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
+        obj_in={
+            "transaction_hash": random_lower_string(),
+            "round_order": crud.globals.get_singleton(db).selling_round,  # type: ignore
+        },
+    )
+    update_payment(db, order_id=content["id"])
+    return crud.order.get(db, id=content["id"])  # type: ignore
