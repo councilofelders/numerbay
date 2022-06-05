@@ -6,10 +6,12 @@ from decimal import Decimal
 from typing import Any, Optional
 
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.core.config import settings
+from app.models import Order, Product
 from app.utils import send_new_coupon_email
 
 
@@ -36,6 +38,7 @@ def return_or_raise(
 
 
 def calculate_option_price(  # pylint: disable=too-many-return-statements,too-many-branches
+    db: Session,
     option: schemas.ProductOption,
     coupon: Optional[str] = None,
     coupon_obj: Optional[models.Coupon] = None,
@@ -97,8 +100,21 @@ def calculate_option_price(  # pylint: disable=too-many-return-statements,too-ma
                 )
 
         # check min spend
+        existing_spend = Decimal(
+            db.query(func.sum(Order.price).label("value"))
+            .join(Order.product)
+            .filter(
+                Order.buyer_id == user.id,
+                Product.owner_id == coupon_obj.creator_id,
+                Order.state == "confirmed",
+                Order.round_order == crud.globals.get_singleton(db).selling_round,  # type: ignore
+            )
+            .scalar()
+            or 0
+        )
+
         if coupon_obj.min_spend:
-            if option.price < coupon_obj.min_spend:
+            if existing_spend + option.price < coupon_obj.min_spend:
                 option.error = f"Requires min spend of {coupon_obj.min_spend} NMR"
                 return return_or_raise(
                     option,
@@ -112,6 +128,13 @@ def calculate_option_price(  # pylint: disable=too-many-return-statements,too-ma
             # clip max discount
             if coupon_obj.max_discount:
                 discount = min(discount, Decimal(coupon_obj.max_discount))
+
+            # clip min spend
+            if coupon_obj.min_spend:
+                if existing_spend + (option.price - discount) < coupon_obj.min_spend:
+                    discount = (
+                        existing_spend - Decimal(coupon_obj.min_spend) + option.price
+                    )
 
             if discount > 0:
                 option.special_price = option.price - discount

@@ -81,6 +81,7 @@ def search_products(  # pylint: disable=too-many-arguments
         # calculate prices
         for option in product_to_return.options:  # type: ignore
             calculate_option_price(
+                db,
                 option,
                 coupon=None,
                 coupon_obj=None,
@@ -143,6 +144,7 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
         # calculate prices
         for option in product_to_return.options:  # type: ignore
             calculate_option_price(
+                db,
                 option,
                 coupon=coupon,
                 coupon_obj=coupon_obj,
