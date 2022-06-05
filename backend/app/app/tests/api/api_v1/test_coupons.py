@@ -5,20 +5,24 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.api.dependencies.coupons import generate_promo_code
-from app.api.dependencies.orders import update_payment
 from app.core.config import settings
+from app.tests.utils.model import create_model_for_product
+from app.tests.utils.order import place_and_confirm_order
 from app.tests.utils.product import get_random_product
-from app.tests.utils.user import get_random_user
+from app.tests.utils.user import get_current_user_from_token_headers, get_random_user
 from app.tests.utils.utils import random_lower_string
 
 
 def test_create_product_coupon_spec(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+    )
 
-    product_name = "z" + random_lower_string()
+    product_name = random_lower_string(prefix="z")
     data = {
         "name": product_name,
         "category_id": 3,
@@ -39,14 +43,8 @@ def test_create_product_coupon_spec(
             }
         ],
     }
-    model = crud.model.create(
-        db,
-        obj_in=schemas.ModelCreate(
-            id=product_name,
-            name=product_name,
-            tournament=8,
-            owner_id=current_user["id"],
-        ),
+    model = create_model_for_product(
+        db, product_name=product_name, owner_id=current_user_obj.id
     )
     model_id = model.id
     response = client.post(
@@ -75,19 +73,15 @@ def test_create_product_coupon_spec(
 def test_create_product_invalid_coupon_spec(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+    )
 
-    product_name = "z" + random_lower_string()
-
-    model = crud.model.create(
-        db,
-        obj_in=schemas.ModelCreate(
-            id=product_name,
-            name=product_name,
-            tournament=8,
-            owner_id=current_user["id"],
-        ),
+    product_name = random_lower_string(prefix="z")
+    model = create_model_for_product(
+        db, product_name=product_name, owner_id=current_user_obj.id
     )
 
     # no coupon specs
@@ -371,13 +365,11 @@ def test_create_product_invalid_coupon_spec(
 def test_order_coupon_creation(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
-    crud.user.update(
-        db,
-        db_obj=current_user_obj,  # type: ignore
-        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
     )
     n_coupons_initial = len(current_user_obj.coupons)  # type: ignore
 
@@ -397,66 +389,38 @@ def test_order_coupon_creation(
             },
         )
 
-        crud.user.update(
-            db,
-            db_obj=crud.user.get(db, id=product.owner_id),  # type: ignore
-            obj_in={"numerai_wallet_address": f"0xtoaddress{random_lower_string()}"},
+        order = place_and_confirm_order(
+            client=client,
+            token_headers=superuser_token_headers,
+            db=db,
+            product=product,
+            quantity=1,
         )
-
-        order_data = {
-            "id": product.id,
-            "option_id": product.options[0].id,  # type: ignore
-            "quantity": 1,
-        }
-        response = client.post(
-            f"{settings.API_V1_STR}/orders/",
-            headers=superuser_token_headers,
-            json=order_data,
-        )
-        assert response.status_code == 200
-        content = response.json()
-        assert content["buyer"]["id"] == current_user["id"]
-        assert content["product"]["id"] == product.id
-        assert content["quantity"] == 1
-
-        # manual confirm order
-        crud.order.update(
-            db,
-            db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
-            obj_in={"transaction_hash": random_lower_string()},
-        )
-        update_payment(db, order_id=content["id"])
 
         # check coupon
-        current_user_obj = crud.user.get(db, id=current_user["id"])
+        current_user_obj = crud.user.get(db, id=current_user_obj.id)  # type: ignore
         assert (len(current_user_obj.coupons) - n_coupons_initial) == 1  # type: ignore
 
         crud.coupon.remove(db, id=current_user_obj.coupons[-1].id)  # type: ignore
-        crud.order.remove(db, id=content["id"])
+        crud.order.remove(db, id=order.id)  # type: ignore
 
 
 def test_order_coupon_redemption(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
-    crud.user.update(
-        db,
-        db_obj=current_user_obj,  # type: ignore
-        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
     )
     # n_coupons = len(current_user_obj.coupons)  # type: ignore
 
     # Create product
-    with get_random_product(db, is_on_platform=True, mode="file") as product:
+    with get_random_product(db, is_on_platform=True, mode="file", price=5) as product:
         with get_random_product(
             db, is_on_platform=True, mode="file"
         ) as another_product:
-            crud.product_option.update(
-                db, db_obj=product.options[0], obj_in={"price": 5}
-            )
-
             # Create buyer-owned coupon applicable to product
             coupon = crud.coupon.create_with_owner(
                 db,
@@ -476,39 +440,18 @@ def test_order_coupon_redemption(
                 owner_id=current_user_obj.id,  # type: ignore
             )
 
-            crud.user.update(
-                db,
-                db_obj=crud.user.get(db, id=product.owner_id),  # type: ignore
-                obj_in={
-                    "numerai_wallet_address": f"0xtoaddress{random_lower_string()}"
-                },
+            order = place_and_confirm_order(
+                client=client,
+                token_headers=superuser_token_headers,
+                db=db,
+                product=product,
+                quantity=3,
+                coupon_code=coupon.code,
             )
-
-            order_data = {
-                "id": product.id,
-                "option_id": product.options[0].id,  # type: ignore
-                "quantity": 3,
-                "coupon": coupon.code,
-            }
-            response = client.post(
-                f"{settings.API_V1_STR}/orders/",
-                headers=superuser_token_headers,
-                json=order_data,
-            )
-            assert response.status_code == 200
-            content = response.json()
-            assert content["buyer"]["id"] == current_user["id"]
-            assert content["product"]["id"] == product.id
-            assert content["quantity"] == 3
-            assert content["applied_coupon_id"] == coupon.id
-
-            # manual confirm order
-            crud.order.update(
-                db,
-                db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
-                obj_in={"transaction_hash": random_lower_string()},
-            )
-            update_payment(db, order_id=content["id"])
+            assert order.buyer_id == current_user_obj.id
+            assert order.product_id == product.id
+            assert order.quantity == 3
+            assert order.applied_coupon_id == coupon.id
 
             coupon = crud.coupon.get(db, id=coupon.id)  # type: ignore
             quantity_remaining = crud.coupon.calculate_quantity_remaining(db_obj=coupon)
@@ -517,14 +460,6 @@ def test_order_coupon_redemption(
             # try to redeem again (should fail)
             # coupon = crud.coupon.get(db, id=coupon.id)
             # assert coupon is not None
-
-            crud.user.update(
-                db,
-                db_obj=crud.user.get(db, id=another_product.owner_id),  # type: ignore
-                obj_in={
-                    "numerai_wallet_address": f"0xtoaddress{random_lower_string()}"
-                },
-            )
 
             order_data = {
                 "id": another_product.id,
@@ -541,7 +476,7 @@ def test_order_coupon_redemption(
             assert response.json()["detail"] == "Coupon used up"
 
             crud.order.remove(
-                db, id=content["id"]
+                db, id=order.id  # type: ignore
             )  # todo deleting coupon should not delete order
 
             crud.coupon.remove(db, id=coupon.id)  # type: ignore
@@ -550,24 +485,18 @@ def test_order_coupon_redemption(
 def test_order_invalid_coupon_redemption(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
-    crud.user.update(
-        db,
-        db_obj=current_user_obj,  # type: ignore
-        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
     )
 
     # Create product
-    with get_random_product(db, is_on_platform=True, mode="file") as product:
+    with get_random_product(db, is_on_platform=True, mode="file", price=5) as product:
         with get_random_product(
             db, is_on_platform=True, mode="file"
         ) as another_product:
-            crud.product_option.update(
-                db, db_obj=product.options[0], obj_in={"price": 5}
-            )
-
             # Create buyer-owned coupon applicable to product
             coupon = crud.coupon.create_with_owner(
                 db,
@@ -585,22 +514,6 @@ def test_order_invalid_coupon_redemption(
                     }
                 ),
                 owner_id=current_user_obj.id,  # type: ignore
-            )
-
-            crud.user.update(
-                db,
-                db_obj=crud.user.get(db, id=product.owner_id),  # type: ignore
-                obj_in={
-                    "numerai_wallet_address": f"0xtoaddress{random_lower_string()}"
-                },
-            )
-
-            crud.user.update(
-                db,
-                db_obj=crud.user.get(db, id=another_product.owner_id),  # type: ignore
-                obj_in={
-                    "numerai_wallet_address": f"0xtoaddress{random_lower_string()}"
-                },
             )
 
             # non-existent coupon
@@ -652,13 +565,13 @@ def test_order_invalid_coupon_redemption(
 def test_coupon_calculation(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+    )
 
-    with get_random_product(db) as product:
-        crud.product_option.update(db, db_obj=product.options[0], obj_in={"price": 5})
-
+    with get_random_product(db, price=5) as product:
         # Create buyer-owned coupon applicable to product
         coupon = crud.coupon.create_with_owner(
             db,
@@ -757,11 +670,7 @@ def test_coupon_calculation(
         crud.coupon.update(db, db_obj=coupon, obj_in={"quantity_total": 1})
 
         # non-applicable product
-        with get_random_product(db) as another_product:
-            crud.product_option.update(
-                db, db_obj=another_product.options[0], obj_in={"price": 5}
-            )
-
+        with get_random_product(db, price=5) as another_product:
             response = client.post(
                 f"{settings.API_V1_STR}/products/search-authenticated",
                 json={"id": another_product.id, "qty": 2, "coupon": coupon.code},
@@ -782,45 +691,19 @@ def test_coupon_calculation(
 def test_coupon_calculation_min_spend(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
-    crud.user.update(
-        db,
-        db_obj=current_user_obj,  # type: ignore
-        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
     )
 
-    with get_random_product(db, is_on_platform=True, mode="file") as product1:
-        crud.user.update(
-            db,
-            db_obj=crud.user.get(db, id=product1.owner_id),  # type: ignore
-            obj_in={"numerai_wallet_address": f"0xtoaddress{random_lower_string()}"},
-        )
-
+    with get_random_product(db, is_on_platform=True, mode="file", price=5) as product1:
         with get_random_product(
-            db, owner_id=product1.owner_id, is_on_platform=True, mode="file"
+            db, owner_id=product1.owner_id, is_on_platform=True, mode="file", price=5
         ) as product2, get_random_product(
-            db, is_on_platform=True, mode="file"
+            db, is_on_platform=True, mode="file", price=5
         ) as product3:
-            crud.user.update(
-                db,
-                db_obj=crud.user.get(db, id=product3.owner_id),  # type: ignore
-                obj_in={
-                    "numerai_wallet_address": f"0xtoaddress2{random_lower_string()}"
-                },
-            )
-
-            crud.product_option.update(
-                db, db_obj=product1.options[0], obj_in={"price": 5}
-            )
-            crud.product_option.update(
-                db, db_obj=product2.options[0], obj_in={"price": 5}
-            )
-            crud.product_option.update(
-                db, db_obj=product3.options[0], obj_in={"price": 5}
-            )
-
             # Create buyer-owned coupon applicable to product1 and product2
             coupon = crud.coupon.create_with_owner(
                 db,
@@ -860,31 +743,13 @@ def test_coupon_calculation_min_spend(
             # )
 
             # spent on product3 (different owner), not meeting min spend
-            order_data = {
-                "id": product3.id,
-                "option_id": product3.options[0].id,  # type: ignore
-                "quantity": 1,
-            }
-            response = client.post(
-                f"{settings.API_V1_STR}/orders/",
-                headers=superuser_token_headers,
-                json=order_data,
+            order = place_and_confirm_order(
+                client=client,
+                token_headers=superuser_token_headers,
+                db=db,
+                product=product3,
+                quantity=1,
             )
-            assert response.status_code == 200
-            content = response.json()
-            assert content["buyer"]["id"] == current_user["id"]
-            assert content["product"]["id"] == product3.id
-            assert content["quantity"] == 1
-            # manual confirm order
-            order = crud.order.update(
-                db,
-                db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
-                obj_in={
-                    "transaction_hash": random_lower_string(),
-                    "round_order": crud.globals.get_singleton(db).selling_round,  # type: ignore
-                },
-            )
-            update_payment(db, order_id=content["id"])
 
             response = client.post(
                 f"{settings.API_V1_STR}/products/search-authenticated",
@@ -905,31 +770,13 @@ def test_coupon_calculation_min_spend(
             crud.order.remove(db, id=order.id)
 
             # spent on product2 (same owner), should meet min spend
-            order_data = {
-                "id": product2.id,
-                "option_id": product2.options[0].id,  # type: ignore
-                "quantity": 1,
-            }
-            response = client.post(
-                f"{settings.API_V1_STR}/orders/",
-                headers=superuser_token_headers,
-                json=order_data,
+            order = place_and_confirm_order(
+                client=client,
+                token_headers=superuser_token_headers,
+                db=db,
+                product=product2,
+                quantity=1,
             )
-            assert response.status_code == 200
-            content = response.json()
-            assert content["buyer"]["id"] == current_user["id"]
-            assert content["product"]["id"] == product2.id
-            assert content["quantity"] == 1
-            # manual confirm order
-            order = crud.order.update(
-                db,
-                db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
-                obj_in={
-                    "transaction_hash": random_lower_string(),
-                    "round_order": crud.globals.get_singleton(db).selling_round,  # type: ignore
-                },
-            )
-            update_payment(db, order_id=content["id"])
 
             response = client.post(
                 f"{settings.API_V1_STR}/products/search-authenticated",
@@ -951,19 +798,17 @@ def test_coupon_calculation_min_spend(
 def test_create_coupon_manually(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
-    crud.user.update(
-        db,
-        db_obj=current_user_obj,  # type: ignore
-        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
     )
     n_coupons_initial = len(current_user_obj.created_coupons)  # type: ignore
 
     # Create product
     with get_random_product(
-        db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+        db, owner_id=current_user_obj.id, is_on_platform=True, mode="file"
     ) as product:
         # Create recipient
         with get_random_user(db) as user:
@@ -985,13 +830,13 @@ def test_create_coupon_manually(
             )
             assert response.status_code == 200
             content = response.json()
-            assert content["creator"]["id"] == current_user["id"]
+            assert content["creator"]["id"] == current_user_obj.id
             assert content["owner"]["id"] == user.id
             assert content["code"] == "TESTCODE"
             assert content["quantity_total"] == 1
 
             # check coupon
-            current_user_obj = crud.user.get(db, id=current_user["id"])
+            current_user_obj = crud.user.get(db, id=current_user_obj.id)  # type: ignore
             assert (len(current_user_obj.created_coupons) - n_coupons_initial) == 1  # type: ignore
 
             # Delete coupon
@@ -1005,13 +850,11 @@ def test_create_coupon_manually(
 def test_invalid_create_coupon_manually(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
-    current_user = r.json()
-    current_user_obj = crud.user.get(db, id=current_user["id"])
-    crud.user.update(
-        db,
-        db_obj=current_user_obj,  # type: ignore
-        obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
+    get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
     )
 
     # Create non-owner product

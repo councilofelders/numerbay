@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Generator, Optional
+from typing import Any, Generator, Optional
 
 from sqlalchemy.orm import Session
 
@@ -12,21 +12,16 @@ from app.tests.utils.utils import random_decimal, random_lower_string
 
 
 def create_random_product(
-    db: Session,
-    *,
-    owner_id: Optional[int] = None,
-    is_on_platform: bool = False,
-    mode: Optional[str] = None,
+    db: Session, *, owner_id: Optional[int] = None, **kwargs: Any
 ) -> models.Product:
     if owner_id is None:
         user = create_random_user(db)
         owner_id = user.id
-    name = "zzz" + random_lower_string()
+    name = random_lower_string(prefix="zzz")
     crud.model.create(
         db, obj_in=ModelCreate(id=name, name=name, tournament=8, owner_id=owner_id)
     )
 
-    price = random_decimal()
     sku = f"test-{name}"
     description = random_lower_string()
 
@@ -46,14 +41,21 @@ def create_random_product(
         tournament=8,
     )
 
-    product_option_in = ProductOptionCreate(
-        is_on_platform=is_on_platform,
-        quantity=1,
-        price=price,
-        currency="NMR" if is_on_platform else "USD",
-        mode=mode,
-        product_id=product.id,
+    product_option_json = kwargs
+    product_option_json["is_on_platform"] = product_option_json.get(
+        "is_on_platform", False
     )
+    if product_option_json["is_on_platform"]:
+        product_option_json["currency"] = "NMR"
+    else:
+        product_option_json["currency"] = "USD"
+    product_option_json["quantity"] = product_option_json.get("quantity", 1)
+    product_option_json["price"] = product_option_json.get("price", random_decimal())
+    product_option_json["mode"] = product_option_json.get("mode", None)
+    product_option_json["product_id"] = product_option_json.get(
+        "product_id", product.id
+    )
+    product_option_in = ProductOptionCreate(**product_option_json)
 
     crud.product_option.create(db, obj_in=product_option_in)
 
@@ -62,15 +64,9 @@ def create_random_product(
 
 @contextmanager
 def get_random_product(
-    db: Session,
-    *,
-    owner_id: Optional[int] = None,
-    is_on_platform: bool = False,
-    mode: Optional[str] = None,
+    db: Session, *, owner_id: Optional[int] = None, **kwargs: Any
 ) -> Generator:
-    product = create_random_product(
-        db, owner_id=owner_id, is_on_platform=is_on_platform, mode=mode
-    )
+    product = create_random_product(db, owner_id=owner_id, **kwargs)
     try:
         yield product
     finally:
