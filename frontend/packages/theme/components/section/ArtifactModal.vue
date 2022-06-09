@@ -204,7 +204,8 @@ export default {
         const plaintextbytes = nacl.sealedbox.open(new Uint8Array(cipherbytes), decodeBase64(this.publicKey), privateKey);
 
         if (!plaintextbytes) {
-          console.log('Error decrypting file.');
+          console.error('Error decrypting file.');
+          throw Error()
         }
 
         console.log('ciphertext decrypted');
@@ -261,6 +262,9 @@ export default {
           this.downloadingArtifacts = this.downloadingArtifacts.filter((id) => id !== artifact.id);
           this.decryptingArtifacts.push(artifact.id);
           this.decryptfile(file).then((blobUrl) => {
+            if (!blobUrl) {
+              return;
+            }
             const link = document.createElement('a');
             link.href = blobUrl;
             link.download = filename;
