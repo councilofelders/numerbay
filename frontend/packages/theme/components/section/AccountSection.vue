@@ -98,8 +98,8 @@
             </div><!-- end alert -->
             <div class="row mt-4">
               <div class="col-lg-8">
-                <a :class="Boolean(userGetters.getPublicKey(user)) ? 'btn-outline-dark' : 'btn-dark'" class="btn"
-                   @click="generateKeyPair">Generate key pair</a>
+                <a class="btn btn-outline-dark" @click="toggleKeyChangeModal" v-if="Boolean(userGetters.getPublicKey(user))">Replace key pair</a>
+                <a class="btn btn-dark" @click="generateKeyPair" v-else>Generate key pair</a>
                 <button v-if="Boolean(userGetters.getPublicKey(user))" class="copy-text ms-2" type="button"
                         @click="exportKeyPair"><em class="ni ni-download"></em> Export key file
                 </button>
@@ -191,6 +191,22 @@
         </div><!-- end tab-pane -->
       </div><!-- end tab-content -->
     </div><!-- end profile-setting-panel-wrap-->
+    <!-- Modal -->
+    <Modal ref="keyChangeModal" modal-id="keyChangeModal" @registeredModal="keyChangeModal = $event">
+      <template slot="title">Regenerate Encryption Key</template>
+        <p class="mb-3">You are about to replace your existing encryption key pair with a new one.</p>
+        <div class="alert alert-warning d-flex mb-4" role="alert">
+          <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
+            <path
+              d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+          </svg>
+          <p class="fs-14">
+            You will lose access to all existing files encrypted with the old key.
+          </p>
+        </div><!-- end alert -->
+        <a class="btn btn-dark btn-full d-flex justify-content-center mt-4" @click="replaceKeyPair">Confirm
+        </a>
+    </Modal><!-- end modal-->
   </div><!-- end col-lg-8 -->
 </template>
 
@@ -230,7 +246,8 @@ export default {
   data() {
     return {
       SectionData,
-      pwdForm: {}
+      pwdForm: {},
+      keyChangeModal: null
     };
   },
   mounted() {
@@ -315,6 +332,16 @@ export default {
           icon: 'ni-check'
         });
       }
+    },
+    toggleKeyChangeModal() {
+      this.keyChangeModal?.toggle();
+    },
+    beforeDestroy() {
+      this.keyChangeModal?.hide();
+    },
+    async replaceKeyPair() {
+      this.keyChangeModal?.hide();
+      await this.generateKeyPair();
     },
     async generateKeyPair() {
       if (!this.userGetters.getPublicAddress(this.user)) {
