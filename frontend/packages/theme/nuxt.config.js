@@ -113,7 +113,7 @@ export default {
     selfClosing: [ 'img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta' ],
     allowedSchemes: [ 'http', 'https', 'ftp', 'mailto', 'tel' ],
     allowedSchemesByTag: {
-      img: [ 'data' ]
+      img: [ 'data', 'http', 'https' ]
     },
     allowedSchemesAppliedToAttributes: [ 'href', 'src', 'cite' ],
     allowProtocolRelative: true,

@@ -330,6 +330,9 @@ export default {
       modal: null,
       showAdvanced: false,
       webhookResponseCode: null,
+      imageUpload: {
+        url: 'https://api.cloudinary.com/v1_1/numerbay/image/upload'
+      },
       editorOption: {
         theme: 'snow',
         modules: {
@@ -373,7 +376,12 @@ export default {
       this.$refs.imageInput.click();
     },
     async _doImageUpload(event) {
-      // for simplicity I only upload the first image
+      this.send({
+        message: 'Uploading image, please wait...',
+        type: 'bg-info',
+        icon: 'ni-info'
+      });
+      // only upload the first image
       const file = event.target.files[0];
       // create form data
       const fd = new FormData();
