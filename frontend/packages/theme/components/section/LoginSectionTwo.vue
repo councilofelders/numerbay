@@ -145,6 +145,9 @@ export default {
     if (this.isAuthenticated && this.user?.username && !this.authenticated) {
       this.$router.push('/account');
     }
+    if (this.$route?.query?.retry) {
+      this.onWalletConnect()
+    }
   },
   setup() {
     const {
