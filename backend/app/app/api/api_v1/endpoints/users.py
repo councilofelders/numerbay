@@ -135,6 +135,13 @@ def update_user_me(  # pylint: disable=too-many-locals
     if public_key is not None and encrypted_private_key is not None:
         user_in.public_key = public_key
         user_in.encrypted_private_key = encrypted_private_key
+
+        # change public keys for existing active orders
+        selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
+        orders = crud.order.get_active_orders(db, round_order=selling_round)
+        for order in orders:
+            if order.buyer_public_key is not None:
+                order.buyer_public_key = public_key
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 
