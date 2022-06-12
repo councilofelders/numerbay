@@ -206,7 +206,7 @@
                   <h5 class="mb-3">Pricing options</h5>
                   <a :class="form.options.length > 0 ? 'btn-outline-dark' : 'btn-dark'" class="btn"
                      @click="changeOption(-1)"><em class="ni ni-plus"></em> New Option</a>
-                  <div class="row g-gs mt-1">
+                  <div class="row g-gs mt-1" :key="updateList">
                     <div v-for="option in orderedOptions" :key="option.id" class="col-xl-6">
                       <div class="card card-full">
                         <div class="card-body card-body-s1">
@@ -325,6 +325,7 @@ export default {
   ],
   data() {
     return {
+      updateList: 0,  // todo better reactivity for pricing options data
       optionForm: {},
       isModalOpen: false,
       modal: null,
@@ -426,7 +427,8 @@ export default {
     },
     refresh() {
       this._computedWatchers.orderedOptions.run();
-      this.$forceUpdate();
+      // this.$forceUpdate();
+      this.updateList += 1;
     },
     isSubmissionCategory(categoryId) {
       if (categoryId) {
