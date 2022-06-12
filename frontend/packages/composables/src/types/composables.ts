@@ -57,6 +57,7 @@ export interface UseUser<USER, UPDATE_USER_PARAMS> {
 
 export interface UseProductErrors {
     search: Error;
+    salesLeaderboard: Error;
     listingModal: Error;
 }
 
@@ -66,6 +67,7 @@ export interface UseProduct<PRODUCTS, PRODUCT_SEARCH_PARAMS> {
   loadingWebhook: ComputedProperty<boolean>;
   error: ComputedProperty<UseProductErrors>;
   search(params: ComposableFunctionArgs<PRODUCT_SEARCH_PARAMS>): Promise<void>;
+  getSalesLeaderboard(params: any): Promise<void>;
   createProduct(params: { product: any }): Promise<void>;
   updateProduct(params: { id: number, product: any }): Promise<void>;
   deleteProduct(params: { id: number }): Promise<void>;

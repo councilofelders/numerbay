@@ -158,6 +158,40 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
     return products
 
 
+@router.post(
+    "/sales-leaderboard",
+    response_model=Dict[str, Union[int, List[schemas.LeaderboardProduct], List, Dict]],
+)
+def get_sales_leaderboard(  # pylint: disable=too-many-arguments
+    db: Session = Depends(deps.get_db),
+    category_slug: str = Body(None),
+    skip: int = Body(None),
+    limit: int = Body(None),
+) -> Any:
+    """
+    Retrieve sales leaderboard.
+    """
+    validate_search_params(skip=skip)
+
+    products = crud.product.search(
+        db,
+        category_slug=category_slug,
+        skip=skip,
+        limit=limit,
+        filters={"status": {"in": ["active"]}},
+        sort="sales-down",  # todo support more sorting for leaderboard
+    )
+
+    products_to_return = []
+    for product in products["data"]:
+        product_to_return = schemas.LeaderboardProduct.from_orm(product)
+        products_to_return.append(product_to_return)
+
+    products["data"] = products_to_return
+    products.pop("aggregations", None)
+    return products
+
+
 @router.post("/", response_model=schemas.Product)
 def create_product(
     *,

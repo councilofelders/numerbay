@@ -15,7 +15,13 @@ from .order_artifact import (
     OrderArtifactUpdate,
 )
 from .poll import Poll, PollCreate, PollInDB, PollUpdate
-from .product import Product, ProductCreate, ProductInDB, ProductUpdate
+from .product import (
+    LeaderboardProduct,
+    Product,
+    ProductCreate,
+    ProductInDB,
+    ProductUpdate,
+)
 from .product_option import (
     ProductOption,
     ProductOptionCreate,

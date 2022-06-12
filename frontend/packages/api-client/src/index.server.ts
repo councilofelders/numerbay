@@ -30,6 +30,7 @@ import getOrderArtifactDownloadUrl from './api/getOrderArtifactDownloadUrl';
 import getOrderArtifactUploadUrl from './api/getOrderArtifactUploadUrl';
 import getPoll from './api/getPoll';
 import getProduct from './api/getProduct';
+import getSalesLeaderboard from './api/getSalesLeaderboard';
 import getReview from './api/getReview';
 import logInGetNonce from './api/logInGetNonce';
 import logInGetNonceAuthenticated from './api/logInGetNonceAuthenticated';
@@ -123,6 +124,7 @@ const { createApiClient } = apiClientFactory<any, any>({
   onCreate,
   api: {
     getProduct,
+    getSalesLeaderboard,
     createProduct,
     updateProduct,
     deleteProduct,

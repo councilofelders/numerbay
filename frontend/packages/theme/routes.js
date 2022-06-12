@@ -11,6 +11,10 @@ export function getRoutes(themeDir = __dirname) {
       component: path.resolve(themeDir, 'pages/Stats.vue')
     },
     {
+      path: '/sales-leaderboard',
+      component: path.resolve(themeDir, 'pages/SalesLeaderboard.vue')
+    },
+    {
       path: '/product/:id(\\d+)',
       name: 'ProductDetailsByID',
       component: path.resolve(themeDir, 'pages/ProductDetails.vue'),

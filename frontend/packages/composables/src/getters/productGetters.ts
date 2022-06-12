@@ -208,6 +208,10 @@ export const getProductTotalSales = (product: ProductVariant): number => (produc
 
 export const getProductQtySales = (product: ProductVariant): number => (product as any)?.total_qty_sales || 0;
 
+export const getProductLastPrice = (product: ProductVariant): number => (product as any)?.last_sale_price || '-';
+
+export const getProductLastPriceDelta = (product: ProductVariant): number => (product as any)?.last_sale_price_delta || '-';
+
 export const getProductQtyDelivered = (product: ProductVariant): number => (product as any)?.total_qty_delivered || 0;
 
 export const getProductOnTimeRating = (product: ProductVariant): string => {
@@ -272,6 +276,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getTotalSales: getProductTotalSales,
   getQtySales: getProductQtySales,
   getQtyDelivered: getProductQtyDelivered,
+  getLastPrice: getProductLastPrice,
+  getLastPriceDelta: getProductLastPriceDelta,
   getOnTimeRating: getProductOnTimeRating
 };
 
