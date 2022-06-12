@@ -80,3 +80,21 @@ class ProductInDB(ProductInDBBase):
     """Database data schema for product"""
 
     owner_id: int
+
+
+class LeaderboardProduct(BaseModel):
+    """API data schema for leaderboard product"""
+
+    id: int
+    name: str
+    sku: str
+    avatar: Optional[HttpUrl] = None
+    total_qty_sales: Optional[int] = None
+    total_qty_delivered: Optional[int] = None
+    total_num_sales: Optional[int] = None
+    last_sale_price: Optional[Decimal] = None
+    last_sale_price_delta: Optional[Decimal] = None
+    model: Optional[ModelSummary] = None
+
+    class Config:  # pylint: disable=missing-class-docstring
+        orm_mode = True

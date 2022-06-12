@@ -5,6 +5,7 @@ import { UseProduct, UseProductErrors } from '../types/composables';
 
 export interface UseProductFactoryParams<PRODUCTS, PRODUCT_SEARCH_PARAMS extends ProductsSearchParams> extends FactoryParams {
   productsSearch: (context: Context, params: PRODUCT_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<PRODUCTS>;
+  getSalesLeaderboard: (context: Context, params: any) => Promise<any>;
   createProduct: (context: Context, params: any) => Promise<any>;
   updateProduct: (context: Context, params: any) => Promise<any>;
   deleteProduct: (context: Context, params: any) => Promise<any>;
@@ -22,6 +23,7 @@ export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
 
     const errorsFactory = (): UseProductErrors => ({
       search: null,
+      salesLeaderboard: null,
       listingModal: null
     });
 
@@ -41,6 +43,21 @@ export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
       } catch (err) {
         error.value.search = err;
         Logger.error(`useProduct/${id}/search`, err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const getSalesLeaderboard = async (searchParams) => {
+      Logger.debug(`useProduct/${id}/getSalesLeaderboard`, searchParams);
+
+      try {
+        loading.value = true;
+        products.value = await _factoryParams.getSalesLeaderboard(searchParams);
+        error.value.salesLeaderboard = null;
+      } catch (err) {
+        error.value.salesLeaderboard = err;
+        Logger.error(`useProduct/${id}/getSalesLeaderboard`, err);
       } finally {
         loading.value = false;
       }
@@ -112,6 +129,7 @@ export function useProductFactory<PRODUCTS, PRODUCT_SEARCH_PARAMS>(
 
     return {
       search,
+      getSalesLeaderboard,
       createProduct,
       updateProduct,
       deleteProduct,

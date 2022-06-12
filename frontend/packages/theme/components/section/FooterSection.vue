@@ -33,6 +33,9 @@
                   <li>
                     <router-link to="/stats">Stats</router-link>
                   </li>
+                  <li>
+                    <router-link to="/sales-leaderboard">Sales Leaderboard</router-link>
+                  </li>
                 </ul>
               </div><!-- end footer-item -->
             </div><!-- end col -->

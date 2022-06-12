@@ -8,6 +8,11 @@ const params: UseProductFactoryParams<ProductsResponse, any> = {
     return await context.$numerbay.api.getProduct(params);
   },
 
+  getSalesLeaderboard: async (context: Context, params) => {
+    Logger.debug('getSalesLeaderboard');
+    return await context.$numerbay.api.getSalesLeaderboard(params);
+  },
+
   createProduct: async (context: Context, {product}) => {
     Logger.debug('createProduct');
     const response = await context.$numerbay.api.createProduct(product);

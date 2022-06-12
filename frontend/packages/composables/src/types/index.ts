@@ -196,6 +196,8 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getTotalSales: (product: PRODUCT) => number;
     getQtySales: (product: PRODUCT) => number;
     getQtyDelivered: (product: PRODUCT) => number;
+    getLastPrice: (product: PRODUCT) => number;
+    getLastPriceDelta: (product: PRODUCT) => number;
     getOnTimeRating: (product: PRODUCT) => string;
     [getterName: string]: any;
 }
