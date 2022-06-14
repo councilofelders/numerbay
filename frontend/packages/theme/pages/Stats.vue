@@ -1,5 +1,5 @@
 <template>
-  <div class="page-wrap">
+  <div class="page-wrap" v-if="!statsLoading && !!stats">
     <!-- Total Sales Value Chart -->
     <section class="section-space">
       <div class="container">
@@ -81,7 +81,7 @@
       </div><!-- end container -->
     </section>
     <!-- Total Unique Models Sold Chart -->
-    <section class="section-space bg-gray">
+    <section class="section-space">
       <div class="container">
         <!-- section heading -->
         <SectionHeading :content="`By tournament round`" :text="`Total Unique Models Sold`"
@@ -91,7 +91,7 @@
       </div><!-- end container -->
     </section>
     <!-- Unique Models Sold by Tournament Chart -->
-    <section class="section-space bg-gray">
+    <section class="section-space">
       <div class="container">
         <!-- section heading -->
         <SectionHeading :content="`By tournament round`" :text="`Unique Models Sold by Tournament`"
@@ -196,7 +196,8 @@ export default {
     });
 
     return {
-      stats
+      stats,
+      statsLoading
     };
   }
 };
