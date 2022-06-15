@@ -1,5 +1,26 @@
 <template>
-  <div class="page-wrap">
+  <div class="page-wrap" v-if="!statsLoading && !!stats">
+    <!-- Total Estimated Stake Chart -->
+    <section class="section-space">
+      <div class="container">
+        <!-- section heading -->
+        <SectionHeading :content="`By tournament round`" :text="`Estimated Stake using NumerBay`"
+                        classname="text-center" isMargin="mb-3"></SectionHeading>
+        <StatsChart :chartdata="getStatsChartData(stats, 'estimated_stake', 'Estimated Stake (NMR)', false)"
+                    class="numerai-chart"></StatsChart>
+      </div><!-- end container -->
+    </section>
+    <!-- Estimated Stake by Tournament Chart -->
+    <section class="section-space">
+      <div class="container">
+        <!-- section heading -->
+        <SectionHeading :content="`By tournament round`" :text="`Estimated Stake by Tournament`"
+                        classname="text-center" isMargin="mb-3"></SectionHeading>
+        <StatsStackedChart :chartdata="getStatsStackedChartData(stats, ['estimated_stake_numerai', 'estimated_stake_signals'], ['Numerai (NMR)', 'Signals (NMR)'], false)"
+                    class="numerai-chart"></StatsStackedChart>
+      </div><!-- end container -->
+    </section>
+
     <!-- Total Sales Value Chart -->
     <section class="section-space">
       <div class="container">
@@ -81,7 +102,7 @@
       </div><!-- end container -->
     </section>
     <!-- Total Unique Models Sold Chart -->
-    <section class="section-space bg-gray">
+    <section class="section-space">
       <div class="container">
         <!-- section heading -->
         <SectionHeading :content="`By tournament round`" :text="`Total Unique Models Sold`"
@@ -91,7 +112,7 @@
       </div><!-- end container -->
     </section>
     <!-- Unique Models Sold by Tournament Chart -->
-    <section class="section-space bg-gray">
+    <section class="section-space">
       <div class="container">
         <!-- section heading -->
         <SectionHeading :content="`By tournament round`" :text="`Unique Models Sold by Tournament`"
@@ -196,7 +217,8 @@ export default {
     });
 
     return {
-      stats
+      stats,
+      statsLoading
     };
   }
 };
