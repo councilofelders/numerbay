@@ -14,6 +14,7 @@ from app import crud, models
 from app.api import deps
 from app.api.dependencies.orders import send_order_confirmation_emails
 from app.core.celery_app import celery_app
+from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
 from app.models import Artifact, Order, Product
 
 router = APIRouter()
@@ -26,6 +27,58 @@ def generate_stats(
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     stats = crud.stats.update_stats(db)
+    return stats
+
+
+@router.post("/fill-estimated-stake-stats")
+def fill_estimated_stake_stats(
+    *,
+    db: Session = Depends(deps.get_db),
+    min_round: int,
+    max_round: int,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    instance = crud.stats.get_singleton(db)
+    stats = jsonable_encoder(instance)["stats"]
+    stats["estimated_stake_numerai"] = fill_round_stats(
+        {
+            d["round_tournament"]: d["value"]
+            for d in stats.get("estimated_stake_numerai", [])
+        },
+        db,
+        calculate_stake_for_tournament,
+        min_round=min_round,
+        max_round=max_round,
+        tournament=8,
+    )
+    stats["estimated_stake_signals"] = fill_round_stats(
+        {
+            d["round_tournament"]: d["value"]
+            for d in stats.get("estimated_stake_signals", [])
+        },
+        db,
+        calculate_stake_for_tournament,
+        min_round=min_round,
+        max_round=max_round,
+        tournament=11,
+    )
+
+    stats["estimated_stake"] = [
+        {
+            "round_tournament": stats["estimated_stake_numerai"][i]["round_tournament"],
+            "value": stats["estimated_stake_numerai"][i]["value"]
+            + stats["estimated_stake_signals"][i]["value"],
+        }
+        for i in range(len(stats["estimated_stake_numerai"]))
+    ]
+
+    crud.stats.update(
+        db,
+        db_obj=instance,  # type: ignore
+        obj_in={
+            "stats": stats,
+        },
+    )
     return stats
 
 
