@@ -126,7 +126,6 @@ def get_estimated_stake_for_order(
         submitted = has_file(submissions, artifact_json["object_name"])
 
         if submitted:
-            print(f"submitted: {submitted}")
             stake = get_stake_for_model_round(
                 db, model_id=model.id, round_tournament=order_json["round_order"]
             )
@@ -156,7 +155,7 @@ def calculate_stake_for_tournament(
         db.query(Order)
         .join(Order.product, Product.category)
         .filter(
-            Order.round_order == round_tournament,
+            Order.state == "confirmed",
             Category.tournament == tournament,
             Category.is_submission.is_(True),
         )
@@ -179,6 +178,12 @@ def calculate_stake_for_tournament(
                 order_json_i = order_json.copy()
                 order_json_i["round_order"] += i
 
+    # filter flatten orders by tournament round
+    flattened_orders = filter(
+        lambda flattened_order: flattened_order.get("round_order", None) == round_tournament,
+        flattened_orders
+    )
+
     round_stakes = {}
     for order_json in flattened_orders:
         stake = get_stake_for_order(db, order_json)
@@ -195,7 +200,7 @@ def calculate_stake_for_tournament(
 def fill_round_stats(
     existing_data_dict: Dict,
     db: Session,
-    func: Callable,
+    function: Callable,
     min_round: int,
     max_round: int,
     **kwargs: Any,
@@ -204,7 +209,7 @@ def fill_round_stats(
         print(
             f"Filling stats for round {round_tournament} / [{min_round},  {max_round}]"
         )
-        round_stats = func(db, **kwargs, round_tournament=round_tournament)
+        round_stats = function(db, **kwargs, round_tournament=round_tournament)
         if round_stats:
             existing_data_dict[round_tournament] = round_stats[0]["value"]
         else:
