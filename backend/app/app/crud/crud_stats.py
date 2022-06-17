@@ -1,4 +1,5 @@
 """ CRUD for stats """
+import os
 from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -102,7 +103,7 @@ def get_submissions_for_model(
 
 def has_file(submissions: List, filename: str) -> bool:
     for submission in submissions:
-        if submission.get("filename", None) == filename:
+        if submission.get("filename", "").startswith(os.path.splitext(filename)[0]):
             return True
     return False
 
