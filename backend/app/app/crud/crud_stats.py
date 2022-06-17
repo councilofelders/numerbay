@@ -179,9 +179,10 @@ def calculate_stake_for_tournament(
                 order_json_i["round_order"] += i
 
     # filter flatten orders by tournament round
-    flattened_orders = filter(
-        lambda flattened_order: flattened_order.get("round_order", None) == round_tournament,
-        flattened_orders
+    flattened_orders = filter(  # type: ignore
+        lambda flattened_order: flattened_order.get("round_order", None)
+        == round_tournament,
+        flattened_orders,
     )
 
     round_stakes = {}
@@ -348,10 +349,17 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
 
         # Estimated stake
         current_round = crud.globals.get_singleton(db).selling_round  # type: ignore
+        stats["estimated_stake_numerai"] = instance.stats.get(  # type: ignore
+            "estimated_stake_numerai", []
+        )
+        stats["estimated_stake_signals"] = instance.stats.get(  # type: ignore
+            "estimated_stake_signals", []
+        )
+
         stats["estimated_stake_numerai"] = fill_round_stats(
             {
                 d["round_tournament"]: d["value"]
-                for d in stats.get("estimated_stake_numerai", [])
+                for d in stats["estimated_stake_numerai"]
             },
             db,
             calculate_stake_for_tournament,
@@ -362,7 +370,7 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
         stats["estimated_stake_signals"] = fill_round_stats(
             {
                 d["round_tournament"]: d["value"]
-                for d in stats.get("estimated_stake_signals", [])
+                for d in stats["estimated_stake_signals"]
             },
             db,
             calculate_stake_for_tournament,
