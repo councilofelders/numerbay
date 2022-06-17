@@ -117,13 +117,14 @@ def get_estimated_stake_for_order(
         return Decimal("0")
 
     for model in user.models:  # type: ignore
-        submissions = get_submissions_for_model(
-            user.numerai_api_key_public_id,
-            user.numerai_api_key_secret,  # type: ignore
-            model_id=model.id,
-            tournament=model.tournament,
-        )
-        submitted = has_file(submissions, artifact_json["object_name"])
+        # submissions = get_submissions_for_model(
+        #     user.numerai_api_key_public_id,
+        #     user.numerai_api_key_secret,  # type: ignore
+        #     model_id=model.id,
+        #     tournament=model.tournament,
+        # )
+        # submitted = has_file(submissions, artifact_json["object_name"])
+        submitted = True
 
         if submitted:
             stake = get_stake_for_model_round(
@@ -348,6 +349,9 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
 
         # Estimated stake
         current_round = crud.globals.get_singleton(db).selling_round  # type: ignore
+        stats["estimated_stake_numerai"] = instance.stats.get("estimated_stake_numerai")
+        stats["estimated_stake_signals"] = instance.stats.get("estimated_stake_signals")
+
         stats["estimated_stake_numerai"] = fill_round_stats(
             {
                 d["round_tournament"]: d["value"]
