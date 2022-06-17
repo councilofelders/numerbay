@@ -90,14 +90,20 @@ def get_submissions_for_model(
     """
     api = NumerAPI(public_id=public_id, secret_key=secret_key)
     try:
-        data = api.raw_query(query, {"modelId": model_id}, authorization=True)["data"]
-        if data is not None and "submissions" in data:
+        data = api.raw_query(query, {"modelId": model_id}, authorization=True)["data"][
+            "model"
+        ]
+        if (
+            data is not None
+            and ("submissions" in data)
+            or ("signalsSubmissions" in data)
+        ):
             if tournament == 8:
                 return data["submissions"]
             else:
                 return data["signalsSubmissions"]
-    except ValueError:
-        pass
+    except ValueError as e:
+        print(e)
     return []
 
 
@@ -140,13 +146,16 @@ def get_stake_for_order(db: Session, order_json: Dict) -> Decimal:
         return Decimal("0")
 
     if order_json.get("submit_model_id", None) is not None:  # auto-submit
-        return get_stake_for_model_round(
+        stake = get_stake_for_model_round(
             db,
             model_id=order_json["submit_model_id"],
             round_tournament=order_json["round_order"],
         )
+        print(f"Exact match for order {order_json['id']} {order_json['round_order']}")
     else:  # no auto-submit, do fuzzy match
-        return get_estimated_stake_for_order(db, order_json, artifact_json)
+        stake = get_estimated_stake_for_order(db, order_json, artifact_json)
+        print(f"Fuzzy match for order {order_json['id']} {order_json['round_order']}")
+    return stake
 
 
 def calculate_stake_for_tournament(
@@ -190,6 +199,9 @@ def calculate_stake_for_tournament(
     round_stakes = {}
     for order_json in flattened_orders:
         stake = get_stake_for_order(db, order_json)
+        print(
+            f"Estimated stake of {stake} for order {order_json['id']} {order_json['round_order']}"
+        )
         if order_json["round_order"] not in round_stakes:
             round_stakes[order_json["round_order"]] = Decimal("0")
         round_stakes[order_json["round_order"]] += stake
