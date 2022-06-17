@@ -177,6 +177,7 @@ def calculate_stake_for_tournament(
             for i in range(order.quantity):
                 order_json_i = order_json.copy()
                 order_json_i["round_order"] += i
+                flattened_orders.append(order_json_i)
 
     # filter flatten orders by tournament round
     flattened_orders = filter(  # type: ignore
