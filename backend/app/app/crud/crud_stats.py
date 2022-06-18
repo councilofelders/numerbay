@@ -109,7 +109,12 @@ def get_submissions_for_model(
 
 def has_file(submissions: List, filename: str) -> bool:
     for submission in submissions:
-        if not submission or submission.get("filename", None) is None:
+        if (
+            not submission
+            or submission.get("filename", None) is None
+            or filename is None
+            or os.path.splitext(filename)[0] is None
+        ):
             continue
         if submission["filename"].startswith(os.path.splitext(filename)[0]):
             return True
@@ -120,10 +125,11 @@ def get_estimated_stake_for_order(
     db: Session, order_json: Dict, artifact_json: Dict
 ) -> Decimal:
     user = crud.user.get(db, id=order_json["buyer_id"])
+    total_stake = Decimal("0")
     if (
         user is None or user.models is None or user.numerai_api_key_public_id is None
     ):  # type: ignore
-        return Decimal("0")
+        return total_stake
 
     for model in user.models:  # type: ignore
         submissions = get_submissions_for_model(
@@ -135,11 +141,10 @@ def get_estimated_stake_for_order(
         submitted = has_file(submissions, artifact_json["object_name"])
 
         if submitted:
-            stake = get_stake_for_model_round(
+            total_stake += get_stake_for_model_round(
                 db, model_id=model.id, round_tournament=order_json["round_order"]
             )
-            return stake
-    return Decimal("0")
+    return total_stake
 
 
 def get_stake_for_order(db: Session, order_json: Dict) -> Decimal:
