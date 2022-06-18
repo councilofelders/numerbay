@@ -109,7 +109,9 @@ def get_submissions_for_model(
 
 def has_file(submissions: List, filename: str) -> bool:
     for submission in submissions:
-        if submission.get("filename", "").startswith(os.path.splitext(filename)[0]):
+        if not submission or submission.get("filename", None) is None:
+            continue
+        if submission["filename"].startswith(os.path.splitext(filename)[0]):
             return True
     return False
 
