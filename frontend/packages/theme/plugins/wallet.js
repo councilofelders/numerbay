@@ -61,8 +61,9 @@ export default async ({env}, inject) => {
       if (typeof window !== "undefined" && typeof window.ethereum !== 'undefined' &&  !window.ethereum._state.initialized) {
         while(!ethereum._state.initialized) {
           await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
-          // window.location.reload();
-          window.location.search += '&retry=true';
+          if (!ethereum._state.initialized) {
+            window.location.search += '&retry=true';
+          }
         }
       }
 
