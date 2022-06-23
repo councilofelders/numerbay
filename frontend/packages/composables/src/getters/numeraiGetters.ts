@@ -132,7 +132,7 @@ export const getNumeraiCorrTcChartData = (numerai: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiIcChartData = (numerai: any) => {
+export const getNumeraiTcIcChartData = (numerai: any) => {
   if (!numerai?.modelInfo) {
     return {};
   }
@@ -146,6 +146,14 @@ export const getNumeraiIcChartData = (numerai: any) => {
   return {
     labels: transposed.roundNumber,
     datasets: [
+      {
+        label: 'TC',
+        borderColor: '#a278dc',
+        fill: false,
+        lineTension: 0,
+        data: transposed.tc,
+        data1: transposed.tcPercentile
+      },
       {
         label: 'IC',
         borderColor: '#acacac',
@@ -177,7 +185,7 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getFormatted,
   getNumeraiCorrMmcChartData,
   getNumeraiCorrTcChartData,
-  getNumeraiIcChartData
+  getNumeraiTcIcChartData
 };
 
 export default numeraiGetters;

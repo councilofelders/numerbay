@@ -28,7 +28,7 @@
                 :latest-reps="latestReps"
                 :latest-returns="latestReturns"
                 :nmr-staked="nmrStaked"
-                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
+                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: true, ic: productGetters.getCategory(product).tournament==11}"
                 :stake-info="stakeInfo"
                 :tournament="productGetters.getCategory(product).tournament"
               ></ModelMetricsCard>
