@@ -158,7 +158,7 @@ export default {
           title: 'Power BI Numerai Dashboard',
           desc: 'Numerai leaderboard, round performances, payouts and more',
           author: '@QE',
-          link: 'https://app.powerbi.com/view?r=eyJrIjoiY2I5ZTc1OGEtMjc1MS00NGE5LWJiNDEtNWZhMWM4NDAzNGJiIiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9'
+          link: 'https://app.powerbi.com/view?r=eyJrIjoiYTI4N2FkY2YtYTliYy00ZjQ5LWE2NjMtMTBjOTkwYTg2NDE2IiwidCI6Ijg3ZDc2ZDQ2LWYxZmYtNDkzMi05MGNiLTUyNzY3Yzg2OTk2ZiIsImMiOjl9'
         },
         {
           id: 3,
