@@ -64,17 +64,17 @@
               </td>
               <td class="stats">{{ latestReps.fncV3 }}</td>
             </tr>
-            <tr v-if="show.tc">
-              <td>
-                TC Reputation
-              </td>
-              <td class="stats">{{ latestReps.tc }}</td>
-            </tr>
             <tr v-if="show.ic">
               <td>
                 IC Reputation
               </td>
               <td class="stats">{{ latestReps.ic }}</td>
+            </tr>
+            <tr v-if="show.tc">
+              <td>
+                TC Reputation
+              </td>
+              <td class="stats">{{ latestReps.tc }}</td>
             </tr>
             </tbody>
           </table>
@@ -108,17 +108,17 @@
               </td>
               <td class="stats">{{ latestRanks.fncV3 }}</td>
             </tr>
-            <tr v-if="show.tc">
-              <td>
-                TC Rank
-              </td>
-              <td class="stats">{{ latestRanks.tc }}</td>
-            </tr>
             <tr v-if="show.ic">
               <td>
                 IC Rank
               </td>
               <td class="stats">{{ latestRanks.ic }}</td>
+            </tr>
+            <tr v-if="show.tc">
+              <td>
+                TC Rank
+              </td>
+              <td class="stats">{{ latestRanks.tc }}</td>
             </tr>
             </tbody>
           </table>

@@ -75,7 +75,7 @@
                 :latest-reps="latestReps"
                 :latest-returns="latestReturns"
                 :nmr-staked="nmrStaked"
-                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: productGetters.getCategory(product).tournament==8, ic: productGetters.getCategory(product).tournament==11}"
+                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: true, ic: productGetters.getCategory(product).tournament==11}"
                 :stake-info="stakeInfo"
                 :tournament="productGetters.getCategory(product).tournament"
                 class="mt-2"
@@ -94,7 +94,7 @@
                                     class="numerai-chart"></NumeraiChart>
                       <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiCorrMmcChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiIcChartData"
+                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiTcIcChartData"
                                     class="numerai-chart"></NumeraiChart>
                     </div>
                     <div v-else class="item-detail-list placeholder-glow">
@@ -296,6 +296,7 @@ import {
 import {useUiNotification} from '~/composables';
 import {ethers} from 'ethers';
 import {contractAddress, transferAbi} from "../plugins/nmr";
+import {getNumeraiTcIcChartData} from "../../composables/src/getters/numeraiGetters";
 
 export default {
   name: 'ProductDetails',
@@ -719,7 +720,7 @@ export default {
       relatedLoading,
       numeraiCorrMmcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrMmcChartData(numerai.value)),
       numeraiCorrTcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrTcChartData(numerai.value)),
-      numeraiIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiIcChartData(numerai.value)),
+      numeraiTcIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcIcChartData(numerai.value)),
       numerai,
       numeraiLoading,
       globals,

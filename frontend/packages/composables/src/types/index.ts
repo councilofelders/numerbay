@@ -225,7 +225,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getItemPrice: (item: ORDER_ITEM) => number;
     getFormattedPrice: (item: ORDER_ITEM, withCurrency: boolean, decimals: number) => string;
     getBuyer: (item: ORDER_ITEM) => string;
-    [getterName: string]: (element: any, options?: any) => unknown;
+    [getterName: string]: (element: any, options?: any, decimals?: any) => unknown;
 }
 
 export interface ProductArtifactGetters<ARTIFACT> {
@@ -247,7 +247,7 @@ export interface ProductArtifactGetters<ARTIFACT> {
     getItemPrice: (artifact: ARTIFACT) => number;
     getFormattedPrice: (artifact: ARTIFACT, withCurrency: boolean, decimals: number) => string;
     getBuyer: (artifact: ARTIFACT) => string;
-    [getterName: string]: (element: any, options?: any) => unknown;
+    [getterName: string]: (element: any, options?: any, decimals?: any) => unknown;
 }
 
 export interface NumeraiGetters<NUMERAI> {
@@ -269,7 +269,7 @@ export interface NumeraiGetters<NUMERAI> {
     getFormatted: (value: number, decimals: number) => string,
     getNumeraiCorrMmcChartData: (numerai: NUMERAI) => any,
     getNumeraiCorrTcChartData: (numerai: NUMERAI) => any,
-    getNumeraiIcChartData: (numerai: NUMERAI) => any,
+    getNumeraiTcIcChartData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }
 
