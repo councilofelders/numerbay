@@ -8,6 +8,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from app import models
 from app.api import deps
 from app.api.dependencies import numerai
+from app.api.dependencies.numerai import fill_missing_round_performances
 
 router = APIRouter()
 
@@ -62,6 +63,7 @@ def get_numerai_model_performance_endpoint(tournament: int, model_name: str) -> 
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail="Numerai API Error: " + str(e))
+    data = fill_missing_round_performances(data)
     return data
 
 

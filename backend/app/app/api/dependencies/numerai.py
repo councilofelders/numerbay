@@ -671,3 +671,36 @@ def validate_round_open() -> None:
     ):  # previous round closed for staking, next round not yet opened
         raise HTTPException(status_code=400, detail="Tournament round is not open")
     return None
+
+
+def fill_missing_round_performances(data: Dict) -> Dict:
+    model_performance = data.get("modelPerformance", None)
+    if model_performance is None:
+        return data
+    round_model_performances = model_performance.get("roundModelPerformances", None)
+    if round_model_performances is None:
+        return data
+    round_performance_mapping = {
+        scores["roundNumber"]: scores for scores in round_model_performances
+    }
+    min_round = round_model_performances[-1]["roundNumber"]
+    max_round = round_model_performances[0]["roundNumber"]
+    for round_tournament in range(min_round, max_round + 1):
+        if round_tournament not in round_performance_mapping:
+            round_performance_mapping[round_tournament] = {
+                "roundNumber": round_tournament,
+                "corr": None,
+                "mmc": None,
+                "tc": None,
+                "ic": None,
+                "corrPercentile": None,
+                "mmcPercentile": None,
+                "tcPercentile": None,
+                "icPercentile": None,
+                "selectedStakeValue": None,
+            }
+    data["modelPerformance"]["roundModelPerformances"] = [
+        round_performance_mapping[round_tournament]
+        for round_tournament in reversed(range(min_round, max_round + 1))
+    ]
+    return data
