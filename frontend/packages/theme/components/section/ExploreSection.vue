@@ -16,7 +16,7 @@
             <div class="filter-btn-group">
               <div v-for="subcategory in getSubcategories(categoryTree)" :key="subcategory.id"
                    class="menu-item d-inline-block">
-                <a :class="getActiveClass(subcategory.id)" class="btn filter-btn"
+                <a class="btn filter-btn"
                    href="javascript:void(0);"
                    @click.prevent="activeId = subcategory.id">{{ subcategory.label }}
                 </a>
@@ -46,7 +46,8 @@
                       class="d-flex"
                     >
                       <div v-for="option in facet.options" :key="`${facet.id}-${option.value}`" class="d-flex me-2">
-                        <input :id="`${facet.id}-${option.value}`" :checked="isFilterSelected(facet, option)" class="form-check-input me-1"
+                        <input :id="`${facet.id}-${option.value}`" :checked="isFilterSelected(facet, option)"
+                               class="form-check-input me-1"
                                type="checkbox" @change="() => selectFilter(facet, option)">
                         <label :for="`${facet.id}-${option.value}`" class="form-check-label form-check-label-s1">
                           {{ option.id + `${option.count ? ` (${option.count})` : ''}` }} </label>
@@ -135,7 +136,7 @@ import Range from "../common/Range";
 
 // Composables
 import Vue from 'vue';
-import {facetGetters, useFacet} from '@vue-storefront/numerbay';
+import {facetGetters, useFacet, useCategory} from '@vue-storefront/numerbay';
 import {useUiHelpers, useUiState} from '~/composables';
 import {computed, ref} from '@vue/composition-api';
 import {useVueRouter} from '~/helpers/hooks/useVueRouter';
@@ -215,14 +216,14 @@ export default {
     filterProductsByName(products) {
       return products.filter(product => !product.name.toLowerCase().indexOf(this.name.toLowerCase()));
     },
-    // add active class to button
-    getActiveClass(id) {
-      if (id === this.activeCategory) {
-        return 'active';
-      } else {
-        return '';
-      }
-    }
+    // add active class to button // todo add back active category indicator
+    // getActiveClass(id) {
+    //   if (id === this.activeCategory) {
+    //     return 'active';
+    //   } else {
+    //     return '';
+    //   }
+    // }
   },
   watch: {
     async $route(to, from) {
@@ -250,22 +251,23 @@ export default {
       search,
       loading
     } = useFacet(`facetId:${path}`);
+    const {categories, search: categorySearch} = useCategory(`${path}`);
     const products = computed(() => facetGetters.getProducts(result.value));
-    const categoryTree = computed(() => facetGetters.getCategoryTree(result.value));
+    const categoryTree = computed(() => facetGetters.getCategoryTree({data: {categories: (categories.value || [])}}));
     // const sortBy = computed(() => facetGetters.getSortOptions(result.value));
     const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'platform', 'rank', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
-    const activeCategory = computed(() => {
-      const items = categoryTree?.value?.items;
-
-      if (!items) {
-        return '';
-      }
-
-      const category = items.find(({isCurrent, items}) => isCurrent || items.find(({isCurrent}) => isCurrent));
-
-      return category?.id || items[0].id;
-    });
+    // const activeCategory = computed(() => {
+    //   const items = categoryTree?.value?.items;
+    //
+    //   if (!items) {
+    //     return '';
+    //   }
+    //
+    //   const category = items.find(({isCurrent, items}) => isCurrent || items.find(({isCurrent}) => isCurrent));
+    //
+    //   return items[0].id;
+    // });
 
     const {changeFilters, isFacetCheckbox} = useUiHelpers();
     const {isFilterSidebarOpen, toggleFilterSidebar} = useUiState();
@@ -285,6 +287,7 @@ export default {
     // });
 
     search(th.getFacetsFromURL());
+    categorySearch({slug: 'all'});
 
     if (facets.value.length > 0) {
       selectedFilters.value = facets.value.reduce((prev, curr) => ({
@@ -366,7 +369,7 @@ export default {
       pagination,
       products,
       categoryTree,
-      activeCategory,
+      // activeCategory,
       search,
       th,
       isFilterSidebarOpen,

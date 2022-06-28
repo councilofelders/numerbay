@@ -44,7 +44,7 @@ class CategoryInDBBase(CategoryBase):
         orm_mode = True
 
 
-CategoryInDBBase.update_forward_refs()
+# CategoryInDBBase.update_forward_refs()
 
 
 # Properties to return to client
@@ -57,10 +57,11 @@ class CategoryIntermediate(CategoryInDBBase):
 class Category(CategoryInDBBase):
     """API data schema for category"""
 
-    parent: Optional[CategoryIntermediate]
+    # parent: Optional[CategoryIntermediate]
+    parent_id: Optional[int]
 
 
-Category.update_forward_refs()
+# Category.update_forward_refs()
 
 
 # Properties properties stored in DB
