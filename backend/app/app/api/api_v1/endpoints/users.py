@@ -138,7 +138,9 @@ def update_user_me(  # pylint: disable=too-many-locals
 
         # change public keys for existing active orders
         selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
-        orders = crud.order.get_active_orders(db, round_order=selling_round)
+        orders = crud.order.get_user_active_orders(
+            db, round_order=selling_round, buyer_id=current_user.id
+        )
         for order in orders:
             if order.buyer_public_key is not None:
                 order.buyer_public_key = public_key
