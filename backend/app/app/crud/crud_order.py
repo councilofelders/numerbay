@@ -45,6 +45,19 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         orders = db.query(self.model).filter(query_filter).all()
         return orders
 
+    def get_user_active_orders(
+        self, db: Session, *, round_order: int, buyer_id: int
+    ) -> List[Order]:
+        """Get active orders for tournament round"""
+        query_filters = [
+            self.model.round_order > round_order - self.model.quantity,  # type: ignore
+            self.model.state == "confirmed",
+            self.model.buyer_id == buyer_id,
+        ]
+        query_filter = functools.reduce(and_, query_filters)
+        orders = db.query(self.model).filter(query_filter).all()
+        return orders
+
     def get_multi_by_state(
         self, db: Session, *, state: str, round_order: Optional[int] = None
     ) -> List[Order]:
