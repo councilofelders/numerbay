@@ -216,34 +216,27 @@ export default {
     filterProductsByName(products) {
       return products.filter(product => !product.name.toLowerCase().indexOf(this.name.toLowerCase()));
     },
-    // add active class to button // todo add back active category indicator
-    // getActiveClass(id) {
-    //   if (id === this.activeCategory) {
-    //     return 'active';
-    //   } else {
-    //     return '';
-    //   }
-    // }
   },
   watch: {
-    async $route(to, from) {
-      await this.search(this.th.getFacetsFromURL());
+    // async $route(to, from) {
+      // await this.search(this.th.getFacetsFromURL()).then(()=>{
+      //   console.log('then')
+      // });
       // this.getActiveClass(this.activeId = this.activeCategory);
-    },
+    // },
     facets() {
       this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || (this.result?.data?.categories[0].tournament ? 'rank-best' : 'latest')));
     }
   },
   computed: {
     sortBy() {
-      return this.facetGetters.getSortOptions(this.result);
+      return this.result?.data ? this.facetGetters.getSortOptions(this.result) : [{}];
     }
   },
   mounted() {
-    // todo temporary workaround
-    setTimeout(() => {
+    this.search(this.th.getFacetsFromURL()).then(() =>{
       this.$forceUpdate();
-    }, 1000);
+    });
   },
   setup() {
     const {
@@ -259,39 +252,16 @@ export default {
     const {categories, search: categorySearch} = useCategory(`${path}`);
     const products = computed(() => facetGetters.getProducts(result.value));
     const categoryTree = computed(() => facetGetters.getCategoryTree({data: {categories: (categories.value || [])}}));
-    // const sortBy = computed(() => facetGetters.getSortOptions(result.value));
     const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'platform', 'rank', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
-    // const activeCategory = computed(() => {
-    //   const items = categoryTree?.value?.items;
-    //
-    //   if (!items) {
-    //     return '';
-    //   }
-    //
-    //   const category = items.find(({isCurrent, items}) => isCurrent || items.find(({isCurrent}) => isCurrent));
-    //
-    //   return items[0].id;
-    // });
 
     const {changeFilters, isFacetCheckbox} = useUiHelpers();
     const {isFilterSidebarOpen, toggleFilterSidebar} = useUiState();
     const selectedFilters = ref({});
 
-    // onSSR(async () => {
-    //   await search(th.getFacetsFromURL());
-    //
-    //   // if (facets.value.length > 0) {
-    //   //   selectedFilters.value = facets.value.reduce((prev, curr) => ({
-    //   //     ...prev,
-    //   //     [curr.id]: curr.options
-    //   //       .filter(o => o.selected)
-    //   //       .map(o => o.id)
-    //   //   }), {});
-    //   // }
+    // search(th.getFacetsFromURL()).then(() =>{
+    //   console.log('then')
     // });
-
-    search(th.getFacetsFromURL());
     categorySearch({slug: 'all'});
 
     if (facets.value.length > 0) {
@@ -374,7 +344,6 @@ export default {
       pagination,
       products,
       categoryTree,
-      // activeCategory,
       search,
       th,
       isFilterSidebarOpen,
