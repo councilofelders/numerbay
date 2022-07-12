@@ -227,7 +227,6 @@ export default {
   },
   watch: {
     async $route(to, from) {
-      // react to route changes...
       await this.search(this.th.getFacetsFromURL());
       // this.getActiveClass(this.activeId = this.activeCategory);
     },
@@ -239,6 +238,12 @@ export default {
     sortBy() {
       return this.facetGetters.getSortOptions(this.result);
     }
+  },
+  mounted() {
+    // todo temporary workaround
+    setTimeout(() => {
+      this.$forceUpdate();
+    }, 1000);
   },
   setup() {
     const {
