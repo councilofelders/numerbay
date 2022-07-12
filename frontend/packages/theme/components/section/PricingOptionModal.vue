@@ -4,13 +4,6 @@
     <ValidationObserver key="options" v-slot="{ handleSubmit }">
       <div class="form-item mb-4">
         <div class="mb-4">
-          <label class="mb-2 form-label">Option description</label>
-          <input v-model="description" class="form-control form-control-s1" placeholder="Option description"
-                 type="text">
-        </div>
-      </div><!-- end form-item -->
-      <div class="form-item mb-4">
-        <div class="mb-4">
           <div class="d-flex align-items-center justify-content-between">
             <div class="me-2">
               <h5 class="mb-1">Sell on-platform</h5>
@@ -21,6 +14,69 @@
                      @change="onPlatformChange(isOnPlatform)">
             </div><!-- end form-check -->
           </div><!-- end d-flex -->
+        </div>
+      </div><!-- end form-item -->
+      <div v-if="isOnPlatform">
+        <ValidationProvider key="onPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
+          <div class="form-item mb-4">
+            <div class="mb-4">
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
+              <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Total Price in NMR" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+            </div>
+          </div><!-- end form-item -->
+        </ValidationProvider>
+        <ValidationProvider key="onPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
+          <div class="form-item mb-4">
+            <div class="mb-4">
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
+              <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Quantity or number of rounds per unit" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+            </div>
+          </div><!-- end form-item -->
+        </ValidationProvider>
+      </div>
+      <div v-else>
+        <ValidationProvider key="offPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
+          <div class="form-item mb-4">
+            <div class="mb-4">
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
+              <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Price in USD equivalent" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+            </div>
+          </div><!-- end form-item -->
+        </ValidationProvider>
+        <ValidationProvider key="offPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
+          <div class="form-item mb-4">
+            <div class="mb-4">
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
+              <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
+                     min="1" placeholder="Quantity or number of rounds per unit" type="number">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+            </div>
+          </div><!-- end form-item -->
+        </ValidationProvider>
+        <ValidationProvider v-slot="{ errors }" rules="url" slim>
+          <div class="form-item mb-4">
+            <div class="mb-4">
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label" for="thirdPartyUrl">Third-party
+                listing URL</label>
+              <input id="thirdPartyUrl" v-model="thirdPartyUrl" :class="!errors[0] ? '' : 'is-invalid'"
+                     class="form-control form-control-s1" placeholder="e.g. Gumroad product link" type="text"
+                     @change="encodeURL">
+              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+            </div>
+          </div><!-- end form-item -->
+        </ValidationProvider>
+      </div>
+      <div class="form-item mb-4">
+        <div class="mb-4">
+          <label class="mb-2 form-label">Option description</label>
+          <input v-model="description" class="form-control form-control-s1" placeholder="Option description"
+                 type="text">
         </div>
       </div><!-- end form-item -->
       <div v-if="isOnPlatform">
@@ -47,7 +103,7 @@
           </div>
         </div><!-- end form-item -->
         <div class="form-item mb-4">
-          <h5 class="mb-3">Select mode</h5>
+          <h5 class="mb-3">Select sale mode</h5>
           <ul id="myTab" class="row g-3 nav nav-tabs nav-tabs-s2" role="tablist">
             <li v-for="list in listingModes" :key="list.id" class="nav-item col-4 col-sm-4 col-lg-3 tooltip-s1"
                 role="presentation">
@@ -69,26 +125,6 @@
               <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Stake limit</label>
               <input v-model="stakeLimit" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                      min="1" placeholder="Stake limit in NMR" type="number">
-              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-            </div>
-          </div><!-- end form-item -->
-        </ValidationProvider>
-        <ValidationProvider key="onPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
-          <div class="form-item mb-4">
-            <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
-              <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                     min="1" placeholder="Quantity or number of rounds per unit" type="number">
-              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-            </div>
-          </div><!-- end form-item -->
-        </ValidationProvider>
-        <ValidationProvider key="onPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
-          <div class="form-item mb-4">
-            <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
-              <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                     min="1" placeholder="Total Price in NMR" type="number">
               <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->
@@ -177,40 +213,6 @@
             </div>
           </div>
         </div><!-- end form-item -->
-      </div>
-      <div v-else>
-        <ValidationProvider key="offPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
-          <div class="form-item mb-4">
-            <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
-              <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                     min="1" placeholder="Quantity or number of rounds per unit" type="number">
-              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-            </div>
-          </div><!-- end form-item -->
-        </ValidationProvider>
-        <ValidationProvider key="offPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
-          <div class="form-item mb-4">
-            <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
-              <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                     min="1" placeholder="Price in USD equivalent" type="number">
-              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-            </div>
-          </div><!-- end form-item -->
-        </ValidationProvider>
-        <ValidationProvider v-slot="{ errors }" rules="url" slim>
-          <div class="form-item mb-4">
-            <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label" for="thirdPartyUrl">Third-party
-                listing URL</label>
-              <input id="thirdPartyUrl" v-model="thirdPartyUrl" :class="!errors[0] ? '' : 'is-invalid'"
-                     class="form-control form-control-s1" placeholder="e.g. Gumroad product link" type="text"
-                     @change="encodeURL">
-              <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-            </div>
-          </div><!-- end form-item -->
-        </ValidationProvider>
       </div>
       <button class="btn btn-dark" type="button" @click="handleSubmit(saveOption)">Save</button>
     </ValidationObserver>
@@ -443,7 +445,7 @@ export default {
         description: this.description,
         coupon: this.coupon ? this.coupon : false,
         // eslint-disable-next-line camelcase
-        coupon_specs: {
+        coupon_specs: this.coupon ? {
           // eslint-disable-next-line camelcase
           applicable_product_ids: this.couponSpecs.applicable_products ? this.couponSpecs.applicable_products.map(p => p.id) : [],
           // eslint-disable-next-line camelcase
@@ -454,7 +456,7 @@ export default {
           min_spend: this.couponSpecs.min_spend,
           // eslint-disable-next-line camelcase
           reward_min_spend: this.couponSpecs.reward_min_spend
-        }
+        } : null
       };
       if (index > -1) {
         options[index] = pricing;
