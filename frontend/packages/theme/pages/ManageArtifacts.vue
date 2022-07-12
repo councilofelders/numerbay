@@ -69,7 +69,7 @@
                     {{
                       (!order.buyer_public_key) ? filterActiveArtifacts(artifacts.data).length : getUniqueActiveOrderArtifacts(order).length
                     }}
-                    / {{ getMaxOrderArtifactsCount() }}
+                    <span v-if="Boolean(getMaxOrderArtifactsCount()) && getMaxOrderArtifactsCount() > 0">/ {{ getMaxOrderArtifactsCount() }}</span>
                   </td>
                   <td><span :class="getSubmissionStatusTextClass(order)" class="badge fw-medium">{{
                       orderGetters.getSubmissionStatus(order)
