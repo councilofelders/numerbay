@@ -15,6 +15,15 @@ const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
     // };
   },
 
+  updateOrderSubmissionModel: async (context: Context, {orderId, modelId}) => {
+    Logger.debug('updateOrderSubmissionModel');
+    const response = await context.$numerbay.api.updateOrderSubmissionModel({orderId, modelId});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
+
   validatePayment: async (context: Context, {orderId, transactionHash}) => {
     Logger.debug('validatePayment');
     const response = await context.$numerbay.api.validatePayment({orderId, transactionHash});

@@ -150,8 +150,8 @@
         </div><!-- end tab-pane -->
       </div><!-- end tab-content -->
     </div><!-- end profile-setting-panel-wrap-->
-    <OrderInfoModal ref="orderInfoModal" :order="currentOrder" :withCopyButtons="true"
-                    modelId="orderInfoModal"></OrderInfoModal>
+    <OrderInfoModal ref="orderInfoModal" :order="currentOrder" :withCopyButtons="true" :withChangeModelButton="true"
+                    modelId="orderInfoModal" @update="refresh"></OrderInfoModal>
     <div v-if="currentOrder && currentOrder.product">
       <ArtifactModal ref="artifactModal" :encryptedPrivateKey="user.encrypted_private_key"
                      :order="currentOrder" :publicKey="user.public_key" modelId="artifactModal"></ArtifactModal>
@@ -210,18 +210,18 @@ export default {
     },
     async handleCancelOrder(order) {
       await this.cancelOrder({orderId: order?.id});
-      this.refresh();
+      await this.refresh();
     },
-    refresh() {
-      this.search({role: 'buyer'});
-    }
-  },
-  mounted() {
-    this.orderPollingTimer = setInterval(async () => {
+    async refresh() {
       await this.search({role: 'buyer'});
       if (this.currentOrder?.id) {
         this.currentOrder = this.orders.filter((o) => o.id === this.currentOrder.id)[0];
       }
+    }
+  },
+  mounted() {
+    this.orderPollingTimer = setInterval(async () => {
+      await this.refresh();
     }, 15000);
   },
   beforeDestroy() {

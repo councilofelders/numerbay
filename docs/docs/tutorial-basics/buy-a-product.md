@@ -114,6 +114,11 @@ If the product you bought uses client-side encryption, you may be prompted by Me
 ## Submission
 If you made your order with auto-submission set up during checkout, submissions will be automatically done for you after tournament round open and after the seller submits their files.
 
+### Change auto-submit model slot
+You can change the auto-submit destination model in the order details panel which can be opened by clicking on the **View details** button in the **[Purchases](https://numerbay.ai/purchases)** page.
+
+<img alt="Change Auto-submit" src="/img/tutorial/changeAutosubmit.png" width="700"/>
+
 ## Manage coupons
 Some sellers may reward you with coupons for your orders. Your coupons are viewable in the **[My Coupons](https://numerbay.ai/coupons)** page. 
 

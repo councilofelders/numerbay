@@ -47,12 +47,6 @@
           </tr>
           <tr>
             <th scope="row">
-              Submit to Model
-            </th>
-            <td>{{ orderGetters.getSubmitModelName(order) }}</td>
-          </tr>
-          <tr>
-            <th scope="row">
               From Address
             </th>
             <td><a :href="`https://etherscan.io/address/${orderGetters.getFromAddress(order)}`"
@@ -118,15 +112,55 @@
           </tr>
           <tr v-if="orderGetters.getStatus(order) === 'confirmed'">
             <th scope="row">
-              Submission Status
+              Stake Limit
+            </th>
+            <td>{{ orderGetters.getStakeLimit(order) }}</td>
+          </tr>
+          <tr>
+            <th scope="row">
+              Auto-Submit Model
+            </th>
+            <td v-if="!modelChanging">{{ orderGetters.getSubmitModelName(order) }}<span v-if="withChangeModelButton"
+                                                                                        class="d-flex align-items-center float-end"><a
+              class="btn-link text-primary" @click="toggleModelChange(true)"
+              href="javascript:void(0);">Change</a></span></td>
+            <td v-else>
+              <ValidationObserver v-slot="{ handleSubmit }">
+                <div class="row">
+                  <div class="col-10">
+                    <ValidationProvider v-slot="{ errors }" rules="required" slim>
+                      <div>
+                        <v-select v-if="!numeraiLoading" ref="slotDropdown"
+                                  v-model="submitModel" :class="!errors[0] ? '' : 'is-invalid'" :clearable=true
+                                  :options="userGetters.getModels(numerai, tournamentId, false)"
+                                  :reduce="model => model.id"
+                                  class="generic-select generic-select-s1" label="name"></v-select>
+                        <div v-else><span class="spinner-border spinner-border-sm" role="status"></span> Loading models
+                        </div>
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+                      </div>
+                    </ValidationProvider>
+                  </div>
+                  <div class="col-2">
+                    <a class="btn btn-link text-primary d-flex align-items-center float-end"
+                       @click="handleSubmit(applyModelChange)" href="javascript:void(0);"
+                       :class="(userOrderLoading || numeraiLoading) ? `disabled`: ``">Apply</a>
+                  </div>
+                </div>
+              </ValidationObserver>
+            </td>
+          </tr>
+          <tr v-if="orderGetters.getStatus(order) === 'confirmed'">
+            <th scope="row">
+              Auto-Submit Status
             </th>
             <td>{{ orderGetters.getSubmissionStatus(order) }}</td>
           </tr>
           <tr v-if="orderGetters.getStatus(order) === 'confirmed'">
             <th scope="row">
-              Stake Limit
+              Last Auto-Submit Round
             </th>
-            <td>{{ orderGetters.getStakeLimit(order) }}</td>
+            <td>{{ orderGetters.getLastSubmissionRound(order) }}</td>
           </tr>
           </tbody>
         </table>
@@ -136,7 +170,9 @@
 </template>
 <script>
 // Composables
-import {orderGetters, productGetters} from '@vue-storefront/numerbay';
+import {orderGetters, productGetters, userGetters, useNumerai, useUserOrder} from '@vue-storefront/numerbay';
+import {useUiNotification} from '~/composables';
+import updateOrderSubmissionModel from "../../../api-client/src/api/updateOrderSubmissionModel";
 
 export default {
   name: 'OrderInfoModal',
@@ -149,6 +185,10 @@ export default {
       type: Boolean,
       default: false
     },
+    withChangeModelButton: {
+      type: Boolean,
+      default: false
+    },
     order: {
       type: Object,
       default: () => ({})
@@ -156,7 +196,9 @@ export default {
   },
   data() {
     return {
-      modal: null
+      modal: null,
+      modelChanging: false,
+      submitModel: null,
     };
   },
   methods: {
@@ -174,12 +216,62 @@ export default {
       } else {
         return '';
       }
+    },
+    async toggleModelChange(value) {
+      if (value) {
+        this.modelChanging = true;
+        await this.getModels().catch((e) => {
+          this.send({
+            message: e?.message,
+            type: 'bg-danger',
+            icon: 'ni-alert-circle',
+            persist: true,
+            action: {
+              text: 'Change Numerai API Key',
+              onClick: async () => {
+                await this.$router.push('/numerai-settings');
+              }
+            }
+          });
+        });
+      } else {
+        this.modelChanging = false;
+      }
+    },
+    async applyModelChange() {
+      // this.modelChanging = false
+      await this.updateOrderSubmissionModel({orderId: this.order?.id, modelId: this.submitModel});
+      if (this.userOrderError?.updateOrderSubmissionModel) {
+        this.send({
+          message: this.userOrderError?.updateOrderSubmissionModel?.message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle',
+          persist: true,
+          action: {
+            text: 'Change Numerai API Key',
+            onClick: async () => {
+              await this.$router.push('/numerai-settings');
+            }
+          }
+        });
+      }
+      this.$emit('update');
+      await this.toggleModelChange(false);
+    }
+  },
+  computed: {
+    tournamentId() {
+      return this.order?.product?.category?.tournament;
     }
   },
   beforeDestroy() {
     this.modal?.hide();
   },
   setup() {
+    const {numerai, getModels, loading: numeraiLoading} = useNumerai('order-info');
+    const {updateOrderSubmissionModel, loading: userOrderLoading, error: userOrderError} = useUserOrder('order-info');
+    const {send} = useUiNotification();
+
     const onCopy = (e) => {
       const target = e.trigger.querySelector('.tooltip-text');
       const prevText = target.innerHTML;
@@ -192,7 +284,15 @@ export default {
     return {
       orderGetters,
       productGetters,
-      onCopy
+      userGetters,
+      onCopy,
+      numerai,
+      getModels,
+      numeraiLoading,
+      updateOrderSubmissionModel,
+      userOrderLoading,
+      userOrderError,
+      send
     };
   }
 };

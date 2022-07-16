@@ -371,6 +371,148 @@ def test_search_seller_orders(
         assert order.product.name == content["data"][0]["product"]["name"]
 
 
+def test_update_order_submission_model(
+    client: TestClient, normal_user_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    with get_random_order(db, buyer_id=current_user["id"]) as order:
+        crud.order.update(
+            db,
+            db_obj=order,
+            obj_in={
+                "round_order": order.round_order - 1,
+                "state": "confirmed",
+            },
+        )
+
+        with get_random_product(
+            db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+        ) as new_product:
+            new_model = new_product.model
+
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+                headers=normal_user_token_headers,
+                json={"model_id": new_model.id},
+            )
+            assert response.status_code == 200
+            content = response.json()
+            assert content["submit_model_id"] == new_model.id
+            assert content["submit_model_name"] == new_model.name
+
+
+def test_update_order_submission_model_invalid(
+    client: TestClient, normal_user_token_headers: dict, db: Session
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    with get_random_order(db, buyer_id=current_user["id"]) as order:
+        # non-confirmed order
+        with get_random_product(
+            db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+        ) as new_product:
+            new_model = new_product.model
+
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+                headers=normal_user_token_headers,
+                json={"model_id": new_model.id},
+            )
+            assert response.status_code == 400
+            assert response.json()["detail"] == "Order not confirmed"
+
+        # confirm order
+        crud.order.update(
+            db,
+            db_obj=order,
+            obj_in={
+                "round_order": order.round_order - 1,
+                "state": "confirmed",
+            },
+        )
+
+        # non-owner model
+        with get_random_product(db, is_on_platform=True, mode="file") as new_product:
+            new_model = new_product.model
+
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+                headers=normal_user_token_headers,
+                json={"model_id": new_model.id},
+            )
+            assert response.status_code == 400
+            assert response.json()["detail"] == "Invalid model ownership"
+
+        # invalid model ID
+        response = client.post(
+            f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+            headers=normal_user_token_headers,
+            json={"model_id": "invalid_model_id"},
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Invalid model ID"
+
+        # different model tournament
+        with get_random_product(
+            db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+        ) as new_product:
+            new_model = new_product.model
+
+            new_model = crud.model.update(
+                db,
+                db_obj=new_model,
+                obj_in={"tournament": 11},
+            )
+
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+                headers=normal_user_token_headers,
+                json={"model_id": new_model.id},
+            )
+            assert response.status_code == 400
+            assert response.json()["detail"] == "Invalid model tournament"
+
+        # stake_with_limit order
+        crud.order.update(
+            db,
+            db_obj=crud.order.get(db, id=order.id),  # type: ignore
+            obj_in={
+                "mode": "stake_with_limit",
+            },
+        )
+        with get_random_product(
+            db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+        ) as new_product:
+            new_model = new_product.model
+
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+                headers=normal_user_token_headers,
+                json={"model_id": new_model.id},
+            )
+            assert response.status_code == 400
+            assert (
+                response.json()["detail"]
+                == "Order with stake limit cannot change submission model"
+            )
+
+    # non-buyer order
+    with get_random_order(db) as order:
+        with get_random_product(
+            db, owner_id=current_user["id"], is_on_platform=True, mode="file"
+        ) as new_product:
+            new_model = new_product.model
+
+            response = client.post(
+                f"{settings.API_V1_STR}/orders/{order.id}/submission-model",
+                headers=normal_user_token_headers,
+                json={"model_id": new_model.id},
+            )
+            assert response.status_code == 403
+            assert response.json()["detail"] == "Not enough permissions"
+
+
 def test_cancel_order(
     client: TestClient, normal_user_token_headers: dict, db: Session
 ) -> None:
