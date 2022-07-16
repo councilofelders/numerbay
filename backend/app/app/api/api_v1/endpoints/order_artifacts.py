@@ -19,7 +19,10 @@ from app.api.dependencies.order_artifacts import (  # send_artifact_emails_for_a
     validate_existing_order_artifact,
     validate_new_order_artifact,
 )
-from app.api.dependencies.orders import validate_existing_order
+from app.api.dependencies.orders import (
+    send_failed_autosubmit_emails,
+    validate_existing_order,
+)
 from app.api.dependencies.products import validate_buyer, validate_product_owner
 from app.api.dependencies.site_globals import validate_not_during_rollover
 from app.core.celery_app import celery_app
@@ -185,6 +188,12 @@ def validate_upload(
             crud.order.update(
                 db, db_obj=artifact.order, obj_in={"submit_state": "failed"}
             )  # type: ignore
+
+            # send auto-submit failure emails
+            send_failed_autosubmit_emails(
+                order_obj=artifact.order, artifact_name=artifact.object_name  # type: ignore
+            )
+
             raise HTTPException(
                 status_code=404,
                 detail="Submission failed",
