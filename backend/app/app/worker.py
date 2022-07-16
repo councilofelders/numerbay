@@ -22,7 +22,7 @@ from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
 from app.api.dependencies.order_artifacts import generate_gcs_signed_url
-from app.api.dependencies.orders import update_payment
+from app.api.dependencies.orders import send_failed_autosubmit_emails, update_payment
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -597,6 +597,11 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
             order = crud.order.get(db, id=order_id)
             crud.order.update(
                 db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
+            )
+
+            # send auto-submit failure emails
+            send_failed_autosubmit_emails(
+                order_obj=order, artifact_name=object_name  # type: ignore
             )
         finally:
             db.close()

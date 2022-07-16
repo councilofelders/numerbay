@@ -725,6 +725,107 @@ def send_failed_webhook_email(
     )
 
 
+def send_failed_autosubmit_seller_email(
+    email_to: str,
+    username: str,
+    buyer: str,
+    model: str,
+    artifact: str,
+    order_id: int,
+    round_tournament: int,
+    product: str,
+) -> None:
+    """
+    Send failed auto-submit seller email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        buyer (str): buyer username
+        model (str): model username
+        order_id (int): order ID
+        round_tournament (int): tournament round
+        product (str): product full name
+        artifact (str): artifact name
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Failed auto-submission for buyer {buyer}"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "failed_autosubmit_seller.html",
+        encoding="utf8",
+    ) as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/sales"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "buyer": buyer,
+                "model": model,
+                "artifact": artifact,
+                "order_id": order_id,
+                "round_tournament": round_tournament,
+                "product": product,
+                "link": link,
+            },
+        ),
+    )
+
+
+def send_failed_autosubmit_buyer_email(
+    email_to: str,
+    username: str,
+    model: str,
+    artifact: str,
+    order_id: int,
+    round_tournament: int,
+    product: str,
+) -> None:
+    """
+    Send failed auto-submit buyer email
+
+    Args:
+        email_to (str): recipient email
+        username (str): buyer username
+        model (str): model name
+        order_id (int): order ID
+        round_tournament (int): tournament round
+        product (str): product full name
+        artifact (str): artifact name
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Failed auto-submission for {username}"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "failed_autosubmit_buyer.html",
+        encoding="utf8",
+    ) as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/purchases"
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "model": model,
+                "artifact": artifact,
+                "order_id": order_id,
+                "round_tournament": round_tournament,
+                "product": product,
+                "link": link,
+            },
+        ),
+    )
+
+
 def generate_password_reset_token(email: str) -> str:
     """
     Generate password reset token (placeholder, not used)
