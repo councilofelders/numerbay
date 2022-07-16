@@ -24,6 +24,7 @@ class OrderBase(BaseModel):
     submit_model_id: Optional[str] = None
     submit_model_name: Optional[str] = None
     submit_state: Optional[str] = None
+    last_submit_round: Optional[int] = None
     chain: Optional[str] = None
     from_address: Optional[str] = None
     to_address: Optional[str] = None

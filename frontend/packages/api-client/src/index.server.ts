@@ -39,6 +39,7 @@ import logInGetTokenWeb3 from './api/logInGetTokenWeb3';
 import logOutUser from './api/logOutUser';
 import signUpUser from './api/signUpUser';
 import submitArtifact from './api/submitArtifact';
+import updateOrderSubmissionModel from './api/updateOrderSubmissionModel';
 import updatePoll from './api/updatePoll';
 import updateProduct from './api/updateProduct';
 import userUpdateMe from './api/userUpdateMe';
@@ -158,6 +159,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     getOrderArtifactUploadUrl,
     validateArtifactUpload,
     validateOrderArtifactUpload,
+    updateOrderSubmissionModel,
     validatePayment,
     cancelOrder,
     getArtifact,

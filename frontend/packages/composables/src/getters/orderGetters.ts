@@ -15,6 +15,9 @@ export const getStatus = (order: any): string => order?.state || 'unknown';
 export const getSubmissionStatus = (order: any): string => order?.submit_state || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getLastSubmissionRound = (order: any): string => order?.last_submit_round || '-';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getStakeLimit = (order: any): string => order?.stake_limit ? `${order.stake_limit} NMR` : '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,6 +84,7 @@ const orderGetters: UserOrderGetters<Order, OrderItem> = {
   getId,
   getStatus,
   getSubmissionStatus,
+  getLastSubmissionRound,
   getStakeLimit,
   getRound,
   getEndRound,

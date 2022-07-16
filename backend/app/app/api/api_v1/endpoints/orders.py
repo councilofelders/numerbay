@@ -342,6 +342,46 @@ def submit_artifact(
     return {"msg": "success!"}
 
 
+@router.post("/{order_id}/submission-model")
+def update_submission_model(
+    *,
+    order_id: int,
+    model_id: str = Body(..., embed=True),
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Update auto-submission model"""
+    order = validate_existing_order(db, order_id)
+
+    if (
+        order.buyer_id != current_user.id  # pylint: disable=consider-using-in
+        and order.product.owner_id != current_user.id
+    ):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.state != "confirmed":
+        raise HTTPException(status_code=400, detail="Order not confirmed")
+    if order.mode == "stake_with_limit":
+        raise HTTPException(
+            status_code=400,
+            detail="Order with stake limit cannot change submission model",
+        )
+
+    model = crud.model.get(db, id=model_id)
+    if model is None:
+        raise HTTPException(status_code=400, detail="Invalid model ID")
+    if model.owner_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Invalid model ownership")
+    if model.tournament != order.product.category.tournament:
+        raise HTTPException(status_code=400, detail="Invalid model tournament")
+
+    order = crud.order.update(
+        db,
+        db_obj=order,
+        obj_in={"submit_model_id": model.id, "submit_model_name": model.name},
+    )
+    return order
+
+
 @router.post("/{order_id}/payment/{transaction_hash}")
 def validate_payment(
     *,

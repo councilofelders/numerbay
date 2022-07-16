@@ -4,6 +4,7 @@ import { UseUserOrder, UseUserOrderErrors } from '../types/composables';
 
 export interface UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS> extends FactoryParams {
   searchOrders: (context: Context, params: ORDER_SEARCH_PARAMS & { customQuery?: CustomQuery }) => Promise<ORDERS>;
+  updateOrderSubmissionModel: (context: Context, params: any) => Promise<any>;
   validatePayment: (context: Context, params: any) => Promise<any>;
   cancelOrder: (context: Context, params: any) => Promise<any>;
 }
@@ -26,6 +27,21 @@ export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: 
       } catch (err) {
         error.value.search = err;
         Logger.error(`useUserOrder/${ssrKey}/search`, err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const updateOrderSubmissionModel = async ({orderId, modelId}) => {
+      Logger.debug(`useUserOrderFactory.updateOrderSubmissionModel ${orderId}/${modelId}`);
+
+      try {
+        loading.value = true;
+        await _factoryParams.updateOrderSubmissionModel({orderId, modelId});
+        error.value.updateOrderSubmissionModel = null;
+      } catch (err) {
+        error.value.updateOrderSubmissionModel = err;
+        Logger.error(`useUserOrder/${ssrKey}/updateOrderSubmissionModel`, err);
       } finally {
         loading.value = false;
       }
@@ -64,6 +80,7 @@ export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: 
     return {
       orders: computed(() => orders.value),
       search,
+      updateOrderSubmissionModel,
       validatePayment,
       cancelOrder,
       loading: computed(() => loading.value),
