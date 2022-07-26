@@ -114,6 +114,34 @@ def parse_status_filter(filter_item: Dict) -> Any:
     return Product.is_active.in_(status_list)
 
 
+def parse_ready_filter(filter_item: Dict) -> Any:
+    """Parse ready filter"""
+    with_ready = "yes" in filter_item["in"]
+    with_not_ready = "no" in filter_item["in"]
+    ready_list = []
+    if with_ready:
+        ready_list.append(True)
+    if with_not_ready:
+        ready_list.append(False)
+    if len(ready_list) == 0:
+        ready_list = [True, False]
+    return Product.is_ready.in_(ready_list)
+
+
+def parse_encryption_filter(filter_item: Dict) -> Any:
+    """Parse encryption filter"""
+    with_encryption = "yes" in filter_item["in"]
+    with_no_encryption = "no" in filter_item["in"]
+    encryption_list = []
+    if with_encryption:
+        encryption_list.append(True)
+    if with_no_encryption:
+        encryption_list.append(False)
+    if len(encryption_list) == 0:
+        encryption_list = [True, False]
+    return Product.use_encryption.in_(encryption_list)
+
+
 def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
     """Parse rank filter"""
     try:
@@ -199,6 +227,10 @@ def parse_filters(
             query_filters.append(parse_platform_filter(filter_item))
         if filter_key == "status":
             query_filters.append(parse_status_filter(filter_item))
+        if filter_key == "ready":
+            query_filters.append(parse_ready_filter(filter_item))
+        if filter_key == "encryption":
+            query_filters.append(parse_encryption_filter(filter_item))
         if filter_key == "user":
             user_id_list = [int(i) for i in filter_item["in"]]
             query_filters.append(Product.owner_id.in_(user_id_list))
@@ -224,6 +256,24 @@ def generate_aggregations(
             "options": [
                 {"label": "active", "value": True},
                 {"label": "inactive", "value": False},
+            ],
+        },
+        {
+            "attribute_code": "ready",
+            "count": None,
+            "label": "Ready",
+            "options": [
+                {"label": "yes", "value": True},
+                {"label": "no", "value": False},
+            ],
+        },
+        {
+            "attribute_code": "encryption",
+            "count": None,
+            "label": "Uses Encryption",
+            "options": [
+                {"label": "yes", "value": True},
+                {"label": "no", "value": False},
             ],
         },
         {
