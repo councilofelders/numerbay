@@ -114,7 +114,7 @@
         </div>
       </div><!-- end placeholder row -->
       <div v-else class="row g-gs">
-        <div v-for="product in products" :key="product.id" class="col-lg-6">
+        <div v-for="product in products" :key="product.id" class="col-xl-6">
           <ProductCard :product="product"></ProductCard>
         </div>
       </div><!-- end row -->

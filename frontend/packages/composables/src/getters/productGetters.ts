@@ -109,6 +109,34 @@ export const getOptionFormattedPrice = (option: any, withCurrency = true): strin
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const getOptionFormattedDescription = (option: any, category: any): string => {
+  let sale_mode = null;
+  if (option?.mode === 'file') {
+    sale_mode = 'file'
+  } else if (option?.mode === 'stake') {
+    sale_mode = 'stake only'
+  } else if (option?.mode === 'stake_with_limit') {
+    sale_mode = `${option?.stake_limit} NMR`
+  }
+
+  const quantity = option?.quantity;
+  let quantity_suffix = '';
+  if (category?.is_per_round) {
+    if (quantity == 1) {
+      quantity_suffix = 'round ';
+    } else if (quantity > 1) {
+      quantity_suffix = 'rounds ';
+    }
+  }
+
+  if (sale_mode) {
+    return `For ${quantity} ${quantity_suffix}- ${sale_mode}`;
+  } else {
+    return `For ${quantity} ${quantity_suffix}`;
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const getOptionFormattedSpecialPrice = (option: any, withCurrency = true): string => {
   const decimals = option?.is_on_platform ? 4 : 2;
   if (option?.special_price) {
@@ -252,6 +280,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getOptionIsOnPlatform: getOptionIsOnPlatform,
   getOptionPlatform: getOptionPlatform,
   getOptionFormattedPrice: getOptionFormattedPrice,
+  getOptionFormattedDescription: getOptionFormattedDescription,
   getOptionFormattedSpecialPrice: getOptionFormattedSpecialPrice,
   getFormattedOption: getFormattedOption,
   getFormattedPrice: getFormattedPrice,
