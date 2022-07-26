@@ -30,22 +30,11 @@ _SORT_OPTION_LOOKUP = {
     "return3m-down": desc(
         Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
     ),
+    "return1y-down": desc(
+        Model.latest_returns.cast(JSON)["oneYear"].as_string().cast(Float)
+    ),
     "corr-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float),
     "corr-down": desc(Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)),
-    "mmc-up": Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
-    "mmc-down": desc(Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)),
-    "corrmmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
-    "corrmmc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    ),
-    "corr2mmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
-    "corr2mmc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    ),
     "corrtc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
     + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
     "corrtc-down": desc(
@@ -57,6 +46,12 @@ _SORT_OPTION_LOOKUP = {
     "corr2tc-down": desc(
         Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
         + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr3tc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr3tc-down": desc(
+        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
     ),
     "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
     "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
@@ -117,6 +112,34 @@ def parse_status_filter(filter_item: Dict) -> Any:
     if len(status_list) == 0:
         status_list = [True, False]
     return Product.is_active.in_(status_list)
+
+
+def parse_ready_filter(filter_item: Dict) -> Any:
+    """Parse ready filter"""
+    with_ready = "yes" in filter_item["in"]
+    with_not_ready = "no" in filter_item["in"]
+    ready_list = []
+    if with_ready:
+        ready_list.append(True)
+    if with_not_ready:
+        ready_list.append(False)
+    if len(ready_list) == 0:
+        ready_list = [True, False]
+    return Product.is_ready.in_(ready_list)
+
+
+def parse_encryption_filter(filter_item: Dict) -> Any:
+    """Parse encryption filter"""
+    with_encryption = "yes" in filter_item["in"]
+    with_no_encryption = "no" in filter_item["in"]
+    encryption_list = []
+    if with_encryption:
+        encryption_list.append(True)
+    if with_no_encryption:
+        encryption_list.append(False)
+    if len(encryption_list) == 0:
+        encryption_list = [True, False]
+    return Product.use_encryption.in_(encryption_list)
 
 
 def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
@@ -204,6 +227,10 @@ def parse_filters(
             query_filters.append(parse_platform_filter(filter_item))
         if filter_key == "status":
             query_filters.append(parse_status_filter(filter_item))
+        if filter_key == "ready":
+            query_filters.append(parse_ready_filter(filter_item))
+        if filter_key == "encryption":
+            query_filters.append(parse_encryption_filter(filter_item))
         if filter_key == "user":
             user_id_list = [int(i) for i in filter_item["in"]]
             query_filters.append(Product.owner_id.in_(user_id_list))
@@ -229,6 +256,24 @@ def generate_aggregations(
             "options": [
                 {"label": "active", "value": True},
                 {"label": "inactive", "value": False},
+            ],
+        },
+        {
+            "attribute_code": "ready",
+            "count": None,
+            "label": "Ready",
+            "options": [
+                {"label": "yes", "value": True},
+                {"label": "no", "value": False},
+            ],
+        },
+        {
+            "attribute_code": "encryption",
+            "count": None,
+            "label": "Uses Encryption",
+            "options": [
+                {"label": "yes", "value": True},
+                {"label": "no", "value": False},
             ],
         },
         {

@@ -252,7 +252,7 @@ export default {
     const {categories, search: categorySearch} = useCategory(`${path}`);
     const products = computed(() => facetGetters.getProducts(result.value));
     const categoryTree = computed(() => facetGetters.getCategoryTree({data: {categories: (categories.value || [])}}));
-    const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'platform', 'rank', 'stake', 'return3m']));
+    const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'ready', 'encryption', 'rank', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
 
     const {changeFilters, isFacetCheckbox} = useUiHelpers();
@@ -275,7 +275,7 @@ export default {
 
     const filters = th.getFacetsFromURL().filters;
     Object.keys(filters).forEach((filter) => {
-      if (filter === 'status' || filter === 'platform') {
+      if (filter === 'status' || filter === 'platform' || filter === 'ready' || filter === 'encryption') {
         selectedFilters.value[filter] = filters[filter];
       } else {
         if (!selectedFilters.value[filter]) {
