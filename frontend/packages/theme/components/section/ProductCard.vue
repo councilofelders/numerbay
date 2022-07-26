@@ -35,7 +35,7 @@
         <hr>
         <div class="card-price-wrap d-flex align-items-center justify-content-between">
           <div class="me-5 me-sm-2">
-            <span class="card-price-title">Price</span>
+            <span class="card-price-title">{{productGetters.getOptionFormattedDescription(productGetters.getOrderedOption(product, product.optionIdx), productGetters.getCategory(product))}}</span>
             <span class="card-price-number">{{
                 productGetters.getOptionFormattedPrice(productGetters.getOrderedOption(product, product.optionIdx))
               }}</span>
