@@ -30,22 +30,11 @@ _SORT_OPTION_LOOKUP = {
     "return3m-down": desc(
         Model.latest_returns.cast(JSON)["threeMonths"].as_string().cast(Float)
     ),
+    "return1y-down": desc(
+        Model.latest_returns.cast(JSON)["oneYear"].as_string().cast(Float)
+    ),
     "corr-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float),
     "corr-down": desc(Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)),
-    "mmc-up": Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
-    "mmc-down": desc(Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)),
-    "corrmmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
-    "corrmmc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    ),
-    "corr2mmc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
-    "corr2mmc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-    ),
     "corrtc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
     + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
     "corrtc-down": desc(
@@ -57,6 +46,12 @@ _SORT_OPTION_LOOKUP = {
     "corr2tc-down": desc(
         Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
         + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr3tc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr3tc-down": desc(
+        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
+        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
     ),
     "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
     "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),

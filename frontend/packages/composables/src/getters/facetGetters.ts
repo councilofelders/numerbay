@@ -30,10 +30,11 @@ const getSortOptions = (searchData): AgnosticSort => {
             { type: 'sort', id: 'rank-best', value: 'TC from high to low', count: null },
             { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
             { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
+            { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
             { type: 'sort', id: 'corr-down', value: 'CORR from high to low', count: null },
-            { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
             { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
             { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
+            { type: 'sort', id: 'corr3tc-down', value: 'CORR+3xTC from high to low', count: null },
             { type: 'sort', id: 'fnc-down', value: 'FNC from high to low', count: null },
             { type: 'sort', id: 'fncV3-down', value: 'FNCv3 from high to low', count: null }
         );
@@ -44,9 +45,10 @@ const getSortOptions = (searchData): AgnosticSort => {
             { type: 'sort', id: 'rank-best', value: 'CORR from high to low', count: null },
             { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
             { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
-            { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
-            { type: 'sort', id: 'corrmmc-down', value: 'CORR+MMC from high to low', count: null },
-            { type: 'sort', id: 'corr2mmc-down', value: 'CORR+2xMMC from high to low', count: null },
+            { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
+            { type: 'sort', id: 'tc-down', value: 'TC from high to low', count: null },
+            { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
+            { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
             { type: 'sort', id: 'ic-down', value: 'IC from high to low', count: null },
         );
       }
