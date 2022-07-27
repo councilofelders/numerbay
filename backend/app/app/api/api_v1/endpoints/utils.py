@@ -62,6 +62,8 @@ def test_product_webhook(
             "product_full_name": "numerai-predictions-myproduct",
             "model_id": "adabxxx-3acf-470e-8733-e4283261xxxx",
             "tournament": 8,
+            "order_id": None,
+            "round_tournament": 326,
         },
         headers={"Content-Type": "application/json"},
     )

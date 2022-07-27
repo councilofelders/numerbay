@@ -151,7 +151,8 @@ def on_order_confirmed(
 
     # trigger webhook if available
     celery_app.send_task(
-        "app.worker.trigger_webhook_for_product_task", args=[order_obj.product_id]
+        "app.worker.trigger_webhook_for_product_task",
+        args=[order_obj.product_id, order_obj.id],
     )
 
     # send order confirmation email

@@ -1131,15 +1131,17 @@ def batch_prune_storage() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def trigger_webhook_for_product_task(product_id: int) -> None:
+def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> None:
     """
     Trigger product webhook for new order task
 
     Args:
         product_id (int): product ID
+        order_id (int): order ID
     """
     db = SessionLocal()
     try:
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
         product = crud.product.get(db, id=product_id)
         if not product:
             return None
@@ -1156,6 +1158,8 @@ def trigger_webhook_for_product_task(product_id: int) -> None:
                 "product_full_name": product.sku,
                 "model_id": product.model_id,
                 "tournament": product.category.tournament,  # type: ignore
+                "order_id": order_id,
+                "round_tournament": selling_round,
             },
             headers={"Content-Type": "application/json"},
         )
