@@ -21,6 +21,7 @@ from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
+from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.order_artifacts import generate_gcs_signed_url
 from app.api.dependencies.orders import send_failed_autosubmit_emails, update_payment
 from app.core.celery_app import celery_app
@@ -385,6 +386,9 @@ def update_active_round() -> None:
             )
             # trigger Numerai submissions
             celery_app.send_task("app.worker.batch_submit_numerai_models_task")
+
+            # trigger other actions on round open
+            on_round_open(db)
         else:
             # New round not yet opened, try again soon
             celery_app.send_task(
