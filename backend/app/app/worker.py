@@ -1141,7 +1141,11 @@ def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> N
     """
     db = SessionLocal()
     try:
-        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+        site_globals = crud.globals.update_singleton(db)
+        selling_round = site_globals.selling_round  # type: ignore
+        if site_globals.active_round != selling_round:  # round not open
+            return None
+
         product = crud.product.get(db, id=product_id)
         if not product:
             return None
