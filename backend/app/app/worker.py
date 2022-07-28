@@ -21,6 +21,7 @@ from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
+from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.order_artifacts import generate_gcs_signed_url
 from app.api.dependencies.orders import send_failed_autosubmit_emails, update_payment
 from app.core.celery_app import celery_app
@@ -385,6 +386,9 @@ def update_active_round() -> None:
             )
             # trigger Numerai submissions
             celery_app.send_task("app.worker.batch_submit_numerai_models_task")
+
+            # trigger other actions on round open
+            on_round_open(db)
         else:
             # New round not yet opened, try again soon
             celery_app.send_task(
@@ -1131,15 +1135,21 @@ def batch_prune_storage() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def trigger_webhook_for_product_task(product_id: int) -> None:
+def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> None:
     """
     Trigger product webhook for new order task
 
     Args:
         product_id (int): product ID
+        order_id (int): order ID
     """
     db = SessionLocal()
     try:
+        site_globals = crud.globals.update_singleton(db)
+        selling_round = site_globals.selling_round  # type: ignore
+        if site_globals.active_round != selling_round:  # round not open
+            return None
+
         product = crud.product.get(db, id=product_id)
         if not product:
             return None
@@ -1156,6 +1166,8 @@ def trigger_webhook_for_product_task(product_id: int) -> None:
                 "product_full_name": product.sku,
                 "model_id": product.model_id,
                 "tournament": product.category.tournament,  # type: ignore
+                "order_id": order_id,
+                "round_tournament": selling_round,
             },
             headers={"Content-Type": "application/json"},
         )
