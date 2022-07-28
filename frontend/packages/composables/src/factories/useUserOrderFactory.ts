@@ -7,6 +7,7 @@ export interface UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS> extends 
   updateOrderSubmissionModel: (context: Context, params: any) => Promise<any>;
   validatePayment: (context: Context, params: any) => Promise<any>;
   cancelOrder: (context: Context, params: any) => Promise<any>;
+  sendUploadReminder: (context: Context, params: any) => Promise<any>;
 }
 
 export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS>) {
@@ -77,12 +78,28 @@ export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: 
       }
     };
 
+    const sendUploadReminder = async ({orderId}) => {
+      Logger.debug(`useUserOrderFactory.sendUploadReminder ${orderId}`);
+
+      try {
+        loading.value = true;
+        await _factoryParams.sendUploadReminder({orderId});
+        error.value.sendUploadReminder = null;
+      } catch (err) {
+        error.value.sendUploadReminder = err;
+        Logger.error(`useUserOrder/${ssrKey}/sendUploadReminder`, err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
     return {
       orders: computed(() => orders.value),
       search,
       updateOrderSubmissionModel,
       validatePayment,
       cancelOrder,
+      sendUploadReminder,
       loading: computed(() => loading.value),
       error: computed(() => error.value)
     };

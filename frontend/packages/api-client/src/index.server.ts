@@ -48,6 +48,7 @@ import validateArtifactUpload from './api/validateArtifactUpload';
 import validateOrderArtifactUpload from './api/validateOrderArtifactUpload';
 import validatePayment from './api/validatePayment';
 import cancelOrder from './api/cancelOrder';
+import sendOrderUploadReminder from './api/sendOrderUploadReminder';
 import votePoll from './api/votePoll';
 
 // const defaultSettings = {};
@@ -161,6 +162,7 @@ const { createApiClient } = apiClientFactory<any, any>({
     validateOrderArtifactUpload,
     updateOrderSubmissionModel,
     validatePayment,
+    sendOrderUploadReminder,
     cancelOrder,
     getArtifact,
     getOrderArtifact,

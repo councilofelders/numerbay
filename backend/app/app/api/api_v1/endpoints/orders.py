@@ -16,6 +16,7 @@ from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
     on_order_confirmed,
     send_order_canceled_emails,
+    send_order_upload_reminder_emails,
     validate_existing_order,
 )
 from app.api.dependencies.products import (
@@ -293,7 +294,7 @@ def submit_artifact(
     ):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if order.state != "confirmed":
-        raise HTTPException(status_code=403, detail="Order not confirmed")
+        raise HTTPException(status_code=400, detail="Order not confirmed")
     if not order.submit_model_id:
         raise HTTPException(
             status_code=400, detail="Order does not have a model ID to submit to"
@@ -398,7 +399,7 @@ def validate_payment(
     ):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if order.state != "pending":
-        raise HTTPException(status_code=403, detail="Order not pending")
+        raise HTTPException(status_code=400, detail="Order not pending")
 
     # todo validate transaction_hash
     abi = [
@@ -474,8 +475,39 @@ def cancel_order(
     if order.buyer_id != current_user.id:  # pylint: disable=consider-using-in
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if order.state != "pending":
-        raise HTTPException(status_code=403, detail="Order not pending")
+        raise HTTPException(status_code=400, detail="Order not pending")
 
     order = crud.order.update(db, db_obj=order, obj_in={"state": "expired"})
     send_order_canceled_emails(order)
     return order
+
+
+@router.post("/{order_id}/upload-reminder")
+def send_upload_reminder(
+    *,
+    order_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Send upload reminder to seller"""
+    order = validate_existing_order(db, order_id)
+
+    if order.buyer_id != current_user.id:  # pylint: disable=consider-using-in
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.state != "confirmed":
+        raise HTTPException(status_code=400, detail="Order not confirmed")
+
+    datetime_now = datetime.utcnow()
+    if order.last_reminder_date is not None and (
+        datetime_now - order.last_reminder_date
+    ) < timedelta(minutes=settings.ORDER_UPLOAD_REMINDER_TIMEOUT_MINUTES):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Please wait for {settings.ORDER_UPLOAD_REMINDER_TIMEOUT_MINUTES} "
+            f"minutes before sending another reminder",
+        )
+
+    send_order_upload_reminder_emails(order)
+
+    crud.order.update(db, db_obj=order, obj_in={"last_reminder_date": datetime_now})
+    return {"msg": "success!"}

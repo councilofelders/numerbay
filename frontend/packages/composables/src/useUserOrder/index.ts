@@ -41,6 +41,15 @@ const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
     }
     return response;
   },
+
+  sendUploadReminder: async (context: Context, {orderId}) => {
+    Logger.debug('sendUploadReminder');
+    const response = await context.$numerbay.api.sendOrderUploadReminder({orderId});
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
 };
 
 export default useUserOrderFactory<OrdersResponse, OrderSearchParams>(params);

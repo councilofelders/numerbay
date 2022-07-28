@@ -23,7 +23,11 @@ from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.order_artifacts import generate_gcs_signed_url
-from app.api.dependencies.orders import send_failed_autosubmit_emails, update_payment
+from app.api.dependencies.orders import (
+    send_failed_autosubmit_emails,
+    send_order_upload_reminder_emails,
+    update_payment,
+)
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -43,7 +47,6 @@ from app.utils import (
     send_failed_webhook_email,
     send_new_artifact_email,
     send_new_artifact_seller_email,
-    send_order_artifact_upload_reminder_email,
     send_succeeded_webhook_email,
 )
 
@@ -203,16 +206,7 @@ def send_order_artifact_upload_reminder_emails_task() -> None:
                 orders_to_remind.append(order)
 
         for order in orders_to_remind:
-            # Send new artifact email notification to seller
-            if order.product.owner.email:
-                send_order_artifact_upload_reminder_email(
-                    email_to=order.product.owner.email,
-                    username=order.product.owner.username,
-                    order_id=order.round_order,  # type: ignore
-                    round_order=order.round_order,  # type: ignore
-                    product=order.product.sku,
-                    buyer=order.buyer.username,  # type: ignore
-                )
+            send_order_upload_reminder_emails(order)
     finally:
         db.close()
     return None
