@@ -18,6 +18,7 @@ from app.utils import (
     send_failed_autosubmit_buyer_email,
     send_failed_autosubmit_seller_email,
     send_new_confirmed_sale_email,
+    send_order_artifact_upload_reminder_email,
     send_order_canceled_email,
     send_order_confirmed_email,
     send_order_expired_email,
@@ -295,4 +296,19 @@ def send_failed_autosubmit_emails(order_obj: models.Order, artifact_name: str) -
                 order_id=order_obj.id,
                 round_tournament=order_obj.round_order,
                 product=product.sku,
+            )
+
+
+def send_order_upload_reminder_emails(order_obj: models.Order) -> None:
+    """Send order upload reminder emails"""
+    if settings.EMAILS_ENABLED:
+        # Send new artifact email notification to seller
+        if order_obj.product.owner.email:
+            send_order_artifact_upload_reminder_email(
+                email_to=order_obj.product.owner.email,
+                username=order_obj.product.owner.username,
+                order_id=order_obj.round_order,  # type: ignore
+                round_order=order_obj.round_order,  # type: ignore
+                product=order_obj.product.sku,
+                buyer=order_obj.buyer.username,  # type: ignore
             )

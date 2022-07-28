@@ -18,6 +18,12 @@
           <tr v-if="!artifacts || artifacts.total===0">
             <td class="text-secondary" colspan="2">Please wait for the seller to upload artifacts after the round
               opens
+              <button :disabled="orderLoading" class="btn btn-outline-dark mt-3 d-flex justify-content-center"
+                      type="button" @click="handleSendUploadReminder">
+                <span v-if="orderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...</span>
+                <span v-else>Send reminder</span>
+              </button>
+<!--              <span v-if="order.last_reminder_date">Last reminder sent: {{new Date(Date.parse(order.last_reminder_date)).toLocaleString()}}</span>-->
             </td>
           </tr>
           <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
@@ -58,6 +64,12 @@
           <tr v-if="!orderArtifacts || orderArtifacts.total===0">
             <td class="text-secondary" colspan="2">Please wait for the seller to upload artifacts after the round
               opens
+              <button :disabled="orderLoading" class="btn btn-outline-dark mt-3 d-flex justify-content-center"
+                      type="button" @click="handleSendUploadReminder">
+                <span v-if="orderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...</span>
+                <span v-else>Send reminder</span>
+              </button>
+<!--              <span v-if="order.last_reminder_date">Last reminder sent: {{new Date(Date.parse(order.last_reminder_date)).toLocaleString()}}</span>-->
             </td>
           </tr>
           <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
@@ -82,7 +94,7 @@
 </template>
 <script>
 // Composables
-import {artifactGetters, orderGetters, useOrderArtifact, useProductArtifact} from '@vue-storefront/numerbay';
+import {artifactGetters, orderGetters, useOrderArtifact, useProductArtifact, useUserOrder} from '@vue-storefront/numerbay';
 import {computed, ref} from '@vue/composition-api';
 import axios from 'axios';
 import {decodeBase64} from 'tweetnacl-util';
@@ -297,6 +309,22 @@ export default {
           icon: 'ni-check'
         });
       }
+    },
+    async handleSendUploadReminder() {
+      await this.sendUploadReminder({orderId: this.order.id});
+      if (this.orderError.sendUploadReminder) {
+        this.send({
+          message: this.orderError.sendUploadReminder.message,
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
+      } else {
+        this.send({
+          message: 'Reminder sent',
+          type: 'bg-success',
+          icon: 'ni-check'
+        });
+      }
     }
   },
   beforeDestroy() {
@@ -315,6 +343,7 @@ export default {
       artifacts: orderArtifacts, search: searchOrderArtifacts, downloadArtifact: downloadOrderArtifact,
       submitArtifact: submitOrderArtifact, loading: orderArtifactLoading, error: orderArtifactError
     } = useOrderArtifact(`${props.order.id}`);
+    const {sendUploadReminder, loading: orderLoading, error: orderError} = useUserOrder(`${props.order.id}`);
     const {send} = useUiNotification();
 
     search({productId: props.order.product.id});
@@ -345,6 +374,9 @@ export default {
       orderArtifactLoading,
       error,
       orderArtifactError,
+      sendUploadReminder,
+      orderLoading,
+      orderError,
       send,
       downloadArtifact,
       downloadOrderArtifact,

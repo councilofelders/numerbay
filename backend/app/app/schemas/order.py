@@ -34,6 +34,7 @@ class OrderBase(BaseModel):
     coupon: Optional[bool] = None
     coupon_specs: Optional[Dict] = None
     buyer_public_key: Optional[str] = None
+    last_reminder_date: Optional[datetime] = None
 
 
 # Properties to receive on order creation

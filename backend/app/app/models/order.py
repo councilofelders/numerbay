@@ -52,4 +52,5 @@ class Order(Base):
     product = relationship("Product", lazy="subquery")
     applied_coupon_id = Column(Integer, ForeignKey("coupon.id"))
     applied_coupon = relationship("Coupon", back_populates="redemptions")
+    last_reminder_date = Column(DateTime)
     artifacts = relationship("OrderArtifact", back_populates="order")

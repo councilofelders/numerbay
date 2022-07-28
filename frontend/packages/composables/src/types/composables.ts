@@ -93,6 +93,7 @@ export interface UseUserOrderErrors {
   updateOrderSubmissionModel: Error;
   validatePayment: Error;
   cancelOrder: Error;
+  sendUploadReminder: Error;
 }
 
 export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
@@ -101,6 +102,7 @@ export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
   updateOrderSubmissionModel(params: { orderId: number, modelId: string }): Promise<void>;
   validatePayment(params: { orderId: number, transactionHash: string }): Promise<void>;
   cancelOrder(params: { orderId: number }): Promise<void>;
+  sendUploadReminder(params: { orderId: number }): Promise<void>;
   loading: ComputedProperty<boolean>;
   error: ComputedProperty<UseUserOrderErrors>;
 }
