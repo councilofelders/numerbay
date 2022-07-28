@@ -70,7 +70,7 @@ services:
     volumes:
       - ./backend/app:/app
     environment:
-      - RUN=celery worker -A app.worker -l info -Q main-queue,beat-queue -P eventlet -c 100
+      - RUN=celery -A app.worker worker -l info -Q main-queue,beat-queue -P eventlet -c 100
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
       - GCP_PROJECT=${GCP_PROJECT}
@@ -87,13 +87,13 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-true}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
-    command: bash -c "python /app/app/celeryworker_pre_start.py && celery worker -A app.worker -l info -Q main-queue,beat-queue -P eventlet -c 100"
+    command: bash -c "python /app/app/celeryworker_pre_start.py && celery -A app.worker worker -l info -Q main-queue,beat-queue -P eventlet -c 100"
 
   celerybeat:
     volumes:
       - ./backend/app:/app
     environment:
-      - RUN=celery beat -A app.worker -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid
+      - RUN=celery -A app.worker beat -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
       - GCP_PROJECT=${GCP_PROJECT}
@@ -108,7 +108,7 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-true}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
-    command: bash -c "python /app/app/celeryworker_pre_start.py && celery beat -A app.worker -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
+    command: bash -c "python /app/app/celeryworker_pre_start.py && celery -A app.worker beat -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
 
   frontend:
     build:
