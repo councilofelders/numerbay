@@ -216,6 +216,8 @@ export const getProductExpirationRound = (product: ProductVariant): number => (p
 
 export const getProductOwner = (product: ProductVariant): string => (product as any)?.owner?.username || '-';
 
+export const getProductModelName = (product: ProductVariant): string => (product as any)?.model?.name || '-';
+
 export const getProductModelUrl = (product: ProductVariant): string => {
   if ((product as any)?.category?.is_per_model) {
     const tournament = (product as any)?.category?.tournament;
@@ -300,6 +302,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getIsOnPlatform: getProductIsOnPlatform,
   getExpirationRound: getProductExpirationRound,
   getOwner: getProductOwner,
+  getModelName: getProductModelName,
   getModelUrl: getProductModelUrl,
   getIsAvailable: getProductIsAvailable,
   getTotalSales: getProductTotalSales,

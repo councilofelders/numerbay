@@ -141,6 +141,10 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
                     "mmcPercentile": round_performance["mmc20dPercentile"],
                     "tcPercentile": round_performance["tcPercentile"],
                     "icPercentile": round_performance["icPercentile"],
+                    "corrMultiplier": round_performance["corrMultiplier"],
+                    "mmcMultiplier": round_performance["mmcMultiplier"],
+                    "tcMultiplier": round_performance["tcMultiplier"],
+                    "payout": round_performance["payout"],
                     "selectedStakeValue": round_performance["selectedStakeValue"],
                 }
                 normalized_data["modelPerformance"]["roundModelPerformances"].append(
@@ -180,7 +184,11 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   fncV3Percentile
                   tcPercentile
                   icPercentile
+                  corrMultiplier
+                  mmcMultiplier
+                  tcMultiplier
                   selectedStakeValue
+                  payout
                 }
                 latestReps {
                   corr
@@ -231,7 +239,11 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   mmc20dPercentile
                   tcPercentile
                   icPercentile
+                  corrMultiplier
+                  mmcMultiplier
+                  tcMultiplier
                   selectedStakeValue
+                  payout
                 }
                 latestReps {
                   corr20d
