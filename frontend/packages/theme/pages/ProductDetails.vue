@@ -41,11 +41,13 @@
                         <p class="fw-semibold text-black text-break">@{{ owner }}</p>
                         <span class="fw-medium small">Owner</span>
                         <ul v-if="hasSocials" class="social-links mt-2">
-                          <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span :class="`ni-chat`"
-                                                                                                        class="ni icon"></span>RocketChat</a>
+                          <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span
+                            :class="`ni-chat`"
+                            class="ni icon"></span>RocketChat</a>
                           </li>
-                          <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span :class="`ni-linkedin`"
-                                                                                                    class="ni icon"></span>LinkedIn</a>
+                          <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span
+                            :class="`ni-linkedin`"
+                            class="ni icon"></span>LinkedIn</a>
                           </li>
                           <li v-if="socialTwitter"><a :href="socialTwitter" target="_blank"><span :class="`ni-twitter`"
                                                                                                   class="ni icon"></span>Twitter</a>
@@ -62,7 +64,8 @@
               <div class="item-detail-btns mt-2">
                 <ul class="btns-group d-flex">
                   <li class="flex-grow-1">
-                    <a :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`" href="javascript:void(0);"
+                    <a :class="`btn btn-dark d-block ${productGetters.getIsActive(product)?'':'disabled'}`"
+                       href="javascript:void(0);"
                        @click="togglePlaceBidModal">{{
                         productGetters.getIsActive(product) ? 'Buy' : 'Not for sale'
                       }}</a>
@@ -75,7 +78,7 @@
                 :latest-reps="latestReps"
                 :latest-returns="latestReturns"
                 :nmr-staked="nmrStaked"
-                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: true, ic: productGetters.getCategory(product).tournament==11}"
+                :show="{fnc: !isSignalsTournament, tc: true, ic: isSignalsTournament}"
                 :stake-info="stakeInfo"
                 :tournament="productGetters.getCategory(product).tournament"
                 class="mt-2"
@@ -90,15 +93,15 @@
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
                     <div v-if="isNumeraiChartReady" class="item-detail-list">
-                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==8" :chartdata="numeraiCorrTcChartData"
+                      <NumeraiChart v-if="!isSignalsTournament" :chartdata="numeraiCorrTcChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiCorrMmcChartData"
+                      <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiCorrMmcChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="productGetters.getCategory(product).tournament==11" :chartdata="numeraiTcIcChartData"
+                      <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiTcIcChartData"
                                     class="numerai-chart"></NumeraiChart>
                     </div>
                     <div v-else class="item-detail-list placeholder-glow">
-                      <svg :height="productGetters.getCategory(product).tournament==8 ? 240 : 480" aria-label="Placeholder"
+                      <svg :height="isSignalsTournament ? 480 : 240" aria-label="Placeholder"
                            class="bd-placeholder-img placeholder"
                            focusable="false" preserveAspectRatio="xMidYMid slice" role="img"
                            width="100%" xmlns="http://www.w3.org/2000/svg"><title>Placeholder</title>
@@ -108,6 +111,66 @@
                   </div><!-- end card-body -->
                 </div><!-- end card-border -->
               </div><!-- end item-detail-chart-container -->
+              <div class="item-detail-performance-table-container mb-4">
+                <div class="card-border card-full">
+                  <div class="card-body card-body-s1">
+                    <h5 class="mb-3">Recent Rounds</h5>
+                    <div class="table-responsive overflow-hidden" v-if="isNumeraiChartReady">
+                      <table class="table mb-0 table-s2">
+                        <thead class="fs-15 text-center">
+                        <tr>
+                          <th v-for="(list, i) in performanceTableHeaders" :key="i" scope="col">{{ list }}
+                          </th>
+                        </tr>
+                        </thead>
+                        <tbody class="fs-15">
+                        <tr
+                          v-for="(roundPerformance, j) in numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 6)"
+                          :key="j">
+                          <th scope="row">{{ roundPerformance.roundNumber }}</th>
+                          <td class="text-end"><span><span class="tooltip-s1">{{ Number(roundPerformance.selectedStakeValue).toFixed(2) }} NMR<span
+                            class="tooltip-s1-text tooltip-text">{{
+                              `${roundPerformance.selectedStakeValue} NMR`
+                            }}</span></span></span></td>
+                          <td class="text-end">
+                            <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
+                            <span v-if="stakeInfo.mmcMultiplier"> {{ stakeInfo.mmcMultiplier }}xMMC</span>
+                            <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
+                          </td>
+                          <td class="text-end"><span class="tooltip-s1">{{ formatDecimal(roundPerformance.corr, 4) }}<span
+                            class="tooltip-s1-text tooltip-text">{{
+                              formatDecimal(roundPerformance.corrPercentile, 1)
+                            }}</span></span></td>
+                          <td class="text-end"><span class="tooltip-s1">{{ formatDecimal(roundPerformance.mmc, 4) }}<span
+                            class="tooltip-s1-text tooltip-text">{{
+                              formatDecimal(roundPerformance.mmcPercentile, 1)
+                            }}</span></span></td>
+                          <td class="text-end" v-if="isSignalsTournament"><span
+                            class="tooltip-s1">{{ formatDecimal(roundPerformance.ic, 4) }}<span
+                            class="tooltip-s1-text tooltip-text">{{
+                              formatDecimal(roundPerformance.icPercentile, 1)
+                            }}</span></span></td>
+                          <td class="text-end" v-if="!isSignalsTournament"><span
+                            class="tooltip-s1">{{ formatDecimal(roundPerformance.fncV3, 4) }}<span
+                            class="tooltip-s1-text tooltip-text">{{
+                              formatDecimal(roundPerformance.fncV3Percentile, 1)
+                            }}</span></span></td>
+                          <td class="text-end"><span class="tooltip-s1 text-primary">{{ formatDecimal(roundPerformance.tc, 4) }}<span
+                            class="tooltip-s1-text tooltip-text">{{
+                              formatDecimal(roundPerformance.tcPercentile, 1)
+                            }}</span></span></td>
+                          <td class="text-end"><span class="tooltip-s1 text-primary"><span :class="`text-${getMetricColor(Number(roundPerformance.payout) || 0)}`">{{ formatPayout(roundPerformance.payout) }}</span><span
+                            class="tooltip-s1-text tooltip-text">{{
+                              `${roundPerformance.payout} NMR`
+                            }}</span></span></td>
+                        </tr>
+                        </tbody>
+                      </table>
+                    </div><!-- end table-responsive -->
+                    <a target="_blank" class="btn btn-light btn-full d-flex justify-content-center mt-1" :href="`${productGetters.getModelUrl(product)}/submissions`">All Rounds</a>
+                  </div><!-- end card-body -->
+                </div><!-- end card-border -->
+              </div><!-- end item-detail-performance-table-container -->
               <div class="item-detail-description-container mb-4">
                 <div class="card-border card-full">
                   <div class="card-body card-body-s1">
@@ -165,7 +228,8 @@
                   <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Select a submission
                     slot</label>
                   <v-select v-if="!!product && !numeraiLoading" ref="slotDropdown"
-                            v-model="submitSlot" :class="!errors[0] ? '' : 'is-invalid'" :clearable=true :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
+                            v-model="submitSlot" :class="!errors[0] ? '' : 'is-invalid'" :clearable=true
+                            :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
                             :reduce="model => model.id"
                             class="generic-select generic-select-s1" label="name"></v-select>
                   <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
@@ -210,7 +274,8 @@
                     loss resulted from this transaction. </label>
                 </div>
               </div>
-              <button :disabled="isOnPlatform && (makeOrderLoading || !terms)" class="btn btn-dark btn-full d-flex justify-content-center"
+              <button :disabled="isOnPlatform && (makeOrderLoading || !terms)"
+                      class="btn btn-dark btn-full d-flex justify-content-center"
                       @click="handleSubmit(onPlaceOrder)">
                 <span v-if="makeOrderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Placing Order...</span>
                 <span v-else>{{ buyBtnText }}</span>
@@ -324,6 +389,30 @@ export default {
     };
   },
   computed: {
+    isSignalsTournament() {
+      return this.productGetters.getCategory(this.product).tournament !== 8;
+    },
+    performanceTableHeaders() {
+      return this.isSignalsTournament ? [
+        'Round',
+        'At-risk',
+        'Stake Type',
+        'CORR',
+        'MMC',
+        'IC',
+        'TC',
+        'Payout'
+      ] : [
+        'Round',
+        'At-risk',
+        'Stake Type',
+        'CORR',
+        'MMC',
+        'FNCV3',
+        'TC',
+        'Payout'
+      ]
+    },
     selectedOption() {
       return this.productGetters.getOrderedOption(this.product, this.optionIdx);
     },
@@ -380,7 +469,7 @@ export default {
     },
     stakeInfo() {
       return {
-        corrMultiplier: this.$route.params.stakeInfoCorrMultiplier || this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || (this.productGetters.getCategory(this.product).tournament === 8 ? 0 : 2),
+        corrMultiplier: this.$route.params.stakeInfoCorrMultiplier || this.productGetters.getModelStakeInfo(this.product, 'corrMultiplier') || (this.isSignalsTournament ? 2 : 0),
         mmcMultiplier: this.$route.params.stakeInfoMmcMultiplier || this.productGetters.getModelStakeInfo(this.product, 'mmcMultiplier') || 0,
         tcMultiplier: this.$route.params.stakeInfoTcMultiplier || this.productGetters.getModelStakeInfo(this.product, 'tcMultiplier') || 0
       };
@@ -576,6 +665,13 @@ export default {
     },
     togglePlaceBidModal() {
       this.placeBidModal?.toggle();
+    },
+    formatDecimal(value, decimals) {
+      return (value || 0).toFixed(decimals)
+    },
+    formatPayout(value) {
+      const payout = (Number(value) || 0)
+      return `${payout>0 ? '+':''}${payout.toFixed(2)} NMR`
     }
   },
   watch: {
