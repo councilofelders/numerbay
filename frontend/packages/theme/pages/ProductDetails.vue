@@ -111,7 +111,8 @@
                   </div><!-- end card-body -->
                 </div><!-- end card-border -->
               </div><!-- end item-detail-chart-container -->
-              <div class="item-detail-performance-table-container mb-4">
+              <div class="item-detail-performance-table-container mb-4"
+                   v-if="Boolean(productGetters.getCategory(product).is_per_model)">
                 <div class="card-border card-full">
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Rounds</h5>
@@ -128,7 +129,8 @@
                           v-for="(roundPerformance, j) in numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 6)"
                           :key="j">
                           <th scope="row">{{ roundPerformance.roundNumber }}</th>
-                          <td class="text-end"><span><span class="tooltip-s1">{{ Number(roundPerformance.selectedStakeValue).toFixed(2) }} NMR<span
+                          <td class="text-end"><span><span
+                            class="tooltip-s1">{{ Number(roundPerformance.selectedStakeValue).toFixed(2) }} NMR<span
                             class="tooltip-s1-text tooltip-text">{{
                               `${roundPerformance.selectedStakeValue} NMR`
                             }}</span></span></span></td>
@@ -137,14 +139,18 @@
                             <span v-if="stakeInfo.mmcMultiplier"> {{ stakeInfo.mmcMultiplier }}xMMC</span>
                             <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
                           </td>
-                          <td class="text-end"><span class="tooltip-s1">{{ formatDecimal(roundPerformance.corr, 4) }}<span
-                            class="tooltip-s1-text tooltip-text">{{
-                              formatDecimal(roundPerformance.corrPercentile, 1)
-                            }}</span></span></td>
-                          <td class="text-end"><span class="tooltip-s1">{{ formatDecimal(roundPerformance.mmc, 4) }}<span
-                            class="tooltip-s1-text tooltip-text">{{
-                              formatDecimal(roundPerformance.mmcPercentile, 1)
-                            }}</span></span></td>
+                          <td class="text-end"><span class="tooltip-s1">{{
+                              formatDecimal(roundPerformance.corr, 4)
+                            }}<span
+                              class="tooltip-s1-text tooltip-text">{{
+                                formatDecimal(roundPerformance.corrPercentile, 1)
+                              }}</span></span></td>
+                          <td class="text-end"><span class="tooltip-s1">{{
+                              formatDecimal(roundPerformance.mmc, 4)
+                            }}<span
+                              class="tooltip-s1-text tooltip-text">{{
+                                formatDecimal(roundPerformance.mmcPercentile, 1)
+                              }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span
                             class="tooltip-s1">{{ formatDecimal(roundPerformance.ic, 4) }}<span
                             class="tooltip-s1-text tooltip-text">{{
@@ -155,11 +161,15 @@
                             class="tooltip-s1-text tooltip-text">{{
                               formatDecimal(roundPerformance.fncV3Percentile, 1)
                             }}</span></span></td>
-                          <td class="text-end"><span class="tooltip-s1 text-primary">{{ formatDecimal(roundPerformance.tc, 4) }}<span
+                          <td class="text-end"><span
+                            class="tooltip-s1 text-primary">{{ formatDecimal(roundPerformance.tc, 4) }}<span
                             class="tooltip-s1-text tooltip-text">{{
                               formatDecimal(roundPerformance.tcPercentile, 1)
                             }}</span></span></td>
-                          <td class="text-end"><span class="tooltip-s1 text-primary"><span :class="`text-${getMetricColor(Number(roundPerformance.payout) || 0)}`">{{ formatPayout(roundPerformance.payout) }}</span><span
+                          <td class="text-end"><span class="tooltip-s1 text-primary"><span
+                            :class="`text-${getMetricColor(Number(roundPerformance.payout) || 0)}`">{{
+                              formatPayout(roundPerformance.payout)
+                            }}</span><span
                             class="tooltip-s1-text tooltip-text">{{
                               `${roundPerformance.payout} NMR`
                             }}</span></span></td>
@@ -167,7 +177,8 @@
                         </tbody>
                       </table>
                     </div><!-- end table-responsive -->
-                    <a target="_blank" class="btn btn-light btn-full d-flex justify-content-center mt-1" :href="`${productGetters.getModelUrl(product)}/submissions`">All Rounds</a>
+                    <a target="_blank" class="btn btn-light btn-full d-flex justify-content-center mt-1"
+                       :href="`${productGetters.getModelUrl(product)}/submissions`">All Rounds</a>
                   </div><!-- end card-body -->
                 </div><!-- end card-border -->
               </div><!-- end item-detail-performance-table-container -->
@@ -671,7 +682,7 @@ export default {
     },
     formatPayout(value) {
       const payout = (Number(value) || 0)
-      return `${payout>0 ? '+':''}${payout.toFixed(2)} NMR`
+      return `${payout > 0 ? '+' : ''}${payout.toFixed(2)} NMR`
     }
   },
   watch: {
