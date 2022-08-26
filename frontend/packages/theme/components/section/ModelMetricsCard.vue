@@ -48,9 +48,9 @@
             </tr>
             <tr>
               <td>
-                MMC Reputation
+                CORR60 Reputation
               </td>
-              <td class="stats">{{ latestReps.mmc }}</td>
+              <td class="stats">{{ latestReps.corr60 }}</td>
             </tr>
             <tr v-if="show.fnc">
               <td>
@@ -92,9 +92,9 @@
             </tr>
             <tr>
               <td>
-                MMC Rank
+                CORR60 Rank
               </td>
-              <td class="stats">{{ latestRanks.mmc }}</td>
+              <td class="stats">{{ latestRanks.corr60 }}</td>
             </tr>
             <tr v-if="show.fnc">
               <td>
@@ -192,7 +192,7 @@ export default {
       } else if (value < 0) {
         return 'danger';
       } else {
-        return '';
+        return 'secondary';
       }
     }
   }
@@ -200,10 +200,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.colormmc {
-  color: #ff6e40;
-}
-
 .colortc {
   color: #a278dc;
 }
