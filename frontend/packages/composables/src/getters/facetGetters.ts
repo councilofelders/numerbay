@@ -35,6 +35,7 @@ const getSortOptions = (searchData): AgnosticSort => {
             { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
             { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
             { type: 'sort', id: 'corr3tc-down', value: 'CORR+3xTC from high to low', count: null },
+            { type: 'sort', id: 'corr60-down', value: 'CORR60 from high to low', count: null },
             { type: 'sort', id: 'fnc-down', value: 'FNC from high to low', count: null },
             { type: 'sort', id: 'fncV3-down', value: 'FNCv3 from high to low', count: null }
         );
@@ -49,6 +50,7 @@ const getSortOptions = (searchData): AgnosticSort => {
             { type: 'sort', id: 'tc-down', value: 'TC from high to low', count: null },
             { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
             { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
+            { type: 'sort', id: 'corr60-down', value: 'CORR60 from high to low', count: null },
             { type: 'sort', id: 'ic-down', value: 'IC from high to low', count: null },
         );
       }
