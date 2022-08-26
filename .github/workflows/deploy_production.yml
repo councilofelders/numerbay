@@ -102,6 +102,12 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_ZONE: ${{ secrets.GCP_ZONE }}
+          GCP_INSTANCE_NAME: ${{ secrets.GCP_INSTANCE_NAME }}
+          REMOTE_DOCKER_HOST: ${{ secrets.REMOTE_DOCKER_HOST }}
+          TRAEFIK_EMAIL: ${{ secrets.TRAEFIK_EMAIL }}
+          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
           DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
