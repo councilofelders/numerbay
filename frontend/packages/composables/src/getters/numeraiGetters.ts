@@ -62,7 +62,34 @@ export const getWokeDate = (numerai: any): string => numerai?.modelInfo?.startDa
 export const getFormatted = (value: number, decimals = 4): string => value ? Number(value).toFixed(decimals) : '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiCorrMmcChartData = (numerai: any) => {
+export const getNumeraiCorrChartData = (numerai: any) => {
+  if (!numerai?.modelInfo) {
+    return {};
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
+    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
+  ));
+
+  return {
+    labels: transposed.roundNumber,
+    datasets: [
+      {
+        label: 'CORR',
+        borderColor: '#666666',
+        fill: false,
+        lineTension: 0,
+        data: transposed.corr,
+        data1: transposed.corrPercentile
+      }
+    ]
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getNumeraiCorrCorr60TcChartData = (numerai: any) => {
   if (!numerai?.modelInfo) {
     return {};
   }
@@ -85,39 +112,12 @@ export const getNumeraiCorrMmcChartData = (numerai: any) => {
         data1: transposed.corrPercentile
       },
       {
-        label: 'MMC',
+        label: 'CORR60',
         borderColor: '#acacac',
         fill: false,
         lineTension: 0,
-        data: transposed.mmc,
-        data1: transposed.mmcPercentile
-      }
-    ]
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiCorrTcChartData = (numerai: any) => {
-  if (!numerai?.modelInfo) {
-    return {};
-  }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
-    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
-  ));
-
-  return {
-    labels: transposed.roundNumber,
-    datasets: [
-      {
-        label: 'CORR',
-        borderColor: '#666666',
-        fill: false,
-        lineTension: 0,
-        data: transposed.corr,
-        data1: transposed.corrPercentile
+        data: transposed.corr60,
+        data1: transposed.corr60Percentile
       },
       {
         label: 'TC',
@@ -183,8 +183,8 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getWokeDateTime,
   getWokeDate,
   getFormatted,
-  getNumeraiCorrMmcChartData,
-  getNumeraiCorrTcChartData,
+  getNumeraiCorrChartData,
+  getNumeraiCorrCorr60TcChartData,
   getNumeraiTcIcChartData
 };
 

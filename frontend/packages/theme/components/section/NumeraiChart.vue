@@ -26,6 +26,9 @@ export default {
           }]
         },
         tooltips: {
+          mode: 'nearest',
+          axis: 'xy',
+          intersect: false,
           callbacks: {
             title(tooltipItem, data) {
               return data.labels[tooltipItem[0].index];

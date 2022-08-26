@@ -108,12 +108,14 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
         if data["v2SignalsProfile"]["latestRanks"]:
             normalized_data["modelPerformance"]["latestRanks"] = {
                 "corr": data["v2SignalsProfile"]["latestRanks"]["corr20d"],
+                "corr60": data["v2SignalsProfile"]["latestRanks"]["corr60"],
                 "mmc": data["v2SignalsProfile"]["latestRanks"]["mmc20d"],
                 "tc": data["v2SignalsProfile"]["latestRanks"]["tc"],
                 "ic": data["v2SignalsProfile"]["latestRanks"]["ic"],
             }
             normalized_data["modelPerformance"]["latestReps"] = {
                 "corr": data["v2SignalsProfile"]["latestReps"]["corr20d"],
+                "corr60": data["v2SignalsProfile"]["latestReps"]["corr60"],
                 "mmc": data["v2SignalsProfile"]["latestReps"]["mmc20d"],
                 "tc": data["v2SignalsProfile"]["latestReps"]["tc"],
                 "ic": data["v2SignalsProfile"]["latestReps"]["ic"],
@@ -134,10 +136,12 @@ def normalize_data(data: Dict, tournament: int = 8) -> Dict:
                 round_performance_normalized = {
                     "roundNumber": round_performance["roundNumber"],
                     "corr": round_performance["corr20d"],
+                    "corr60": round_performance["corr60"],
                     "mmc": round_performance["mmc20d"],
                     "tc": round_performance["tc"],
                     "ic": round_performance["ic"],
                     "corrPercentile": round_performance["corr20dPercentile"],
+                    "corr60Percentile": round_performance["corr60Percentile"],
                     "mmcPercentile": round_performance["mmc20dPercentile"],
                     "tcPercentile": round_performance["tcPercentile"],
                     "icPercentile": round_performance["icPercentile"],
@@ -172,6 +176,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                 roundModelPerformances {
                   roundNumber
                   corr
+                  corr60
                   mmc
                   fnc
                   fncV3
@@ -179,6 +184,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   ic
                   corrWMetamodel
                   corrPercentile
+                  corr60Percentile
                   mmcPercentile
                   fncPercentile
                   fncV3Percentile
@@ -192,6 +198,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                 }
                 latestReps {
                   corr
+                  corr60
                   mmc
                   fnc
                   fncV3
@@ -200,6 +207,7 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                 }
                 latestRanks {
                   corr
+                  corr60
                   mmc
                   fnc
                   fncV3
@@ -232,10 +240,12 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                 roundModelPerformances {
                   roundNumber
                   corr20d
+                  corr60
                   mmc20d
                   tc
                   ic
                   corr20dPercentile
+                  corr60Percentile
                   mmc20dPercentile
                   tcPercentile
                   icPercentile
@@ -247,12 +257,14 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                 }
                 latestReps {
                   corr20d
+                  corr60
                   mmc20d
                   tc
                   ic
                 }
                 latestRanks {
                   corr20d
+                  corr60
                   mmc20d
                   tc
                   ic

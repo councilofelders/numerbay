@@ -62,12 +62,12 @@
                 stakeInfoMmcMultiplier: productGetters.getModelStakeInfo(product, 'mmcMultiplier'),
                 stakeInfoTcMultiplier: productGetters.getModelStakeInfo(product, 'tcMultiplier'),
                 latestRankCorr: productGetters.getModelRank(product, 'corr'),
-                latestRankMmc: productGetters.getModelRank(product, 'mmc'),
+                latestRankCorr60: productGetters.getModelRank(product, 'corr60'),
                 latestRankFnc: productGetters.getModelRank(product, 'fnc'),
                 latestRankTc: productGetters.getModelRank(product, 'tc'),
                 latestRankIc: productGetters.getModelRank(product, 'ic'),
                 latestRepCorr: productGetters.getModelRep(product, 'corr'),
-                latestRepMmc: productGetters.getModelRep(product, 'mmc'),
+                latestRepCorr60: productGetters.getModelRep(product, 'corr60'),
                 latestRepFnc: productGetters.getModelRep(product, 'fnc'),
                 latestRepFncV3: productGetters.getModelRep(product, 'fncV3'),
                 latestRepTc: productGetters.getModelRep(product, 'tc'),
@@ -117,7 +117,7 @@ export default {
     latestRanks() {
       return {
         corr: this.productGetters.getModelRank(this.product, 'corr'),
-        mmc: this.productGetters.getModelRank(this.product, 'mmc'),
+        corr60: this.productGetters.getModelRank(this.product, 'corr60'),
         fnc: this.productGetters.getModelRank(this.product, 'fnc'),
         fncV3: this.productGetters.getModelRank(this.product, 'fncV3'),
         tc: this.productGetters.getModelRank(this.product, 'tc'),
@@ -127,7 +127,7 @@ export default {
     latestReps() {
       return {
         corr: this.productGetters.getModelRep(this.product, 'corr'),
-        mmc: this.productGetters.getModelRep(this.product, 'mmc'),
+        corr60: this.productGetters.getModelRep(this.product, 'corr60'),
         fnc: this.productGetters.getModelRep(this.product, 'fnc'),
         fncV3: this.productGetters.getModelRep(this.product, 'fncV3'),
         tc: this.productGetters.getModelRep(this.product, 'tc'),

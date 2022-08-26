@@ -93,9 +93,9 @@
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
                     <div v-if="isNumeraiChartReady" class="item-detail-list">
-                      <NumeraiChart v-if="!isSignalsTournament" :chartdata="numeraiCorrTcChartData"
+                      <NumeraiChart v-if="!isSignalsTournament" :chartdata="numeraiCorrCorr60TcChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiCorrMmcChartData"
+                      <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiCorrChartData"
                                     class="numerai-chart"></NumeraiChart>
                       <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiTcIcChartData"
                                     class="numerai-chart"></NumeraiChart>
@@ -136,7 +136,6 @@
                             }}</span></span></span></td>
                           <td class="text-end">
                             <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
-                            <span v-if="stakeInfo.mmcMultiplier"> {{ stakeInfo.mmcMultiplier }}xMMC</span>
                             <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
                           </td>
                           <td class="text-end"><span class="tooltip-s1">{{
@@ -146,10 +145,10 @@
                                 formatDecimal(roundPerformance.corrPercentile, 1)
                               }}</span></span></td>
                           <td class="text-end"><span class="tooltip-s1">{{
-                              formatDecimal(roundPerformance.mmc, 4)
+                              formatDecimal(roundPerformance.corr60, 4)
                             }}<span
                               class="tooltip-s1-text tooltip-text">{{
-                                formatDecimal(roundPerformance.mmcPercentile, 1)
+                                formatDecimal(roundPerformance.corr60Percentile, 1)
                               }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span
                             class="tooltip-s1">{{ formatDecimal(roundPerformance.ic, 4) }}<span
@@ -372,7 +371,6 @@ import {
 import {useUiNotification} from '~/composables';
 import {ethers} from 'ethers';
 import {contractAddress, transferAbi} from "../plugins/nmr";
-import {getNumeraiTcIcChartData} from "../../composables/src/getters/numeraiGetters";
 
 export default {
   name: 'ProductDetails',
@@ -409,7 +407,7 @@ export default {
         'At-risk',
         'Stake Type',
         'CORR',
-        'MMC',
+        'CORR60',
         'IC',
         'TC',
         'Payout'
@@ -418,7 +416,7 @@ export default {
         'At-risk',
         'Stake Type',
         'CORR',
-        'MMC',
+        'CORR60',
         'FNCV3',
         'TC',
         'Payout'
@@ -488,7 +486,7 @@ export default {
     latestRanks() {
       return {
         corr: this.$route.params.latestRankCorr || this.productGetters.getModelRank(this.product, 'corr'),
-        mmc: this.$route.params.latestRankMmc || this.productGetters.getModelRank(this.product, 'mmc'),
+        corr60: this.$route.params.latestRankCorr60 || this.productGetters.getModelRank(this.product, 'corr60'),
         fnc: this.$route.params.latestRankFnc || this.productGetters.getModelRank(this.product, 'fnc'),
         fncV3: this.$route.params.latestRankFncV3 || this.productGetters.getModelRank(this.product, 'fncV3'),
         tc: this.$route.params.latestRankTc || this.productGetters.getModelRank(this.product, 'tc'),
@@ -498,7 +496,7 @@ export default {
     latestReps() {
       return {
         corr: this.$route.params.latestRepCorr || this.productGetters.getModelRep(this.product, 'corr'),
-        mmc: this.$route.params.latestRepMmc || this.productGetters.getModelRep(this.product, 'mmc'),
+        corr60: this.$route.params.latestRepCorr60 || this.productGetters.getModelRep(this.product, 'corr60'),
         fnc: this.$route.params.latestRepFnc || this.productGetters.getModelRep(this.product, 'fnc'),
         fncV3: this.$route.params.latestRepFncV3 || this.productGetters.getModelRep(this.product, 'fncV3'),
         tc: this.$route.params.latestRepTc || this.productGetters.getModelRep(this.product, 'tc'),
@@ -671,14 +669,17 @@ export default {
       } else if (value < 0) {
         return 'danger';
       } else {
-        return '';
+        return 'secondary';
       }
     },
     togglePlaceBidModal() {
       this.placeBidModal?.toggle();
     },
     formatDecimal(value, decimals) {
-      return (value || 0).toFixed(decimals)
+      if (value !== null) {
+        return (value).toFixed(decimals)
+      }
+      return '-'
     },
     formatPayout(value) {
       const payout = (Number(value) || 0)
@@ -825,8 +826,8 @@ export default {
       productLoading,
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p) => parseInt(p.id) !== parseInt(id))),
       relatedLoading,
-      numeraiCorrMmcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrMmcChartData(numerai.value)),
-      numeraiCorrTcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrTcChartData(numerai.value)),
+      numeraiCorrChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrChartData(numerai.value)),
+      numeraiCorrCorr60TcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrCorr60TcChartData(numerai.value)),
       numeraiTcIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcIcChartData(numerai.value)),
       numerai,
       numeraiLoading,

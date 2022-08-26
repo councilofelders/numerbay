@@ -270,8 +270,8 @@ export interface NumeraiGetters<NUMERAI> {
     getWokeDateTime: (numerai: NUMERAI) => string,
     getWokeDate: (numerai: NUMERAI) => string,
     getFormatted: (value: number, decimals: number) => string,
-    getNumeraiCorrMmcChartData: (numerai: NUMERAI) => any,
-    getNumeraiCorrTcChartData: (numerai: NUMERAI) => any,
+    getNumeraiCorrChartData: (numerai: NUMERAI) => any,
+    getNumeraiCorrCorr60TcChartData: (numerai: NUMERAI) => any,
     getNumeraiTcIcChartData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }
