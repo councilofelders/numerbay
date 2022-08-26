@@ -13,11 +13,11 @@ on:
         description: 'Log level'
         required: true
         default: 'info'
-      debug_enabled:
-        type: boolean
-        description: 'Run the build with tmate debugging enabled'
-        required: false
-        default: false
+#      debug_enabled:
+#        type: boolean
+#        description: 'Run the build with tmate debugging enabled'
+#        required: false
+#        default: false
       tags:
         description: 'Description'
 
@@ -98,42 +98,42 @@ jobs:
           gcloud auth configure-docker
           export LD_LIBRARY_PATH=/usr/local/lib
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_ZONE: ${{ secrets.GCP_ZONE }}
-          GCP_INSTANCE_NAME: ${{ secrets.GCP_INSTANCE_NAME }}
-          REMOTE_DOCKER_HOST: ${{ secrets.REMOTE_DOCKER_HOST }}
-          TRAEFIK_EMAIL: ${{ secrets.TRAEFIK_EMAIL }}
-          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
-          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
-          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
-          TAG: prod
-          FRONTEND_ENV: production
-          DOMAIN: numerbay.ai
-          TRAEFIK_TAG: numerbay.ai
-          STACK_NAME: numerbay-ai
-          SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-          FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
-          FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
-          POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
-          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
-          GCP_STORAGE_BUCKET: storage.numerbay.ai
-          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
-          INFURA_PROJECT_ID: ${{ secrets.APP_INFURA_PROJECT_ID }}
-          SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
-          SMTP_USER: ${{ secrets.APP_SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
+#        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+#        env:
+#          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+#          GCP_ZONE: ${{ secrets.GCP_ZONE }}
+#          GCP_INSTANCE_NAME: ${{ secrets.GCP_INSTANCE_NAME }}
+#          REMOTE_DOCKER_HOST: ${{ secrets.REMOTE_DOCKER_HOST }}
+#          TRAEFIK_EMAIL: ${{ secrets.TRAEFIK_EMAIL }}
+#          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
+#          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
+#          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
+#          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
+#          TAG: prod
+#          FRONTEND_ENV: production
+#          DOMAIN: numerbay.ai
+#          TRAEFIK_TAG: numerbay.ai
+#          STACK_NAME: numerbay-ai
+#          SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+#          FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
+#          FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
+#          POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
+#          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
+#          GCP_STORAGE_BUCKET: storage.numerbay.ai
+#          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
+#          INFURA_PROJECT_ID: ${{ secrets.APP_INFURA_PROJECT_ID }}
+#          SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
+#          SMTP_USER: ${{ secrets.APP_SMTP_USER }}
+#          SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
 
       - name: Deploy Production Images
         run: |
           gcloud compute ssh --project=${{ secrets.GCP_PROJECT_ID }} --zone=${{ secrets.GCP_ZONE }} ${{ secrets.GCP_INSTANCE_NAME }}
           eval $(ssh-agent)
           ssh-add ~/.ssh/google_compute_engine
-          printf '\nHost *\n\tStrictHostKeyChecking no\n\tCheckHostIP no\n\tUserKnownHostsFile /dev/null' "$SSH_HOST" "$INPUT_SSH_PUBLIC_KEY" > ~/.ssh/config
+          printf '\nHost *\n\tStrictHostKeyChecking no\n\tCheckHostIP no' "$SSH_HOST" "$INPUT_SSH_PUBLIC_KEY" > ~/.ssh/config
           export LD_LIBRARY_PATH=/usr/local/lib
           echo "Setup Remote Docker Swarm"
           ssh $USER@${{ secrets.REMOTE_DOCKER_HOST }} "(docker swarm init || true) && docker-credential-gcr configure-docker"
