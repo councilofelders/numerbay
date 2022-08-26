@@ -53,6 +53,8 @@ _SORT_OPTION_LOOKUP = {
         Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
         + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
     ),
+    "corr60-up": Model.latest_reps.cast(JSON)["corr60"].as_string().cast(Float),
+    "corr60-down": desc(Model.latest_reps.cast(JSON)["corr60"].as_string().cast(Float)),
     "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
     "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
     "fncV3-up": Model.latest_reps.cast(JSON)["fncV3"].as_string().cast(Float),
