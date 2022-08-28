@@ -68,10 +68,10 @@
                       }}</span>
                     <a class="ms-2 text-secondary" href="javascript:void(0);" title="Click for details"
                        @click="toggleInfoModal(order)">View details</a>
-                    <a v-if="orderGetters.getStatus(order)=='confirmed'" class="ms-2 text-primary"
+                    <a v-if="orderConfirmed(order)" class="ms-2 text-primary"
                        href="javascript:void(0);"
                        title="Click for files" @click="toggleArtifactModal(order)">Download</a>
-                    <a v-if="orderGetters.getStatus(order)=='pending'" class="ms-2 text-danger"
+                    <a v-if="orderPending(order)" class="ms-2 text-danger"
                        href="javascript:void(0);"
                        title="Cancel this order" @click="handleCancelOrder(order)">Cancel</a>
                   </p>
@@ -135,9 +135,12 @@
                       }}</span>
                     <a class="ms-2 text-secondary" href="javascript:void(0);" title="Click for details"
                        @click="toggleInfoModal(order)">View details</a>
-                    <a v-if="orderGetters.getStatus(order)=='confirmed'" class="ms-2 text-primary"
+                    <a v-if="orderConfirmed(order)" class="ms-2 text-primary"
                        href="javascript:void(0);"
                        title="Click for files" @click="toggleArtifactModal(order)">Download</a>
+                    <a v-if="orderConfirmed(order)" class="ms-2 text-danger float-end"
+                       href="javascript:void(0);"
+                       title="Send email to request a refund" @click="toggleRefundModal(order)">Refund</a>
                   </p>
                 </div>
               </div>
@@ -155,12 +158,14 @@
     <div v-if="currentOrder && currentOrder.product">
       <ArtifactModal ref="artifactModal" :encryptedPrivateKey="user.encrypted_private_key"
                      :order="currentOrder" :publicKey="user.public_key" modelId="artifactModal"></ArtifactModal>
+      <RefundModal ref="refundModal" :order="currentOrder" modelId="refundModal"></RefundModal>
     </div>
   </div><!-- end col-lg-8 -->
 </template>
 
 <script>
 import ArtifactModal from "~/components/section/ArtifactModal";
+import RefundModal from "~/components/section/RefundModal";
 import OrderInfoModal from "~/components/section/OrderInfoModal";
 import Pagination from 'vue-pagination-2';
 import _ from 'lodash';
@@ -174,6 +179,7 @@ export default {
   name: 'PurchasesSection',
   components: {
     ArtifactModal,
+    RefundModal,
     OrderInfoModal,
     Pagination
   },
@@ -198,6 +204,12 @@ export default {
     }
   },
   methods: {
+    orderPending(order) {
+      return this.orderGetters.getStatus(order)==='pending';
+    },
+    orderConfirmed(order) {
+      return this.orderGetters.getStatus(order)==='confirmed';
+    },
     toggleInfoModal(order) {
       this.currentOrder = order;
       this.$refs.orderInfoModal.show();
@@ -206,6 +218,12 @@ export default {
       this.currentOrder = order;
       this.$nextTick(() => {
         this.$refs.artifactModal.show();
+      });
+    },
+    toggleRefundModal(order) {
+      this.currentOrder = order;
+      this.$nextTick(() => {
+        this.$refs.refundModal.show();
       });
     },
     async handleCancelOrder(order) {

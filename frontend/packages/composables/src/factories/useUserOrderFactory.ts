@@ -8,6 +8,7 @@ export interface UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS> extends 
   validatePayment: (context: Context, params: any) => Promise<any>;
   cancelOrder: (context: Context, params: any) => Promise<any>;
   sendUploadReminder: (context: Context, params: any) => Promise<any>;
+  sendRefundRequest: (context: Context, params: any) => Promise<any>;
 }
 
 export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: UseUserOrderFactoryParams<ORDERS, ORDER_SEARCH_PARAMS>) {
@@ -93,6 +94,21 @@ export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: 
       }
     };
 
+    const sendRefundRequest = async (params) => {
+      Logger.debug(`useUserOrderFactory.sendRefundRequest ${params.orderId}`);
+
+      try {
+        loading.value = true;
+        await _factoryParams.sendRefundRequest(params);
+        error.value.sendRefundRequest = null;
+      } catch (err) {
+        error.value.sendRefundRequest = err;
+        Logger.error(`useUserOrder/${ssrKey}/sendRefundRequest`, err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
     return {
       orders: computed(() => orders.value),
       search,
@@ -100,6 +116,7 @@ export function useUserOrderFactory<ORDERS, ORDER_SEARCH_PARAMS>(factoryParams: 
       validatePayment,
       cancelOrder,
       sendUploadReminder,
+      sendRefundRequest,
       loading: computed(() => loading.value),
       error: computed(() => error.value)
     };

@@ -16,6 +16,7 @@ from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
     on_order_confirmed,
     send_order_canceled_emails,
+    send_order_refund_request_emails,
     send_order_upload_reminder_emails,
     validate_existing_order,
 )
@@ -510,4 +511,40 @@ def send_upload_reminder(
     send_order_upload_reminder_emails(order)
 
     crud.order.update(db, db_obj=order, obj_in={"last_reminder_date": datetime_now})
+    return {"msg": "success!"}
+
+
+@router.post("/{order_id}/refund-request")
+def send_refund_request(
+    *,
+    order_id: int,
+    wallet: str = Body(...),
+    contact: str = Body(None),
+    message: str = Body(None),
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Send refund request to seller"""
+    order = validate_existing_order(db, order_id)
+
+    if order.buyer_id != current_user.id:  # pylint: disable=consider-using-in
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    if order.state != "confirmed":
+        raise HTTPException(status_code=400, detail="Order not confirmed")
+
+    datetime_now = datetime.utcnow()
+    if order.last_reminder_date is not None and (
+        datetime_now - order.last_reminder_date
+    ) < timedelta(minutes=settings.ORDER_UPLOAD_REMINDER_TIMEOUT_MINUTES):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Please wait for {settings.ORDER_UPLOAD_REMINDER_TIMEOUT_MINUTES} "
+            f"minutes before sending another request",
+        )
+
+    send_order_refund_request_emails(
+        order, wallet=wallet, contact=contact, message=message
+    )
+
+    # crud.order.update(db, db_obj=order, obj_in={"last_reminder_date": datetime_now})
     return {"msg": "success!"}

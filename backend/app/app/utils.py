@@ -645,6 +645,87 @@ def send_order_artifact_upload_reminder_email(
     )
 
 
+def send_order_refund_request_email(
+    email_to: str,
+    username: str,
+    order_id: int,
+    round_order: int,
+    product: str,
+    buyer: str,
+    amount: float,
+    currency: str,
+    wallet: str,
+    contact: str,
+    message: str,
+) -> None:
+    """
+    Send order refund request email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+        order_id (int): order id
+        round_order (int): tournament round for order
+        product (str): product full name
+        buyer (str): buyer username
+        amount (float): order price amount
+        currency (str): order currency
+        wallet (str): buyer wallet to refund to
+        contact (str): buyer contact
+        message (str): short message from buyer
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Refund request for {buyer}'s order"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "order_refund_request.html",
+        encoding="utf8",
+    ) as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST + "/sales"
+    print(
+        dict(
+            email_to=email_to,
+            subject_template=subject,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "order_id": order_id,
+                "round_order": round_order,
+                "product": product,
+                "buyer": buyer,
+                "amount": amount,
+                "currency": currency,
+                "wallet": wallet,
+                "contact": contact,
+                "message": message,
+                "link": link,
+            },
+        )
+    )
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+                "order_id": order_id,
+                "round_order": round_order,
+                "product": product,
+                "buyer": buyer,
+                "amount": amount,
+                "currency": currency,
+                "wallet": wallet,
+                "contact": contact,
+                "message": message,
+                "link": link,
+            },
+        ),
+    )
+
+
 def send_succeeded_webhook_email(
     email_to: str,
     username: str,

@@ -94,6 +94,7 @@ export interface UseUserOrderErrors {
   validatePayment: Error;
   cancelOrder: Error;
   sendUploadReminder: Error;
+  sendRefundRequest: Error;
 }
 
 export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
@@ -103,6 +104,7 @@ export interface UseUserOrder<ORDERS, ORDER_SEARCH_PARAMS> {
   validatePayment(params: { orderId: number, transactionHash: string }): Promise<void>;
   cancelOrder(params: { orderId: number }): Promise<void>;
   sendUploadReminder(params: { orderId: number }): Promise<void>;
+  sendRefundRequest(params: any): Promise<void>;
   loading: ComputedProperty<boolean>;
   error: ComputedProperty<UseUserOrderErrors>;
 }
