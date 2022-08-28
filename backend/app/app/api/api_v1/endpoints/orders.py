@@ -1,5 +1,5 @@
 """ Orders endpoints """
-
+import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
@@ -542,9 +542,15 @@ def send_refund_request(
             f"minutes before sending another request",
         )
 
+    # cleaning strings
+    TAG_RE = re.compile(r"<[^>]+>")
+    wallet = TAG_RE.sub("", wallet)
+    contact = TAG_RE.sub("", contact)
+    message = TAG_RE.sub("", message)
+
     send_order_refund_request_emails(
         order, wallet=wallet, contact=contact, message=message
     )
 
-    # crud.order.update(db, db_obj=order, obj_in={"last_reminder_date": datetime_now})
+    crud.order.update(db, db_obj=order, obj_in={"last_reminder_date": datetime_now})
     return {"msg": "success!"}
