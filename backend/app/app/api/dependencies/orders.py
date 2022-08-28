@@ -308,7 +308,7 @@ def send_order_upload_reminder_emails(order_obj: models.Order) -> None:
             send_order_artifact_upload_reminder_email(
                 email_to=order_obj.product.owner.email,
                 username=order_obj.product.owner.username,
-                order_id=order_obj.round_order,  # type: ignore
+                order_id=order_obj.id,  # type: ignore
                 round_order=order_obj.round_order,  # type: ignore
                 product=order_obj.product.sku,
                 buyer=order_obj.buyer.username,  # type: ignore
@@ -328,7 +328,7 @@ def send_order_refund_request_emails(
             send_order_refund_request_email(
                 email_to=order_obj.product.owner.email,
                 username=order_obj.product.owner.username,
-                order_id=order_obj.round_order,  # type: ignore
+                order_id=order_obj.id,  # type: ignore
                 round_order=order_obj.round_order,  # type: ignore
                 product=order_obj.product.sku,
                 buyer=order_obj.buyer.username,  # type: ignore
