@@ -22,6 +22,7 @@ from app.utils import (
     send_order_canceled_email,
     send_order_confirmed_email,
     send_order_expired_email,
+    send_order_refund_request_email,
 )
 
 
@@ -302,7 +303,7 @@ def send_failed_autosubmit_emails(order_obj: models.Order, artifact_name: str) -
 def send_order_upload_reminder_emails(order_obj: models.Order) -> None:
     """Send order upload reminder emails"""
     if settings.EMAILS_ENABLED:
-        # Send new artifact email notification to seller
+        # Send upload email reminder to seller
         if order_obj.product.owner.email:
             send_order_artifact_upload_reminder_email(
                 email_to=order_obj.product.owner.email,
@@ -311,4 +312,29 @@ def send_order_upload_reminder_emails(order_obj: models.Order) -> None:
                 round_order=order_obj.round_order,  # type: ignore
                 product=order_obj.product.sku,
                 buyer=order_obj.buyer.username,  # type: ignore
+            )
+
+
+def send_order_refund_request_emails(
+    order_obj: models.Order,
+    wallet: str,
+    contact: Optional[str] = None,
+    message: Optional[str] = None,
+) -> None:
+    """Send order refund request emails"""
+    if settings.EMAILS_ENABLED:
+        # Send refund request to seller
+        if order_obj.product.owner.email:
+            send_order_refund_request_email(
+                email_to=order_obj.product.owner.email,
+                username=order_obj.product.owner.username,
+                order_id=order_obj.round_order,  # type: ignore
+                round_order=order_obj.round_order,  # type: ignore
+                product=order_obj.product.sku,
+                buyer=order_obj.buyer.username,  # type: ignore
+                amount=order_obj.price,
+                currency=order_obj.currency,  # type: ignore
+                wallet=wallet,
+                contact=contact or "-",
+                message=message or "-",
             )

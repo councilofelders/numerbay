@@ -50,6 +50,16 @@ const params: UseUserOrderFactoryParams<OrdersResponse, OrderSearchParams> = {
     }
     return response;
   },
+
+  sendRefundRequest: async (context: Context, params) => {
+    Logger.debug('sendRefundRequest');
+    console.log('params', params)
+    const response = await context.$numerbay.api.sendOrderRefundRequest(params);
+    if (response?.error) {
+      throw new Error(response.detail);
+    }
+    return response;
+  },
 };
 
 export default useUserOrderFactory<OrdersResponse, OrderSearchParams>(params);
