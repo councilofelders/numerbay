@@ -8,6 +8,7 @@
           <thead class="fs-14">
           <tr>
             <th v-for="(list, i) in [
+                      'Time',
                       'Download File',
                       'Numerai Submission'
                     ]" :key="i" scope="col">{{ list }}
@@ -23,10 +24,13 @@
                 <span v-if="orderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...</span>
                 <span v-else>Send reminder</span>
               </button>
-<!--              <span v-if="order.last_reminder_date">Last reminder sent: {{new Date(Date.parse(order.last_reminder_date)).toLocaleString()}}</span>-->
+              <!--              <span v-if="order.last_reminder_date">Last reminder sent: {{new Date(Date.parse(order.last_reminder_date)).toLocaleString()}}</span>-->
             </td>
           </tr>
           <tr v-for="artifact in artifacts.data" :key="artifactGetters.getId(artifact)">
+            <td>
+              <span class="text-break" style="white-space: normal;">{{ formatDate(artifact.date) }}</span>
+            </td>
             <td>
               <span class="text-break" style="white-space: normal;">
                 <a :title="`Download ${artifactGetters.getObjectName(artifact)}`" href="javascript:void(0);"
@@ -54,6 +58,7 @@
           <thead class="fs-14">
           <tr>
             <th v-for="(list, i) in [
+                      'Time',
                       'Download File',
                       'Numerai Submission'
                     ]" :key="i" scope="col">{{ list }}
@@ -69,10 +74,13 @@
                 <span v-if="orderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...</span>
                 <span v-else>Send reminder</span>
               </button>
-<!--              <span v-if="order.last_reminder_date">Last reminder sent: {{new Date(Date.parse(order.last_reminder_date)).toLocaleString()}}</span>-->
+              <!--              <span v-if="order.last_reminder_date">Last reminder sent: {{new Date(Date.parse(order.last_reminder_date)).toLocaleString()}}</span>-->
             </td>
           </tr>
           <tr v-for="artifact in orderArtifacts.data" :key="artifactGetters.getId(artifact)">
+            <td>
+              <span class="text-break" style="white-space: normal;">{{ formatDate(artifact.date) }}</span>
+            </td>
             <td>
               <span class="text-break" style="white-space: normal;">
                 <a :title="`Download ${artifactGetters.getObjectName(artifact)}`" href="javascript:void(0);"
@@ -94,7 +102,13 @@
 </template>
 <script>
 // Composables
-import {artifactGetters, orderGetters, useOrderArtifact, useProductArtifact, useUserOrder} from '@vue-storefront/numerbay';
+import {
+  artifactGetters,
+  orderGetters,
+  useOrderArtifact,
+  useProductArtifact,
+  useUserOrder
+} from '@vue-storefront/numerbay';
 import {computed, ref} from '@vue/composition-api';
 import axios from 'axios';
 import {decodeBase64} from 'tweetnacl-util';
@@ -149,6 +163,9 @@ export default {
     },
     hide() {
       this.modal?.hide();
+    },
+    formatDate(value) {
+      return new Date(Date.parse(value)).toLocaleString()
     },
     getMetricColor(value) {
       if (value > 0) {
