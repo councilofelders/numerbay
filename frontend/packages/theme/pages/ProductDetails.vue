@@ -141,35 +141,35 @@
                           <td class="text-end"><span class="tooltip-s1">{{
                               formatDecimal(roundPerformance.corr, 4)
                             }}<span
-                              class="tooltip-s1-text tooltip-text">{{
-                                formatDecimal(roundPerformance.corrPercentile, 1)
+                              class="tooltip-s1-text tooltip-text">Percentile: {{
+                                formatDecimal(roundPerformance.corrPercentile * 100, 1)
                               }}</span></span></td>
                           <td class="text-end"><span class="tooltip-s1">{{
                               formatDecimal(roundPerformance.corr60, 4)
                             }}<span
-                              class="tooltip-s1-text tooltip-text">{{
-                                formatDecimal(roundPerformance.corr60Percentile, 1)
+                              class="tooltip-s1-text tooltip-text">Percentile: {{
+                                formatDecimal(roundPerformance.corr60Percentile * 100, 1)
                               }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span
                             class="tooltip-s1">{{ formatDecimal(roundPerformance.ic, 4) }}<span
-                            class="tooltip-s1-text tooltip-text">{{
-                              formatDecimal(roundPerformance.icPercentile, 1)
+                            class="tooltip-s1-text tooltip-text">Percentile: {{
+                              formatDecimal(roundPerformance.icPercentile * 100, 1)
                             }}</span></span></td>
                           <td class="text-end" v-if="!isSignalsTournament"><span
                             class="tooltip-s1">{{ formatDecimal(roundPerformance.fncV3, 4) }}<span
-                            class="tooltip-s1-text tooltip-text">{{
-                              formatDecimal(roundPerformance.fncV3Percentile, 1)
+                            class="tooltip-s1-text tooltip-text">Percentile: {{
+                              formatDecimal(roundPerformance.fncV3Percentile * 100, 1)
                             }}</span></span></td>
                           <td class="text-end"><span
                             class="tooltip-s1 text-primary">{{ formatDecimal(roundPerformance.tc, 4) }}<span
-                            class="tooltip-s1-text tooltip-text">{{
-                              formatDecimal(roundPerformance.tcPercentile, 1)
+                            class="tooltip-s1-text tooltip-text">Percentile: {{
+                              formatDecimal(roundPerformance.tcPercentile * 100, 1)
                             }}</span></span></td>
                           <td class="text-end"><span class="tooltip-s1 text-primary"><span
                             :class="`text-${getMetricColor(Number(roundPerformance.payout) || 0)}`">{{
                               formatPayout(roundPerformance.payout)
                             }}</span><span
-                            class="tooltip-s1-text tooltip-text">{{
+                            class="tooltip-s1-text tooltip-text overflow">{{
                               `${roundPerformance.payout} NMR`
                             }}</span></span></td>
                         </tr>
