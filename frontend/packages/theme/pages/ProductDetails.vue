@@ -131,7 +131,7 @@
                           :key="j">
                           <th scope="row">{{ roundPerformance.roundNumber }}</th>
                           <td class="text-end"><span><span
-                            class="tooltip-s1">{{ Number(roundPerformance.selectedStakeValue).toFixed(2) }} NMR<span
+                            class="tooltip-s1">{{ formatDecimal(Number(roundPerformance.selectedStakeValue), 2) }} NMR<span
                             class="tooltip-s1-text tooltip-text">{{
                               `${roundPerformance.selectedStakeValue} NMR`
                             }}</span></span></span></td>
@@ -677,10 +677,10 @@ export default {
       this.placeBidModal?.toggle();
     },
     formatDecimal(value, decimals) {
-      if (value !== null) {
-        return (value).toFixed(decimals)
+      if (value == null) {
+        return '-'
       }
-      return '-'
+      return (value).toFixed(decimals)
     },
     formatPayout(value) {
       const payout = (Number(value) || 0)
