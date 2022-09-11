@@ -116,11 +116,12 @@
                 <div class="card-border card-full">
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Rounds</h5>
-                    <div class="table-responsive overflow-hidden" v-if="isNumeraiChartReady">
+                    <div class="table-responsive-xl" v-if="isNumeraiChartReady">
                       <table class="table mb-0 table-s2">
                         <thead class="fs-15 text-center">
                         <tr>
-                          <th v-for="(list, i) in performanceTableHeaders" :key="i" scope="col">{{ list }}
+                          <th v-for="(header, i) in performanceTableHeaders" :key="i" scope="col"><span class="tooltip-s1">{{ header.name }}<span
+                              class="tooltip-s1-text tooltip-text fw-normal" v-if="!!header.description">{{ header.description }}</span></span>
                           </th>
                         </tr>
                         </thead>
@@ -169,7 +170,7 @@
                             :class="`text-${getMetricColor(Number(roundPerformance.payout) || 0)}`">{{
                               formatPayout(roundPerformance.payout)
                             }}</span><span
-                            class="tooltip-s1-text tooltip-text overflow">{{
+                            class="tooltip-s1-text tooltip-text">{{
                               `${roundPerformance.payout} NMR`
                             }}</span></span></td>
                         </tr>
@@ -403,23 +404,23 @@ export default {
     },
     performanceTableHeaders() {
       return this.isSignalsTournament ? [
-        'Round',
-        'At-risk',
-        'Stake Type',
-        'CORR',
-        'CORR60',
-        'IC',
-        'TC',
-        'Payout'
+        {name: 'Round', description: null},
+        {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
+        {name: 'Stake Type', description: null},
+        {name: 'CORR', description: 'Correlation of submission with the 20-day signals target'},
+        {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
+        {name: 'IC', description: 'Mean correlation of this un-neutralized submission with bucketed raw returns'},
+        {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+        {name: 'Payout', description: 'Latest projected payout'},
       ] : [
-        'Round',
-        'At-risk',
-        'Stake Type',
-        'CORR',
-        'CORR60',
-        'FNCV3',
-        'TC',
-        'Payout'
+        {name: 'Round', description: null},
+        {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
+        {name: 'Stake Type', description: null},
+        {name: 'CORR', description: 'Correlation of submission with target nomi_20'},
+        {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
+        {name: 'FNCV3', description: 'The mean correlation of this submission after it have been neutralized to the 420 features in the medium subset of the V3 dataset'},
+        {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+        {name: 'Payout', description: 'Latest projected payout'},
       ]
     },
     selectedOption() {
