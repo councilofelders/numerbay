@@ -255,11 +255,10 @@ export default {
   setup() {
     const {user} = useUser();
     const {orders, search, cancelOrder, loading} = useUserOrder('order-history');
-    const {globals, getGlobals, loading: globalsLoading} = useGlobals();
+    const {globals} = useGlobals();
 
     onSSR(async () => {
       await search({role: 'buyer'});
-      await getGlobals();
     });
 
     const getStatusTextClass = (order) => {

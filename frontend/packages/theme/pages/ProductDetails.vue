@@ -699,7 +699,6 @@ export default {
       const modal = this.$refs.placeBidModal.$refs.placeBidModal;
 
       modal?.addEventListener('show.bs.modal', async () => {
-        await this.getGlobals();
         // eslint-disable-next-line camelcase
         await this.orderSearch({
           role: 'buyer',
@@ -775,7 +774,7 @@ export default {
       loading: relatedLoading
     } = useProduct(`relatedProducts-${cacheKey}`);
     const {numerai, getModels, getModelInfo, loading: numeraiLoading} = useNumerai(cacheKey);
-    const {globals, getGlobals, loading: globalsLoading} = useGlobals();
+    const {globals} = useGlobals();
     const {user, isAuthenticated, loading: userLoading} = useUser();
     const {order, make, loading: makeOrderLoading, error: makeOrderError} = useMakeOrder();
     const {orders, search: orderSearch, validatePayment, error: userOrderError} = useUserOrder('product');
@@ -792,7 +791,6 @@ export default {
             modelName: product.value?.name
           });
         }
-        await getGlobals();
       });
     });
 
@@ -833,7 +831,6 @@ export default {
       numerai,
       numeraiLoading,
       globals,
-      globalsLoading,
       isAuthenticated,
       userLoading,
       models: computed(() => product ? userGetters.getModels(numerai.value, productGetters.getTournamentId(product), false) : []),
@@ -853,7 +850,6 @@ export default {
       makeOrderError,
       onCopy,
       orderSearch,
-      getGlobals,
       send,
       getDeliveryRateTextClass
     };

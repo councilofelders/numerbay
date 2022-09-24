@@ -550,7 +550,7 @@ export default {
   setup(props, context) {
     const {id} = context.root.$route.params;
     const {user, load: loadUser, loading: userLoading} = useUser();
-    const {globals, getGlobals} = useGlobals();
+    const {globals} = useGlobals();
     const {categories, search: categorySearch} = useCategory();
     const {
       products,
@@ -572,7 +572,6 @@ export default {
       await loadUser();
       await categorySearch();
       await productSearch({filters: {user: {in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
-      await getGlobals();
 
       if (id) {
         currentListing.value = products?.value?.data?.find((p) => p.id === parseInt(id));

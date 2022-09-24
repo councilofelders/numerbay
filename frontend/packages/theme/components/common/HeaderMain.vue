@@ -37,7 +37,7 @@ import MenuTwo from '@/components/common/MenuTwo.vue';
 
 // Composables
 import {onSSR} from '@vue-storefront/core';
-import {useUser} from '@vue-storefront/numerbay';
+import {useUser, useGlobals} from '@vue-storefront/numerbay';
 
 export default {
   name: 'HeaderMain',
@@ -52,9 +52,11 @@ export default {
   },
   setup() {
     const {isAuthenticated, load: loadUser} = useUser();
+    const {load: loadGlobals} = useGlobals();
 
     onSSR(async () => {
       await loadUser();
+      await loadGlobals();
     });
 
     return {

@@ -144,7 +144,7 @@ export interface UseOrderArtifact<ARTIFACTS, ARTIFACT_SEARCH_PARAMS> {
 }
 
 export interface UseGlobals {
-  getGlobals: (identifier: string) => Promise<void>;
+  load: (identifier: string) => Promise<void>;
   loading: ComputedProperty<boolean>;
   globals: ComputedProperty<any>;
 }
