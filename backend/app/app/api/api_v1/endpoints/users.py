@@ -133,8 +133,8 @@ def update_user_me(  # pylint: disable=too-many-locals
         user_in.public_address = public_address
         user_in.signature = signature
     if public_key is not None and encrypted_private_key is not None:
-        user_in.public_key = public_key
-        user_in.encrypted_private_key = encrypted_private_key
+        user_in.public_key_v2 = public_key
+        user_in.encrypted_private_key_v2 = encrypted_private_key
 
         # change public keys for existing active orders
         selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore

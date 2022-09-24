@@ -26,6 +26,8 @@ export const getNonce = (user: User): string => user?.nonce || '';
 
 export const getPublicKey = (user: User): string => user?.public_key || null;
 
+export const getPublicKeyV2 = (user: User): string => user?.public_key_v2 || null;
+
 export const getModels = (user: User, tournament: number = null, sortDate = true): any[] => {
   let models = user?.models;
   if (tournament) {
@@ -50,6 +52,7 @@ const userGetters: UserGetters<User> = {
   getNumeraiLastSyncDate: getNumeraiLastSyncDate,
   getNonce: getNonce,
   getPublicKey: getPublicKey,
+  getPublicKeyV2: getPublicKeyV2,
   getModels: getModels
 };
 

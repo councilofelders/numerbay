@@ -8,7 +8,7 @@ import {
 import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
-import {getNumeraiLastSyncDate, getPublicKey} from '../getters/userGetters';
+import {getNumeraiLastSyncDate, getPublicKey, getPublicKeyV2} from '../getters/userGetters';
 import {getOptionFormattedDescription, getProductQtySales} from "../getters/productGetters";
 import {getEndRound, getLastSubmissionRound, getMode} from "../getters/orderGetters";
 
@@ -37,7 +37,11 @@ export type User = {
   // eslint-disable-next-line camelcase
   public_key?: string;
   // eslint-disable-next-line camelcase
+  public_key_v2?: string;
+  // eslint-disable-next-line camelcase
   encrypted_private_key?: string;
+  // eslint-disable-next-line camelcase
+  encrypted_private_key_v2?: string;
   nonce?: string;
   models?: any[]
 };
@@ -145,6 +149,7 @@ export interface UserGetters<USER> {
     getNumeraiLastSyncDate: (customer: USER) => string;
     getNonce: (customer: USER) => string;
     getPublicKey: (customer: USER) => string;
+    getPublicKeyV2: (customer: USER) => string;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     getModels: (customer: USER, tournament: number, sortDate: boolean) => any[];

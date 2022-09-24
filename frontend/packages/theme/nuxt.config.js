@@ -43,6 +43,7 @@ export default {
   plugins: [
     { src: 'plugins/theme-components', ssr: true },
     { src: 'plugins/theme-components-client', ssr: false, mode: 'client' },
+    { src: 'plugins/encryption', ssr: false },
     { src: 'plugins/wallet', ssr: false },
     // { src: 'plugins/nuxt-star-rating-plugin', ssr: false },
     { src: 'plugins/nuxt-multiselect-plugin', ssr: false },

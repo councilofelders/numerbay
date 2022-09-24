@@ -86,7 +86,11 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         raise HTTPException(status_code=400, detail="Invalid product option")
 
     # Encryption key check
-    if product.use_encryption and current_user.public_key is None:
+    if (
+        product.use_encryption
+        and current_user.public_key is None
+        and current_user.public_key_v2 is None
+    ):
         raise HTTPException(
             status_code=400, detail="This product requires encryption key"
         )
@@ -250,7 +254,11 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             else None,
             coupon=product_option_obj.coupon,
             coupon_specs=product_option_obj.coupon_specs,
-            buyer_public_key=current_user.public_key
+            buyer_public_key=(
+                current_user.public_key
+                if not current_user.public_key_v2
+                else current_user.public_key_v2
+            )
             if product.use_encryption
             else None,  # validate buyer key exists
         )

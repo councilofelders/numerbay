@@ -96,6 +96,15 @@
                 Some purchases may require a key pair for client-side encryption, please generate one below.
               </p>
             </div><!-- end alert -->
+            <div v-if="Boolean(userGetters.getPublicKey(user)) && !Boolean(userGetters.getPublicKeyV2(user))" class="alert alert-warning d-flex mb-4" role="alert">
+              <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
+                <path
+                  d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+              </svg>
+              <p class="fs-14">
+                The current encryption mechanism is deprecated, please migrate by generate a new key pair below. This operation cannot be undone. Learn more about the deprecation.
+              </p>
+            </div><!-- end alert -->
             <div class="row mt-4">
               <div class="col-lg-8">
                 <a class="btn btn-outline-dark" @click="toggleKeyChangeModal" v-if="Boolean(userGetters.getPublicKey(user))">Replace key pair</a>
@@ -216,8 +225,6 @@ import SectionData from '@/store/store.js';
 
 // Composables
 import {ref} from '@vue/composition-api';
-import {encrypt} from 'eth-sig-util';
-import nacl from 'tweetnacl';
 import {encodeBase64} from 'tweetnacl-util';
 import {useUser, userGetters} from '@vue-storefront/numerbay';
 import {useUiNotification} from '~/composables';
@@ -353,29 +360,17 @@ export default {
         return;
       }
 
-      const keyPair = nacl.box.keyPair();
-      const privateKeyBytes = keyPair.secretKey;
-      const publicKeyBytes = keyPair.publicKey;
+      const keys = await this.$encryption.createKeys(this.$wallet.provider.getSigner());
 
       let encryptedPrivateKey = null;
       try {
-        const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts'
-        });
-
-        const key = await window.ethereum.request({
-          method: 'eth_getEncryptionPublicKey',
-          params: [accounts[0]]
-        });
-
-        encryptedPrivateKey = JSON.stringify(encrypt(
-          key,
-          {data: privateKeyBytes.toString('hex')},
-          'x25519-xsalsa20-poly1305'
-        ));
+        encryptedPrivateKey = JSON.stringify({
+          data: this.$encryption.symmetricalEncrypt({data: keys.privateKey}, keys.storageEncryptionKey),
+          salt: keys.storageEncryptionKeySalt
+        })
       } catch {
         await this.send({
-          message: 'Public key access is required',
+          message: 'Signature is required',
           type: 'bg-danger',
           icon: 'ni-alert-circle'
         });
@@ -384,8 +379,8 @@ export default {
 
       await this.updateUser({
         user: {
-          publicKey: encodeBase64(publicKeyBytes),
-          encryptedPrivateKey: encryptedPrivateKey
+          publicKeyV2: keys.publicKey,
+          encryptedPrivateKeyV2: encryptedPrivateKey
         }
       });
       this.form = this.resetForm();
@@ -432,6 +427,34 @@ export default {
       window.URL.revokeObjectURL(url);
     },
     async exportKeyPair() {
+      if (this.userGetters.getPublicKeyV2(this.user)) {
+        await this.exportKeyPairV2();
+      } else {
+        await this.exportKeyPairLegacy();
+      }
+    },
+    async exportKeyPairV2() {
+      try {
+        const encryptedPrivateKeyObj = JSON.parse(this.form.encryptedPrivateKeyV2)
+        const symmetricalKeySalt = encryptedPrivateKeyObj.salt;
+        const storageEncryptionKey = (await this.$encryption.getSymmetricalKeyFromSignature(this.$wallet.provider.getSigner(), symmetricalKeySalt)).symmetricalKey;
+
+        const privateKey = this.$encryption.symmetricalDecrypt(
+          encryptedPrivateKeyObj.data,
+          storageEncryptionKey
+        ).data
+
+        const keyJson = JSON.stringify({public_key: this.form.publicKeyV2, private_key: privateKey});
+        this.downloadFile(new Blob([keyJson], {type: 'application/json'}), 'numerbay.json');
+      } catch (err) {
+        this.send({
+          message: err?.message || 'Failed to export key pair.',
+          type: 'bg-danger',
+          icon: 'ni-alert-circle'
+        });
+      }
+    },
+    async exportKeyPairLegacy() {
       try {
         if (!this.$wallet.account) {
           await this.$wallet.connect();
@@ -469,7 +492,9 @@ export default {
       // publicAddress: userGetters.getPublicAddress(user.value),
       // nonce: userGetters.getNonce(user.value),
       publicKey: user.value?.public_key,
-      encryptedPrivateKey: user.value?.encrypted_private_key
+      encryptedPrivateKey: user.value?.encrypted_private_key,
+      publicKeyV2: user.value?.public_key_v2,
+      encryptedPrivateKeyV2: user.value?.encrypted_private_key_v2
     });
 
     const form = ref(resetForm());
