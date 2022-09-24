@@ -4,9 +4,18 @@
         <title>NumerBay Blog</title>
         <link>https://docs.numerbay.ai/updates</link>
         <description>NumerBay Blog</description>
-        <lastBuildDate>Wed, 02 Feb 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Sat, 24 Sep 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Encryption Update]]></title>
+            <link>https://docs.numerbay.ai/updates/encryption-v2</link>
+            <guid>encryption-v2</guid>
+            <pubDate>Sat, 24 Sep 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[There's an update to NumerBay's encryption mechanism due to MetaMask deprecating some methods.]]></description>
+            <content:encoded><![CDATA[<p>There&#x27;s an update to NumerBay&#x27;s encryption mechanism due to MetaMask deprecating some methods.</p><h2>What&#x27;s the impact</h2><p>Users are encouraged to generate a new key pair by clicking the <strong>Replace key pair</strong> in the <strong><a href="https://numerbay.ai/account">Edit profile page</a></strong>.</p><p>This action is not compulsory at this point.</p><p>Apart from above, there is no change to user workflow.</p><p>:::caution</p><p>After generating a new key pair, you will lose access to all existing files encrypted with the old key. It is recommended to replace key pair only when you don&#x27;t have active orders.</p><p>If your workflow uses the exported key file, you need to export it again after replacing the keys.</p><p>:::</p><h2>Q&amp;A</h2><h3>I&#x27;m an existing user, do I have to change my workflow due to this release?</h3><p>No, you don&#x27;t have to change anything. Change of encryption key is optional at this point.</p><h3>When will this change become compulsory?</h3><p>When MetaMask announces the timeline for the removal of the deprecated methods, another update will be posted.</p><h3>I use the NumerBay python client, do I need to change my code?</h3><p>No, you don&#x27;t need to change your code. This update is related to the change of storage encryption mechanism for the encryption key only and does not change how files are encrypted or decrypted.</p><p>However, if your code uses the exported key file for file decryption, you need to <strong>export it again</strong> after regenerating the key pair and replace the old key file in your repository.</p><h3>What&#x27;s the change?</h3><p>The existing encryption mechanism (legacy mechanism) on NumerBay encrypts the generated encryption key with user&#x27;s MetaMask wallet and stores the encrypted key on the server, and when need it is then decrypted using the MetaMask wallet.
+This process involes MetaMask&#x27;s <code>eth_getEncryptionPublicKey</code> and <code>eth_decrypt</code> methods which have <a href="https://github.com/MetaMask/metamask-extension/issues/15379">recently been deprecated</a>.</p><p>The new mechanism (encryption v2) instead encrypts the encryption key with a storage key derived from signature by having the user sign a random salt. This gets around the above two deprecated methods and may also enable support for some hardware wallets which don&#x27;t allow direct access to their public keys.</p>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[Client-side Encryption Release]]></title>
             <link>https://docs.numerbay.ai/updates/encryption</link>
