@@ -23,7 +23,7 @@ export function useGlobalsFactory(
     // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     const _factoryParams = configureFactoryParams(factoryParams);
 
-    const getGlobals = async (identifer: string) => {
+    const load = async (identifer: string) => {
       Logger.debug(`useGlobals/${ssrKey}/getGlobals`);
 
       loading.value = true;
@@ -38,7 +38,7 @@ export function useGlobalsFactory(
     };
 
     return {
-      getGlobals,
+      load,
       loading: computed(() => loading.value),
       globals: computed(() => globals.value)
     };

@@ -28,7 +28,6 @@ import SectionData from '@/store/store.js';
 
 // Composables
 import {computed} from '@vue/composition-api';
-import {onSSR} from '@vue-storefront/core';
 import {useGlobals} from '@vue-storefront/numerbay';
 
 export default {
@@ -39,15 +38,10 @@ export default {
     };
   },
   setup() {
-    const {globals, getGlobals, loading: globalsLoading} = useGlobals();
-
-    onSSR(async () => {
-      await getGlobals();
-    });
+    const {globals} = useGlobals();
 
     return {
       globals,
-      globalsLoading,
       countItemData: computed(() => globals ? [
         {
           id: 1,

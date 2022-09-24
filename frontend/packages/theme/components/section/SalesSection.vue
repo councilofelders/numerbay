@@ -213,11 +213,10 @@ export default {
   },
   setup() {
     const {orders, search, loading} = useUserOrder('sales-history');
-    const {globals, getGlobals, loading: globalsLoading} = useGlobals();
+    const {globals} = useGlobals();
 
     onSSR(async () => {
       await search({role: 'seller'});
-      await getGlobals();
     });
 
     const getStatusTextClass = (order) => {

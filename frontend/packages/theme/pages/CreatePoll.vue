@@ -353,7 +353,7 @@ export default {
   setup(props, context) {
     const {id} = context.root.$route.params;
     const {user, load: loadUser, loading: userLoading} = useUser();
-    const {globals, getGlobals} = useGlobals();
+    const {globals} = useGlobals();
     const {
       polls,
       search: pollSearch,
@@ -370,7 +370,6 @@ export default {
     onSSR(async () => {
       await loadUser();
       await pollSearch({filters: {user: {in: [`${userGetters.getId(user.value)}`]}}, sort: 'latest'});
-      await getGlobals();
 
       if (id) {
         currentPoll.value = polls?.value?.data?.find((p) => String(p.id) === String(id));
