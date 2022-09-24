@@ -50,6 +50,8 @@ class UserUpdate(UserBase):  # pylint: disable=too-many-instance-attributes
     numerai_api_key_secret: Optional[str] = None
     public_key: Optional[str] = None
     encrypted_private_key: Optional[str] = None
+    public_key_v2: Optional[str] = None
+    encrypted_private_key_v2: Optional[str] = None
 
 
 class UserInDBBase(UserBase):
@@ -73,6 +75,8 @@ class User(UserInDBBase):
     numerai_wallet_address: Optional[str] = None
     public_key: Optional[str] = None
     encrypted_private_key: Optional[str] = None
+    public_key_v2: Optional[str] = None
+    encrypted_private_key_v2: Optional[str] = None
     models: Optional[List[ModelMinimal]] = []
     coupons: Optional[List[Coupon]] = []
     created_coupons: Optional[List[Coupon]] = []

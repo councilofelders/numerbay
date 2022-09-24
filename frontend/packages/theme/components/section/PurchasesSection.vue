@@ -156,8 +156,10 @@
     <OrderInfoModal ref="orderInfoModal" :order="currentOrder" :withCopyButtons="true" :withChangeModelButton="true"
                     modelId="orderInfoModal" @update="refresh"></OrderInfoModal>
     <div v-if="currentOrder && currentOrder.product">
-      <ArtifactModal ref="artifactModal" :encryptedPrivateKey="user.encrypted_private_key"
-                     :order="currentOrder" :publicKey="user.public_key" modelId="artifactModal"></ArtifactModal>
+      <ArtifactModal ref="artifactModal"
+                     :publicKey="user.public_key" :encryptedPrivateKey="user.encrypted_private_key"
+                     :publicKeyV2="user.public_key_v2" :encryptedPrivateKeyV2="user.encrypted_private_key_v2"
+                     :order="currentOrder" modelId="artifactModal"></ArtifactModal>
       <RefundModal ref="refundModal" :order="currentOrder" modelId="refundModal"></RefundModal>
     </div>
   </div><!-- end col-lg-8 -->

@@ -147,6 +147,14 @@ export default {
     encryptedPrivateKey: {
       type: String,
       default: null
+    },
+    publicKeyV2: {
+      type: String,
+      default: null
+    },
+    encryptedPrivateKeyV2: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -213,6 +221,45 @@ export default {
       }
     },
     async decryptfile(objFile) {
+      if (this.publicKeyV2) {
+        return await this.decryptfileV2(objFile);
+      } else {
+        return await this.decryptfileLegacy(objFile);
+      }
+    },
+    async decryptfileV2(objFile) {
+      const cipherbytes = await readfile(objFile)
+          .catch((err) => {
+            console.error(err);
+          });
+
+      const encryptedPrivateKeyObj = JSON.parse(this.encryptedPrivateKeyV2);
+      const symmetricalKeySalt = encryptedPrivateKeyObj.salt;
+      const storageEncryptionKey = (await this.$encryption.getSymmetricalKeyFromSignature(this.$wallet.provider.getSigner(), symmetricalKeySalt)).symmetricalKey;
+
+      const privateKey = this.$encryption.symmetricalDecrypt(
+        encryptedPrivateKeyObj.data,
+        storageEncryptionKey
+      ).data;
+
+      const plaintextbytes = this.$encryption.decrypt({encryptedData: cipherbytes, publicKey: this.publicKeyV2, privateKey});
+
+      if (!plaintextbytes) {
+        console.error('Error decrypting file.');
+        throw Error()
+      }
+
+      console.log('ciphertext decrypted');
+
+      const blob = new Blob([plaintextbytes], {type: 'application/download'});
+      const blobUrl = URL.createObjectURL(blob);
+
+      // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+      return new Promise((resolve, reject) => {
+        resolve(blobUrl);
+      });
+    },
+    async decryptfileLegacy(objFile) {
       try {
         const cipherbytes = await readfile(objFile)
           .catch((err) => {

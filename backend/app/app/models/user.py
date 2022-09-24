@@ -39,6 +39,8 @@ class User(Base):
     numerai_wallet_address = Column(String, nullable=True, unique=True)
     public_key = Column(String)
     encrypted_private_key = Column(String)
+    public_key_v2 = Column(String)
+    encrypted_private_key_v2 = Column(String)
     social_rocketchat = Column(String, nullable=True)
     social_linkedin = Column(String, nullable=True)
     social_twitter = Column(String, nullable=True)
