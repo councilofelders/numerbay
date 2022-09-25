@@ -356,7 +356,7 @@ def submit_artifact(
 def update_submission_model(
     *,
     order_id: int,
-    model_id: str = Body(..., embed=True),
+    model_id: str = Body(None, embed=True),
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -375,6 +375,14 @@ def update_submission_model(
             status_code=400,
             detail="Order with stake limit cannot change submission model",
         )
+
+    if model_id is None or model_id == "":
+        order = crud.order.update(
+            db,
+            db_obj=order,
+            obj_in={"submit_model_id": None, "submit_model_name": None},
+        )
+        return order
 
     model = crud.model.get(db, id=model_id)
     if model is None:
