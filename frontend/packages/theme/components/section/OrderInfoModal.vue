@@ -128,7 +128,7 @@
               <ValidationObserver v-slot="{ handleSubmit }">
                 <div class="row">
                   <div class="col-10">
-                    <ValidationProvider v-slot="{ errors }" rules="required" slim>
+                    <ValidationProvider v-slot="{ errors }" rules="" slim>
                       <div>
                         <v-select v-if="!numeraiLoading" ref="slotDropdown"
                                   v-model="submitModel" :class="!errors[0] ? '' : 'is-invalid'" :clearable=true
