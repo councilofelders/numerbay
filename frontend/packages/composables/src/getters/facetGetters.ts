@@ -35,7 +35,7 @@ const getSortOptions = (searchData): AgnosticSort => {
             { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
             { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
             { type: 'sort', id: 'corr3tc-down', value: 'CORR+3xTC from high to low', count: null },
-            { type: 'sort', id: 'corr60-down', value: 'CORR60 from high to low', count: null },
+            { type: 'sort', id: 'corr60-down', value: 'CORJ60 from high to low', count: null },
             { type: 'sort', id: 'fnc-down', value: 'FNC from high to low', count: null },
             { type: 'sort', id: 'fncV3-down', value: 'FNCv3 from high to low', count: null }
         );
@@ -43,11 +43,11 @@ const getSortOptions = (searchData): AgnosticSort => {
 
       if (tournament === 11) {  // if is Signals tournament
         options.push(
-            { type: 'sort', id: 'rank-best', value: 'CORR from high to low', count: null },
+            { type: 'sort', id: 'rank-best', value: 'TC from high to low', count: null },
             { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
             { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
             { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
-            { type: 'sort', id: 'tc-down', value: 'TC from high to low', count: null },
+            { type: 'sort', id: 'corr-down', value: 'CORR from high to low', count: null },
             { type: 'sort', id: 'corrtc-down', value: 'CORR+TC from high to low', count: null },
             { type: 'sort', id: 'corr2tc-down', value: 'CORR+2xTC from high to low', count: null },
             { type: 'sort', id: 'corr60-down', value: 'CORR60 from high to low', count: null },
