@@ -72,14 +72,7 @@ _SORT_OPTION_LOOKUP = {
 def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) -> Any:
     """Parse sort option"""
     if category is not None and category.tournament:
-        if category.tournament == 8:
-            default_option = (
-                Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)
-            )
-        else:
-            default_option = (
-                Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
-            )
+        default_option = Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)
     else:
         default_option = desc(Product.id)
 
