@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud, models
-from app.api.dependencies.orders import update_payment
+from app.api.dependencies.orders import get_order_end_round_number, update_payment
 from app.core.config import settings
 from app.schemas import OrderCreate
 from app.tests.utils.product import create_random_product
@@ -46,6 +46,10 @@ def create_random_order(
     new_order = OrderCreate(
         date_order=datetime.now(),
         round_order=crud.globals.get_singleton(db).selling_round,  # type: ignore
+        round_order_end=get_order_end_round_number(
+            crud.globals.get_singleton(db).selling_round,  # type: ignore
+            product.options[0].quantity,  # type: ignore
+        ),
         quantity=product.options[0].quantity,  # type: ignore
         price=product.options[0].price,  # type: ignore
         currency=product.options[0].currency,  # type: ignore

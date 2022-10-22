@@ -219,7 +219,7 @@
             <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
                                 rules="required|integer|min_value:1|max_value:10" slim>
               <div class="mb-3">
-                <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity</label>
+                <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity (weekly)</label>
                 <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                        max="10" min="1" step="1" type="number" @change="handleSubmit(onQuantityChange)">
                 <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>

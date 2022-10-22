@@ -16,6 +16,7 @@ class OrderBase(BaseModel):
 
     date_order: Optional[datetime] = None
     round_order: Optional[int] = None
+    round_order_end: Optional[int] = None
     quantity: Optional[int] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None

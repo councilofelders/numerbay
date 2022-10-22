@@ -34,6 +34,14 @@ def validate_existing_order(db: Session, order_id: int) -> models.Order:
     return order
 
 
+def get_order_end_round_number(round_order: int, quantity: int) -> int:
+    original_end_round = round_order + quantity - 1
+    if original_end_round <= 339:
+        return original_end_round
+    daily_quantity = original_end_round - 339
+    return 339 + daily_quantity * 5
+
+
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:
     """Match transaction for order"""
     matched_transaction = None

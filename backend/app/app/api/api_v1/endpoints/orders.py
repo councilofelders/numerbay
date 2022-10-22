@@ -14,6 +14,7 @@ from app.api.dependencies import numerai
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
+    get_order_end_round_number,
     on_order_confirmed,
     send_order_canceled_emails,
     send_order_refund_request_emails,
@@ -248,6 +249,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             product_id=id,
             date_order=date_order,
             round_order=selling_round,
+            round_order_end=get_order_end_round_number(selling_round, total_quantity),
             state="pending",
             applied_coupon_id=coupon_obj.id  # type: ignore
             if product_option_obj.applied_coupon
