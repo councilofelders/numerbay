@@ -52,7 +52,7 @@
                     >-{{
                         orderGetters.getEndRound(order)
                       }}
-                      </span> by
+                      </span> (weekly) by
                       <span class="btn-link text-decoration-none fw-medium">{{
                           orderGetters.getBuyer(order)
                         }}</span>
@@ -119,7 +119,7 @@
                     >-{{
                         orderGetters.getEndRound(order)
                       }}
-                      </span> by
+                      </span> (weekly) by
                       <span class="btn-link text-decoration-none fw-medium">{{
                           orderGetters.getBuyer(order)
                         }}</span>

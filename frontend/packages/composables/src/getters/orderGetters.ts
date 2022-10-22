@@ -24,7 +24,7 @@ export const getStakeLimit = (order: any): string => order?.stake_limit ? `${ord
 export const getRound = (order: any): string => String(order?.round_order) || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getEndRound = (order: any): string => order?.round_order ? String(parseInt(getRound(order)) + getItemQty(order) - 1) : '-';
+export const getEndRound = (order: any): string => String(order?.round_order_end) || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getPrice = (order: any): number | null => order?.price || 0;

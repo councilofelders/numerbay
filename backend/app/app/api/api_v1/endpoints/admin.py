@@ -13,12 +13,29 @@ from sqlalchemy.orm import Session
 from app import crud, models
 from app.api import deps
 from app.api.dependencies.commons import on_round_open
-from app.api.dependencies.orders import send_order_confirmation_emails
+from app.api.dependencies.orders import (
+    get_order_end_round_number,
+    send_order_confirmation_emails,
+)
 from app.core.celery_app import celery_app
 from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
 from app.models import Artifact, Order, Product
 
 router = APIRouter()
+
+
+@router.post("/fill-order-round-end")
+def fill_order_round_end(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    for order_obj in crud.order.get_multi(db):
+        order_obj.round_order_end = get_order_end_round_number(
+            order_obj.round_order, order_obj.quantity
+        )
+    db.commit()
+    return {"msg": "success!"}
 
 
 @router.post("/on-round-open")

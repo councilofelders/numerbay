@@ -439,13 +439,13 @@ def update_round_rollover() -> None:
         else:  # current round closed for staking, start selling next round, unfreeze activities
             if (
                 site_globals.active_round == active_round_number  # type: ignore
-                and site_globals.selling_round == active_round_number + 1  # type: ignore
+                and site_globals.selling_round == active_round_number + 5  # type: ignore
                 # type: ignore
             ):  # active round already up-to-date
                 print("Round already up-to-date, no action")
             else:
                 print("Unfreeze activities, rollover completed")
-                selling_rouind = active_round_number + 1
+                selling_rouind = active_round_number + 5
                 crud.globals.update(
                     db,
                     db_obj=site_globals,  # type: ignore
@@ -1018,7 +1018,7 @@ def batch_update_delivery_rate() -> None:
                         if product.category.is_per_round:
                             for tournament_round in range(
                                 order.round_order,
-                                min(order.round_order + order.quantity, selling_round),
+                                min(order.round_order_end + 1, selling_round),
                             ):
                                 total_qty_sales += 1
                                 if tournament_round in delivered_rounds:
