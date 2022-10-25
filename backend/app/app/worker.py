@@ -445,13 +445,13 @@ def update_round_rollover() -> None:
                 print("Round already up-to-date, no action")
             else:
                 print("Unfreeze activities, rollover completed")
-                selling_rouind = active_round_number + 5
+                selling_round = active_round_number + 5
                 crud.globals.update(
                     db,
                     db_obj=site_globals,  # type: ignore
                     obj_in={
                         "active_round": active_round_number,
-                        "selling_round": selling_rouind,
+                        "selling_round": selling_round,
                         "is_doing_round_rollover": False,
                     },
                 )  # update round number and unfreeze
