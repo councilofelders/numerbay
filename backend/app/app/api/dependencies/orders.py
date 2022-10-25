@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 from fastapi import HTTPException
@@ -40,6 +40,17 @@ def get_order_end_round_number(round_order: int, quantity: int) -> int:
         return original_end_round
     daily_quantity = original_end_round - 339
     return 339 + daily_quantity * 5
+
+
+def get_order_round_numbers(round_order: int, quantity: int) -> List[int]:
+    original_end_round = round_order + quantity - 1
+    if original_end_round <= 339:
+        return list(range(round_order, round_order + quantity))
+    else:
+        daily_quantity = original_end_round - 339
+        return list(range(round_order, 339)) + list(
+            range(339, 339 + daily_quantity * 5 + 1, 5)
+        )
 
 
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:

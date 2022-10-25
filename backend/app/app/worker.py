@@ -24,6 +24,7 @@ from app.api.dependencies.artifacts import send_artifact_emails_for_active_order
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.order_artifacts import generate_gcs_signed_url
 from app.api.dependencies.orders import (
+    get_order_round_numbers,
     send_failed_autosubmit_emails,
     send_order_upload_reminder_emails,
     update_payment,
@@ -1016,10 +1017,12 @@ def batch_update_delivery_rate() -> None:
                             order_artifacts_rounds
                         )
                         if product.category.is_per_round:
-                            for tournament_round in range(
-                                order.round_order,
-                                min(order.round_order_end + 1, selling_round),
-                            ):
+                            order_rounds = get_order_round_numbers(
+                                order.round_order, order.quantity
+                            )
+                            for tournament_round in order_rounds:
+                                if tournament_round >= selling_round:
+                                    break
                                 total_qty_sales += 1
                                 if tournament_round in delivered_rounds:
                                     total_qty_delivered += 1
