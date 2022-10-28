@@ -59,8 +59,8 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         selling_round_number = self.get_selling_round(active_round)
 
         # temporary workaround
-        if ((active_round["number"]-339) % 5) != 0:
-            return self.get_singleton(db)
+        if ((active_round["number"] - 339) % 5) != 0:
+            return self.get_singleton(db)  # type: ignore
 
         return super().update(
             db,
