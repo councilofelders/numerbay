@@ -38,8 +38,9 @@ def get_order_end_round_number(round_order: int, quantity: int) -> int:
     original_end_round = round_order + quantity - 1
     if original_end_round <= 339:
         return original_end_round
-    daily_quantity = original_end_round - 339
-    return 339 + daily_quantity * 5
+    daily_base_round = max(339, round_order)
+    daily_quantity = original_end_round - daily_base_round
+    return daily_base_round + daily_quantity * 5
 
 
 def get_order_round_numbers(round_order: int, quantity: int) -> List[int]:
@@ -47,9 +48,10 @@ def get_order_round_numbers(round_order: int, quantity: int) -> List[int]:
     if original_end_round <= 339:
         return list(range(round_order, round_order + quantity))
     else:
-        daily_quantity = original_end_round - 339
+        daily_base_round = max(339, round_order)
+        daily_quantity = original_end_round - daily_base_round
         return list(range(round_order, 339)) + list(
-            range(339, 339 + daily_quantity * 5 + 1, 5)
+            range(daily_base_round, daily_base_round + daily_quantity * 5 + 1, 5)
         )
 
 
