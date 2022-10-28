@@ -27,7 +27,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         if (  # pylint: disable=no-else-return
             utc_time > close_staking_time
         ):  # previous round closed for staking, next round not yet opened
-            return active_round["number"] + 1
+            return active_round["number"] + 5
         elif utc_time >= open_time:  # new round opened and active
             return active_round["number"]
         # should not happen
@@ -57,6 +57,11 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         instance = self.get_singleton(db)
         active_round = numerai.get_numerai_active_round()
         selling_round_number = self.get_selling_round(active_round)
+
+        # temporary workaround
+        if ((active_round["number"]-339) % 5) != 0:
+            return self.get_singleton(db)
+
         return super().update(
             db,
             db_obj=instance,  # type: ignore
