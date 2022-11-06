@@ -381,7 +381,7 @@ def validate_buyer(
     """Validate buyer"""
     for order in current_user.orders:  # type: ignore
         if (
-            order.round_order > selling_round - order.quantity
+            order.round_order_end >= selling_round
             and order.product_id == product.id
             and order.state == "confirmed"
         ):
