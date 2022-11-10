@@ -1212,7 +1212,7 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
         # },
         "batch_update_model_scores": {
             "task": "app.worker.batch_update_model_scores_task",
-            "schedule": crontab(day_of_week="tue-sat", hour=14, minute=0),
+            "schedule": crontab(day_of_week="tue-sat", hour=14, minute=5),
             "kwargs": dict(retries=10),
         },
         "update_globals_stats_task": {
@@ -1221,19 +1221,19 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
         },
         "update_active_round": {
             "task": "app.worker.update_active_round",
-            "schedule": crontab(day_of_week="sat", hour=18, minute=00),
+            "schedule": crontab(day_of_week="sat", hour=13, minute=0),
         },
         "update_round_rollover": {
             "task": "app.worker.update_round_rollover",
-            "schedule": crontab(day_of_week="mon", hour=14, minute=00),
+            "schedule": crontab(day_of_week="mon", hour=14, minute=0),
         },
         "batch_update_stake_snapshots": {
             "task": "app.worker.batch_update_stake_snapshots",
-            "schedule": crontab(day_of_week="mon", hour=14, minute=30),
+            "schedule": crontab(day_of_week="mon", hour=14, minute=0),
         },
         "batch_update_delivery_rate": {
             "task": "app.worker.batch_update_delivery_rate",
-            "schedule": crontab(day_of_week="mon", hour=14, minute=45),
+            "schedule": crontab(day_of_week="mon", hour=14, minute=15),
         },
         "batch_update_polls": {
             "task": "app.worker.batch_update_polls",
@@ -1245,11 +1245,11 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
         },
         "batch_send_order_artifact_upload_reminder_emails_1": {
             "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-            "schedule": crontab(day_of_week="sun", hour=18, minute=00),
+            "schedule": crontab(day_of_week="sun", hour=12, minute=0),
         },
         "batch_send_order_artifact_upload_reminder_emails_2": {
             "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-            "schedule": crontab(day_of_week="mon", hour=12, minute=00),
+            "schedule": crontab(day_of_week="mon", hour=12, minute=0),
         },
     }
     sender.add_periodic_task(
