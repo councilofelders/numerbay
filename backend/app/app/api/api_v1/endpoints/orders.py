@@ -14,7 +14,6 @@ from app.api.dependencies import numerai
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
-    get_order_end_round_number,
     on_order_confirmed,
     send_order_canceled_emails,
     send_order_refund_request_emails,
@@ -68,7 +67,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     db: Session = Depends(deps.get_db),
     id: int = Body(...),  # pylint: disable=W0622
     option_id: int = Body(...),
-    quantity: int = Body(...),
+    rounds: List[int] = Body(...),
     submit_model_id: str = Body(None),
     coupon: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -103,17 +102,18 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         )
 
     # Quantity
-    if quantity < 1:
+    total_quantity = len(rounds)
+    if total_quantity < 1:
         raise HTTPException(
             status_code=400,
             detail="Order quantity must be positive",
         )
 
-    total_quantity = (
-        product_option.quantity * quantity
-        if product_option.quantity is not None
-        else quantity
-    )
+    # total_quantity = (
+    #     product_option.quantity * quantity
+    #     if product_option.quantity is not None
+    #     else quantity
+    # )
     if not product.category.is_per_round and total_quantity > 1:
         raise HTTPException(
             status_code=400,
@@ -227,11 +227,13 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             product_option_obj,
             coupon=coupon,
             coupon_obj=coupon_obj,
-            qty=quantity,
+            qty=total_quantity,
             user=current_user,
         )
 
+        rounds_sorted = sorted(rounds)
         order_in = schemas.OrderCreate(
+            rounds=rounds_sorted,
             quantity=total_quantity,
             price=product_option_obj.special_price
             if product_option_obj.applied_coupon
@@ -249,7 +251,6 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             product_id=id,
             date_order=date_order,
             round_order=selling_round,
-            round_order_end=get_order_end_round_number(selling_round, total_quantity),
             state="pending",
             applied_coupon_id=coupon_obj.id  # type: ignore
             if product_option_obj.applied_coupon

@@ -38,7 +38,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def get_active_orders(self, db: Session, *, round_order: int) -> List[Order]:
         """Get active orders for tournament round"""
         query_filters = [
-            self.model.round_order_end >= round_order,  # type: ignore
+            self.model.rounds.any(round_order),  # type: ignore
             self.model.state == "confirmed",
         ]
         query_filter = functools.reduce(and_, query_filters)
@@ -50,7 +50,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     ) -> List[Order]:
         """Get active orders for tournament round"""
         query_filters = [
-            self.model.round_order_end >= round_order,  # type: ignore
+            self.model.rounds.any(round_order),  # type: ignore
             self.model.state == "confirmed",
             self.model.buyer_id == buyer_id,
         ]
@@ -78,7 +78,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     ) -> List[Order]:
         """Get pendin submission orders by tournament round"""
         query_filters = [
-            self.model.round_order_end >= round_order,  # type: ignore
+            self.model.rounds.any(round_order),  # type: ignore
             self.model.state == "confirmed",
             or_(
                 self.model.submit_state.is_(None),
@@ -125,7 +125,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     query_filters.append(Order.product_id.in_(product_id_list))
                 if filter_key == "round_order":  # todo multiple rounds
                     round_order_list = [int(i) for i in filter_item["in"]]
-                    query_filters.append(Order.round_order_end >= round_order_list[0])
+                    query_filters.append(Order.rounds.any(round_order_list[0]))  # type: ignore
                 if filter_key == "state":
                     state_list = [str(i) for i in filter_item["in"]]
                     query_filters.append(Order.state.in_(state_list))
@@ -135,8 +135,8 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                     ).selling_round  # type: ignore
                     query_filters.extend(
                         [
-                            Order.round_order_end >= current_round,  # type: ignore
                             Order.state == "confirmed",
+                            Order.rounds.any(current_round),  # type: ignore
                         ]
                     )
 

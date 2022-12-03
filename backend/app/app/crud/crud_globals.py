@@ -54,22 +54,25 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
 
     def update_singleton(self, db: Session) -> Globals:
         """Update globals singleton"""
-        instance = self.get_singleton(db)
-        active_round = numerai.get_numerai_active_round()
-        selling_round_number = self.get_selling_round(active_round)
+        try:  # todo better handling of no open rounds
+            instance = self.get_singleton(db)
+            active_round = numerai.get_numerai_active_round()
+            selling_round_number = self.get_selling_round(active_round)
 
-        # temporary workaround
-        if ((active_round["number"] - 339) % 5) != 0:
-            return self.get_singleton(db)  # type: ignore
+            # temporary workaround
+            if ((active_round["number"] - 339) % 5) != 0:
+                return self.get_singleton(db)  # type: ignore
 
-        return super().update(
-            db,
-            db_obj=instance,  # type: ignore
-            obj_in={
-                "active_round": active_round["number"],
-                "selling_round": selling_round_number,
-            },
-        )
+            return super().update(
+                db,
+                db_obj=instance,  # type: ignore
+                obj_in={
+                    "active_round": active_round["number"],
+                    "selling_round": selling_round_number,
+                },
+            )
+        except ValueError:
+            return db.query(self.model).filter(self.model.id == 0).one_or_none()
 
     def update_stats(self, db: Session) -> Globals:
         """Update global stats"""

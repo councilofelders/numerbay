@@ -49,7 +49,8 @@ export default {
     { src: 'plugins/nuxt-multiselect-plugin', ssr: false },
     { src: 'plugins/nuxt-quill-plugin', ssr: false },
     { src: 'plugins/nuxt-clipboard2', ssr: false },
-    { src: 'plugins/nuxt-poll-plugin', ssr: false }
+    { src: 'plugins/nuxt-poll-plugin', ssr: false },
+    { src: 'plugins/v-date-picker', ssr: false }
   ],
   css: [
     'quill/dist/quill.core.css',

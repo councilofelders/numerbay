@@ -26,7 +26,7 @@
       <div class="tab-content mt-4 tab-content-desktop">
         <div aria-labelledby="all-tab" class="tab-pane fade show active" role="tabpanel">
           <div class="activity-tab-wrap">
-            <div v-for="order in ActiveOrders" :key="order.id" class="card card-creator-s1 mb-4"
+            <div v-for="order in activeOrders" :key="order.id" class="card card-creator-s1 mb-4"
                  :class="isDelivered(order)? '': 'highlight'">
               <div class="card-body d-flex align-items-center">
                 <div class="card-media-img flex-shrink-0">
@@ -46,14 +46,8 @@
                         {{ productGetters.getCategory(orderGetters.getProduct(order)).slug }}
                       </span> {{ orderGetters.getMode(order) }} x {{ orderGetters.getItemQty(order) }} for round
                       <span class="btn-link text-decoration-none fw-medium">{{
-                          orderGetters.getRound(order)
-                        }}</span><span
-                      v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
-                      class="btn-link text-decoration-none fw-medium"
-                    >-{{
-                        orderGetters.getEndRound(order)
-                      }}
-                      </span> (weekly) by
+                          orderGetters.getRoundNumbers(order)
+                        }}</span> by
                       <span class="btn-link text-decoration-none fw-medium">{{
                           orderGetters.getBuyer(order)
                         }}</span>
@@ -107,14 +101,8 @@
                         {{ productGetters.getCategory(orderGetters.getProduct(order)).slug }}
                       </span> {{ orderGetters.getMode(order) }} x {{ orderGetters.getItemQty(order) }} for round
                       <span class="btn-link text-decoration-none fw-medium">{{
-                          orderGetters.getRound(order)
-                        }}</span><span
-                      v-if="productGetters.getCategory(orderGetters.getProduct(order)).is_per_round && parseInt(orderGetters.getItemQty(order)) > 1"
-                      class="btn-link text-decoration-none fw-medium"
-                    >-{{
-                        orderGetters.getEndRound(order)
-                      }}
-                      </span> (weekly) by
+                          orderGetters.getRoundNumbers(order)
+                        }}</span> by
                       <span class="btn-link text-decoration-none fw-medium">{{
                           orderGetters.getBuyer(order)
                         }}</span>
@@ -171,15 +159,15 @@ export default {
   },
   computed: {
     pastOrders() {
-      return _.orderBy(this.orders?.filter(o => (parseInt(this.orderGetters.getEndRound(o)) < this.globals?.selling_round) || (this.orderGetters.getStatus(o) === 'expired')), 'date_order', 'desc');
+      return _.orderBy(this.orders?.filter(o => !this.orderGetters.getRoundNumbers(o).includes(this.globals?.selling_round) || (this.orderGetters.getStatus(o) === 'expired')), 'date_order', 'desc');
     },
     displayedPastOrders() {
       const startIndex = this.perPage * (this.page - 1);
       const endIndex = startIndex + this.perPage;
       return this.pastOrders?.slice(startIndex, endIndex);
     },
-    ActiveOrders() {
-      return _.orderBy(this.orders?.filter(o => (parseInt(this.orderGetters.getEndRound(o)) >= this.globals?.selling_round) && (this.orderGetters.getStatus(o) !== 'expired')), 'date_order', 'desc');
+    activeOrders() {
+      return _.orderBy(this.orders?.filter(o => this.orderGetters.getRoundNumbers(o).includes(this.globals?.selling_round) && (this.orderGetters.getStatus(o) !== 'expired')), 'date_order', 'desc');
     }
   },
   methods: {
@@ -249,7 +237,7 @@ export default {
       let csvContent = [
         'Order ID',
         'Date',
-        'Round',
+        'Rounds',
         'Product',
         'Quantity (Round)',
         'Buyer',
@@ -266,7 +254,7 @@ export default {
         const row = [
           order.id,
           order.date_order,
-          orderGetters.getRound(order),
+          orderGetters.getRoundNumbers(order),
           orderGetters.getItemSku(orderGetters.getProduct(order)),
           parseInt(orderGetters.getItemQty(order)),
           orderGetters.getBuyer(order),

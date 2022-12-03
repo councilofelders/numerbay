@@ -64,15 +64,20 @@ def create_random_product(
 
 @contextmanager
 def get_random_product(
-    db: Session, *, owner_id: Optional[int] = None, **kwargs: Any
+    db: Session,
+    *,
+    owner_id: Optional[int] = None,
+    persistent: bool = False,
+    **kwargs: Any,
 ) -> Generator:
     product = create_random_product(db, owner_id=owner_id, **kwargs)
     try:
         yield product
     finally:
-        owner_id_tmp = product.owner_id
-        model_id = product.model_id
-        crud.product.remove(db, id=product.id)
-        crud.model.remove(db, id=model_id)  # type: ignore
-        if owner_id is None:
-            crud.user.remove(db, id=owner_id_tmp)  # type: ignore
+        if not persistent:
+            owner_id_tmp = product.owner_id
+            model_id = product.model_id
+            crud.product.remove(db, id=product.id)
+            crud.model.remove(db, id=model_id)  # type: ignore
+            if owner_id is None:
+                crud.user.remove(db, id=owner_id_tmp)  # type: ignore

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud, models
-from app.api.dependencies.orders import get_order_end_round_number, update_payment
+from app.api.dependencies.orders import get_order_round_numbers, update_payment
 from app.core.config import settings
 from app.schemas import OrderCreate
 from app.tests.utils.product import create_random_product
@@ -44,13 +44,12 @@ def create_random_order(
     )
 
     new_order = OrderCreate(
-        date_order=datetime.now(),
-        round_order=crud.globals.get_singleton(db).selling_round,  # type: ignore
-        round_order_end=get_order_end_round_number(
+        rounds=get_order_round_numbers(
             crud.globals.get_singleton(db).selling_round,  # type: ignore
             product.options[0].quantity,  # type: ignore
         ),
-        quantity=product.options[0].quantity,  # type: ignore
+        date_order=datetime.now(),
+        round_order=crud.globals.get_singleton(db).selling_round,  # type: ignore
         price=product.options[0].price,  # type: ignore
         currency=product.options[0].currency,  # type: ignore
         mode=mode,
@@ -99,10 +98,11 @@ def place_and_confirm_order(
     quantity: Optional[int] = 1,
     coupon_code: Optional[str] = None,
 ) -> models.Order:
+    selling_round = crud.globals.get_singleton(db).selling_round  # type: ignore
     order_data = {
         "id": product.id,
         "option_id": product.options[0].id,  # type: ignore
-        "quantity": quantity,
+        "rounds": get_order_round_numbers(selling_round, quantity),  # type: ignore
     }
     if coupon_code is not None:
         order_data["coupon"] = coupon_code
@@ -119,7 +119,7 @@ def place_and_confirm_order(
         db_obj=crud.order.get(db, id=content["id"]),  # type: ignore
         obj_in={
             "transaction_hash": random_lower_string(),
-            "round_order": crud.globals.get_singleton(db).selling_round,  # type: ignore
+            "round_order": selling_round,  # type: ignore
         },
     )
     update_payment(db, order_id=content["id"])
