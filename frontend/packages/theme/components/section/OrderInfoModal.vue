@@ -23,7 +23,7 @@
               Rounds
             </th>
             <td>{{
-                `${orderGetters.getRound(order)}-${orderGetters.getEndRound(order)}`
+                `${orderGetters.getRoundNumbers(order)}`
               }}
             </td>
           </tr>
@@ -31,7 +31,7 @@
             <th scope="row">
               Round
             </th>
-            <td>{{ orderGetters.getRound(order) }}</td>
+            <td>{{ orderGetters.getRoundNumbers(order) }}</td>
           </tr>
           <tr>
             <th scope="row">

@@ -43,6 +43,7 @@
     "vee-validate": "^3.2.3",
     "vue-chartjs": "^3.5.1",
     "vue-clipboard2": "^0.3.1",
+    "vue-functional-calendar": "^2.9.96",
     "vue-lazy-hydration": "^2.0.0-beta.4",
     "vue-multiselect": "^2.1.6",
     "vue-pagination-2": "^3.0.91",

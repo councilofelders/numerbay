@@ -216,7 +216,11 @@
                 </template>
               </v-select>
             </div>
-            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
+            <div class="mb-3">
+              <label class="form-label">Select dates to buy</label>
+              <MultipleDatePicker @change="onDateChosen"></MultipleDatePicker>
+            </div>
+<!--            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
                                 rules="required|integer|min_value:1|max_value:10" slim>
               <div class="mb-3">
                 <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity (weekly)</label>
@@ -224,7 +228,7 @@
                        max="10" min="1" step="1" type="number" @change="handleSubmit(onQuantityChange)">
                 <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
               </div>
-            </ValidationProvider>
+            </ValidationProvider>-->
             <div v-if="isAuthenticated">
               <div v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission"
                    class="d-flex flex-wrap align-items-center justify-content-between">
@@ -251,7 +255,11 @@
               <li><span>{{
                   (!!product && productGetters.getCategory(product).is_per_round) ? 'Total number of rounds' : 'Total order quantity'
                 }}</span> <span>{{
-                  productGetters.getCategory(product).is_per_round ? productGetters.getOrderedOption(product, optionIdx).quantity : quantity
+                  // productGetters.getCategory(product).is_per_round ? productGetters.getOrderedOption(product, optionIdx).quantity : quantity
+                  numSelectedRounds
+                }}</span></li>
+              <li v-if="(!!product && productGetters.getCategory(product).is_per_round)"><span>Selected rounds</span> <span>{{
+                  selectedRoundNumbers
                 }}</span></li>
               <li><span>You will pay</span> <span>{{ formattedTotalPrice }}</span></li>
             </ul>
@@ -346,12 +354,16 @@
 </template>
 
 <script>
+import _ from 'lodash';
+
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
 
 import ModelMetricsCard from "@/components/section/ModelMetricsCard";
 import NumeraiChart from '@/components/section/NumeraiChart';
 import RelatedProducts from "@/components/section/RelatedProducts";
+
+import MultipleDatePicker from "@/components/common/MultipleDatePicker";
 
 // Composables
 import {onSSR} from '@vue-storefront/core';
@@ -365,9 +377,9 @@ import {
   useMakeOrder,
   useNumerai,
   useProduct,
+  userGetters,
   useUser,
-  useUserOrder,
-  userGetters
+  useUserOrder
 } from '@vue-storefront/numerbay';
 import {useUiNotification} from '~/composables';
 import {ethers} from 'ethers';
@@ -378,7 +390,8 @@ export default {
   components: {
     ModelMetricsCard,
     NumeraiChart,
-    RelatedProducts
+    RelatedProducts,
+    MultipleDatePicker
   },
   data() {
     return {
@@ -395,10 +408,17 @@ export default {
       autoSubmit: false,
       submitSlot: null,
       paymentMessage: null,
+      selectedRounds: [],
       SectionData
     };
   },
   computed: {
+    numSelectedRounds() {
+      return this.selectedRounds ? this.selectedRounds.length : 0
+    },
+    selectedRoundNumbers() {
+      return (Boolean(this.selectedRounds) && this.selectedRounds.length > 0) ? this.selectedRounds.map(r=>r?.roundNumber).join(', ') : 'None'
+    },
     isSignalsTournament() {
       return this.productGetters.getCategory(this.product).tournament !== 8;
     },
@@ -524,13 +544,43 @@ export default {
     }
   },
   methods: {
+    dateToRound(date) {
+      const ifThen = function (a, b, c) {
+          return a === b ? c : a;
+      };
+
+      const startDate = new Date("2022-10-22T00:00:00.000Z");
+      const baseRound = 339
+      const endDate = date
+      const elapsed = (endDate - startDate) / 86400000
+      const daysBeforeFirstMonday = (8 - startDate.getDay()) % 7
+      const daysAfterLastMonday = endDate.getDay()-1;
+      return Math.ceil(baseRound + ((elapsed - (daysBeforeFirstMonday + daysAfterLastMonday)) / 7 * 5) + ifThen(daysBeforeFirstMonday - 1, -1, 0) + ifThen(daysAfterLastMonday, 6, 5) - 1)
+    },
+    onDateChosen: _.debounce(async function (calendarData) {
+      const selectedDates = calendarData?.selectedDates;
+      this.selectedRounds = selectedDates.map(dateJson => {
+        const dateString = dateJson?.date;
+        const dateParts = dateString.split("/");
+        const dateObject = new Date(Date.UTC(+dateParts[2], dateParts[1] - 1, +dateParts[0]));
+        const roundNumber = this.dateToRound(dateObject)
+        return {date: dateObject, roundNumber: roundNumber}
+      })
+      await this.search({
+        id: this.id,
+        categorySlug: this.category,
+        name: this.name,
+        rounds: this.selectedRounds.map(r=>r?.roundNumber),
+        coupon: this.coupon
+      });
+    }, 500),
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     async onOptionChange(option) {
       await this.search({
         id: this.id,
         categorySlug: this.category,
         name: this.name,
-        qty: this.quantity,
+        rounds: this.selectedRounds.map(r=>r?.roundNumber),
         coupon: this.coupon
       });
     },
@@ -540,7 +590,7 @@ export default {
         id: this.id,
         categorySlug: this.category,
         name: this.name,
-        qty: this.quantity,
+        rounds: this.selectedRounds.map(r=>r?.roundNumber),
         coupon: this.coupon
       });
     },
@@ -553,7 +603,7 @@ export default {
         id: this.id,
         categorySlug: this.category,
         name: this.name,
-        qty: this.quantity,
+        rounds: this.selectedRounds.map(r=>r?.roundNumber),
         coupon: this.coupon
       });
     },
@@ -570,7 +620,8 @@ export default {
         id: this.productGetters.getId(this.product),
         optionId,
         submitModelId: this.submitSlot,
-        quantity: this.quantity,
+        // quantity: this.quantity,
+        rounds: this.selectedRounds.map(r=>r?.roundNumber),
         coupon: this.coupon
       })
       if (this.makeOrderError?.make) {

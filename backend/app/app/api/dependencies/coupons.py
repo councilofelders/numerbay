@@ -1,5 +1,6 @@
 """ Dependencies for coupons endpoints """
 
+import math
 import random
 from datetime import datetime
 from decimal import Decimal
@@ -37,6 +38,13 @@ def return_or_raise(
     return value_to_return
 
 
+def convert_total_quantity_to_option_quantity(
+    option: schemas.ProductOption, total_quantity: int
+) -> int:
+    option_quantity = math.ceil(total_quantity / option.quantity)  # type: ignore
+    return option_quantity
+
+
 def calculate_option_price(  # pylint: disable=too-many-return-statements,too-many-branches
     db: Session,
     option: schemas.ProductOption,
@@ -47,8 +55,9 @@ def calculate_option_price(  # pylint: disable=too-many-return-statements,too-ma
     user: Optional[models.User] = None,
 ) -> schemas.ProductOption:
     """Calculate option price"""
-    option.price *= qty
-    option.quantity *= qty  # type: ignore
+    option_quantity = convert_total_quantity_to_option_quantity(option, qty)
+    option.price *= option_quantity
+    option.quantity *= option_quantity  # type: ignore
 
     if not coupon:
         return option

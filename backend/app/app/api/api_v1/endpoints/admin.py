@@ -14,7 +14,7 @@ from app import crud, models
 from app.api import deps
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import (
-    get_order_end_round_number,
+    get_order_round_numbers,
     send_order_confirmation_emails,
 )
 from app.core.celery_app import celery_app
@@ -24,15 +24,17 @@ from app.models import Artifact, Order, Product
 router = APIRouter()
 
 
-@router.post("/fill-order-round-end")
-def fill_order_round_end(
+@router.post("/fill-order-rounds")
+def fill_order_rounds(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     for order_obj in crud.order.get_multi(db):
-        order_obj.round_order_end = get_order_end_round_number(
-            order_obj.round_order, order_obj.quantity
+        if order_obj.rounds is not None:
+            continue
+        order_obj.rounds = get_order_round_numbers(
+            order_obj.round_order, order_obj.quantity  # type: ignore
         )
     db.commit()
     return {"msg": "success!"}

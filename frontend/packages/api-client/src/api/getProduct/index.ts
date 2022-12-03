@@ -21,7 +21,8 @@ export default async function getProduct(context, params, customQuery?: CustomQu
     category_slug: params.categorySlug,
     sort: params.sort,
     coupon: params.coupon,
-    qty: params.qty
+    qty: params.qty,
+    rounds: params.rounds,
   };
 
   // Use axios to send a POST request

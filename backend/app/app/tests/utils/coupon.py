@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api.dependencies.coupons import generate_promo_code
+from app.api.dependencies.orders import get_order_round_numbers
 from app.core.config import settings
 
 
@@ -45,7 +46,11 @@ def assert_coupon_calulation_error(
 ) -> None:
     response = client.post(
         f"{settings.API_V1_STR}/products/search-authenticated",
-        json={"id": product_id, "qty": quantity, "coupon": coupon_code},
+        json={
+            "id": product_id,
+            "rounds": get_order_round_numbers(369, quantity),
+            "coupon": coupon_code,
+        },
         headers=token_headers,
     )
     assert response.status_code == 200
@@ -61,6 +66,16 @@ def assert_coupon_calulation_error(
     else:
         assert content["data"][0]["options"][0]["applied_coupon"] is None
     if expected_special_price is not None:
+        # from app.db.session import SessionLocal
+        # from fastapi.encoders import jsonable_encoder
+        #
+        # if error is None:
+        #     db = SessionLocal()
+        #     raise Exception(
+        #         f"{jsonable_encoder(crud.product.get(db, id=product_id))}"
+        #         f'{content["data"][0]["options"][0]} , {expected_special_price}, '
+        #         f"{jsonable_encoder(crud.coupon.get_by_code(db, code=coupon_code))}"
+        #     )
         assert (
             content["data"][0]["options"][0]["special_price"] == expected_special_price
         )

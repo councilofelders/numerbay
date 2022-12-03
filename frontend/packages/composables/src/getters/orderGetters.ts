@@ -21,10 +21,7 @@ export const getLastSubmissionRound = (order: any): string => order?.last_submit
 export const getStakeLimit = (order: any): string => order?.stake_limit ? `${order.stake_limit} NMR` : '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getRound = (order: any): string => String(order?.round_order) || '-';
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getEndRound = (order: any): string => String(order?.round_order_end) || '-';
+export const getRoundNumbers = (order: any): string => String((order?.rounds || []).join(', ')) || '-';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getPrice = (order: any): number | null => order?.price || 0;
@@ -86,8 +83,7 @@ const orderGetters: UserOrderGetters<Order, OrderItem> = {
   getSubmissionStatus,
   getLastSubmissionRound,
   getStakeLimit,
-  getRound,
-  getEndRound,
+  getRoundNumbers,
   getPrice,
   getCurrency,
   getFromAddress,

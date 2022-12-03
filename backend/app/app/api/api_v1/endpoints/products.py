@@ -51,7 +51,7 @@ def search_products(  # pylint: disable=too-many-arguments
     category_slug: str = Body(None),
     sort: str = Body(None),
     coupon: str = Body(None),  # pylint: disable=W0613
-    qty: int = Body(None),
+    rounds: List[int] = Body(None),
 ) -> Any:
     """
     Retrieve products.
@@ -71,6 +71,14 @@ def search_products(  # pylint: disable=too-many-arguments
         sort=sort,
     )
 
+    # Quantity
+    total_quantity = len(rounds) if rounds else 1
+    if total_quantity < 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Quantity must be positive",
+        )
+
     products_to_return = []
     for product in products["data"]:
         product_to_return = schemas.Product.from_orm(product)
@@ -85,7 +93,7 @@ def search_products(  # pylint: disable=too-many-arguments
                 option,
                 coupon=None,
                 coupon_obj=None,
-                qty=qty if qty else 1,
+                qty=total_quantity,
                 raise_exceptions=False,
             )
         products_to_return.append(product_to_return)
@@ -110,7 +118,7 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
     category_slug: str = Body(None),
     sort: str = Body(None),
     coupon: str = Body(None),
-    qty: int = Body(None),
+    rounds: List[int] = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -133,6 +141,14 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
 
     coupon_obj = crud.coupon.get_by_code(db, code=coupon)
 
+    # Quantity
+    total_quantity = len(rounds) if rounds else 1
+    if total_quantity < 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Quantity must be positive",
+        )
+
     products_to_return = []
     for product in products["data"]:
         product_to_return = schemas.Product.from_orm(product)
@@ -148,7 +164,7 @@ def search_products_authenticated(  # pylint: disable=too-many-locals,too-many-a
                 option,
                 coupon=coupon,
                 coupon_obj=coupon_obj,
-                qty=qty if qty else 1,
+                qty=total_quantity,
                 raise_exceptions=False,
                 user=current_user,
             )

@@ -8,9 +8,6 @@ import {
 import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
-import {getNumeraiLastSyncDate, getPublicKey, getPublicKeyV2} from '../getters/userGetters';
-import {getOptionFormattedDescription, getProductQtySales} from "../getters/productGetters";
-import {getEndRound, getLastSubmissionRound, getMode} from "../getters/orderGetters";
 
 export type Address = Record<string, unknown>;
 
@@ -216,8 +213,7 @@ export interface UserOrderGetters<ORDER, ORDER_ITEM> {
     getSubmissionStatus: (order: ORDER) => string;
     getLastSubmissionRound: (order: ORDER) => string;
     getStakeLimit: (order: ORDER) => string;
-    getRound: (order: ORDER) => string;
-    getEndRound: (order: ORDER) => string;
+    getRoundNumbers: (order: ORDER) => string;
     getPrice: (order: ORDER) => number;
     getCurrency: (order: ORDER) => string;
     getFromAddress: (order: ORDER) => string;

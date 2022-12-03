@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.api.dependencies.orders import get_order_round_numbers
 from app.core.config import settings
 from app.tests.utils.coupon import assert_coupon_calulation_error, create_random_coupon
 from app.tests.utils.model import create_model_for_product
@@ -450,7 +451,10 @@ def test_order_coupon_redemption(
             order_data = {
                 "id": another_product.id,
                 "option_id": another_product.options[0].id,  # type: ignore
-                "quantity": 3,
+                "rounds": get_order_round_numbers(
+                    crud.globals.get_singleton(db).selling_round,  # type: ignore
+                    3,
+                ),
                 "coupon": coupon.code,
             }
             response = client.post(
@@ -495,7 +499,10 @@ def test_order_invalid_coupon_redemption(
             order_data = {
                 "id": product.id,
                 "option_id": product.options[0].id,  # type: ignore
-                "quantity": 1,
+                "rounds": get_order_round_numbers(
+                    crud.globals.get_singleton(db).selling_round,  # type: ignore
+                    1,
+                ),
                 "coupon": "WRONG",
             }
             response = client.post(
@@ -510,7 +517,10 @@ def test_order_invalid_coupon_redemption(
             order_data = {
                 "id": product.id,
                 "option_id": product.options[0].id,  # type: ignore
-                "quantity": 1,
+                "rounds": get_order_round_numbers(
+                    crud.globals.get_singleton(db).selling_round,  # type: ignore
+                    1,
+                ),
                 "coupon": coupon.code,
             }
             response = client.post(
@@ -525,7 +535,10 @@ def test_order_invalid_coupon_redemption(
             order_data = {
                 "id": another_product.id,
                 "option_id": another_product.options[0].id,  # type: ignore
-                "quantity": 2,
+                "rounds": get_order_round_numbers(
+                    crud.globals.get_singleton(db).selling_round,  # type: ignore
+                    2,
+                ),
                 "coupon": coupon.code,
             }
             response = client.post(
@@ -546,7 +559,7 @@ def test_coupon_calculation(
         db=db,
     )
 
-    with get_random_product(db, price=5) as product:
+    with get_random_product(db, price=5, is_on_platform=True) as product:
         # Create buyer-owned coupon applicable to product
         coupon = create_random_coupon(
             db,
