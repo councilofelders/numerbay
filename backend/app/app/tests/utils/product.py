@@ -24,11 +24,13 @@ def create_random_product(
 
     sku = f"test-{name}"
     description = random_lower_string()
+    is_daily = kwargs.pop("is_daily", True)
 
     product_in = ProductCreate(
         name=name,
         category_id=3,
         description=description,
+        is_daily=is_daily,
         options=[],
         id=id,
     )

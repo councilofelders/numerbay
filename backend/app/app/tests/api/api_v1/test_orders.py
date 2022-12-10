@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.api.dependencies.orders import get_order_round_numbers
+from app.api.dependencies.orders import get_order_weekend_round_numbers
 from app.core.config import settings
 from app.schemas import ArtifactCreate
 from app.tests.utils.order import get_random_order
@@ -98,7 +98,7 @@ def test_create_order_invalid_duplicated(
             db_obj=order,
             obj_in={
                 "round_order": order.round_order - 5,
-                "rounds": get_order_round_numbers(
+                "rounds": get_order_weekend_round_numbers(
                     order.round_order - 5,  # type: ignore
                     2,
                 ),
@@ -110,7 +110,7 @@ def test_create_order_invalid_duplicated(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_round_numbers(
+            "rounds": get_order_weekend_round_numbers(
                 crud.globals.get_singleton(db).selling_round,  # type: ignore
                 1,
             ),
@@ -294,7 +294,7 @@ def test_order_artifact(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_round_numbers(
+            "rounds": get_order_weekend_round_numbers(
                 crud.globals.get_singleton(db).selling_round, 1  # type: ignore
             ),
         }

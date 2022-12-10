@@ -34,7 +34,7 @@ def validate_existing_order(db: Session, order_id: int) -> models.Order:
     return order
 
 
-def get_order_round_numbers(round_order: int, quantity: int) -> List[int]:
+def get_order_weekend_round_numbers(round_order: int, quantity: int) -> List[int]:
     original_end_round = round_order + quantity - 1
     if original_end_round <= 339:
         return list(range(round_order, round_order + quantity))
@@ -44,6 +44,15 @@ def get_order_round_numbers(round_order: int, quantity: int) -> List[int]:
         return list(range(round_order, 339)) + list(
             range(daily_base_round, daily_base_round + daily_quantity * 5 + 1, 5)
         )
+
+
+def any_weekday_round(rounds_numbers: List[int]) -> bool:
+    for round_number in rounds_numbers:
+        if round_number <= 339:
+            continue
+        if ((round_number - 339) % 5) != 0:
+            return True
+    return False
 
 
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:

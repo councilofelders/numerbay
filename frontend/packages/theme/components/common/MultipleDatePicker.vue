@@ -6,6 +6,7 @@
         :limits="{min: minDate, max: maxDate}"
         :isMultipleDatePicker="isMultipleDatePicker"
         :disabled-day-names="disabledDayNames"
+        :is-dark="isDark"
         @choseDay="onDateChosen"
       ></v-date-picker>
     </div>
@@ -20,6 +21,10 @@ export default {
     isMultipleDatePicker: {
       type: Boolean,
       default: () => true
+    },
+    isDark: {
+      type: Boolean,
+      default: () => false
     },
     disabledDayNames: {
       type: Array,

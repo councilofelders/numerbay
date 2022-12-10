@@ -208,6 +208,8 @@ export const getProductModelReturn = (product: ProductVariant, key: string, deci
 
 export const getProductIsActive = (product: ProductVariant): boolean => (product as any)?.is_active;
 
+export const getProductIsDaily = (product: ProductVariant): boolean => (product as any)?.is_daily;
+
 export const getProductUseEncryption = (product: ProductVariant): boolean => (product as any)?.use_encryption;
 
 export const getProductIsOnPlatform = (product: ProductVariant): boolean => ((product as any)?.options || [])[0]?.is_on_platform;
@@ -298,6 +300,7 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getModelRep: getProductModelRep,
   getModelReturn: getProductModelReturn,
   getIsActive: getProductIsActive,
+  getIsDaily: getProductIsDaily,
   getUseEncryption: getProductUseEncryption,
   getIsOnPlatform: getProductIsOnPlatform,
   getExpirationRound: getProductExpirationRound,

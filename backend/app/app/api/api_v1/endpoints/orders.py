@@ -14,6 +14,7 @@ from app.api.dependencies import numerai
 from app.api.dependencies.commons import validate_search_params
 from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
+    any_weekday_round,
     on_order_confirmed,
     send_order_canceled_emails,
     send_order_refund_request_emails,
@@ -126,6 +127,12 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             status_code=400, detail="This product is not available for sale"
         )
 
+    # Check daily product
+    if any_weekday_round(rounds) and not product.is_daily:
+        raise HTTPException(
+            status_code=400, detail="This product is not available for weekday sale"
+        )
+
     # Own product
     if product.owner_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
@@ -145,6 +152,21 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     if from_address == to_address:
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
 
+    # Other pending order
+    pending_orders = crud.order.search(
+        db,
+        role="buyer",
+        current_user_id=current_user.id,
+        filters={
+            "state": {"in": ["pending"]},
+        },
+    )
+    if len(pending_orders.get("data", [])) > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Please pay for or cancel your pending order before making a new order",
+        )
+
     # Duplicate order
     site_globals = validate_not_during_rollover(db)
     selling_round = site_globals.selling_round  # type: ignore
@@ -154,7 +176,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         current_user_id=current_user.id,
         filters={
             "product": {"in": [product.id]},
-            "round_order": {"in": [selling_round]},
+            "round_order": {"in": rounds},
             "state": {"in": ["pending", "confirmed"]},
         },
     )

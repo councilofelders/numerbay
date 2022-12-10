@@ -11,6 +11,7 @@
             <div class="card-author-by-2">
               <span class="item-detail-text-meta">{{ productGetters.getCategory(product).slug }}</span>
               <span v-if="product.is_ready" class="badge fw-medium bg-success">Ready</span>
+              <span v-if="product.is_daily" class="badge fw-medium bg-info">Daily</span>
             </div>
             <a v-show="!!productGetters.getCategory(product).is_per_model" class="custom-tooltip author-link"
                href="javascript:void(0);">Metrics...</a>

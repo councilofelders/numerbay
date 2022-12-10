@@ -123,7 +123,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 if filter_key == "product":
                     product_id_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Order.product_id.in_(product_id_list))
-                if filter_key == "round_order":  # todo multiple rounds
+                if filter_key == "round_order":
                     round_order_list = [int(i) for i in filter_item["in"]]
                     query_filters.append(Order.rounds.any(round_order_list[0]))  # type: ignore
                 if filter_key == "state":
