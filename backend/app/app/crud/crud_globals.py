@@ -27,7 +27,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
         if (  # pylint: disable=no-else-return
             utc_time > close_staking_time
         ):  # previous round closed for staking, next round not yet opened
-            return active_round["number"] + 5
+            return active_round["number"] + 1
         elif utc_time >= open_time:  # new round opened and active
             return active_round["number"]
         # should not happen

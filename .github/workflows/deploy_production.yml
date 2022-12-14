@@ -170,3 +170,4 @@ jobs:
           SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
           SMTP_USER: ${{ secrets.APP_SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
+          WEBHOOK_ENABLED: True
