@@ -88,7 +88,7 @@ class CRUDGlobals(CRUDBase[Globals, GlobalsCreate, GlobalsUpdate]):
             .scalar()
         )
         total_qty_sales = (
-            db.query(func.sum(models.Order.quantity))
+            db.query(func.sum(func.cardinality(models.Order.rounds)))
             .filter(models.Order.state == "confirmed")
             .scalar()
         )

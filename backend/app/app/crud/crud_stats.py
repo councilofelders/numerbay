@@ -290,7 +290,7 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
         # # Sales quantity
         sales_quantity_base_query = db.query(
             Order.round_order.label("round_tournament"),
-            func.sum(Order.quantity).label("value"),
+            func.sum(func.cardinality(Order.rounds)).label("value"),
         )
         stats["sales_quantity"] = jsonable_encoder(
             sales_quantity_base_query.filter(Order.state == "confirmed")

@@ -373,7 +373,7 @@ def update_active_round() -> None:
         )
 
         if open_time <= utc_time <= close_staking_time:
-            if site_globals.active_round != active_round_number:
+            if site_globals.active_round != active_round_number:  # type: ignore
                 # new round opened and active
                 print(
                     f"UTC time: {utc_time}, round open: {open_time}, "
@@ -443,82 +443,82 @@ def update_active_round() -> None:
         db.close()
 
 
-@celery_app.task  # (acks_late=True)
-def update_round_rollover() -> None:
-    """Update round rollover task"""
-    db = SessionLocal()
-    try:
-        site_globals = crud.globals.get_singleton(db)
-
-        active_round = numerai.get_numerai_active_round()
-        utc_time = datetime.now(timezone.utc)
-        open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
-        close_staking_time = pd.to_datetime(
-            active_round["closeStakingTime"]
-        ).to_pydatetime()
-        # next_round_open_time = pd.to_datetime(active_round["closeTime"]).to_pydatetime()
-
-        active_round_number = active_round["number"]
-        print(
-            f"UTC time: {utc_time}, round open: {open_time}, "
-            f"round close: {close_staking_time}, round: {active_round_number}"
-        )
-
-        if open_time <= utc_time <= close_staking_time:  # new round opened and active
-            print("Activities freezed due to round rollover")
-            # freeze activities
-            crud.globals.update(
-                db,
-                db_obj=site_globals,  # type: ignore
-                obj_in={"is_doing_round_rollover": True},
-            )
-
-            # check order stake
-            celery_app.send_task(
-                "app.worker.batch_validate_numerai_models_stake_task",
-            )
-
-            # check again soon
-            celery_app.send_task(
-                "app.worker.update_round_rollover",
-                countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS,
-            )
-        else:  # current round closed for staking, start selling next round, unfreeze activities
-            if (
-                site_globals.active_round == active_round_number  # type: ignore
-                and site_globals.selling_round == active_round_number + 5  # type: ignore
-                # type: ignore
-            ):  # active round already up-to-date
-                print("Round already up-to-date, no action")
-            else:
-                print("Unfreeze activities, rollover completed")
-                selling_round = active_round_number + 5
-                crud.globals.update(
-                    db,
-                    db_obj=site_globals,  # type: ignore
-                    obj_in={
-                        "active_round": active_round_number,
-                        "selling_round": selling_round,
-                        "is_doing_round_rollover": False,
-                    },
-                )  # update round number and unfreeze
-                # expire old products
-                crud.product.bulk_expire(
-                    db, current_round=site_globals.selling_round  # type: ignore
-                )
-
-                # mark order artifacts for pruning
-                crud.order_artifact.bulk_mark_for_pruning(
-                    db, current_round=site_globals.selling_round  # type: ignore
-                )
-
-                # unmark product readiness
-                crud.product.bulk_unmark_is_ready(db)
-    finally:
-        print(
-            f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
-        )
-        db.close()
+# @celery_app.task  # (acks_late=True)
+# def update_round_rollover() -> None:
+#     """Update round rollover task"""
+#     db = SessionLocal()
+#     try:
+#         site_globals = crud.globals.get_singleton(db)
+#
+#         active_round = numerai.get_numerai_active_round()
+#         utc_time = datetime.now(timezone.utc)
+#         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
+#         close_staking_time = pd.to_datetime(
+#             active_round["closeStakingTime"]
+#         ).to_pydatetime()
+#         # next_round_open_time = pd.to_datetime(active_round["closeTime"]).to_pydatetime()
+#
+#         active_round_number = active_round["number"]
+#         print(
+#             f"UTC time: {utc_time}, round open: {open_time}, "
+#             f"round close: {close_staking_time}, round: {active_round_number}"
+#         )
+#
+#         if open_time <= utc_time <= close_staking_time:  # new round opened and active
+#             print("Activities freezed due to round rollover")
+#             # freeze activities
+#             crud.globals.update(
+#                 db,
+#                 db_obj=site_globals,  # type: ignore
+#                 obj_in={"is_doing_round_rollover": True},
+#             )
+#
+#             # check order stake
+#             celery_app.send_task(
+#                 "app.worker.batch_validate_numerai_models_stake_task",
+#             )
+#
+#             # check again soon
+#             celery_app.send_task(
+#                 "app.worker.update_round_rollover",
+#                 countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS,
+#             )
+#         else:  # current round closed for staking, start selling next round, unfreeze activities
+#             if (
+#                 site_globals.active_round == active_round_number  # type: ignore
+#                 and site_globals.selling_round == active_round_number + 5  # type: ignore
+#                 # type: ignore
+#             ):  # active round already up-to-date
+#                 print("Round already up-to-date, no action")
+#             else:
+#                 print("Unfreeze activities, rollover completed")
+#                 selling_round = active_round_number + 5
+#                 crud.globals.update(
+#                     db,
+#                     db_obj=site_globals,  # type: ignore
+#                     obj_in={
+#                         "active_round": active_round_number,
+#                         "selling_round": selling_round,
+#                         "is_doing_round_rollover": False,
+#                     },
+#                 )  # update round number and unfreeze
+#                 # expire old products
+#                 crud.product.bulk_expire(
+#                     db, current_round=site_globals.selling_round  # type: ignore
+#                 )
+#
+#                 # mark order artifacts for pruning
+#                 crud.order_artifact.bulk_mark_for_pruning(
+#                     db, current_round=site_globals.selling_round  # type: ignore
+#                 )
+#
+#                 # unmark product readiness
+#                 crud.product.bulk_unmark_is_ready(db)
+#     finally:
+#         print(
+#             f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
+#         )
+#         db.close()
 
 
 @celery_app.task  # (acks_late=True)

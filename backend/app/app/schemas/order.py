@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, root_validator
 
 from app.schemas.product import Product
 from app.schemas.user import OrderBuyer
@@ -16,10 +16,9 @@ class OrderBase(BaseModel):
 
     date_order: Optional[datetime] = None
     round_order: Optional[int] = None
-    round_order_end: Optional[int] = None
     rounds: Optional[List[int]] = None
-    props: Optional[Dict] = None
     quantity: Optional[int] = None
+    props: Optional[Dict] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None
     mode: Optional[str] = None
@@ -39,12 +38,18 @@ class OrderBase(BaseModel):
     buyer_public_key: Optional[str] = None
     last_reminder_date: Optional[datetime] = None
 
+    @root_validator(pre=True)
+    def set_quantity(cls, values):  # type: ignore
+        """Set order quantity"""
+        values_to_return = dict(**values)
+        values_to_return["quantity"] = len(values["rounds"]) if values["rounds"] is not None else 0
+        return values_to_return
+
 
 # Properties to receive on order creation
 class OrderCreate(OrderBase):
     """Create data schema for order"""
 
-    quantity: Optional[int] = 1
     price: Decimal
     currency: str
     mode: str
