@@ -25,6 +25,7 @@ class ProductBase(BaseModel):
     is_active: Optional[bool] = None
     use_encryption: Optional[bool] = None
     is_ready: Optional[bool] = None
+    is_daily: Optional[bool] = None
     expiration_round: Optional[int] = None
     total_qty_sales: Optional[int] = None
     total_qty_delivered: Optional[int] = None

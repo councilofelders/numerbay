@@ -190,6 +190,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getModelRep: (product: PRODUCT, key: string, decimals: number) => any;
     getModelReturn: (product: PRODUCT, key: string, decimals: number) => any;
     getIsActive: (product: PRODUCT) => boolean;
+    getIsDaily: (product: PRODUCT) => boolean;
     getUseEncryption: (product: PRODUCT) => boolean;
     getIsOnPlatform: (product: PRODUCT) => boolean;
     getExpirationRound: (product: PRODUCT) => number;

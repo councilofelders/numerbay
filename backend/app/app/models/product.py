@@ -37,6 +37,7 @@ class Product(Base):
     is_active = Column(Boolean, server_default="t")
     use_encryption = Column(Boolean, server_default="f")
     is_ready = Column(Boolean)
+    is_daily = Column(Boolean, server_default="f")
     expiration_round = Column(Integer)
     total_qty_sales = Column(Integer, default=0, server_default="0")
     total_qty_delivered = Column(Integer, default=0, server_default="0")

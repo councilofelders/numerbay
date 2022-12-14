@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api.dependencies.coupons import generate_promo_code
-from app.api.dependencies.orders import get_order_round_numbers
+from app.api.dependencies.orders import get_order_weekend_round_numbers
 from app.core.config import settings
 
 
@@ -48,7 +48,7 @@ def assert_coupon_calulation_error(
         f"{settings.API_V1_STR}/products/search-authenticated",
         json={
             "id": product_id,
-            "rounds": get_order_round_numbers(369, quantity),
+            "rounds": get_order_weekend_round_numbers(369, quantity),
             "coupon": coupon_code,
         },
         headers=token_headers,

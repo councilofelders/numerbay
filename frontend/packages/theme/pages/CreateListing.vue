@@ -96,6 +96,19 @@
                   <div class="mb-4">
                     <div class="d-flex align-items-center justify-content-between">
                       <div class="me-2">
+                        <h5 class="mb-1">Sell for weekday rounds</h5>
+                        <p class="form-text">Sell this product for both weekday and weekend rounds</p>
+                      </div>
+                      <div class="form-check form-switch form-switch-s1">
+                        <input v-model="form.isDaily" class="form-check-input" type="checkbox">
+                      </div><!-- end form-check -->
+                    </div><!-- end d-flex -->
+                  </div>
+                </div><!-- end form-item -->
+                <div class="form-item mb-4">
+                  <div class="mb-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="me-2">
                         <h5 class="mb-1">Show advanced settings</h5>
                       </div>
                       <div class="form-check form-switch form-switch-s1">
@@ -596,6 +609,7 @@ export default {
       description: product ? productGetters.getDescription(product) : null,
       avatar: product ? productGetters.getCoverImage(product) : null,
       isActive: product ? productGetters.getIsActive(product) : true,
+      isDaily: product ? productGetters.getIsDaily(product) : true,
       useEncryption: product ? productGetters.getUseEncryption(product) : true,
       webhook: product ? productGetters.getWebhook(product) : null,
       autoExpiration: productGetters.getExpirationRound(product) !== null,

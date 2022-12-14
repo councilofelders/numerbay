@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.api.dependencies.orders import get_order_round_numbers
+from app.api.dependencies.orders import get_order_weekend_round_numbers
 from app.core.config import settings
 from app.tests.utils.coupon import assert_coupon_calulation_error, create_random_coupon
 from app.tests.utils.model import create_model_for_product
@@ -451,7 +451,7 @@ def test_order_coupon_redemption(
             order_data = {
                 "id": another_product.id,
                 "option_id": another_product.options[0].id,  # type: ignore
-                "rounds": get_order_round_numbers(
+                "rounds": get_order_weekend_round_numbers(
                     crud.globals.get_singleton(db).selling_round,  # type: ignore
                     3,
                 ),
@@ -499,7 +499,7 @@ def test_order_invalid_coupon_redemption(
             order_data = {
                 "id": product.id,
                 "option_id": product.options[0].id,  # type: ignore
-                "rounds": get_order_round_numbers(
+                "rounds": get_order_weekend_round_numbers(
                     crud.globals.get_singleton(db).selling_round,  # type: ignore
                     1,
                 ),
@@ -517,7 +517,7 @@ def test_order_invalid_coupon_redemption(
             order_data = {
                 "id": product.id,
                 "option_id": product.options[0].id,  # type: ignore
-                "rounds": get_order_round_numbers(
+                "rounds": get_order_weekend_round_numbers(
                     crud.globals.get_singleton(db).selling_round,  # type: ignore
                     1,
                 ),
@@ -535,7 +535,7 @@ def test_order_invalid_coupon_redemption(
             order_data = {
                 "id": another_product.id,
                 "option_id": another_product.options[0].id,  # type: ignore
-                "rounds": get_order_round_numbers(
+                "rounds": get_order_weekend_round_numbers(
                     crud.globals.get_singleton(db).selling_round,  # type: ignore
                     2,
                 ),

@@ -16,6 +16,8 @@ export default async function createProduct(context, params, customQuery?: Custo
     // eslint-disable-next-line camelcase
     is_active: params.isActive,
     // eslint-disable-next-line camelcase
+    is_daily: params.isDaily,
+    // eslint-disable-next-line camelcase
     use_encryption: params.useEncryption,
     webhook: params.webhook ? params.webhook : null,
     // eslint-disable-next-line camelcase

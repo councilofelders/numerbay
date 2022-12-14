@@ -4,7 +4,7 @@ import functools
 import io
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
@@ -24,7 +24,6 @@ from app.api.dependencies.artifacts import send_artifact_emails_for_active_order
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.order_artifacts import generate_gcs_signed_url
 from app.api.dependencies.orders import (
-    get_order_round_numbers,
     send_failed_autosubmit_emails,
     send_order_upload_reminder_emails,
     update_payment,
@@ -358,6 +357,8 @@ def update_active_round() -> None:
     """Update active round task"""
     db = SessionLocal()
     try:
+        site_globals = crud.globals.get_singleton(db)
+
         active_round = numerai.get_numerai_active_round()
         utc_time = datetime.now(timezone.utc)
         open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
@@ -371,25 +372,70 @@ def update_active_round() -> None:
             f"round close: {close_staking_time}, round: {active_round_number}"
         )
 
-        if open_time <= utc_time <= close_staking_time:  # new round opened and active
-            print(f"Round {active_round_number} opened")
-            # update active round
-            crud.globals.update(
-                db,
-                db_obj=crud.globals.get_singleton(db),  # type: ignore
-                obj_in={"active_round": active_round_number},
-            )
-            # trigger Numerai submissions
-            celery_app.send_task("app.worker.batch_submit_numerai_models_task")
+        if open_time <= utc_time <= close_staking_time:
+            if site_globals.active_round != active_round_number:
+                # new round opened and active
+                print(
+                    f"UTC time: {utc_time}, round open: {open_time}, "
+                    f"round close: {close_staking_time}, round: {active_round_number}"
+                )
+                print(f"Round {active_round_number} opened")
+                # update active round
+                crud.globals.update(
+                    db,
+                    db_obj=crud.globals.get_singleton(db),  # type: ignore
+                    obj_in={"active_round": active_round_number},
+                )
+                # trigger Numerai submissions
+                celery_app.send_task("app.worker.batch_submit_numerai_models_task")
 
-            # trigger other actions on round open
-            on_round_open(db)
-        else:
-            # New round not yet opened, try again soon
-            celery_app.send_task(
-                "app.worker.update_active_round",
-                countdown=settings.ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS,
-            )
+                # trigger other actions on round open
+                on_round_open(db)
+            if close_staking_time - utc_time <= timedelta(minutes=2):
+                # round about to close
+                print("Activities freezed due to round rollover")
+                # freeze activities
+                # crud.globals.update(
+                #     db,
+                #     db_obj=site_globals,  # type: ignore
+                #     obj_in={"is_doing_round_rollover": True},
+                # )
+
+                # check order stake
+                celery_app.send_task(
+                    "app.worker.batch_validate_numerai_models_stake_task",
+                )
+        else:  # current round closed for staking, start selling next round, unfreeze activities
+            if (
+                site_globals.active_round == active_round_number  # type: ignore
+                and site_globals.selling_round == active_round_number + 1  # type: ignore
+                # type: ignore
+            ):  # active round already up-to-date
+                print("Round already up-to-date, no action")
+            else:
+                print("Unfreeze activities, rollover completed")
+                selling_round = active_round_number + 1
+                crud.globals.update(
+                    db,
+                    db_obj=site_globals,  # type: ignore
+                    obj_in={
+                        "active_round": active_round_number,
+                        "selling_round": selling_round,
+                        "is_doing_round_rollover": False,
+                    },
+                )  # update round number and unfreeze
+                # expire old products
+                crud.product.bulk_expire(
+                    db, current_round=site_globals.selling_round  # type: ignore
+                )
+
+                # mark order artifacts for pruning
+                crud.order_artifact.bulk_mark_for_pruning(
+                    db, current_round=site_globals.selling_round  # type: ignore
+                )
+
+                # unmark product readiness
+                crud.product.bulk_unmark_is_ready(db)
     finally:
         print(
             f"Current global state: {jsonable_encoder(crud.globals.get_singleton(db))}"
@@ -1017,9 +1063,7 @@ def batch_update_delivery_rate() -> None:
                             order_artifacts_rounds
                         )
                         if product.category.is_per_round:
-                            order_rounds = get_order_round_numbers(
-                                order.round_order, order.quantity
-                            )
+                            order_rounds = order.rounds
                             for tournament_round in order_rounds:
                                 if tournament_round >= selling_round:
                                     break
@@ -1140,6 +1184,9 @@ def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> N
         product_id (int): product ID
         order_id (int): order ID
     """
+    if not settings.WEBHOOK_ENABLED:
+        return None
+
     db = SessionLocal()
     try:
         site_globals = crud.globals.update_singleton(db)
@@ -1221,12 +1268,12 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
         },
         "update_active_round": {
             "task": "app.worker.update_active_round",
-            "schedule": crontab(day_of_week="sat", hour=13, minute=0),
+            "schedule": crontab(),
         },
-        "update_round_rollover": {
-            "task": "app.worker.update_round_rollover",
-            "schedule": crontab(day_of_week="mon", hour=14, minute=0),
-        },
+        # "update_round_rollover": {
+        #     "task": "app.worker.update_round_rollover",
+        #     "schedule": crontab(day_of_week="mon", hour=14, minute=0),
+        # },
         "batch_update_stake_snapshots": {
             "task": "app.worker.batch_update_stake_snapshots",
             "schedule": crontab(day_of_week="mon", hour=14, minute=0),

@@ -218,7 +218,8 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Select dates to buy</label>
-              <MultipleDatePicker @change="onDateChosen"></MultipleDatePicker>
+              <p>Select Saturdays for weekend rounds</p>
+              <MultipleDatePicker @change="onDateChosen" :is-dark="isDark"></MultipleDatePicker>
             </div>
 <!--            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
                                 rules="required|integer|min_value:1|max_value:10" slim>
@@ -268,7 +269,7 @@
                 <div class="form-check">
                   <input id="useCoupon" v-model="useCoupon" :disabled="Boolean(couponApplied)" class="form-check-input"
                          type="checkbox">
-                  <label class="form-check-label form-check-label-s1" for="useCoupon"> (Optional) Apply coupon
+                  <label class="form-check-label form-check-label-s1" for="useCoupon"> I have a coupon
                     code </label>
                 </div>
               </div>
@@ -413,6 +414,11 @@ export default {
     };
   },
   computed: {
+    isDark() {
+      if(process.client) {
+        return localStorage.getItem('website_theme')==='dark-mode';
+      }
+    },
     numSelectedRounds() {
       return this.selectedRounds ? this.selectedRounds.length : 0
     },

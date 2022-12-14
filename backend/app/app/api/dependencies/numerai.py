@@ -39,6 +39,122 @@ def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
     return account
 
 
+def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
+    """Get Numerai model performance"""
+    numerai_query = """
+            query($username: String!) {
+              v3UserProfile(modelName: $username) {
+                id
+                username
+                startDate
+                stakeValue
+                stakeInfo {
+                  corrMultiplier
+                  mmcMultiplier
+                  takeProfit
+                  tcMultiplier
+                }
+                latestUserScores {
+                  displayName
+                  rank
+                  reputation
+                }
+                latestReturns {
+                  oneDay
+                  threeMonths
+                  oneYear
+                }
+              }
+            }
+    """
+
+    signals_query = """
+            query($username: String!) {
+              v2SignalsProfile(modelName: $username) {
+                id
+                username
+                startDate
+                stakeValue
+                stakeInfo {
+                  corrMultiplier
+                  mmcMultiplier
+                  takeProfit
+                  tcMultiplier
+                }
+                latestUserScores {
+                  displayName
+                  rank
+                  reputation
+                }
+                latestReturns {
+                  oneDay
+                  threeMonths
+                  oneYear
+                }
+              }
+            }
+    """
+
+    query = numerai_query
+    if tournament == 11:
+        query = signals_query
+
+    arguments = {"username": model_name}
+    api = NumerAPI()
+    data = api.raw_query(query, arguments)["data"]
+
+    return (
+        data.get("v3UserProfile", {})
+        if tournament == 8
+        else data.get("v2SignalsProfile", {})
+    )
+
+
+def get_numerai_round_model_performance_v2(
+    tournament: int, model_id: str, n_rounds: int = 10
+) -> Any:
+    """Get Numerai model performance"""
+    query = """
+            query($model_id: String!, $lastNRounds: Integer!, $tournament: Integer!) {
+              v2RoundModelPerformances(
+                distinctOnRound: true,
+                modelId: $model_id,
+                lastNRounds: $lastNRounds,
+                tournament: $tournament
+              ) {
+                atRisk
+                corrMultiplier
+                tcMultiplier
+                roundId
+                roundNumber
+                roundOpenTime
+                roundPayoutFactor
+                roundResolveTime
+                roundResolved
+                roundScoreTime
+                submissionScores {
+                  date
+                  day
+                  displayName
+                  payoutPending
+                  payoutSettled
+                  percentile
+                  value
+                }
+              }
+            }
+    """
+
+    arguments = {
+        "model_id": model_id,
+        "lastNRounds": n_rounds,
+        "tournament": tournament,
+    }
+    api = NumerAPI()
+    data = api.raw_query(query, arguments)["data"]
+    return data
+
+
 def get_numerai_models(public_id: str, secret_key: str) -> Any:
     """Get Numerai models"""
     query = """
