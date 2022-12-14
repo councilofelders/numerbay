@@ -19,7 +19,6 @@ class OrderBase(BaseModel):
     round_order_end: Optional[int] = None
     rounds: Optional[List[int]] = None
     props: Optional[Dict] = None
-    quantity: Optional[int] = None
     price: Optional[Decimal] = None
     currency: Optional[str] = None
     mode: Optional[str] = None
@@ -44,7 +43,6 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     """Create data schema for order"""
 
-    quantity: Optional[int] = 1
     price: Decimal
     currency: str
     mode: str

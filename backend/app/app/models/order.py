@@ -33,7 +33,6 @@ class Order(Base):
     round_order_end = Column(Integer, nullable=True)
     rounds = Column(ARRAY(Integer), nullable=True)
     props = Column(JSON, nullable=True)
-    quantity = Column(Integer, nullable=True, default=1, server_default="1")
     price = Column(Numeric, nullable=False)
     currency = Column(String, nullable=False, default="USD")
     mode = Column(String, nullable=False, default="file", server_default="file")

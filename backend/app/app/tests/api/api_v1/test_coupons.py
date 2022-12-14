@@ -437,7 +437,7 @@ def test_order_coupon_redemption(
             )
             assert order.buyer_id == current_user_obj.id
             assert order.product_id == product.id
-            assert order.quantity == 3
+            assert len(order.rounds) == 3  # type: ignore
             assert order.applied_coupon_id == coupon.id
 
             coupon = crud.coupon.get(db, id=coupon.id)  # type: ignore

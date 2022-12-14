@@ -256,7 +256,6 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         rounds_sorted = sorted(rounds)
         order_in = schemas.OrderCreate(
             rounds=rounds_sorted,
-            quantity=total_quantity,
             price=product_option_obj.special_price
             if product_option_obj.applied_coupon
             else product_option_obj.price,
