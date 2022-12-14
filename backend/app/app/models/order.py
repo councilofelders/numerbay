@@ -30,7 +30,6 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     date_order = Column(DateTime, index=True, nullable=False)
     round_order = Column(Integer, nullable=False)
-    round_order_end = Column(Integer, nullable=True)
     rounds = Column(ARRAY(Integer), nullable=True)
     props = Column(JSON, nullable=True)
     price = Column(Numeric, nullable=False)
