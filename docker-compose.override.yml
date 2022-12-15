@@ -44,14 +44,14 @@ services:
     environment:
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
-#      - GCP_SERVICE_ACCOUNT_EMAIL=${GCP_SERVICE_ACCOUNT_EMAIL?Variable not set}
-#      - GCP_SERVICE_ACCOUNT_KEY=${GCP_SERVICE_ACCOUNT_KEY?Variable not set}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - WEBHOOK_ENABLED=${WEBHOOK_ENABLED}
     build:
       context: ./backend
       dockerfile: backend.dockerfile
@@ -73,12 +73,14 @@ services:
       - RUN=celery -A app.worker worker -l info -Q main-queue,beat-queue -P eventlet -c 100
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - WEBHOOK_ENABLED=${WEBHOOK_ENABLED}
     depends_on:
       - celerybeat
     build:
@@ -96,12 +98,14 @@ services:
       - RUN=celery -A app.worker beat -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8889
       - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
       - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - WEBHOOK_ENABLED=${WEBHOOK_ENABLED}
     build:
       context: ./backend
       dockerfile: celeryworker.dockerfile

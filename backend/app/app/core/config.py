@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     SMTP_HOST: Optional[str] = None
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
+    MAILGUN_DOMAIN_NAME: Optional[str] = None
+    MAILGUN_API_KEY: Optional[str] = None
     EMAILS_FROM_EMAIL: Optional[EmailStr] = None
     EMAILS_FROM_NAME: Optional[str] = None
 
@@ -74,8 +76,8 @@ class Settings(BaseSettings):
     @validator("EMAILS_ENABLED", pre=True)
     def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:
         return bool(
-            values.get("SMTP_HOST")
-            and values.get("SMTP_PORT")
+            values.get("MAILGUN_DOMAIN_NAME")
+            and values.get("MAILGUN_API_KEY")
             and values.get("EMAILS_FROM_EMAIL")
         )
 
