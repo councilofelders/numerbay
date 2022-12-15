@@ -6,14 +6,64 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import emails
+import requests
 from emails.template import JinjaTemplate
 from jose import jwt
+from requests import Response
 
 from app.core.celery_app import celery_app
 from app.core.config import settings
 
 
 def send_email(
+    email_to: str,
+    subject_template: str = "",
+    html_template: str = "",
+    environment: Dict = None,
+) -> None:
+    """
+    Generic function for sending emails
+
+    Args:
+        email_to (str): recipient email
+        subject_template (str): email subject
+        html_template (str): email template
+        environment (dict): env variables for email template
+    """
+    if environment is None:
+        environment = {}
+    assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
+    message = emails.Message(
+        subject=JinjaTemplate(subject_template),
+        html=JinjaTemplate(html_template),
+        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+    )
+    message.render(**environment)
+    response = semd_email_mailgun(
+        email_to=email_to, subject=message.get_subject(), message=message.html_body
+    )
+    logging.info(f"send email result: {response}")
+
+
+def semd_email_mailgun(
+    email_to: str, subject: str = "", message: str = ""
+) -> Optional[Response]:
+    if settings.MAILGUN_API_KEY is not None:
+        response = requests.post(
+            f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN_NAME}/messages",
+            auth=("api", settings.MAILGUN_API_KEY),
+            data={
+                "from": f"{settings.EMAILS_FROM_NAME} <admin@numerbay.ai>",
+                "to": email_to,
+                "subject": subject,
+                "html": message,
+            },
+        )
+        return response
+    return None
+
+
+def send_email_smtp(
     email_to: str,
     subject_template: str = "",
     html_template: str = "",
