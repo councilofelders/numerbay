@@ -2,11 +2,31 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://docs.numerbay.ai/updates</id>
     <title>NumerBay Blog</title>
-    <updated>2022-09-24T00:00:00.000Z</updated>
+    <updated>2022-12-16T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://docs.numerbay.ai/updates"/>
     <subtitle>NumerBay Blog</subtitle>
     <icon>https://docs.numerbay.ai/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[Daily Sales]]></title>
+        <id>daily-sales</id>
+        <link href="https://docs.numerbay.ai/updates/daily-sales"/>
+        <updated>2022-12-16T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Numerai moved towards daily tournament rounds since late Oct 2022 and will soon enable payout for the weekday rounds.]]></summary>
+        <content type="html"><![CDATA[<p>Numerai moved towards <a href="https://forum.numer.ai/t/daily-tournaments/5766">daily tournament rounds</a> since late Oct 2022 and will soon enable payout for the weekday rounds. </p><p>NumerBay sales remained weekly up until now and the platform is finally making the transition towards daily as well.</p><h2>What&#x27;s the impact</h2><p>Buyers will now place orders using a calendar date picker to select the rounds to purchase.
+Select <strong>Saturdays</strong> to buy the weekend rounds and <strong>Tue-Fri</strong> to buy the weekday rounds.
+Order rounds are no longer required to be consecutive.
+The same product can also be bought multiple times during the same week so long as the rounds don&#x27;t overlap.
+Only one pending order is allowed at a time.</p><img alt="Daily Order" src="/img/update/dailyOrder.png" width="450"/><p>Sellers with existing products will remain weekend-sales-only and can choose to enable weekday (daily) sales in the Edit Listing page.
+New products created will enable weekday sales by default and can be switched off during listing creation.</p><p><img src="/img/update/dailyOption.png" alt="Daily Option"/></p><p>There was no change to the NumerBay submission endpoints and users&#x27; existing pipelines are expected to work normally.</p><h2>Q&amp;A</h2><h3>I&#x27;m an existing seller, will my automation pipeline fail during weekdays if I do not enable daily sales?</h3><p>No, it should work normally. No order can be placed for your product for weekday rounds if you do not enable daily sales, therefore your webhook shouldn&#x27;t be triggered in the first place.
+If you use the same automation for Numerai and NumerBay, any such attempt to upload will just result in no-op since there&#x27;s no order for the weekday rounds, the effect is equivalent to trying to upload for weekend rounds when you do not have any active order. </p><h3>I&#x27;m a buyer, how do I know if a product supports weekday rounds?</h3><p>Products with weekday sales enabled will show a blue &quot;daily&quot; badge in the products catalog page.
+In addition, if you try to place an order for a product not supporting weekday rounds, you will get an error saying <em>This product is not available for weekday sale</em>.</p><img alt="Daily Badge" src="/img/update/dailyBadge.png" width="450"/><h3>What happened to the round rollover embargo?</h3><p>There used to be a 30-minute freeze at the end of the weekend submission window.
+After this change, there would no long be any freeze of activity near the deadline. However, it is recommended not to submit last minute as some NumerBay processes may take time to complete.</p>]]></content>
+        <author>
+            <name>ResTrading</name>
+            <uri>https://github.com/restrading</uri>
+        </author>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Encryption Update]]></title>
         <id>encryption-v2</id>
