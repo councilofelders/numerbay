@@ -28,6 +28,7 @@ from app.api.dependencies.orders import (
     send_order_upload_reminder_emails,
     update_payment,
 )
+from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -1200,18 +1201,22 @@ def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> N
         if not product.webhook:
             return None
         date_str = datetime.now().isoformat()
-        response = requests.post(
-            product.webhook,
-            json={
-                "date": date_str,
-                "product_id": product.id,
-                "product_category": product.category.slug,  # type: ignore
-                "product_name": product.name,
-                "product_full_name": product.sku,
-                "model_id": product.model_id,
-                "tournament": product.category.tournament,  # type: ignore
-                "order_id": order_id,
-                "round_tournament": selling_round,
+        response = make_gcp_authorized_post_request(
+            settings.GCP_WEBHOOK_FUNCTION,  # type: ignore
+            settings.GCP_WEBHOOK_FUNCTION,  # type: ignore
+            payload={
+                "url": product.webhook,
+                "payload": {
+                    "date": date_str,
+                    "product_id": product.id,
+                    "product_category": product.category.slug,  # type: ignore
+                    "product_name": product.name,
+                    "product_full_name": product.sku,
+                    "model_id": product.model_id,
+                    "tournament": product.category.tournament,  # type: ignore
+                    "order_id": order_id,
+                    "round_tournament": selling_round,
+                },
             },
             headers={"Content-Type": "application/json"},
         )
