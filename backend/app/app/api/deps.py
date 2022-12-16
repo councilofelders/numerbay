@@ -1,15 +1,19 @@
 """ Injection dependencies for endpoints """
 
 import json
-from typing import Generator
+from typing import Dict, Generator, Optional
 
+import google.auth.transport.requests
+import google.oauth2.id_token
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from google.auth.transport.requests import AuthorizedSession
 from google.cloud import storage
 from google.cloud.storage import Bucket
 from google.oauth2 import service_account
 from jose import jwt
 from pydantic import ValidationError
+from requests import Response
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -123,3 +127,29 @@ def get_gcs_bucket() -> Bucket:
     # bucket.patch()
     # print(f"{settings.GCP_STORAGE_BUCKET} Cors: {bucket.cors}")
     return bucket
+
+
+def make_gcp_authorized_post_request(
+    endpoint: str,
+    audience: str,
+    payload: Optional[Dict] = None,
+    headers: Optional[Dict] = None,
+) -> Response:
+    """
+    Make a POST request to the specified HTTP endpoint with google-auth
+    """
+    if headers is None:
+        headers = {}
+
+    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
+    credentials = service_account.IDTokenCredentials.from_service_account_info(
+        service_account_info, target_audience=audience
+    )
+
+    auth_req = google.auth.transport.requests.Request()
+    credentials.refresh(auth_req)
+
+    authed_session = AuthorizedSession(credentials)
+    response = authed_session.post(endpoint, json=payload, headers=headers)
+
+    return response

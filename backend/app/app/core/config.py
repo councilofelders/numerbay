@@ -91,6 +91,7 @@ class Settings(BaseSettings):
     # GCP_SERVICE_ACCOUNT_EMAIL: Optional[str] = None
     # GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
     GCP_SERVICE_ACCOUNT_INFO: Optional[str] = None
+    GCP_WEBHOOK_FUNCTION: Optional[str] = None
 
     # Web3
     INFURA_PROJECT_ID: Optional[str] = None

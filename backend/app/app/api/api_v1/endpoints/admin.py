@@ -17,11 +17,31 @@ from app.api.dependencies.orders import (
     get_order_weekend_round_numbers,
     send_order_confirmation_emails,
 )
+from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
 from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
 from app.models import Artifact, Order, Product
 
 router = APIRouter()
+
+
+@router.post("/test-webhook-auth")
+def test_webhook_auth(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+    endpoint: str,
+    url: str,
+) -> Any:
+    response = make_gcp_authorized_post_request(
+        endpoint,
+        endpoint,
+        payload={"url": url, "payload": {"test": True}},
+        headers={"Content-Type": "application/json"},
+    )
+    print(response.status_code)
+    print(response.content)
+    return {"msg": "success!"}
 
 
 @router.post("/fill-order-rounds")
