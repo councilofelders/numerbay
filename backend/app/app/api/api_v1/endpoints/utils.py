@@ -2,13 +2,14 @@
 from datetime import datetime
 from typing import Any
 
-import requests
 from fastapi import APIRouter, Body, Depends, HTTPException
 from pydantic.networks import EmailStr, HttpUrl
 
 from app import models, schemas
 from app.api import deps
+from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
+from app.core.config import settings
 from app.utils import send_test_email
 
 router = APIRouter()
@@ -52,24 +53,28 @@ def test_product_webhook(
     """
     Test product webhook.
     """
-    response = requests.post(
-        url,
-        json={
-            "date": datetime.now().isoformat(),
-            "product_id": 1,
-            "product_category": "numerai-predictions",
-            "product_name": "myproduct",
-            "product_full_name": "numerai-predictions-myproduct",
-            "model_id": "adabxxx-3acf-470e-8733-e4283261xxxx",
-            "tournament": 8,
-            "order_id": None,
-            "round_tournament": 326,
+    response = make_gcp_authorized_post_request(
+        settings.GCP_WEBHOOK_FUNCTION,  # type: ignore
+        settings.GCP_WEBHOOK_FUNCTION,  # type: ignore
+        payload={
+            "url": url,
+            "payload": {
+                "date": datetime.now().isoformat(),
+                "product_id": 1,
+                "product_category": "numerai-predictions",
+                "product_name": "myproduct",
+                "product_full_name": "numerai-predictions-myproduct",
+                "model_id": "adabxxx-3acf-470e-8733-e4283261xxxx",
+                "tournament": 8,
+                "order_id": None,
+                "round_tournament": 326,
+            },
         },
         headers={"Content-Type": "application/json"},
     )
     if response.status_code == 200:
-        return {"status_code": response.status_code, "content": response.text}
+        return {"status_code": 200, "content": "Webhook test successful"}
     raise HTTPException(
-        status_code=response.status_code,
-        detail=response.text,
+        status_code=400,
+        detail="Webhook test failed",
     )
