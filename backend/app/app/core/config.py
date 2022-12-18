@@ -106,6 +106,7 @@ class Settings(BaseSettings):
     NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS: int = 60
     ORDER_PAYMENT_POLL_FREQUENCY_SECONDS: float = 20.0
     ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS: int = 60
+    MAX_ROUND_OFFSET: int = 50
     WEBHOOK_ENABLED: bool = False
 
     class Config:

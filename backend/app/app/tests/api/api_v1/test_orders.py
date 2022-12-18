@@ -24,6 +24,8 @@ def test_create_order(
         obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
     )
 
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
     # Active product: accept
     with get_random_product(db, is_on_platform=True, mode="file") as product:
         crud.user.update(
@@ -35,7 +37,7 @@ def test_create_order(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": list(range(300, 300 + 1)),
+            "rounds": get_order_weekend_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -46,7 +48,7 @@ def test_create_order(
         content = response.json()
         assert content["buyer"]["id"] == current_user["id"]
         assert content["product"]["id"] == product.id
-        assert content["rounds"] == list(range(300, 300 + 1))
+        assert content["rounds"] == get_order_weekend_round_numbers(selling_round, 1)
 
         # Negative or 0 quantity: reject
         order_data["rounds"] = []
@@ -60,7 +62,7 @@ def test_create_order(
 
         # Wrong quantity for category: reject
         crud.product.update(db, db_obj=product, obj_in={"category_id": 4})
-        order_data["rounds"] = list(range(300, 300 + 2))
+        order_data["rounds"] = get_order_weekend_round_numbers(selling_round, 2)
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
             headers=superuser_token_headers,
@@ -139,13 +141,15 @@ def test_create_order_invalid_self(
         obj_in={"numerai_wallet_address": buyer_wallet},
     )
 
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
     with get_random_product(
         db, owner_id=current_user["id"], is_on_platform=True, mode="file"
     ) as product:
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": list(range(300, 300 + 1)),
+            "rounds": get_order_weekend_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -160,7 +164,7 @@ def test_create_order_invalid_self(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": list(range(300, 300 + 1)),
+            "rounds": get_order_weekend_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -181,6 +185,8 @@ def test_create_order_invalid_api_permissions(
         obj_in={"numerai_wallet_address": f"0xfromaddress{random_lower_string()}"},
     )
 
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
     # Stake mode product
     with get_random_product(db, is_on_platform=True, mode="stake") as product:
         crud.user.update(
@@ -193,7 +199,7 @@ def test_create_order_invalid_api_permissions(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": list(range(300, 300 + 1)),
+            "rounds": get_order_weekend_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -211,7 +217,7 @@ def test_create_order_invalid_api_permissions(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,
-            "rounds": list(range(300, 300 + 1)),
+            "rounds": get_order_weekend_round_numbers(selling_round, 1),
             "submit_model_id": "test_model_id",
         }  # type: ignore
         response = client.post(
@@ -240,7 +246,7 @@ def test_create_order_invalid_api_permissions(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,
-            "rounds": list(range(300, 300 + 1)),
+            "rounds": get_order_weekend_round_numbers(selling_round, 1),
             "submit_model_id": "test_model_id",
         }  # type: ignore
         response = client.post(
