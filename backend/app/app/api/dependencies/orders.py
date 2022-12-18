@@ -55,6 +55,18 @@ def any_weekday_round(rounds_numbers: List[int]) -> bool:
     return False
 
 
+def valid_rounds(
+    rounds_numbers: List[int], selling_round: int, max_round_offset: int
+) -> bool:
+    for round_number in rounds_numbers:
+        if (
+            round_number < selling_round
+            or round_number > selling_round + max_round_offset
+        ):
+            return False
+    return True
+
+
 def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optional[str]:
     """Match transaction for order"""
     matched_transaction = None

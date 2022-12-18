@@ -111,6 +111,7 @@ def place_and_confirm_order(
         headers=token_headers,
         json=order_data,
     )
+    assert response.status_code == 200
     content = response.json()
 
     # manual confirm order

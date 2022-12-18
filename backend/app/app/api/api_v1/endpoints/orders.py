@@ -19,6 +19,7 @@ from app.api.dependencies.orders import (
     send_order_canceled_emails,
     send_order_refund_request_emails,
     send_order_upload_reminder_emails,
+    valid_rounds,
     validate_existing_order,
 )
 from app.api.dependencies.products import (
@@ -133,6 +134,19 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             status_code=400, detail="This product is not available for weekday sale"
         )
 
+    # Check invalid rounds
+    site_globals = validate_not_during_rollover(db)
+    selling_round = site_globals.selling_round  # type: ignore
+    if (
+        not valid_rounds(
+            rounds,
+            selling_round=selling_round,
+            max_round_offset=settings.MAX_ROUND_OFFSET,
+        )
+        and not current_user.is_superuser
+    ):
+        raise HTTPException(status_code=400, detail="Invalid tournament round(s)")
+
     # Own product
     if product.owner_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot buy your own product")
@@ -161,15 +175,13 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             "state": {"in": ["pending"]},
         },
     )
-    if len(pending_orders.get("data", [])) > 0:
+    if len(pending_orders.get("data", [])) > 0 and not current_user.is_superuser:
         raise HTTPException(
             status_code=400,
             detail="Please pay for or cancel your pending order before making a new order",
         )
 
     # Duplicate order
-    site_globals = validate_not_during_rollover(db)
-    selling_round = site_globals.selling_round  # type: ignore
     existing_order = crud.order.search(
         db,
         role="buyer",

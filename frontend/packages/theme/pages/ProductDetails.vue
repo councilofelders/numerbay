@@ -219,7 +219,7 @@
             <div class="mb-3">
               <label class="form-label">Select dates to buy</label>
               <p>Select Saturdays for weekend rounds</p>
-              <MultipleDatePicker @change="onDateChosen" :is-dark="isDark"></MultipleDatePicker>
+              <MultipleDatePicker @change="onDateChosen" :is-dark="isDark" :minDate="minDate"></MultipleDatePicker>
             </div>
 <!--            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
                                 rules="required|integer|min_value:1|max_value:10" slim>
@@ -385,6 +385,7 @@ import {
 import {useUiNotification} from '~/composables';
 import {ethers} from 'ethers';
 import {contractAddress, transferAbi} from "../plugins/nmr";
+import moment from 'moment';
 
 export default {
   name: 'ProductDetails',
@@ -418,6 +419,18 @@ export default {
       if(process.client) {
         return localStorage.getItem('website_theme')==='dark-mode';
       }
+    },
+    minDate() {
+      const currentDate = moment.utc()
+      const dow = currentDate.day();
+      let offset = 0;
+      if (dow === 0) { // if Sunday
+        offset = 1
+      } else if (dow === 1) { // if Monday
+        offset = 2
+      }
+      let minDate = currentDate.subtract(offset, "days")
+      return minDate.format("DD/MM/YYYY")
     },
     numSelectedRounds() {
       return this.selectedRounds ? this.selectedRounds.length : 0
@@ -761,8 +774,8 @@ export default {
           role: 'buyer',
           filters: {
             product: {in: [this.productGetters.getId(this.product)]},
-            round_order: {in: [this.globals.selling_round]},
-            state: {in: ['pending', 'confirmed']}
+            // round_order: {in: [this.globals.selling_round]},
+            state: {in: ['pending']}
           }
         });
         if (this.orders?.data?.length > 0) {
