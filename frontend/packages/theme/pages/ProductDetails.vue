@@ -216,28 +216,35 @@
                 </template>
               </v-select>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Select dates to buy</label>
-              <p>Select Saturdays for weekend rounds</p>
-              <MultipleDatePicker @change="onDateChosen" :is-dark="isDark" :minDate="minDate"></MultipleDatePicker>
-            </div>
-<!--            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
-                                rules="required|integer|min_value:1|max_value:10" slim>
+            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
+                                rules="required|integer|min_value:1|max_value:10" v-show="!showCalendar" slim>
               <div class="mb-3">
-                <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity (weekly)</label>
+                <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity (weekly rounds only)</label>
                 <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                       max="10" min="1" step="1" type="number" @change="handleSubmit(onQuantityChange)">
+                       max="10" min="1" step="1" type="number" @change="onQuantityChange">
                 <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
               </div>
-            </ValidationProvider>-->
+            </ValidationProvider>
+            <div class="mb-3">
+              <div class="d-flex align-items-center justify-content-between">
+                <label class="form-label">Advanced (incl. weekday rounds)</label>
+                <div class="form-check form-switch form-switch-s1">
+                  <input v-model="showCalendar" class="form-check-input" type="checkbox">
+                </div><!-- end form-check -->
+              </div>
+            </div>
+            <div class="mb-3" v-show="showCalendar">
+              <label class="form-label">Select dates to buy</label>
+              <p>Select Saturdays for weekend rounds</p>
+              <MultipleDatePicker @change="onDateChosen" :is-dark="isDark" :minDate="minDate" ref="calendar"></MultipleDatePicker>
+            </div>
             <div v-if="isAuthenticated">
               <div v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission"
-                   class="d-flex flex-wrap align-items-center justify-content-between">
-                <div class="form-check">
-                  <input id="autoSubmit" v-model="autoSubmit" :disabled="!isAutoSubmitOptional" class="form-check-input"
-                         type="checkbox">
-                  <label class="form-check-label form-check-label-s1" for="autoSubmit"> {{ autoSubmitText }} </label>
-                </div>
+                   class="d-flex align-items-center justify-content-between">
+                <label class="form-label" for="autoSubmit">Auto-submit to Numerai</label>
+                <div class="form-check form-switch form-switch-s1">
+                  <input id="autoSubmit" v-model="autoSubmit" :disabled="!isAutoSubmitOptional" class="form-check-input" type="checkbox">
+                </div><!-- end form-check -->
               </div>
               <ValidationProvider v-if="autoSubmit" v-slot="{ errors }" rules="required" slim>
                 <div class="mb-3">
@@ -411,6 +418,7 @@ export default {
       submitSlot: null,
       paymentMessage: null,
       selectedRounds: [],
+      showCalendar: false,
       SectionData
     };
   },
@@ -473,9 +481,6 @@ export default {
     },
     isAutoSubmitOptional() {
       return !this.productGetters.getOptionIsOnPlatform(this.selectedOption) || this.productGetters.getMode(this.selectedOption) === 'file';
-    },
-    autoSubmitText() {
-      return this.isAutoSubmitOptional ? '(Optional) Auto-submit this model to Numerai for me' : 'Auto-submit this model to Numerai for me';
     },
     buyBtnText() {
       return this.isOnPlatform ? 'Place an Order' : 'Visit external listing';
@@ -603,8 +608,12 @@ export default {
         coupon: this.coupon
       });
     },
+    nextWeekendRoundNumber(currentRound) {
+      return currentRound + 4 - currentRound % 5
+    },
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    async onQuantityChange(quantity) {
+    async onQuantityChange(e) {
+      this.selectedRounds = Array.from({length: this.quantity}, (x, i) => ({"roundNumber": this.nextWeekendRoundNumber(parseInt(this.globals.selling_round)) + i * 5}));
       await this.search({
         id: this.id,
         categorySlug: this.category,
@@ -745,6 +754,7 @@ export default {
     },
     togglePlaceBidModal() {
       this.placeBidModal?.toggle();
+      this.onQuantityChange()
     },
     formatDecimal(value, decimals) {
       if (value == null) {
@@ -761,6 +771,14 @@ export default {
     async product() {
       if (!this.isAutoSubmitOptional) {
         this.autoSubmit = true;
+      }
+    },
+    showCalendar(value) {
+      if (value) { // clear quantity and enable calendar
+        this.selectedRounds = []
+        this.quantity = 1
+      } else { // disable calendar and refresh quantity
+        this.onQuantityChange()
       }
     }
   },
@@ -807,7 +825,7 @@ export default {
       }, false);
 
       modal?.addEventListener('shown.bs.modal', () => {
-        this.$refs.optionDropdown?.$refs?.search?.focus();
+        // this.$refs.optionDropdown?.$refs?.search?.focus();
         if (this.isAuthenticated) {
           this.getModels().catch((e) => {
             this.send({

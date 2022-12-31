@@ -8,6 +8,7 @@
         :disabled-day-names="disabledDayNames"
         :is-dark="isDark"
         @choseDay="onDateChosen"
+        ref="datePicker"
       ></v-date-picker>
     </div>
   </client-only>
@@ -37,6 +38,10 @@ export default {
     maxDate: {
       type: String,
       default: () => moment.utc().add(10, 'weeks').format("DD/MM/YYYY")
+    },
+    refName: {
+      type: String,
+      default: () => null
     }
   },
   data() {
