@@ -1,0 +1,24 @@
+query v2RoundModelPerformances($model_id: String!, $lastNRounds: Integer!, $tournament: Integer!) {
+  v2RoundModelPerformances(distinctOnRound: true, modelId: $model_id, lastNRounds: $lastNRounds, tournament: $tournament) {
+    atRisk
+    corrMultiplier
+    tcMultiplier
+    roundId
+    roundDataDatestamp
+    roundNumber
+    roundOpenTime
+    roundPayoutFactor
+    roundResolveTime
+    roundResolved
+    roundScoreTime
+    submissionScores {
+      date
+      day
+      displayName
+      payoutPending
+      payoutSettled
+      percentile
+      value
+    }
+  }
+}

@@ -25,3 +25,12 @@ coverage
 
 # OS generated files
 .DS_STORE
+
+# Yarn V2
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
