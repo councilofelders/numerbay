@@ -90,15 +90,6 @@ export const getNumeraiCorrCorr60TcChartData = (numerai: any) => {
         data1: extractNumeraiV2Scores(numerai, 'corr20', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
-      // {
-      //   label: 'CORR60',
-      //   borderColor: '#acacac',
-      //   fill: false,
-      //   lineTension: 0,
-      //   pointRadius: 0,
-      //   data: extractNumeraiV2Scores(numerai, 'corj60', false),
-      //   data1: extractNumeraiV2Scores(numerai, 'corj60', true)
-      // },
       {
         label: 'TC',
         borderColor: '#a278dc',
