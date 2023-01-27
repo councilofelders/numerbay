@@ -18,11 +18,6 @@ export default {
       default: () => ({
         responsive: true,
         maintainAspectRatio: false,
-        // elements: {
-        //   point:{
-        //     radius: 0
-        //   }
-        // },
         scales: {
           xAxes: [{
             type: 'time',
