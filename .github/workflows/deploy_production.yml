@@ -50,7 +50,7 @@ jobs:
           docker-compose pull --quiet proxy db pgadmin queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
-          docker pull --quiet node:12
+          docker pull --quiet node:14
 
       # In this step, this action saves a list of existing images,
       # the cache is created without them in the post run.
