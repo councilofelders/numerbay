@@ -95,9 +95,9 @@
                     <div v-if="isNumeraiChartReady" class="item-detail-list">
                       <NumeraiChart v-if="!isSignalsTournament" :chartdata="numeraiCorrCorr60TcChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiCorrChartData"
+                      <NumeraiChart v-if="isSignalsTournament" :chartdata="signalsCorrChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="isSignalsTournament" :chartdata="numeraiTcIcChartData"
+                      <NumeraiChart v-if="isSignalsTournament" :chartdata="signalsTcIcChartData"
                                     class="numerai-chart"></NumeraiChart>
                     </div>
                     <div v-else class="item-detail-list placeholder-glow">
@@ -127,51 +127,63 @@
                         </thead>
                         <tbody class="fs-15">
                         <tr
-                          v-for="(roundPerformance, j) in numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 6)"
+                          v-for="(roundPerformance, j) in roundModelPerformancesTableData"
                           :key="j">
                           <th scope="row">{{ roundPerformance.roundNumber }}</th>
                           <td class="text-end"><span><span
-                            class="tooltip-s1">{{ formatDecimal(Number(roundPerformance.selectedStakeValue), 2) }} NMR<span
+                            class="tooltip-s1">{{ formatDecimal(Number(roundPerformance.atRisk), 2) }} NMR<span
                             class="tooltip-s1-text tooltip-text">{{
-                              `${roundPerformance.selectedStakeValue} NMR`
+                              `${roundPerformance.atRisk} NMR`
                             }}</span></span></span></td>
                           <td class="text-end">
-                            <span v-if="stakeInfo.corrMultiplier"> {{ stakeInfo.corrMultiplier }}xCORR</span>
-                            <span v-if="stakeInfo.tcMultiplier"> {{ stakeInfo.tcMultiplier }}xTC</span>
+                            <span> {{ roundPerformance.corrMultiplier }}xCORR</span>
+                            <span> {{ roundPerformance.tcMultiplier }}xTC</span>
                           </td>
-                          <td class="text-end"><span class="tooltip-s1">{{
-                              formatDecimal(roundPerformance.corr, 4)
+                          <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
+                              formatDecimal(getRoundScore(roundPerformance, 'corr', false), 4)
                             }}<span
                               class="tooltip-s1-text tooltip-text">Percentile: {{
-                                formatDecimal(roundPerformance.corrPercentile * 100, 1)
+                                formatDecimal(getRoundScore(roundPerformance, 'corr', true) * 100, 1)
                               }}</span></span></td>
-                          <td class="text-end"><span class="tooltip-s1">{{
-                              formatDecimal(roundPerformance.corr60, 4)
+                          <td class="text-end" v-else><span class="tooltip-s1">{{
+                              formatDecimal(getRoundScore(roundPerformance, 'corr20', false), 4)
                             }}<span
                               class="tooltip-s1-text tooltip-text">Percentile: {{
-                                formatDecimal(roundPerformance.corr60Percentile * 100, 1)
+                                formatDecimal(getRoundScore(roundPerformance, 'corr20', true) * 100, 1)
+                              }}</span></span></td>
+                          <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
+                              formatDecimal(getRoundScore(roundPerformance, 'corr60', false), 4)
+                            }}<span
+                              class="tooltip-s1-text tooltip-text">Percentile: {{
+                                formatDecimal(getRoundScore(roundPerformance, 'corr60', true) * 100, 1)
+                              }}</span></span></td>
+                          <td class="text-end" v-else><span class="tooltip-s1">{{
+                              formatDecimal(getRoundScore(roundPerformance, 'corj60', false), 4)
+                            }}<span
+                              class="tooltip-s1-text tooltip-text">Percentile: {{
+                                formatDecimal(getRoundScore(roundPerformance, 'corj60', true) * 100, 1)
                               }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span
-                            class="tooltip-s1">{{ formatDecimal(roundPerformance.ic, 4) }}<span
+                            class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'ic', false), 4) }}<span
                             class="tooltip-s1-text tooltip-text">Percentile: {{
-                              formatDecimal(roundPerformance.icPercentile * 100, 1)
+                              formatDecimal(getRoundScore(roundPerformance, 'ic', true) * 100, 1)
                             }}</span></span></td>
                           <td class="text-end" v-if="!isSignalsTournament"><span
-                            class="tooltip-s1">{{ formatDecimal(roundPerformance.fncV3, 4) }}<span
+                            class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'fnc_v3', false), 4) }}<span
                             class="tooltip-s1-text tooltip-text">Percentile: {{
-                              formatDecimal(roundPerformance.fncV3Percentile * 100, 1)
+                              formatDecimal(getRoundScore(roundPerformance, 'fnc_v3', true) * 100, 1)
                             }}</span></span></td>
                           <td class="text-end"><span
-                            class="tooltip-s1 text-primary">{{ formatDecimal(roundPerformance.tc, 4) }}<span
+                            class="tooltip-s1 text-primary">{{ formatDecimal(getRoundScore(roundPerformance, 'tc', false), 4) }}<span
                             class="tooltip-s1-text tooltip-text">Percentile: {{
-                              formatDecimal(roundPerformance.tcPercentile * 100, 1)
+                              formatDecimal(getRoundScore(roundPerformance, 'tc', true) * 100, 1)
                             }}</span></span></td>
                           <td class="text-end"><span class="tooltip-s1 text-primary"><span
-                            :class="`text-${getMetricColor(Number(roundPerformance.payout) || 0)}`">{{
-                              formatPayout(roundPerformance.payout)
+                            :class="`text-${getMetricColor(Number(getRoundScore(roundPerformance, 'payout')) || 0)}`">{{
+                              formatPayout(getRoundScore(roundPerformance, 'payout'))
                             }}</span><span
                             class="tooltip-s1-text tooltip-text">{{
-                              `${roundPerformance.payout} NMR`
+                              `${getRoundScore(roundPerformance, 'payout')} NMR`
                             }}</span></span></td>
                         </tr>
                         </tbody>
@@ -358,11 +370,13 @@
     <!-- Related product -->
     <RelatedProducts v-if="Boolean(relatedProducts) && relatedProducts.length > 0" :products="relatedProducts"
                      title="Featured by seller"></RelatedProducts>
+    Data: {{v2RoundModelPerformances}}
   </div><!-- end page-wrap -->
 </template>
 
 <script>
 import _ from 'lodash';
+import v2RoundModelPerformances from '~/apollo/queries/numerai/v2RoundModelPerformances'
 
 // Import component data. You can change the data in the store to reflect in all component
 import SectionData from '@/store/store.js';
@@ -402,6 +416,22 @@ export default {
     RelatedProducts,
     MultipleDatePicker
   },
+  apollo: {
+    v2RoundModelPerformances: {
+      query: v2RoundModelPerformances,
+      // prefetch: ({ route }) => ({ username: 'restrading'}),
+      variables() {
+        return {
+          model_id: this.product?.model?.id,
+          lastNRounds: 107,
+          tournament: this.product?.model?.tournament
+        }
+      },
+      skip () {
+        return !this.product
+      }
+    }
+  },
   data() {
     return {
       placeBidModal: null,
@@ -423,6 +453,18 @@ export default {
     };
   },
   computed: {
+    numeraiCorrCorr60TcChartData() {
+      return !this.v2RoundModelPerformances? {} : numeraiGetters.getNumeraiCorrCorr60TcChartData(this.v2RoundModelPerformances)
+    },
+    signalsCorrChartData() {
+      return !this.v2RoundModelPerformances? {} : numeraiGetters.getSignalsCorrChartData(this.v2RoundModelPerformances)
+    },
+    signalsTcIcChartData() {
+      return !this.v2RoundModelPerformances? {} : numeraiGetters.getSignalsTcIcChartData(this.v2RoundModelPerformances)
+    },
+    roundModelPerformancesTableData() {
+      return !this.v2RoundModelPerformances? {} : numeraiGetters.getRoundModelPerformancesTableData(this.v2RoundModelPerformances).slice(0, 6)
+    },
     isDark() {
       if(process.client) {
         return localStorage.getItem('website_theme')==='dark-mode';
@@ -504,7 +546,8 @@ export default {
       return Boolean(this.socialRocketChat || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
     },
     isNumeraiChartReady() {
-      return !this.productLoading && !this.numeraiLoading && Boolean(this.productGetters.getCategory(this.product).is_per_model) && Boolean(this.numerai.modelInfo);
+      return Boolean(this.v2RoundModelPerformances)
+      // return !this.productLoading && !this.numeraiLoading && Boolean(this.productGetters.getCategory(this.product).is_per_model) && Boolean(this.numerai.modelInfo);
     },
     title() {
       return this.$route.params.title || this.productGetters.getName(this.product).toUpperCase();
@@ -568,6 +611,16 @@ export default {
     }
   },
   methods: {
+    getRoundScore(roundPerformance, scoreName, isPercentile) {
+      if (scoreName === 'payout') {
+        return (roundPerformance?.submissionScores || []).filter(o=>(o.displayName==='tc'))[0]?.payoutPending
+      }
+
+      if (isPercentile) {
+        return (roundPerformance?.submissionScores || []).filter(o=>(o.displayName===scoreName))[0]?.percentile
+      }
+      return (roundPerformance?.submissionScores || []).filter(o=>(o.displayName===scoreName))[0]?.value
+    },
     dateToRound(date) {
       const ifThen = function (a, b, c) {
           return a === b ? c : a;
@@ -913,8 +966,8 @@ export default {
       productLoading,
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p) => parseInt(p.id) !== parseInt(id))),
       relatedLoading,
-      numeraiCorrChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrChartData(numerai.value)),
-      numeraiCorrCorr60TcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiCorrCorr60TcChartData(numerai.value)),
+      numeraiCorrChartData: computed(() => !this.v2RoundModelPerformances ? {} : numeraiGetters.getNumeraiCorrChartData(this.v2RoundModelPerformances)),
+      // numeraiCorrCorr60TcChartData: computed(() => !this.v2RoundModelPerformances? {} : numeraiGetters.getNumeraiCorrCorr60TcChartData(this.v2RoundModelPerformances)),
       numeraiTcIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcIcChartData(numerai.value)),
       numerai,
       numeraiLoading,

@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-
+import moment from 'moment';
 import { Numerai, NumeraiGetters } from '../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,110 +61,110 @@ export const getWokeDate = (numerai: any): string => numerai?.modelInfo?.startDa
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getFormatted = (value: number, decimals = 4): string => value ? Number(value).toFixed(decimals) : '-';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiCorrChartData = (numerai: any) => {
-  if (!numerai?.modelInfo) {
-    return {};
+export const getRoundModelPerformancesTableData = (numerai: any) => {
+  return numerai.filter(o=>(Boolean(o?.submissionScores)));
+}
+
+export const extractNumeraiV2Scores = (numerai: any, scoreName: string, isPercentile: boolean) => {
+  const scores = numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => ({x: moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD'), y: o?.submissionScores}))
+  const extractedScores = (scores || []).map(roundScores => ({x: roundScores.x, y: roundScores.y.filter(score => score?.displayName === scoreName)[0]}))
+  if (isPercentile) {
+    return extractedScores?.map(o=> ({x: o.x, y: o.y?.percentile})).filter(o=>Boolean(o.y))
   }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
-    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
-  ));
-
-  return {
-    labels: transposed.roundNumber,
-    datasets: [
-      {
-        label: 'CORR',
-        borderColor: '#666666',
-        fill: false,
-        lineTension: 0,
-        data: transposed.corr,
-        data1: transposed.corrPercentile
-      }
-    ]
-  };
-};
+  return extractedScores?.map(o=> ({x: o.x, y: o.y?.value})).filter(o=>Boolean(o.y))
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getNumeraiCorrCorr60TcChartData = (numerai: any) => {
-  if (!numerai?.modelInfo) {
-    return {};
-  }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
-    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
-  ));
-
   return {
-    labels: transposed.roundNumber,
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
       {
         label: 'CORR',
         borderColor: '#666666',
         fill: false,
         lineTension: 0,
-        data: transposed.corr,
-        data1: transposed.corrPercentile
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'corr20', false),
+        data1: extractNumeraiV2Scores(numerai, 'corr20', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
-      {
-        label: 'CORR60',
-        borderColor: '#acacac',
-        fill: false,
-        lineTension: 0,
-        data: transposed.corr60,
-        data1: transposed.corr60Percentile
-      },
+      // {
+      //   label: 'CORR60',
+      //   borderColor: '#acacac',
+      //   fill: false,
+      //   lineTension: 0,
+      //   pointRadius: 0,
+      //   data: extractNumeraiV2Scores(numerai, 'corj60', false),
+      //   data1: extractNumeraiV2Scores(numerai, 'corj60', true)
+      // },
       {
         label: 'TC',
         borderColor: '#a278dc',
         fill: false,
         lineTension: 0,
-        data: transposed.tc,
-        data1: transposed.tcPercentile
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'tc', false),
+        data1: extractNumeraiV2Scores(numerai, 'tc', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       }
     ]
   };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiTcIcChartData = (numerai: any) => {
-  if (!numerai?.modelInfo) {
-    return {};
-  }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const transposed = Object.assign(...Object.keys(numerai.modelInfo.modelPerformance.roundModelPerformances[0]).map(
-    key => ({ [key]: numerai.modelInfo.modelPerformance.roundModelPerformances.slice(0, 20).map(o => o[key]).reverse() })
-  ));
-
+export const getSignalsCorrChartData = (numerai: any) => {
   return {
-    labels: transposed.roundNumber,
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
+    datasets: [
+      {
+        label: 'CORR',
+        borderColor: '#666666',
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'corr', false),
+        data1: extractNumeraiV2Scores(numerai, 'corr', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
+      },
+    ]
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getSignalsTcIcChartData = (numerai: any) => {
+  return {
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
       {
         label: 'TC',
         borderColor: '#a278dc',
         fill: false,
         lineTension: 0,
-        data: transposed.tc,
-        data1: transposed.tcPercentile
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'tc', false),
+        data1: extractNumeraiV2Scores(numerai, 'tc', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
       {
         label: 'IC',
         borderColor: '#acacac',
         fill: false,
         lineTension: 0,
-        data: transposed.ic,
-        data1: transposed.icPercentile
-      }
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'ic', false),
+        data1: extractNumeraiV2Scores(numerai, 'ic', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
+      },
     ]
   };
 };
+
 
 const numeraiGetters: NumeraiGetters<Numerai> = {
   getCorrRank,
@@ -183,9 +183,10 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getWokeDateTime,
   getWokeDate,
   getFormatted,
-  getNumeraiCorrChartData,
   getNumeraiCorrCorr60TcChartData,
-  getNumeraiTcIcChartData
+  getSignalsCorrChartData,
+  getSignalsTcIcChartData,
+  getRoundModelPerformancesTableData
 };
 
 export default numeraiGetters;

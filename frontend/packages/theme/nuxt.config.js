@@ -92,6 +92,7 @@ export default {
     'vue-scrollto/nuxt',
     '@vue-storefront/middleware/nuxt',
     '@nuxtjs/sentry',
+    '@nuxtjs/apollo',
     ['v-sanitize/nuxt', {}]
   ],
   sanitize: {
@@ -141,6 +142,13 @@ export default {
       debug: false,
       autoSessionTracking: true
     }
+  },
+  apollo: {
+    clientConfigs: {
+      default: {
+        httpEndpoint: 'https://api-tournament.numer.ai'
+      }
+    },
   },
   i18n: {
     currency: 'USD',

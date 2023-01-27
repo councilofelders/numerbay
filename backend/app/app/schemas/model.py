@@ -78,6 +78,7 @@ class ModelMinimal(BaseModel):
 class ModelSummary(BaseModel):
     """API data schema for Numerai model summary"""
 
+    id: str
     name: Optional[str] = None
     tournament: Optional[int] = None
     nmr_staked: Optional[Decimal] = None

@@ -62,5 +62,6 @@
   },
   "dependencies": {
     "web3": "^1.4.0"
-  }
+  },
+  "packageManager": "yarn@3.3.1"
 }

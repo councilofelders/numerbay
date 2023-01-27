@@ -1,0 +1,24 @@
+query v3UserProfile($username: String!) {
+  v3UserProfile(modelName: $username) {
+    id
+    username
+    startDate
+    stakeValue
+    stakeInfo {
+      corrMultiplier
+      mmcMultiplier
+      takeProfit
+      tcMultiplier
+    }
+    latestUserScores {
+      displayName
+      rank
+      reputation
+    }
+    latestReturns {
+      oneDay
+      threeMonths
+      oneYear
+    }
+  }
+}

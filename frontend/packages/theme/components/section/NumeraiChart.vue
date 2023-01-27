@@ -18,7 +18,19 @@ export default {
       default: () => ({
         responsive: true,
         maintainAspectRatio: false,
+        // elements: {
+        //   point:{
+        //     radius: 0
+        //   }
+        // },
         scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+                unit: 'day'
+            },
+            distribution: 'linear'
+          }],
           yAxes: [{
             ticks: {
               suggestedMin: 0
@@ -43,7 +55,8 @@ export default {
               return label;
             },
             afterLabel(tooltipItem, data) {
-              return 'Percentile: ' + (Math.round(data.datasets[tooltipItem.datasetIndex].data1[tooltipItem.index] * 1000) / 10);
+              return 'Percentile: ' + (Math.round(data.datasets[tooltipItem.datasetIndex].data1[tooltipItem.index] * 1000) / 10)+
+                '\nRound: ' + data.datasets[tooltipItem.datasetIndex].data2[tooltipItem.index];
             }
           }
         }
