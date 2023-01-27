@@ -62,9 +62,9 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: numerbay-docker-cache-test-1-{hash}
+          key: numerbay-docker-cache-test-2-{hash}
           restore-keys: |
-            numerbay-docker-cache-test-1-
+            numerbay-docker-cache-test-2-
 
       - name: Test backend
         run: sh ./scripts/test.sh
