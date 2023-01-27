@@ -967,7 +967,6 @@ export default {
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p) => parseInt(p.id) !== parseInt(id))),
       relatedLoading,
       numeraiCorrChartData: computed(() => !this.v2RoundModelPerformances ? {} : numeraiGetters.getNumeraiCorrChartData(this.v2RoundModelPerformances)),
-      // numeraiCorrCorr60TcChartData: computed(() => !this.v2RoundModelPerformances? {} : numeraiGetters.getNumeraiCorrCorr60TcChartData(this.v2RoundModelPerformances)),
       numeraiTcIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcIcChartData(numerai.value)),
       numerai,
       numeraiLoading,
