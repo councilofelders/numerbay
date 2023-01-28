@@ -14,8 +14,8 @@
                 </div><!-- end item-detail-content -->
               </div><!-- end col -->
               <h1 class="item-detail-title mb-2 text-break">
-                <a v-if="Boolean(modelUrl)" :href="modelUrl" class="" target="_blank">{{ title }}</a>
-                <span v-else>{{ title }}</span>
+                <a v-if="Boolean(modelUrl)" :href="modelUrl" class="" target="_blank">{{ productName }}</a>
+                <span v-else>{{ productName }}</span>
               </h1>
               <div class="item-detail-meta d-flex flex-wrap align-items-center mb-3">
                 <span class="item-detail-text-meta">Round <span
@@ -209,163 +209,13 @@
         </div><!-- end row -->
       </div><!-- .container -->
       <!-- Modal -->
-      <Modal ref="placeBidModal" modal-id="placeBidModal" @registeredModal="placeBidModal = $event">
-        <template slot="title">{{ paymentStep === 1 ? `Place an Order` : `Payment` }}</template>
-        <div v-if="paymentStep === 1">
-          <p class="mb-3">You are about to buy <strong>{{ title }}</strong> from <strong>{{ owner }}</strong></p>
-          <ValidationObserver v-slot="{ handleSubmit }">
-            <div class="mb-3">
-              <label class="form-label">Select an option</label>
-              <v-select v-if="!!product" ref="optionDropdown" v-model="optionIdx"
-                        :clearable=false :options="productGetters.getOrderedOptions(product)"
-                        :reduce="option => option.index" class="generic-select generic-select-s1"
-                        label="id" @input="handleSubmit(onOptionChange)">
-                <template #selected-option="option">
-                  {{ productGetters.getFormattedOption(option) }}
-                </template>
-                <template v-slot:option="option">
-                  {{ productGetters.getFormattedOption(option) }}
-                </template>
-              </v-select>
-            </div>
-            <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
-                                rules="required|integer|min_value:1|max_value:10" v-show="!showCalendar" slim>
-              <div class="mb-3">
-                <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity (weekly rounds only)</label>
-                <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                       max="10" min="1" step="1" type="number" @change="onQuantityChange">
-                <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-              </div>
-            </ValidationProvider>
-            <div class="mb-3">
-              <div class="d-flex align-items-center justify-content-between">
-                <label class="form-label">Advanced (incl. weekday rounds)</label>
-                <div class="form-check form-switch form-switch-s1">
-                  <input v-model="showCalendar" class="form-check-input" type="checkbox">
-                </div><!-- end form-check -->
-              </div>
-            </div>
-            <div class="mb-3" v-show="showCalendar">
-              <label class="form-label">Select dates to buy</label>
-              <p>Select Saturdays for weekend rounds</p>
-              <MultipleDatePicker @change="onDateChosen" :is-dark="isDark" :minDate="minDate" ref="calendar"></MultipleDatePicker>
-            </div>
-            <div v-if="isAuthenticated">
-              <div v-if="!!product && isOnPlatform && productGetters.getCategory(product).is_submission"
-                   class="d-flex align-items-center justify-content-between">
-                <label class="form-label" for="autoSubmit">Auto-submit to Numerai</label>
-                <div class="form-check form-switch form-switch-s1">
-                  <input id="autoSubmit" v-model="autoSubmit" :disabled="!isAutoSubmitOptional" class="form-check-input" type="checkbox">
-                </div><!-- end form-check -->
-              </div>
-              <ValidationProvider v-if="autoSubmit" v-slot="{ errors }" rules="required" slim>
-                <div class="mb-3">
-                  <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Select a submission
-                    slot</label>
-                  <v-select v-if="!!product && !numeraiLoading" ref="slotDropdown"
-                            v-model="submitSlot" :class="!errors[0] ? '' : 'is-invalid'" :clearable=true
-                            :options="userGetters.getModels(numerai, productGetters.getTournamentId(product), false)"
-                            :reduce="model => model.id"
-                            class="generic-select generic-select-s1" label="name"></v-select>
-                  <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
-                </div>
-              </ValidationProvider>
-            </div>
-            <ul v-if="isOnPlatform" class="total-bid-list mt-4">
-              <li><span>{{
-                  (!!product && productGetters.getCategory(product).is_per_round) ? 'Total number of rounds' : 'Total order quantity'
-                }}</span> <span>{{
-                  // productGetters.getCategory(product).is_per_round ? productGetters.getOrderedOption(product, optionIdx).quantity : quantity
-                  numSelectedRounds
-                }}</span></li>
-              <li v-if="(!!product && productGetters.getCategory(product).is_per_round)"><span>Selected rounds</span> <span>{{
-                  selectedRoundNumbers
-                }}</span></li>
-              <li><span>You will pay</span> <span>{{ formattedTotalPrice }}</span></li>
-            </ul>
-            <div v-if="isAuthenticated">
-              <div class="d-flex flex-wrap align-items-center justify-content-between mt-2">
-                <div class="form-check">
-                  <input id="useCoupon" v-model="useCoupon" :disabled="Boolean(couponApplied)" class="form-check-input"
-                         type="checkbox">
-                  <label class="form-check-label form-check-label-s1" for="useCoupon"> I have a coupon
-                    code </label>
-                </div>
-              </div>
-              <div v-show="useCoupon" class="mb-3 mt-2">
-                <div class="row g-4">
-                  <div class="col-8">
-                    <input v-model="coupon" :class="!couponError ? '' : 'is-invalid'" :disabled="Boolean(couponApplied)"
-                           class="form-control form-control-s1" placeholder="Coupon code" type="text">
-                    <div :class="{ 'show': Boolean(couponError) }" class="text-danger fade">{{ couponError }}</div>
-                  </div>
-                  <div class="col-4">
-                    <button class="btn btn-dark" @click="handleCoupon">{{ couponApplied ? 'Remove' : 'Apply' }}</button>
-                  </div>
-                </div>
-              </div>
-              <div v-if="!!product && isOnPlatform"
-                   class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4">
-                <div class="form-check">
-                  <input id="terms" v-model="terms" class="form-check-input" type="checkbox">
-                  <label class="form-check-label form-check-label-s1" for="terms"> I understand that I need to make
-                    payment in <strong>1 single transaction</strong>, and neither Numerai nor NumerBay is liable for any
-                    loss resulted from this transaction. </label>
-                </div>
-              </div>
-              <button :disabled="isOnPlatform && (makeOrderLoading || !terms)"
-                      class="btn btn-dark btn-full d-flex justify-content-center"
-                      @click="handleSubmit(onPlaceOrder)">
-                <span v-if="makeOrderLoading"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Placing Order...</span>
-                <span v-else>{{ buyBtnText }}</span>
-              </button>
-            </div>
-            <div v-else>
-              <router-link class="btn btn-dark btn-full d-flex justify-content-center mt-4" to="/login-v2">Login
-              </router-link>
-            </div>
-          </ValidationObserver>
-        </div>
-        <div v-if="paymentStep === 2">
-          <p class="mb-3">Please complete the payment within <strong>45 minutes</strong></p>
-          <div class="mb-3">
-            <label class="form-label">Seller wallet address</label>
-            <div class="d-flex align-items-center border p-3 rounded-3">
-              <input id="copy-input-address" v-model="toAddress" class="copy-input copy-input-s1" readonly type="text">
-              <div class="tooltip-s1">
-                <button v-clipboard:copy="toAddress" v-clipboard:success="onCopy" class="copy-text" type="button">
-                  <span class="tooltip-s1-text tooltip-text">Copy</span>
-                  <em class="ni ni-copy"></em>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Amount to send</label>
-            <div class="d-flex align-items-center border p-3 rounded-3">
-              <input id="copy-input-amount" v-model="amount" class="copy-input copy-input-s1" readonly type="text">
-              <div class="tooltip-s1">
-                <button v-clipboard:copy="JSON.stringify(amount)" v-clipboard:success="onCopy" class="copy-text"
-                        type="button">
-                  <span class="tooltip-s1-text tooltip-text">Copy</span>
-                  <em class="ni ni-copy"></em>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="mb-2">
-            <a class="btn btn-dark d-block" href="https://numer.ai/wallet" target="_blank">Open Numerai Wallet
-              (Gas-free)</a>
-          </div>
-          <div class="mb-2">
-            <a class="btn btn-light d-block" href="javascript:void(0);" @click="pay">Pay with MetaMask</a>
-          </div>
-          <div v-if="paymentMessage" class="mb-2">
-            <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
-            <span class="text-primary">{{ paymentMessage }}</span>
-          </div>
-        </div>
-      </Modal><!-- end modal-->
+      <PlaceBidModal ref="placeBidModalWrapper" modalId="placeBidModal"
+                     :productName="productName" :owner="owner" :product="product" :isAuthenticated="isAuthenticated"
+                     :sellingRound="globals.selling_round" :paymentStep="paymentStep"
+                     :toAddress="toAddress" :amount="amount" @onMetaMaskPayBtn="onMetaMaskPayBtn"
+                     :numeraiLoading="numeraiLoading" :makeOrderLoading="makeOrderLoading" :numerai="numerai" :isAutoSubmitOptional="isAutoSubmitOptional"
+                     @onDateChosen="onDateChosen" @onOptionChange="onOptionChange" @onQuantityChange="onQuantityChange"
+                     @onApplyCoupon="onApplyCoupon" @onPlaceOrder="onPlaceOrder"></PlaceBidModal>
     </section><!-- end item-detail-section -->
     <!-- Related product -->
     <RelatedProducts v-if="Boolean(relatedProducts) && relatedProducts.length > 0" :products="relatedProducts"
@@ -383,8 +233,7 @@ import SectionData from '@/store/store.js';
 import ModelMetricsCard from "@/components/section/ModelMetricsCard";
 import NumeraiChart from '@/components/section/NumeraiChart';
 import RelatedProducts from "@/components/section/RelatedProducts";
-
-import MultipleDatePicker from "@/components/common/MultipleDatePicker";
+import PlaceBidModal from "~/components/section/PlaceBidModal";
 
 // Composables
 import {onSSR} from '@vue-storefront/core';
@@ -405,20 +254,18 @@ import {
 import {useUiNotification} from '~/composables';
 import {ethers} from 'ethers';
 import {contractAddress, transferAbi} from "../plugins/nmr";
-import moment from 'moment';
 
 export default {
   name: 'ProductDetails',
   components: {
+    PlaceBidModal,
     ModelMetricsCard,
     NumeraiChart,
     RelatedProducts,
-    MultipleDatePicker
   },
   apollo: {
     v2RoundModelPerformances: {
       query: v2RoundModelPerformances,
-      // prefetch: ({ route }) => ({ username: 'restrading'}),
       variables() {
         return {
           model_id: this.product?.model?.id,
@@ -434,20 +281,16 @@ export default {
   data() {
     return {
       placeBidModal: null,
+
       paymentStep: 1,
-      optionIdx: 0,
-      quantity: 1,
       amount: 0,
       toAddress: '',
       orderId: null,
-      useCoupon: false,
-      coupon: null,
-      terms: false,
-      autoSubmit: false,
-      submitSlot: null,
-      paymentMessage: null,
-      selectedRounds: [],
-      showCalendar: false,
+
+
+      metaMaskPayMsg: null,
+
+
       SectionData
     };
   },
@@ -463,29 +306,6 @@ export default {
     },
     roundModelPerformancesTableData() {
       return !this.v2RoundModelPerformances? {} : numeraiGetters.getRoundModelPerformancesTableData(this.v2RoundModelPerformances).slice(0, 6)
-    },
-    isDark() {
-      if(process.client) {
-        return localStorage.getItem('website_theme')==='dark-mode';
-      }
-    },
-    minDate() {
-      const currentDate = moment.utc()
-      const dow = currentDate.day();
-      let offset = 0;
-      if (dow === 0) { // if Sunday
-        offset = 1
-      } else if (dow === 1) { // if Monday
-        offset = 2
-      }
-      let minDate = currentDate.subtract(offset, "days")
-      return minDate.format("DD/MM/YYYY")
-    },
-    numSelectedRounds() {
-      return this.selectedRounds ? this.selectedRounds.length : 0
-    },
-    selectedRoundNumbers() {
-      return (Boolean(this.selectedRounds) && this.selectedRounds.length > 0) ? this.selectedRounds.map(r=>r?.roundNumber).join(', ') : 'None'
     },
     isSignalsTournament() {
       return this.productGetters.getCategory(this.product).tournament !== 8;
@@ -523,9 +343,6 @@ export default {
     isAutoSubmitOptional() {
       return !this.productGetters.getOptionIsOnPlatform(this.selectedOption) || this.productGetters.getMode(this.selectedOption) === 'file';
     },
-    buyBtnText() {
-      return this.isOnPlatform ? 'Place an Order' : 'Visit external listing';
-    },
     owner() {
       return this.$route.params.owner || this.productGetters.getOwner(this.product);
     },
@@ -548,7 +365,7 @@ export default {
       return Boolean(this.v2RoundModelPerformances)
       // return !this.productLoading && !this.numeraiLoading && Boolean(this.productGetters.getCategory(this.product).is_per_model) && Boolean(this.numerai.modelInfo);
     },
-    title() {
+    productName() {
       return this.$route.params.title || this.productGetters.getName(this.product).toUpperCase();
     },
     imgLg() {
@@ -597,17 +414,7 @@ export default {
         oneYear: this.$route.params.latestReturnOneYear || this.productGetters.getModelReturn(this.product, 'oneYear')
       };
     },
-    formattedTotalPrice() {
-      const option = this.selectedOption;
-      return `${((option.special_price === null || option.special_price === undefined) ? option.price : option.special_price)?.toFixed(4)} ${option.currency}`;
-    },
-    couponError() {
-      const option = this.selectedOption;
-      return option?.error;
-    },
-    couponApplied() {
-      return cartGetters.getAppliedCoupon(this.selectedOption)?.code;
-    }
+
   },
   methods: {
     getRoundScore(roundPerformance, scoreName, isPercentile) {
@@ -620,75 +427,46 @@ export default {
       }
       return (roundPerformance?.submissionScores || []).filter(o=>(o.displayName===scoreName))[0]?.value
     },
-    dateToRound(date) {
-      const ifThen = function (a, b, c) {
-          return a === b ? c : a;
-      };
-
-      const startDate = new Date("2022-10-22T00:00:00.000Z");
-      const baseRound = 339
-      const endDate = date
-      const elapsed = (endDate - startDate) / 86400000
-      const daysBeforeFirstMonday = (8 - startDate.getDay()) % 7
-      const daysAfterLastMonday = endDate.getDay()-1;
-      return Math.ceil(baseRound + ((elapsed - (daysBeforeFirstMonday + daysAfterLastMonday)) / 7 * 5) + ifThen(daysBeforeFirstMonday - 1, -1, 0) + ifThen(daysAfterLastMonday, 6, 5) - 1)
-    },
-    onDateChosen: _.debounce(async function (calendarData) {
-      const selectedDates = calendarData?.selectedDates;
-      this.selectedRounds = selectedDates.map(dateJson => {
-        const dateString = dateJson?.date;
-        const dateParts = dateString.split("/");
-        const dateObject = new Date(Date.UTC(+dateParts[2], dateParts[1] - 1, +dateParts[0]));
-        const roundNumber = this.dateToRound(dateObject)
-        return {date: dateObject, roundNumber: roundNumber}
-      })
+    async onDateChosen({selectedRounds, coupon}) {
       await this.search({
         id: this.id,
         categorySlug: this.category,
         name: this.name,
-        rounds: this.selectedRounds.map(r=>r?.roundNumber),
-        coupon: this.coupon
+        rounds: selectedRounds.map(r=>r?.roundNumber),
+        coupon: coupon
       });
-    }, 500),
-    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    async onOptionChange(option) {
-      await this.search({
-        id: this.id,
-        categorySlug: this.category,
-        name: this.name,
-        rounds: this.selectedRounds.map(r=>r?.roundNumber),
-        coupon: this.coupon
-      });
-    },
-    nextWeekendRoundNumber(currentRound) {
-      return currentRound + 4 - currentRound % 5
     },
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    async onQuantityChange(e) {
-      this.selectedRounds = Array.from({length: this.quantity}, (x, i) => ({"roundNumber": this.nextWeekendRoundNumber(parseInt(this.globals.selling_round)) + i * 5}));
+    async onOptionChange({selectedRounds, coupon}) {
       await this.search({
         id: this.id,
         categorySlug: this.category,
         name: this.name,
-        rounds: this.selectedRounds.map(r=>r?.roundNumber),
-        coupon: this.coupon
+        rounds: selectedRounds.map(r=>r?.roundNumber),
+        coupon: coupon
       });
     },
-    async handleCoupon() {
-      const couponApplied = cartGetters.getAppliedCoupon(this.selectedOption)?.code;
-      if (couponApplied) {
-        this.coupon = null;
-      }
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    async onQuantityChange({selectedRounds, coupon}) {
       await this.search({
         id: this.id,
         categorySlug: this.category,
         name: this.name,
-        rounds: this.selectedRounds.map(r=>r?.roundNumber),
-        coupon: this.coupon
+        rounds: selectedRounds.map(r=>r?.roundNumber),
+        coupon: coupon
       });
     },
-    async onPlaceOrder() {
-      const option = this.selectedOption;
+    async onApplyCoupon({selectedRounds, coupon}) {
+      await this.search({
+        id: this.id,
+        categorySlug: this.category,
+        name: this.name,
+        rounds: selectedRounds.map(r=>r?.roundNumber),
+        coupon: coupon
+      });
+    },
+    async onPlaceOrder({selectedOption, submitSlot, selectedRounds, coupon}) {
+      const option = selectedOption;
       if (!this.productGetters.getOptionIsOnPlatform(option)) {
         // visit external listing
         window.open(option.third_party_url, '_blank');
@@ -699,10 +477,10 @@ export default {
       await this.make({
         id: this.productGetters.getId(this.product),
         optionId,
-        submitModelId: this.submitSlot,
+        submitModelId: submitSlot,
         // quantity: this.quantity,
-        rounds: this.selectedRounds.map(r=>r?.roundNumber),
-        coupon: this.coupon
+        rounds: selectedRounds.map(r=>r?.roundNumber),
+        coupon: coupon
       })
       if (this.makeOrderError?.make) {
         this.send({
@@ -722,11 +500,11 @@ export default {
       }
     },
     async onTransactionResponse(transaction) {
-      this.paymentMessage = 'Waiting for confirmation, do not close';
+      this.metaMaskPayMsg = 'Waiting for confirmation, do not close';
       await transaction.wait().then(async (receipt) => {
-        this.paymentMessage = 'Validating payment';
+        this.metaMaskPayMsg = 'Validating payment';
         await this.validatePayment({orderId: this.orderId, transactionHash: receipt.transactionHash});
-        this.paymentMessage = null;
+        this.metaMaskPayMsg = null;
         if (this.userOrderError?.validatePayment) {
           await this.send({
             message: this.userOrderError.validatePayment.message,
@@ -744,7 +522,7 @@ export default {
         }
       });
     },
-    async pay() {
+    async onMetaMaskPayBtn() {
       if (!userGetters.getPublicAddress(this.user)) {
         this.send({
           message: 'Please connect a MetaMask wallet',
@@ -778,12 +556,12 @@ export default {
 
       const numberOfTokens = ethers.utils.parseUnits(String(this.amount), 18);
 
-      this.paymentMessage = 'Waiting for payment approval';
+      this.metaMaskPayMsg = 'Waiting for payment approval';
       await contract.transfer(this.toAddress, numberOfTokens).then(async (tx) => {
-        this.paymentMessage = 'Waiting for transaction response';
+        this.metaMaskPayMsg = 'Waiting for transaction response';
         await this.$wallet.provider.getTransaction(tx.hash).then(this.onTransactionResponse);
       }).catch(async (e) => {
-        this.paymentMessage = null;
+        this.metaMaskPayMsg = null;
         let message = e.message;
         if (message.includes('UNPREDICTABLE_GAS_LIMIT')) {
           message = 'Insufficient balance or exceeded gas limit';
@@ -805,8 +583,9 @@ export default {
       }
     },
     togglePlaceBidModal() {
-      this.placeBidModal?.toggle();
-      this.onQuantityChange()
+      this.$refs?.placeBidModalWrapper?.toggle();
+      this.$refs?.placeBidModalWrapper?.onQuantityChange();
+      // this.onQuantityChange({selectedRounds: [], coupon: null})
     },
     formatDecimal(value, decimals) {
       if (value == null) {
@@ -819,24 +598,9 @@ export default {
       return `${payout > 0 ? '+' : ''}${payout.toFixed(2)} NMR`
     }
   },
-  watch: {
-    async product() {
-      if (!this.isAutoSubmitOptional) {
-        this.autoSubmit = true;
-      }
-    },
-    showCalendar(value) {
-      if (value) { // clear quantity and enable calendar
-        this.selectedRounds = []
-        this.quantity = 1
-      } else { // disable calendar and refresh quantity
-        this.onQuantityChange()
-      }
-    }
-  },
   mounted() {
     this.$nextTick(() => {
-      const modal = this.$refs.placeBidModal.$refs.placeBidModal;
+      const modal = this.$refs?.placeBidModalWrapper?.$refs?.placeBidModal?.$refs?.placeBidModal;
 
       modal?.addEventListener('show.bs.modal', async () => {
         // eslint-disable-next-line camelcase
@@ -868,7 +632,8 @@ export default {
               persist: true
             });
             try {
-              this.placeBidModal?.dispose();
+              modal?.dispose();
+              // this.placeBidModal?.dispose();
             } finally {
               await this.$router.push('/purchases');
             }
@@ -895,14 +660,7 @@ export default {
           });
         }
       }, false);
-
-      if (Boolean(this.product) && !this.isAutoSubmitOptional) {
-        this.autoSubmit = true;
-      }
     });
-  },
-  beforeDestroy() {
-    this.placeBidModal?.hide();
   },
   setup(props, context) {
     const {id, category, name} = context.root.$route.params;
@@ -927,15 +685,6 @@ export default {
         await searchRelatedProducts({filters: {id: {in: product?.value?.featured_products || []}}});
       });
     });
-
-    const onCopy = (e) => {
-      const target = e.trigger.querySelector('.tooltip-text');
-      const prevText = target.innerHTML;
-      target.innerHTML = 'Copied';
-      setTimeout(function () {
-        target.innerHTML = prevText;
-      }, 1000);
-    };
 
     const getDeliveryRateTextClass = (rating) => {
       switch (rating) {
@@ -979,7 +728,6 @@ export default {
       make,
       makeOrderLoading,
       makeOrderError,
-      onCopy,
       orderSearch,
       send,
       getDeliveryRateTextClass
