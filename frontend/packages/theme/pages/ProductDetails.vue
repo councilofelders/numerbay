@@ -370,7 +370,6 @@
     <!-- Related product -->
     <RelatedProducts v-if="Boolean(relatedProducts) && relatedProducts.length > 0" :products="relatedProducts"
                      title="Featured by seller"></RelatedProducts>
-    Data: {{v2RoundModelPerformances}}
   </div><!-- end page-wrap -->
 </template>
 
@@ -914,7 +913,7 @@ export default {
       search: searchRelatedProducts,
       loading: relatedLoading
     } = useProduct(`relatedProducts-${cacheKey}`);
-    const {numerai, getModels, getModelInfo, loading: numeraiLoading} = useNumerai(cacheKey);
+    const {numerai, getModels, loading: numeraiLoading} = useNumerai(cacheKey);
     const {globals} = useGlobals();
     const {user, isAuthenticated, loading: userLoading} = useUser();
     const {order, make, loading: makeOrderLoading, error: makeOrderError} = useMakeOrder();
@@ -926,12 +925,6 @@ export default {
     onSSR(async () => {
       await search({id, categorySlug: category, name}).then(async () => {
         await searchRelatedProducts({filters: {id: {in: product?.value?.featured_products || []}}});
-        if (product.value?.category?.is_per_model) {
-          await getModelInfo({
-            tournament: product.value?.category?.slug.startsWith('signals') ? 11 : 8,
-            modelName: product.value?.name
-          });
-        }
       });
     });
 
@@ -966,8 +959,6 @@ export default {
       productLoading,
       relatedProducts: computed(() => relatedProducts?.value?.data?.filter((p) => parseInt(p.id) !== parseInt(id))),
       relatedLoading,
-      numeraiCorrChartData: computed(() => !this.v2RoundModelPerformances ? {} : numeraiGetters.getNumeraiCorrChartData(this.v2RoundModelPerformances)),
-      numeraiTcIcChartData: computed(() => !numerai?.value?.modelInfo ? {} : numeraiGetters.getNumeraiTcIcChartData(numerai.value)),
       numerai,
       numeraiLoading,
       globals,
