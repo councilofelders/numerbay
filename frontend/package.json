@@ -60,8 +60,5 @@
   "lint-staged": {
     "*.{js,ts,vue}": "eslint --fix"
   },
-  "dependencies": {
-    "web3": "^1.4.0"
-  },
   "packageManager": "yarn@3.3.1"
 }
