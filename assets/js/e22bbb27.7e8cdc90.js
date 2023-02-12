@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocusaurus=self.webpackChunkdocusaurus||[]).push([[688],{1623:function(e){e.exports=JSON.parse('{"permalink":"/updates/tags/update","page":1,"postsPerPage":10,"totalPages":1,"totalCount":3,"blogDescription":"Project Updates","blogTitle":"Project Updates"}')}}]);
