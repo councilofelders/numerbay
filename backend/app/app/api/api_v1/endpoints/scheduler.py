@@ -185,14 +185,14 @@ def trigger_webhook_for_product(
     return {"msg": "success!"}
 
 
-@router.post("/delivery-rate")
-def add_job_delivery_rate(
+@router.post("/product-stats")
+def add_job_batch_update_product_sales_stats(
     *,
     current_user: models.User = Depends(
         deps.get_current_active_superuser
     ),  # pylint: disable=W0613
 ) -> Any:
     """Add delivery rate job"""
-    celery_app.send_task("app.worker.batch_update_delivery_rate")
+    celery_app.send_task("app.worker.batch_update_product_sales_stats")
 
     return {"msg": "success!"}

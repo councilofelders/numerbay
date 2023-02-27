@@ -1,13 +1,11 @@
 """ Admin endpoints (admin only) """
 
-
-import functools
 from typing import Any
 
 from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
-from sqlalchemy import and_, desc
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -20,7 +18,7 @@ from app.api.dependencies.orders import (
 from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
 from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
-from app.models import Artifact, Order, Product
+from app.models import Artifact
 
 router = APIRouter()
 
@@ -283,33 +281,6 @@ def refresh_globals_stats(
     Calculate global stats for all products (for db migration only).
     """
     crud.globals.update_stats(db)
-    return {"msg": "success!"}
-
-
-@router.post("/refresh-sales-stats")
-def refresh_sales_stats(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(
-        deps.get_current_active_superuser
-    ),  # pylint: disable=W0613
-) -> Any:
-    """
-    Calculate sales stats for all products (for db migration only).
-    """
-    products = db.query(Product).all()
-    for product in products:
-        query_filters = [Order.product_id == product.id, Order.state == "confirmed"]
-        query_filter = functools.reduce(and_, query_filters)
-        orders = db.query(Order).filter(query_filter).order_by(desc(Order.id)).all()
-        if orders and len(orders) > 0:
-            product.total_num_sales = len(orders)
-            product.last_sale_price = orders[0].price
-            if len(orders) > 1:
-                product.last_sale_price_delta = (
-                    product.last_sale_price - orders[1].price
-                )
-    db.commit()
     return {"msg": "success!"}
 
 

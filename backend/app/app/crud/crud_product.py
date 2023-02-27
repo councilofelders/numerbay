@@ -10,7 +10,7 @@ from sqlalchemy.types import JSON, Float, Integer
 
 from app import crud
 from app.crud.base import CRUDBase
-from app.models import Category
+from app.models import Category, Order
 from app.models.model import Model
 from app.models.product import Product
 from app.models.product_option import ProductOption
@@ -498,6 +498,57 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         aggregations = generate_aggregations(agg_stats, return3m_step, stake_step)
         return {"total": count, "data": data, "aggregations": aggregations}
+
+    def get_sales_stats(self, db: Session, *, product_id: int) -> Dict:
+        """Get sales stats for product"""
+        product = crud.product.get(db=db, id=product_id)
+        total_qty_sales = (
+            db.query(
+                func.sum(func.cardinality(Order.rounds)).label("value")
+            ).filter(and_(Order.state == "confirmed", Order.product_id == product_id))
+            .scalar()
+        )
+
+        total_qty_delivered = 0
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+        product_artifacts_rounds = set(
+            [
+                product_artifact.round_tournament
+                for product_artifact in product.artifacts  # type: ignore
+                if product_artifact.state != "expired"
+            ]
+        )
+        query_filters = [
+            Order.product_id == product_id,
+            Order.state == "confirmed",
+            Order.round_order < selling_round,
+        ]
+        query_filter = functools.reduce(and_, query_filters)
+        orders = db.query(Order).filter(query_filter).all()
+        if orders and len(orders) > 0:
+            for order in orders:
+                order_artifacts_rounds = set(
+                    [
+                        order_artifact.round_tournament
+                        for order_artifact in order.artifacts
+                        if order_artifact.state != "failed"
+                    ]
+                )
+                delivered_rounds = product_artifacts_rounds.union(
+                    order_artifacts_rounds
+                )
+                if product.category.is_per_round:  # type: ignore
+                    order_rounds = order.rounds
+                    for tournament_round in order_rounds:
+                        if tournament_round >= selling_round:
+                            continue
+                        if tournament_round in delivered_rounds:
+                            total_qty_delivered += 1
+                else:
+                    if order.round_order in delivered_rounds:
+                        total_qty_delivered += 1
+
+        return {"total_qty_sales": total_qty_sales, "total_qty_delivered": total_qty_delivered}
 
 
 product = CRUDProduct(Product)

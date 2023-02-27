@@ -36,7 +36,6 @@ from app.models import (
     Artifact,
     Category,
     Model,
-    Order,
     OrderArtifact,
     Poll,
     Product,
@@ -1006,81 +1005,99 @@ def batch_update_stake_snapshots() -> None:
         db.close()
 
 
-@celery_app.task  # (acks_late=True)
-def batch_update_delivery_rate() -> None:
-    """Batch update delivery rate task"""
+@celery_app.task
+def batch_update_product_sales_stats() -> None:
+    """Batch update product sales stats task"""
     db = SessionLocal()
     try:
-        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
-
-        users = crud.user.search(
-            # type: ignore
-            db,
-            filters={"numerai_api_key_public_id": ["any"]},
-            limit=None,
-        )["data"]
-
-        for user in users:
-            if not user.products or len(user.products) == 0:
-                continue
-            for product in user.products:
-                # query_filters = [
-                #     Order.product_id == product.id,
-                #     Order.state == "confirmed",
-                # ]
-                # query_filter = functools.reduce(and_, query_filters)
-                # total_qty_sales = (
-                #     db.query(func.sum(Order.quantity)).filter(query_filter).scalar()
-                # )
-                # product.total_qty_sales = total_qty_sales
-
-                # todo improve query efficiency
-                total_qty_sales = 0
-                total_qty_delivered = 0
-                product_artifacts_rounds = set(
-                    [
-                        product_artifact.round_tournament
-                        for product_artifact in product.artifacts
-                        if product_artifact.state != "expired"
-                    ]
+        products = crud.product.get_multi(db=db)
+        for product in products:
+            if product.model:
+                product_sales_stats = crud.product.get_sales_stats(
+                    db, product_id=product.id
                 )
-                query_filters = [
-                    Order.product_id == product.id,
-                    Order.state == "confirmed",
-                    Order.round_order < selling_round,
-                ]
-                query_filter = functools.reduce(and_, query_filters)
-                orders = db.query(Order).filter(query_filter).all()
-                if orders and len(orders) > 0:
-                    for order in orders:
-                        order_artifacts_rounds = set(
-                            [
-                                order_artifact.round_tournament
-                                for order_artifact in order.artifacts
-                                if order_artifact.state != "failed"
-                            ]
-                        )
-                        delivered_rounds = product_artifacts_rounds.union(
-                            order_artifacts_rounds
-                        )
-                        if product.category.is_per_round:
-                            order_rounds = order.rounds
-                            for tournament_round in order_rounds:
-                                if tournament_round >= selling_round:
-                                    break
-                                total_qty_sales += 1
-                                if tournament_round in delivered_rounds:
-                                    total_qty_delivered += 1
-                        else:
-                            total_qty_sales += order.quantity
-                            if order.round_order in delivered_rounds:
-                                total_qty_delivered += order.quantity
-                product.total_qty_sales = total_qty_sales
-                product.total_qty_delivered = total_qty_delivered
-
+                product.total_qty_sales = product_sales_stats["total_qty_sales"]
+                product.total_qty_delivered = product_sales_stats["total_qty_delivered"]
         db.commit()
     finally:
         db.close()
+
+
+# @celery_app.task  # (acks_late=True)
+# def batch_update_delivery_rate() -> None:
+#     """Batch update delivery rate task"""
+#     db = SessionLocal()
+#     try:
+#         selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+#
+#         users = crud.user.search(
+#             # type: ignore
+#             db,
+#             filters={"numerai_api_key_public_id": ["any"]},
+#             limit=None,
+#         )["data"]
+#
+#         for user in users:
+#             if not user.products or len(user.products) == 0:
+#                 continue
+#             for product in user.products:
+#                 # query_filters = [
+#                 #     Order.product_id == product.id,
+#                 #     Order.state == "confirmed",
+#                 # ]
+#                 # query_filter = functools.reduce(and_, query_filters)
+#                 # total_qty_sales = (
+#                 #     db.query(func.sum(Order.quantity)).filter(query_filter).scalar()
+#                 # )
+#                 # product.total_qty_sales = total_qty_sales
+#
+#                 # todo improve query efficiency
+#                 total_qty_sales = 0
+#                 total_qty_delivered = 0
+#                 product_artifacts_rounds = set(
+#                     [
+#                         product_artifact.round_tournament
+#                         for product_artifact in product.artifacts
+#                         if product_artifact.state != "expired"
+#                     ]
+#                 )
+#                 query_filters = [
+#                     Order.product_id == product.id,
+#                     Order.state == "confirmed",
+#                     Order.round_order < selling_round,
+#                 ]
+#                 query_filter = functools.reduce(and_, query_filters)
+#                 orders = db.query(Order).filter(query_filter).all()
+#                 if orders and len(orders) > 0:
+#                     for order in orders:
+#                         order_artifacts_rounds = set(
+#                             [
+#                                 order_artifact.round_tournament
+#                                 for order_artifact in order.artifacts
+#                                 if order_artifact.state != "failed"
+#                             ]
+#                         )
+#                         delivered_rounds = product_artifacts_rounds.union(
+#                             order_artifacts_rounds
+#                         )
+#                         if product.category.is_per_round:
+#                             order_rounds = order.rounds
+#                             for tournament_round in order_rounds:
+#                                 if tournament_round >= selling_round:
+#                                     break
+#                                 total_qty_sales += 1
+#                                 if tournament_round in delivered_rounds:
+#                                     total_qty_delivered += 1
+#                         else:
+#                             total_qty_sales += order.quantity
+#                             if order.round_order in delivered_rounds:
+#                                 total_qty_delivered += order.quantity
+#                 product.total_qty_sales = total_qty_sales
+#                 product.total_qty_delivered = total_qty_delivered
+#
+#         db.commit()
+#     finally:
+#         db.close()
 
 
 @celery_app.task  # (acks_late=True)
@@ -1283,9 +1300,9 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
             "task": "app.worker.batch_update_stake_snapshots",
             "schedule": crontab(day_of_week="mon", hour=14, minute=0),
         },
-        "batch_update_delivery_rate": {
-            "task": "app.worker.batch_update_delivery_rate",
-            "schedule": crontab(day_of_week="mon", hour=14, minute=15),
+        "batch_update_product_sales_stats": {
+            "task": "app.worker.batch_update_product_sales_stats",
+            "schedule": crontab(hour=0, minute=0),
         },
         "batch_update_polls": {
             "task": "app.worker.batch_update_polls",
