@@ -181,7 +181,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             db_models = {}
 
             for numerai_model in numerai_models:
-                model_performance = numerai.get_numerai_model_performance(
+                model_performance = numerai.get_numerai_model_profile(
                     tournament=int(numerai_model["tournament"]),
                     model_name=numerai_model["name"],
                 )
