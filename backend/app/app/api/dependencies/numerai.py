@@ -312,23 +312,12 @@ def get_numerai_model_performance(tournament: int, model_name: str) -> Any:
                   selectedStakeValue
                   payout
                 }
-                latestReps {
-                  corr
-                  corr60
-                  mmc
-                  fnc
-                  fncV3
-                  tc
-                  ic
-                }
-                latestRanks {
-                  corr
-                  corr60
-                  mmc
-                  fnc
-                  fncV3
-                  tc
-                  ic
+                latestUserScores {
+                  date
+                  displayName
+                  rank
+                  reputation
+                  stakedRank
                 }
                 latestReturns {
                   oneDay
@@ -615,15 +604,15 @@ async def fetch_single_user_models(user: models.User) -> Dict:
     """Fetch single user models"""
     from app.api.api_v1.endpoints.numerai import (  # pylint: disable=import-outside-toplevel
         get_numerai_models_endpoint,
-        get_numerai_model_performance_endpoint,
+        # get_numerai_model_profile_endpoint,
     )
 
     numerai_models = get_numerai_models_endpoint(current_user=user)  # type: ignore
-    for model in numerai_models:
-        model_performance = get_numerai_model_performance_endpoint(
-            tournament=int(model["tournament"]), model_name=model["name"]
-        )
-        model["model_performance"] = model_performance
+    # for model in numerai_models:
+    #     model_performance = get_numerai_model_performance_endpoint(
+    #         tournament=int(model["tournament"]), model_name=model["name"]
+    #     )
+    #     model["model_performance"] = model_performance
     return {"id": user.id, "models": numerai_models}
 
 

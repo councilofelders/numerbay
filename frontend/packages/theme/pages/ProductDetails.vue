@@ -73,12 +73,12 @@
                 </ul>
               </div><!-- end item-detail-btns -->
               <ModelMetricsCard
+                v-if="Boolean(product)"
                 v-show="Boolean(productGetters.getCategory(product).is_per_model)"
                 :latest-ranks="latestRanks"
                 :latest-reps="latestReps"
                 :latest-returns="latestReturns"
                 :nmr-staked="nmrStaked"
-                :show="{fnc: !isSignalsTournament, tc: true, ic: isSignalsTournament}"
                 :stake-info="stakeInfo"
                 :tournament="productGetters.getCategory(product).tournament"
                 class="mt-2"
@@ -388,24 +388,10 @@ export default {
       };
     },
     latestRanks() {
-      return {
-        corr: this.$route.params.latestRankCorr || this.productGetters.getModelRank(this.product, 'corr'),
-        corr60: this.$route.params.latestRankCorr60 || this.productGetters.getModelRank(this.product, 'corr60'),
-        fnc: this.$route.params.latestRankFnc || this.productGetters.getModelRank(this.product, 'fnc'),
-        fncV3: this.$route.params.latestRankFncV3 || this.productGetters.getModelRank(this.product, 'fncV3'),
-        tc: this.$route.params.latestRankTc || this.productGetters.getModelRank(this.product, 'tc'),
-        ic: this.$route.params.latestRankIc || this.productGetters.getModelRank(this.product, 'ic')
-      };
+      return this.product?.model?.latest_ranks;
     },
     latestReps() {
-      return {
-        corr: this.$route.params.latestRepCorr || this.productGetters.getModelRep(this.product, 'corr'),
-        corr60: this.$route.params.latestRepCorr60 || this.productGetters.getModelRep(this.product, 'corr60'),
-        fnc: this.$route.params.latestRepFnc || this.productGetters.getModelRep(this.product, 'fnc'),
-        fncV3: this.$route.params.latestRepFncV3 || this.productGetters.getModelRep(this.product, 'fncV3'),
-        tc: this.$route.params.latestRepTc || this.productGetters.getModelRep(this.product, 'tc'),
-        ic: this.$route.params.latestRepIc || this.productGetters.getModelRep(this.product, 'ic')
-      };
+      return this.product?.model?.latest_reps;
     },
     latestReturns() {
       return {

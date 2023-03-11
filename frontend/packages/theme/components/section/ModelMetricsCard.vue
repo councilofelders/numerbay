@@ -36,89 +36,177 @@
           </table>
         </div>
       </div>
-      <div class="col-xl-12">
+      <div class="col-xl-12" v-if="tournament===8">
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
             <tr>
               <td>
-                CORR Reputation
+                CORR20 Reputation
               </td>
-              <td class="stats">{{ latestReps.corr }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'corr20')  }}</td>
             </tr>
             <tr>
               <td>
-                CORR60 Reputation
+                CORJ60 Reputation
               </td>
-              <td class="stats">{{ latestReps.corr60 }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'corj60') }}</td>
             </tr>
-            <tr v-if="show.fnc">
+            <tr>
               <td>
                 FNC Reputation
               </td>
-              <td class="stats">{{ latestReps.fnc }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'fnc') }}</td>
             </tr>
-            <tr v-if="show.fnc">
+            <tr>
               <td>
-                FNCv3 Reputation
+                FNCV3 Reputation
               </td>
-              <td class="stats">{{ latestReps.fncV3 }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'fnc_v3') }}</td>
             </tr>
-            <tr v-if="show.ic">
-              <td>
-                IC Reputation
-              </td>
-              <td class="stats">{{ latestReps.ic }}</td>
-            </tr>
-            <tr v-if="show.tc">
+            <tr>
               <td>
                 TC Reputation
               </td>
-              <td class="stats">{{ latestReps.tc }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
             </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="col-xl-12">
+      <div class="col-xl-12" v-if="tournament===11">
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
             <tr>
               <td>
-                CORR Rank
+                CORR20 Reputation
               </td>
-              <td class="stats">{{ latestRanks.corr }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'corr')  }}</td>
+            </tr>
+            <tr>
+              <td>
+                CORR60 Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'corr60') }}</td>
+            </tr>
+            <tr>
+              <td>
+                CORRV4 Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'corr_v4') }}</td>
+            </tr>
+            <tr>
+              <td>
+                ICV2 Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'ic_v2') }}</td>
+            </tr>
+            <tr>
+              <td>
+                FNCV4 Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'fnc_v4') }}</td>
+            </tr>
+            <tr>
+              <td>
+                RIC Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'ric') }}</td>
+            </tr>
+            <tr>
+              <td>
+                TC Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-xl-12" v-if="tournament===8">
+        <div class="card-media card-media-s1">
+          <table class="table mb-0 table-s1 item-detail-metrics-table">
+            <tbody>
+            <tr>
+              <td>
+                CORR20 Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'corr20') }}</td>
+            </tr>
+            <tr>
+              <td>
+                CORJ60 Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'corj60') }}</td>
+            </tr>
+            <tr>
+              <td>
+                FNC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'fnc') }}</td>
+            </tr>
+            <tr>
+              <td>
+                FNCV3 Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'fnc_v3') }}</td>
+            </tr>
+            <tr>
+              <td>
+                TC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-xl-12" v-if="tournament===11">
+        <div class="card-media card-media-s1">
+          <table class="table mb-0 table-s1 item-detail-metrics-table">
+            <tbody>
+            <tr>
+              <td>
+                CORR20 Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'corr') }}</td>
             </tr>
             <tr>
               <td>
                 CORR60 Rank
               </td>
-              <td class="stats">{{ latestRanks.corr60 }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'corr60') }}</td>
             </tr>
-            <tr v-if="show.fnc">
+            <tr>
               <td>
-                FNC Rank
+                CORRV4 Rank
               </td>
-              <td class="stats">{{ latestRanks.fnc }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'corr_v4') }}</td>
             </tr>
-            <tr v-if="show.fnc">
+            <tr>
               <td>
-                FNCv3 Rank
+                ICV2 Rank
               </td>
-              <td class="stats">{{ latestRanks.fncV3 }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'ic_v2') }}</td>
             </tr>
-            <tr v-if="show.ic">
+            <tr>
               <td>
-                IC Rank
+                FNCV4 Rank
               </td>
-              <td class="stats">{{ latestRanks.ic }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'fnc_v4') }}</td>
             </tr>
-            <tr v-if="show.tc">
+            <tr>
+              <td>
+                RIC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'ric') }}</td>
+            </tr>
+            <tr>
               <td>
                 TC Rank
               </td>
-              <td class="stats">{{ latestRanks.tc }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -175,17 +263,23 @@ export default {
       type: Object,
       default: () => {
       }
-    },
-    show: {
-      type: Object,
-      default: () => ({
-        fnc: true,
-        tc: true,
-        ic: false
-      })
     }
   },
   methods: {
+    formatReputation(metrics, key) {
+      if (!metrics || metrics.hasOwnProperty(key) === false) {
+        return '-';
+      }
+
+      return metrics[key].toFixed(4);
+    },
+    formatRank(metrics, key) {
+      if (!metrics || metrics.hasOwnProperty(key) === false) {
+        return '-';
+      }
+
+      return metrics[key];
+    },
     getMetricColor(value) {
       if (value > 0) {
         return 'success';
