@@ -503,9 +503,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         """Get sales stats for product"""
         product = crud.product.get(db=db, id=product_id)
         total_qty_sales = (
-            db.query(
-                func.sum(func.cardinality(Order.rounds)).label("value")
-            ).filter(and_(Order.state == "confirmed", Order.product_id == product_id))
+            db.query(func.sum(func.cardinality(Order.rounds)).label("value"))
+            .filter(and_(Order.state == "confirmed", Order.product_id == product_id))
             .scalar()
         )
 
@@ -548,7 +547,10 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     if order.round_order in delivered_rounds:
                         total_qty_delivered += 1
 
-        return {"total_qty_sales": total_qty_sales, "total_qty_delivered": total_qty_delivered}
+        return {
+            "total_qty_sales": total_qty_sales,
+            "total_qty_delivered": total_qty_delivered,
+        }
 
 
 product = CRUDProduct(Product)

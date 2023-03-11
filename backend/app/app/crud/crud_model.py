@@ -64,7 +64,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
             for numerai_model in numerai_models:
                 try:
-                    model_performance = numerai.get_numerai_model_performance(
+                    model_profile = numerai.get_numerai_model_profile(
                         tournament=int(numerai_model.tournament),  # type: ignore
                         model_name=numerai_model.name,  # type: ignore
                     )
@@ -79,25 +79,21 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                     name=numerai_model.name,
                     tournament=int(numerai_model.tournament),  # type: ignore
                     owner_id=int(user_json["id"]),
-                    stake_info=model_performance.get("modelPerformance", {}).get(
-                        "stakeInfo", {}
-                    ),
-                    nmr_staked=Decimal(model_performance["nmrStaked"])
-                    if model_performance.get("nmrStaked", None)
+                    stake_info=model_profile.get("stakeInfo", {}),
+                    nmr_staked=Decimal(model_profile["stakeValue"])
+                    if model_profile.get("stakeValue", None)
                     else 0,
-                    start_date=model_performance.get("startDate", None),
-                    latest_ranks=model_performance.get("modelPerformance", {}).get(
-                        "latestRanks", {}
-                    ),
-                    latest_reps=model_performance.get("modelPerformance", {}).get(
-                        "latestReps", {}
-                    ),
-                    latest_returns=model_performance.get("modelPerformance", {}).get(
-                        "latestReturns", {}
-                    ),
-                    round_model_performances=model_performance.get(
-                        "modelPerformance", {}
-                    ).get("roundModelPerformances", []),
+                    start_date=model_profile.get("startDate", None),
+                    latest_ranks={
+                        score["displayName"]: score["rank"]
+                        for score in (model_profile.get("latestUserScores", []) or [])
+                    },
+                    latest_reps={
+                        score["displayName"]: score["reputation"]
+                        for score in (model_profile.get("latestUserScores", []) or [])
+                    },
+                    latest_returns=(model_profile.get("latestReturns", {}) or {}),
+                    round_model_performances=[],
                 )
 
             for db_model in (
@@ -181,38 +177,31 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             db_models = {}
 
             for numerai_model in numerai_models:
-                model_performance = numerai.get_numerai_model_profile(
+                model_profile = numerai.get_numerai_model_profile(
                     tournament=int(numerai_model["tournament"]),
                     model_name=numerai_model["name"],
                 )
-                numerai_model["model_performance"] = model_performance
 
                 db_models[numerai_model["id"]] = models.Model(  # type: ignore
                     id=numerai_model["id"],
                     name=numerai_model["name"],
                     tournament=int(numerai_model["tournament"]),
                     owner_id=int(user_json["id"]),
-                    stake_info=numerai_model["model_performance"]
-                    .get("modelPerformance", {})
-                    .get("stakeInfo", {}),
-                    nmr_staked=Decimal(numerai_model["model_performance"]["nmrStaked"])
-                    if numerai_model["model_performance"].get("nmrStaked", None)
+                    stake_info=model_profile.get("stakeInfo", {}),
+                    nmr_staked=Decimal(model_profile["stakeValue"])
+                    if model_profile.get("stakeValue", None)
                     else 0,
-                    start_date=numerai_model["model_performance"].get(
-                        "startDate", None
-                    ),
-                    latest_ranks=numerai_model["model_performance"]
-                    .get("modelPerformance", {})
-                    .get("latestRanks", {}),
-                    latest_reps=numerai_model["model_performance"]
-                    .get("modelPerformance", {})
-                    .get("latestReps", {}),
-                    latest_returns=numerai_model["model_performance"]
-                    .get("modelPerformance", {})
-                    .get("latestReturns", {}),
-                    round_model_performances=numerai_model["model_performance"]
-                    .get("modelPerformance", {})
-                    .get("roundModelPerformances", []),
+                    start_date=model_profile.get("startDate", None),
+                    latest_ranks={
+                        score["displayName"]: score["rank"]
+                        for score in (model_profile.get("latestUserScores", []) or [])
+                    },
+                    latest_reps={
+                        score["displayName"]: score["reputation"]
+                        for score in (model_profile.get("latestUserScores", []) or [])
+                    },
+                    latest_returns=(model_profile.get("latestReturns", {}) or {}),
+                    round_model_performances=[],
                 )
 
             for db_model in (

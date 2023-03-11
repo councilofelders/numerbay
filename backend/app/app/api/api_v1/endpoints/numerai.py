@@ -53,12 +53,12 @@ def get_numerai_pipeline_status_endpoint(tournament: int) -> Any:
 
 
 @router.get("/{tournament}/{model_name}", response_model=Dict)
-def get_numerai_model_performance_endpoint(tournament: int, model_name: str) -> Any:
-    """Get Numerai model performance"""
+def get_numerai_model_profile_endpoint(tournament: int, model_name: str) -> Any:
+    """Get Numerai model profile"""
     if tournament not in [8, 11]:
         raise HTTPException(status_code=404, detail="Tournament not found")
     try:
-        data = numerai.get_numerai_model_performance(
+        data = numerai.get_numerai_model_profile(
             tournament=tournament, model_name=model_name
         )
     except Exception as e:

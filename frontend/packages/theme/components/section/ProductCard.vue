@@ -24,7 +24,6 @@
                 :latest-reps="latestReps"
                 :latest-returns="latestReturns"
                 :nmr-staked="nmrStaked"
-                :show="{fnc: productGetters.getCategory(product).tournament==8, tc: true, ic: productGetters.getCategory(product).tournament==11}"
                 :stake-info="stakeInfo"
                 :tournament="productGetters.getCategory(product).tournament"
               ></ModelMetricsCard>
@@ -116,24 +115,10 @@ export default {
       };
     },
     latestRanks() {
-      return {
-        corr: this.productGetters.getModelRank(this.product, 'corr'),
-        corr60: this.productGetters.getModelRank(this.product, 'corr60'),
-        fnc: this.productGetters.getModelRank(this.product, 'fnc'),
-        fncV3: this.productGetters.getModelRank(this.product, 'fncV3'),
-        tc: this.productGetters.getModelRank(this.product, 'tc'),
-        ic: this.productGetters.getModelRank(this.product, 'ic')
-      };
+      return this.product?.model?.latest_ranks;
     },
     latestReps() {
-      return {
-        corr: this.productGetters.getModelRep(this.product, 'corr'),
-        corr60: this.productGetters.getModelRep(this.product, 'corr60'),
-        fnc: this.productGetters.getModelRep(this.product, 'fnc'),
-        fncV3: this.productGetters.getModelRep(this.product, 'fncV3'),
-        tc: this.productGetters.getModelRep(this.product, 'tc'),
-        ic: this.productGetters.getModelRep(this.product, 'ic')
-      };
+      return this.product?.model?.latest_reps;
     },
     latestReturns() {
       return {
