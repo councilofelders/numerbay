@@ -33,6 +33,32 @@ _SORT_OPTION_LOOKUP = {
     "return1y-down": desc(
         Model.latest_returns.cast(JSON)["oneYear"].as_string().cast(Float)
     ),
+    "corr20-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float),
+    "corr20-down": desc(Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)),
+    "corr20tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
+    + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr20tc-down": desc(
+        Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
+        + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr202tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
+    + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr202tc-down": desc(
+        Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
+        + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr203tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
+    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr203tc-down": desc(
+        Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
+        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corj60-up": Model.latest_reps.cast(JSON)["corj60"].as_string().cast(Float),
+    "corj60-down": desc(Model.latest_reps.cast(JSON)["corj60"].as_string().cast(Float)),
+    "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
+    "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
+    "fncV3-up": Model.latest_reps.cast(JSON)["fnc_v3"].as_string().cast(Float),
+    "fncV3-down": desc(Model.latest_reps.cast(JSON)["fnc_v3"].as_string().cast(Float)),
     "corr-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float),
     "corr-down": desc(Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)),
     "corrtc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
@@ -47,22 +73,20 @@ _SORT_OPTION_LOOKUP = {
         Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
         + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
     ),
-    "corr3tc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr3tc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
     "corr60-up": Model.latest_reps.cast(JSON)["corr60"].as_string().cast(Float),
     "corr60-down": desc(Model.latest_reps.cast(JSON)["corr60"].as_string().cast(Float)),
-    "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
-    "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
-    "fncV3-up": Model.latest_reps.cast(JSON)["fncV3"].as_string().cast(Float),
-    "fncV3-down": desc(Model.latest_reps.cast(JSON)["fncV3"].as_string().cast(Float)),
+    "corrv4-up": Model.latest_reps.cast(JSON)["corr_v4"].as_string().cast(Float),
+    "corrv4-down": desc(
+        Model.latest_reps.cast(JSON)["corr_v4"].as_string().cast(Float)
+    ),
+    "icv2-up": Model.latest_reps.cast(JSON)["ic_v2"].as_string().cast(Float),
+    "icv2-down": desc(Model.latest_reps.cast(JSON)["ic_v2"].as_string().cast(Float)),
+    "fncv4-up": Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float),
+    "fncv4-down": desc(Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float)),
+    "ric-up": Model.latest_reps.cast(JSON)["ric"].as_string().cast(Float),
+    "ric-down": desc(Model.latest_reps.cast(JSON)["ric"].as_string().cast(Float)),
     "tc-up": Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
     "tc-down": desc(Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)),
-    "ic-up": Model.latest_reps.cast(JSON)["ic"].as_string().cast(Float),
-    "ic-down": desc(Model.latest_reps.cast(JSON)["ic"].as_string().cast(Float)),
     "stake-up": Model.nmr_staked,
     "stake-down": desc(Model.nmr_staked),
     "sales-down": desc(Product.total_qty_sales),
