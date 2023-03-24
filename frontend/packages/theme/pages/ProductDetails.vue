@@ -28,7 +28,7 @@
                 <span v-if="productGetters.getOnTimeRating(product)" class="dot-separeted"></span>
                 <span v-if="productGetters.getOnTimeRating(product)" class="item-detail-text-meta">On time <span
                   :class="getDeliveryRateTextClass(productGetters.getOnTimeRating(product))"
-                  :title="`${productGetters.getQtyDelivered(product)} / ${productGetters.getQtySales(product)} quantity delivered on time`"
+                  :title="`${productGetters.getQtyDelivered(product)} / ${productGetters.getQtySalesFiltered(product)} quantity delivered on time`"
                   class="text-primary fw-semibold">{{
                     productGetters.getOnTimeRating(product)
                   }}</span></span>

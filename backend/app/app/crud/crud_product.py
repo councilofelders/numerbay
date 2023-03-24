@@ -4,7 +4,7 @@ import functools
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import and_, desc, func, nulls_last  # type: ignore
+from sqlalchemy import and_, column, desc, func, nulls_last  # type: ignore
 from sqlalchemy.orm import Session
 from sqlalchemy.types import JSON, Float, Integer
 
@@ -532,8 +532,19 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .scalar()
         )
 
-        total_qty_delivered = 0
         selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+        total_qty_sales_filtered = (
+            db.query(func.count(column("round")).label("value"))
+            .select_from(func.unnest(Order.rounds).alias("round"))
+            .filter(
+                and_(Order.state == "confirmed", Order.product_id == product_id),
+                column("round") < selling_round,
+            )
+            .scalar()
+        )
+
+        total_qty_delivered = 0
+
         product_artifacts_rounds = set(
             [
                 product_artifact.round_tournament
@@ -573,6 +584,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         return {
             "total_qty_sales": total_qty_sales,
+            "total_qty_sales_filtered": total_qty_sales_filtered,
             "total_qty_delivered": total_qty_delivered,
         }
 

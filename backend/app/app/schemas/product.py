@@ -28,6 +28,7 @@ class ProductBase(BaseModel):
     is_daily: Optional[bool] = None
     expiration_round: Optional[int] = None
     total_qty_sales: Optional[int] = None
+    total_qty_sales_filtered: Optional[int] = None
     total_qty_delivered: Optional[int] = None
     total_num_sales: Optional[int] = None
     last_sale_price: Optional[Decimal] = None
@@ -91,6 +92,7 @@ class LeaderboardProduct(BaseModel):
     sku: str
     avatar: Optional[HttpUrl] = None
     total_qty_sales: Optional[int] = None
+    total_qty_sales_filtered: Optional[int] = None
     total_qty_delivered: Optional[int] = None
     total_num_sales: Optional[int] = None
     last_sale_price: Optional[Decimal] = None
