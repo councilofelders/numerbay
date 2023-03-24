@@ -145,11 +145,11 @@ def validate_product_option_input(  # pylint: disable=too-many-branches
                 )
 
             # On-platform amount check
-            if product_option.currency == "NMR" and product_option.price < 1:
-                raise HTTPException(
-                    status_code=400,
-                    detail="On-platform listing price must be greater than 1 NMR",
-                )
+            # if product_option.currency == "NMR" and product_option.price < 1:
+            #     raise HTTPException(
+            #         status_code=400,
+            #         detail="On-platform listing price must be greater than 1 NMR",
+            #     )
 
         # On-platform Mode check
         if product_option.mode not in ["file", "stake", "stake_with_limit"]:

@@ -1,11 +1,11 @@
 """ Admin endpoints (admin only) """
-
+from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from numerapi import NumerAPI
-from sqlalchemy import and_
+from sqlalchemy import and_, not_
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -21,6 +21,33 @@ from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
 from app.models import Artifact
 
 router = APIRouter()
+
+
+@router.post("/update-daily-pricing")
+def update_daily_pricing(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    users = (
+        db.query(models.User).filter(not_(models.User.props["factor"].is_(None))).all()
+    )
+    for user in users:
+        print("Updating daily pricing for user", user.username)
+        try:
+            user_products = crud.product.get_multi_by_owner(db, owner_id=user.id)
+            for product in user_products:
+                if not product.is_active:
+                    continue
+                for pricing_option in product.options:
+                    pricing_option.price *= Decimal(user.props["factor"])
+            db.commit()
+        except Exception as e:
+            print("Error updating daily pricing for user", user.username, e)
+        finally:
+            db.rollback()
+
+    return {"msg": "success!"}
 
 
 @router.post("/test-webhook-auth")

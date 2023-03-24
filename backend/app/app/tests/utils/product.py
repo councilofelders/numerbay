@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from decimal import Decimal
 from typing import Any, Generator, Optional
 
 from sqlalchemy.orm import Session
@@ -52,7 +53,9 @@ def create_random_product(
     else:
         product_option_json["currency"] = "USD"
     product_option_json["quantity"] = product_option_json.get("quantity", 1)
-    product_option_json["price"] = product_option_json.get("price", random_decimal())
+    product_option_json["price"] = product_option_json.get(
+        "price", Decimal(1) + random_decimal()
+    )
     product_option_json["mode"] = product_option_json.get("mode", None)
     product_option_json["product_id"] = product_option_json.get(
         "product_id", product.id

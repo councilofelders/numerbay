@@ -87,6 +87,7 @@ def update_user_me(  # pylint: disable=too-many-locals
     signature: str = Body(None),
     public_key: str = Body(None),
     encrypted_private_key: str = Body(None),
+    factor: float = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -144,6 +145,13 @@ def update_user_me(  # pylint: disable=too-many-locals
         for order in orders:
             if order.buyer_public_key is not None:
                 order.buyer_public_key = public_key
+
+    # Update user props
+    if not user_in.props:
+        user_in.props = {}
+    if factor is not None:
+        user_in.props["factor"] = factor
+
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 

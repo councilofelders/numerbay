@@ -266,11 +266,22 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         )
 
         rounds_sorted = sorted(rounds)
+        final_price = (
+            product_option_obj.special_price
+            if product_option_obj.applied_coupon
+            else product_option_obj.price
+        )
+
+        # check min price # todo add test
+        if final_price < 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Total amounts paid must be greater than 1 NMR",
+            )
+
         order_in = schemas.OrderCreate(
             rounds=rounds_sorted,
-            price=product_option_obj.special_price
-            if product_option_obj.applied_coupon
-            else product_option_obj.price,
+            price=final_price,
             currency=product_option.currency,
             mode=product_option.mode,
             stake_limit=product_option.stake_limit,

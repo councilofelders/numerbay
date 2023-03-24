@@ -29,7 +29,8 @@ export default async function userUpdateMe(context, params, customQuery?: Custom
     // eslint-disable-next-line camelcase
     public_key: params.publicKeyV2,
     // eslint-disable-next-line camelcase
-    encrypted_private_key: params.encryptedPrivateKeyV2
+    encrypted_private_key: params.encryptedPrivateKeyV2,
+    factor: params.factor
   };
 
   // Use axios to send a PUT request
