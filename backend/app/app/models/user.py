@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, JSON, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -45,6 +45,7 @@ class User(Base):
     social_linkedin = Column(String, nullable=True)
     social_twitter = Column(String, nullable=True)
     social_website = Column(String, nullable=True)
+    props = Column(JSON, nullable=True)
     products = relationship("Product", back_populates="owner")
     models = relationship("Model", back_populates="owner")
     orders = relationship("Order", back_populates="buyer")

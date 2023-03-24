@@ -24,6 +24,7 @@ class UserBase(BaseModel):
     social_linkedin: Optional[str] = None
     social_twitter: Optional[str] = None
     social_website: Optional[str] = None
+    props: Optional[dict] = None
 
 
 # Properties to receive via API on creation
@@ -52,6 +53,7 @@ class UserUpdate(UserBase):  # pylint: disable=too-many-instance-attributes
     encrypted_private_key: Optional[str] = None
     public_key_v2: Optional[str] = None
     encrypted_private_key_v2: Optional[str] = None
+    factor: Optional[float] = None
 
 
 class UserInDBBase(UserBase):
