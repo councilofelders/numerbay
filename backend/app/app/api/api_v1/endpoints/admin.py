@@ -29,7 +29,9 @@ def update_daily_pricing(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
-    users = db.query(models.User).filter(not_(models.User.props["factor"].is_(None))).all()
+    users = (
+        db.query(models.User).filter(not_(models.User.props["factor"].is_(None))).all()
+    )
     for user in users:
         print("Updating daily pricing for user", user.username)
         try:

@@ -17,12 +17,12 @@
         </div>
       </div><!-- end form-item -->
       <div v-if="isOnPlatform">
-        <ValidationProvider key="onPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:1" slim>
+        <ValidationProvider key="onPlatformPrice" v-slot="{ errors }" rules="required|decimal|min_value:0" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
               <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Total price</label>
               <input v-model="price" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                     min="1" placeholder="Total Price in NMR" type="number">
+                     min="0" placeholder="Total Price in NMR" type="number">
               <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
             </div>
           </div><!-- end form-item -->

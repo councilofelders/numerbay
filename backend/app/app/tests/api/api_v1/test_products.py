@@ -220,21 +220,21 @@ def test_create_product_invalid_inputs(
     )
 
     # invalid on-platform too low price
-    data = base_data.copy()
-    data["options"][0]["is_on_platform"] = True  # type: ignore
-    data["options"][0]["mode"] = "file"  # type: ignore
-    data["options"][0]["currency"] = "NMR"  # type: ignore
-    data["options"][0]["price"] = 0.9  # type: ignore
-    response = client.post(
-        f"{settings.API_V1_STR}/products/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 400
-    assert (
-        response.json()["detail"]
-        == "On-platform listing price must be greater than 1 NMR"
-    )
+    # data = base_data.copy()
+    # data["options"][0]["is_on_platform"] = True  # type: ignore
+    # data["options"][0]["mode"] = "file"  # type: ignore
+    # data["options"][0]["currency"] = "NMR"  # type: ignore
+    # data["options"][0]["price"] = 0.9  # type: ignore
+    # response = client.post(
+    #     f"{settings.API_V1_STR}/products/",
+    #     headers=normal_user_token_headers,
+    #     json=data,
+    # )
+    # assert response.status_code == 400
+    # assert (
+    #     response.json()["detail"]
+    #     == "On-platform listing price must be greater than 1 NMR"
+    # )
 
     # invalid on-platform stake_with_limit mode without stake limit
     data = base_data.copy()
