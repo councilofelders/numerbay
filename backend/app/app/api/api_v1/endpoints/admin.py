@@ -39,7 +39,7 @@ def update_daily_pricing(
             for product in user_products:
                 if not product.is_active:
                     continue
-                for pricing_option in product.options:
+                for pricing_option in product.options:  # type: ignore
                     pricing_option.price *= Decimal(user.props["factor"])
             db.commit()
         except Exception as e:

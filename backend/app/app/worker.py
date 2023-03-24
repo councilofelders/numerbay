@@ -1017,6 +1017,9 @@ def batch_update_product_sales_stats() -> None:
                     db, product_id=product.id
                 )
                 product.total_qty_sales = product_sales_stats["total_qty_sales"]
+                product.total_qty_sales_filtered = product_sales_stats[
+                    "total_qty_sales_filtered"
+                ]
                 product.total_qty_delivered = product_sales_stats["total_qty_delivered"]
         db.commit()
     finally:

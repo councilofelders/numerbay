@@ -205,6 +205,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getIsAvailable: (product: PRODUCT, optionIdx: number) => boolean;
     getTotalSales: (product: PRODUCT) => number;
     getQtySales: (product: PRODUCT) => number;
+    getQtySalesFiltered: (product: PRODUCT) => number;
     getQtyDelivered: (product: PRODUCT) => number;
     getLastPrice: (product: PRODUCT) => number;
     getLastPriceDelta: (product: PRODUCT) => number;

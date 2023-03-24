@@ -40,6 +40,7 @@ class Product(Base):
     is_daily = Column(Boolean, server_default="f")
     expiration_round = Column(Integer)
     total_qty_sales = Column(Integer, default=0, server_default="0")
+    total_qty_sales_filtered = Column(Integer, default=0, server_default="0")
     total_qty_delivered = Column(Integer, default=0, server_default="0")
     total_num_sales = Column(Integer, default=0, server_default="0")
     last_sale_price = Column(Numeric)

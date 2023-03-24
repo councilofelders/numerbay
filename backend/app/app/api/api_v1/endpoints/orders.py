@@ -273,7 +273,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
         )
 
         # check min price # todo add test
-        if final_price < 1:
+        if final_price < 1:  # type: ignore
             raise HTTPException(
                 status_code=400,
                 detail="Total amounts paid must be greater than 1 NMR",
