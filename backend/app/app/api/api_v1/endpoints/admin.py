@@ -1,5 +1,5 @@
 """ Admin endpoints (admin only) """
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends
@@ -40,7 +40,9 @@ def update_daily_pricing(
                 if not product.is_active:
                     continue
                 for pricing_option in product.options:  # type: ignore
-                    pricing_option.price *= Decimal(user.props["factor"])
+                    pricing_option.price = (
+                        pricing_option.price * Decimal(user.props["factor"])
+                    ).quantize(Decimal(".0001"), rounding=ROUND_HALF_EVEN)
             db.commit()
         except Exception as e:
             print("Error updating daily pricing for user", user.username, e)
