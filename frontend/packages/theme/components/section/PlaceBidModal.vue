@@ -19,25 +19,23 @@
           </v-select>
         </div>
         <ValidationProvider v-if="isOnPlatform" v-slot="{ errors }"
-                            rules="required|integer|min_value:1|max_value:10" v-show="!showCalendar" slim>
+                            rules="required|integer|min_value:1|max_value:50" v-show="!showCalendar" slim>
           <div class="mb-3">
-            <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Enter quantity (weekly rounds only)</label>
+            <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label">Number of rounds (5 per week)</label>
             <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
-                   max="10" min="1" step="1" type="number" @change="onQuantityChange">
+                   max="50" min="1" step="1" type="number" @change="onQuantityChange">
             <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
           </div>
         </ValidationProvider>
         <div class="mb-3">
           <div class="d-flex align-items-center justify-content-between">
-            <label class="form-label">Advanced (incl. weekday rounds)</label>
+            <label class="form-label">Advanced (pick specific dates)</label>
             <div class="form-check form-switch form-switch-s1">
               <input v-model="showCalendar" class="form-check-input" type="checkbox">
             </div><!-- end form-check -->
           </div>
         </div>
         <div class="mb-3" v-show="showCalendar">
-          <label class="form-label">Select dates to buy</label>
-          <p>Select Saturdays for weekend rounds</p>
           <MultipleDatePicker @change="onDateChosen" :is-dark="isDark" :minDate="minDate" ref="calendar"></MultipleDatePicker>
         </div>
         <div v-if="isAuthenticated">
@@ -236,7 +234,7 @@ export default {
   data() {
     return {
       optionIdx: 0,
-      quantity: 1,
+      quantity: 5,
       showCalendar: false,
       selectedRounds: [],
       autoSubmit: false,
@@ -311,9 +309,9 @@ export default {
       return Math.ceil(baseRound + ((elapsed - (daysBeforeFirstMonday + daysAfterLastMonday)) / 7 * 5) + ifThen(daysBeforeFirstMonday - 1, -1, 0) + ifThen(daysAfterLastMonday, 6, 5) - 1)
     },
 
-    nextWeekendRoundNumber(currentRound) {
-      return currentRound + 4 - currentRound % 5
-    },
+    // nextWeekendRoundNumber(currentRound) {
+    //   return currentRound + 4 - currentRound % 5
+    // },
 
     async onApplyCoupon() {
       const couponApplied = cartGetters.getAppliedCoupon(this.selectedOption)?.code;
@@ -332,7 +330,7 @@ export default {
     },
 
     async onQuantityChange() {
-      this.selectedRounds = Array.from({length: this.quantity}, (x, i) => ({"roundNumber": this.nextWeekendRoundNumber(parseInt(this.sellingRound)) + i * 5}));
+      this.selectedRounds = Array.from({length: this.quantity}, (x, i) => ({"roundNumber": parseInt(this.sellingRound) + i}));
       this.$emit('onQuantityChange', {selectedRounds: this.selectedRounds, coupon: this.coupon})
     },
 
@@ -363,7 +361,7 @@ export default {
     showCalendar(value) {
       if (value) { // clear quantity and enable calendar
         this.selectedRounds = []
-        this.quantity = 1
+        this.quantity = 5
       } else { // disable calendar and refresh quantity
         this.onQuantityChange()
       }
