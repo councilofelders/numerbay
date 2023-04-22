@@ -12,7 +12,7 @@ export default async function userUpdateMe(context, params, customQuery?: Custom
     password: params.password,
     email: params.email ? params.email : null,
     // eslint-disable-next-line camelcase
-    social_rocketchat: params.socialRocketChat,
+    social_discord: params.socialDiscord,
     // eslint-disable-next-line camelcase
     social_linkedin: params.socialLinkedIn,
     // eslint-disable-next-line camelcase

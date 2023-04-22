@@ -41,9 +41,9 @@
                         <p class="fw-semibold text-black text-break">@{{ owner }}</p>
                         <span class="fw-medium small">Owner</span>
                         <ul v-if="hasSocials" class="social-links mt-2">
-                          <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span
+                          <li v-if="socialDiscord"><a :href="socialDiscord" target="_blank"><span
                             :class="`ni-chat`"
-                            class="ni icon"></span>RocketChat</a>
+                            class="ni icon"></span>Discord</a>
                           </li>
                           <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span
                             :class="`ni-linkedin`"
@@ -354,8 +354,8 @@ export default {
     owner() {
       return this.$route.params.owner || this.productGetters.getOwner(this.product);
     },
-    socialRocketChat() {
-      return this.product?.owner?.social_rocketchat;
+    socialDiscord() {
+      return this.product?.owner?.social_discord;
     },
     socialLinkedIn() {
       return this.product?.owner?.social_linkedin;
@@ -367,7 +367,7 @@ export default {
       return this.product?.owner?.social_website;
     },
     hasSocials() {
-      return Boolean(this.socialRocketChat || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
+      return Boolean(this.socialDiscord || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
     },
     isNumeraiChartReady() {
       return Boolean(this.v2RoundModelPerformances)

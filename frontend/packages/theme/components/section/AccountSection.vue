@@ -40,11 +40,11 @@
               <div class="row">
                 <ValidationProvider v-slot="{ errors }" rules="url" slim>
                   <div class="col-lg-6 mb-3">
-                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="rocketChatLink">RocketChat
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="discordLink">Discord
                       Link</label>
-                    <input id="rocketChatLink" v-model="form.socialRocketChat" :class="!errors[0] ? '' : 'is-invalid'"
+                    <input id="discordLink" v-model="form.socialDiscord" :class="!errors[0] ? '' : 'is-invalid'"
                            class="form-control form-control-s1"
-                           placeholder="E.g. https://rocketchat.numer.ai/direct/slyfox" type="text">
+                           placeholder="E.g. https://discord.com/users/363554690652438528" type="text">
                     <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
                   </div><!-- end col -->
                 </ValidationProvider>
@@ -351,7 +351,7 @@ export default {
         user: {
           username: this.form.username,
           email: this.form.email,
-          socialRocketChat: this.form.socialRocketChat,
+          socialDiscord: this.form.socialDiscord,
           socialLinkedIn: this.form.socialLinkedIn,
           socialTwitter: this.form.socialTwitter,
           socialWebsite: this.form.socialWebsite,
@@ -538,7 +538,7 @@ export default {
     const resetForm = () => ({
       username: userGetters.getUsername(user.value),
       email: userGetters.getEmailAddress(user.value),
-      socialRocketChat: userGetters.getSocialRocketChat(user.value),
+      socialDiscord: userGetters.getSocialDiscord(user.value),
       socialLinkedIn: userGetters.getSocialLinkedIn(user.value),
       socialTwitter: userGetters.getSocialTwitter(user.value),
       socialWebsite: userGetters.getSocialWebsite(user.value),

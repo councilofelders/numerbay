@@ -68,7 +68,7 @@
                   <li><a href="https://numer.ai/" target="_blank">Numerai</a></li>
                   <li><a href="https://signals.numer.ai/" target="_blank">Signals</a></li>
                   <li><a href="https://forum.numer.ai/" target="_blank">Forum</a></li>
-                  <li><a href="https://rocketchat.numer.ai/" target="_blank">RocketChat</a></li>
+                  <li><a href="https://discord.gg/numerai" target="_blank">Discord</a></li>
                 </ul>
               </div><!-- end footer-item -->
             </div><!-- end col -->
