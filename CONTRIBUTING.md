@@ -1,7 +1,7 @@
 # How to contribute
 This project uses [FastAPI](https://fastapi.tiangolo.com/) for backend, and [Vue Storefront](https://docs.vuestorefront.io/v2/) (API middleware and composables) + [Bootstrap 5](https://getbootstrap.com/docs/5.0/getting-started/introduction/) (theme) for frontend.
 
-Questions about contributing? Please post in the [NumerBay RocketChat channel](https://rocketchat.numer.ai/channel/numerbay).
+Questions about contributing? Please post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai).
 
 ## Did you find a bug?
 

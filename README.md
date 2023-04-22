@@ -16,7 +16,7 @@ The following are helpful resources for getting started with NumerBay:
 
 - The [docs and tutorials](https://docs.numerbay.ai/docs/intro).
 - The [project updates](https://docs.numerbay.ai/updates).
-- The [NumerBay RocketChat channel](https://rocketchat.numer.ai/channel/numerbay) (for support and help).
+- The #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) (for support and help).
 - The [Official Numerai Forum](https://forum.numer.ai/)
 
 ## Contributing

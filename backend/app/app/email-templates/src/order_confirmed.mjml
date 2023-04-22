@@ -18,7 +18,7 @@
         <mj-text font-size="16px" color="#555">Transaction Hash: <a href="https://etherscan.io/tx/{{ transaction_hash }}" class="link-nostyle" target="_blank">{{ transaction_hash }}</a></mj-text>
         <mj-text font-size="16px" color="#555">Amount: <b>{{ amount }} {{ currency }}</b></mj-text>
         <mj-button padding="50px 0px" href="{{ link }}">Go to My Orders</mj-button>
-        <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the <a href="https://community.numer.ai/channel/numerbay" class="link-nostyle" target="_blank">#numerbay</a> channel on Numerai RocketChat.</mj-text>
+        <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the #numerbay channel in <a href="https://discord.gg/numerai" class="link-nostyle" target="_blank">Numerai Discord Server</a>.</mj-text>
         <mj-divider border-color="#555" border-width="2px" />
       </mj-column>
     </mj-section>

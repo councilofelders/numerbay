@@ -77,7 +77,7 @@ def update_user_me(  # pylint: disable=too-many-locals
     username: str = Body(None),
     password: str = Body(None),
     email: EmailStr = Body(None),
-    social_rocketchat: str = Body(None),
+    social_discord: str = Body(None),
     social_linkedin: str = Body(None),
     social_twitter: str = Body(None),
     social_website: str = Body(None),
@@ -107,7 +107,7 @@ def update_user_me(  # pylint: disable=too-many-locals
         user_in.email = email
 
     # Update socials
-    user_in.social_rocketchat = social_rocketchat
+    user_in.social_discord = social_discord
     user_in.social_linkedin = social_linkedin
     user_in.social_twitter = social_twitter
     user_in.social_website = social_website
