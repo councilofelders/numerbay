@@ -42,6 +42,12 @@
             <tbody>
             <tr>
               <td>
+                CORR20V2 Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'v2_corr20')  }}</td>
+            </tr>
+            <tr>
+              <td>
                 CORR20 Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'corr20')  }}</td>
@@ -51,12 +57,6 @@
                 CORJ60 Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'corj60') }}</td>
-            </tr>
-            <tr>
-              <td>
-                FNC Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'fnc') }}</td>
             </tr>
             <tr>
               <td>
@@ -78,6 +78,12 @@
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
+            <tr>
+              <td>
+                CORR20V2 Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'v2_corr20')  }}</td>
+            </tr>
             <tr>
               <td>
                 CORR20 Reputation
@@ -130,6 +136,12 @@
             <tbody>
             <tr>
               <td>
+                CORR20V2 Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'v2_corr20') }}</td>
+            </tr>
+            <tr>
+              <td>
                 CORR20 Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'corr20') }}</td>
@@ -139,12 +151,6 @@
                 CORJ60 Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'corj60') }}</td>
-            </tr>
-            <tr>
-              <td>
-                FNC Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'fnc') }}</td>
             </tr>
             <tr>
               <td>
@@ -166,6 +172,12 @@
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
+            <tr>
+              <td>
+                CORR20V2 Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'v2_corr20') }}</td>
+            </tr>
             <tr>
               <td>
                 CORR20 Rank
