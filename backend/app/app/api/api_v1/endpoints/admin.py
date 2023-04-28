@@ -39,6 +39,7 @@ def update_daily_pricing(
             for product in user_products:
                 if not product.is_active:
                     continue
+                product.is_daily = True
                 for pricing_option in product.options:  # type: ignore
                     pricing_option.price = (
                         pricing_option.price * Decimal(user.props["factor"])

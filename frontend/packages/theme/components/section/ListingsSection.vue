@@ -62,6 +62,7 @@
                 <li><span :class="getStatusTextClass(product)" class="badge fw-medium">{{
                     getStatusText(product)
                   }}</span></li>
+                <li><span v-if="product.is_daily" class="badge fw-medium bg-info">Daily</span></li>
                 <li>
                   <router-link :to="{
                             name: 'edit-listing',
