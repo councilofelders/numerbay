@@ -29,7 +29,7 @@ export default {
     },
     disabledDayNames: {
       type: Array,
-      default: () => ['Su', 'Mo']
+      default: () => ['Sa', 'Su']
     },
     minDate: {
       type: String,
@@ -37,7 +37,7 @@ export default {
     },
     maxDate: {
       type: String,
-      default: () => moment.utc().add(10, 'weeks').format("DD/MM/YYYY")
+      default: () => moment.utc().add(50, 'weeks').format("DD/MM/YYYY")
     },
     refName: {
       type: String,
