@@ -25,19 +25,19 @@ export const getProductPrice = (product: ProductVariant): AgnosticPrice => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductGallery = (product: ProductVariant): AgnosticMediaGalleryItem[] => [
   {
-    small: 'https://numer.ai/img/profile_picture_light.jpg',
-    normal: 'https://numer.ai/img/profile_picture_light.jpg',
-    big: 'https://numer.ai/img/profile_picture_light.jpg'
+    small: 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg',
+    normal: 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg',
+    big: 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg'
   },
   {
-    small: 'https://numer.ai/img/profile_picture_light.jpg',
-    normal: 'https://numer.ai/img/profile_picture_light.jpg',
-    big: 'https://numer.ai/img/profile_picture_light.jpg'
+    small: 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg',
+    normal: 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg',
+    big: 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg'
   }
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getProductCoverImage = (product: ProductVariant): string => product?.avatar || 'https://numer.ai/img/profile_picture_light.jpg';
+export const getProductCoverImage = (product: ProductVariant): string => product?.avatar || 'https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getProductFiltered = (products: ProductVariant[], filters: ProductVariantFilters | any = {}): ProductVariant[] => {
