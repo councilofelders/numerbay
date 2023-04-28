@@ -62,7 +62,7 @@
                     <object v-if="Boolean(form.avatar)" :data="form.avatar" class="col-xs-12 col-md-3 rounded-3"
                             style="max-width: 100%" type="image/png">
                       <img alt="" class="col-xs-12 col-md-3 rounded-3"
-                           src="https://numer.ai/img/profile_picture_light.jpg" style="max-width: 100%">
+                           src="https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg" style="max-width: 100%">
                     </object>
                   </div><!-- end form-item -->
                 </ValidationProvider>

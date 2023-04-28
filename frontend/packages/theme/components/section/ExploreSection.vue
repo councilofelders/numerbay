@@ -92,7 +92,7 @@
         <div v-for="index in pagination.itemsPerPage" :key="index" class="col-lg-6">
           <div class="card card-full flex-sm-row product-s2">
             <div class="card-image">
-              <img alt="avatar image" class="product-img" src="https://numer.ai/img/profile_picture_light.jpg">
+              <img alt="avatar image" class="product-img" src="https://res.cloudinary.com/numerbay/image/upload/v1682662306/profile_picture_light_c4nzhq.jpg">
             </div>
             <div class="card-body card-justified p-4">
               <h5 class="card-title text-truncate mb-0 placeholder-glow"><span class="placeholder col-8"></span></h5>

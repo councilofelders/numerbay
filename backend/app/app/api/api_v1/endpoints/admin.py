@@ -23,6 +23,21 @@ from app.models import Artifact
 router = APIRouter()
 
 
+@router.post("/fix-avatar")
+def fix_avatar(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    products = db.query(models.Product).all()
+    for product in products:
+        if product.avatar == "https://numer.ai/img/profile_picture_light.jpg":
+            product.avatar = None
+    db.commit()
+
+    return {"msg": "success!"}
+
+
 @router.post("/update-daily-pricing")
 def update_daily_pricing(
     *,
