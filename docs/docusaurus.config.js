@@ -110,8 +110,8 @@ const config = {
                 href: 'https://forum.numer.ai/',
               },
               {
-                label: 'RocketChat',
-                href: 'https://community.numer.ai/',
+                label: 'Discord',
+                href: 'https://discord.gg/numerai',
               },
             ],
           },

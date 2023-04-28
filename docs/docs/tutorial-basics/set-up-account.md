@@ -61,6 +61,6 @@ You can change your username, password and email in the **[Edit profile page](ht
 
 :::caution
 
-NumerBay does not yet allow password recovery, please contact support by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
+NumerBay does not yet allow password recovery, please contact support by posting in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai).
 
 :::

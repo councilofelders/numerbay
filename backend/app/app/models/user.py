@@ -42,6 +42,7 @@ class User(Base):
     public_key_v2 = Column(String)
     encrypted_private_key_v2 = Column(String)
     social_rocketchat = Column(String, nullable=True)
+    social_discord = Column(String, nullable=True)
     social_linkedin = Column(String, nullable=True)
     social_twitter = Column(String, nullable=True)
     social_website = Column(String, nullable=True)

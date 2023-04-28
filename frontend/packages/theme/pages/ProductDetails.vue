@@ -41,9 +41,9 @@
                         <p class="fw-semibold text-black text-break">@{{ owner }}</p>
                         <span class="fw-medium small">Owner</span>
                         <ul v-if="hasSocials" class="social-links mt-2">
-                          <li v-if="socialRocketChat"><a :href="socialRocketChat" target="_blank"><span
+                          <li v-if="socialDiscord"><a :href="socialDiscord" target="_blank"><span
                             :class="`ni-chat`"
-                            class="ni icon"></span>RocketChat</a>
+                            class="ni icon"></span>Discord</a>
                           </li>
                           <li v-if="socialLinkedIn"><a :href="socialLinkedIn" target="_blank"><span
                             :class="`ni-linkedin`"
@@ -139,6 +139,12 @@
                             <span> {{ roundPerformance.corrMultiplier }}xCORR</span>
                             <span> {{ roundPerformance.tcMultiplier }}xTC</span>
                           </td>
+                          <td class="text-end"><span class="tooltip-s1">{{
+                              formatDecimal(getRoundScore(roundPerformance, 'v2_corr20', false), 4)
+                            }}<span
+                              class="tooltip-s1-text tooltip-text">Percentile: {{
+                                formatDecimal(getRoundScore(roundPerformance, 'v2_corr20', true) * 100, 1)
+                              }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
                               formatDecimal(getRoundScore(roundPerformance, 'corr', false), 4)
                             }}<span
@@ -151,7 +157,7 @@
                               class="tooltip-s1-text tooltip-text">Percentile: {{
                                 formatDecimal(getRoundScore(roundPerformance, 'corr20', true) * 100, 1)
                               }}</span></span></td>
-                          <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
+<!--                          <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
                               formatDecimal(getRoundScore(roundPerformance, 'corr60', false), 4)
                             }}<span
                               class="tooltip-s1-text tooltip-text">Percentile: {{
@@ -162,11 +168,11 @@
                             }}<span
                               class="tooltip-s1-text tooltip-text">Percentile: {{
                                 formatDecimal(getRoundScore(roundPerformance, 'corj60', true) * 100, 1)
-                              }}</span></span></td>
+                              }}</span></span></td>-->
                           <td class="text-end" v-if="isSignalsTournament"><span
-                            class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'ic', false), 4) }}<span
+                            class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'ic_v2', false), 4) }}<span
                             class="tooltip-s1-text tooltip-text">Percentile: {{
-                              formatDecimal(getRoundScore(roundPerformance, 'ic', true) * 100, 1)
+                              formatDecimal(getRoundScore(roundPerformance, 'ic_v2', true) * 100, 1)
                             }}</span></span></td>
                           <td class="text-end" v-if="!isSignalsTournament"><span
                             class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'fnc_v3', false), 4) }}<span
@@ -315,17 +321,19 @@ export default {
         {name: 'Round', description: null},
         {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
         {name: 'Stake Type', description: null},
-        {name: 'CORR', description: 'Correlation of submission with the 20-day signals target'},
-        {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
-        {name: 'IC', description: 'Mean correlation of this un-neutralized submission with bucketed raw returns'},
+        {name: 'CORR20V2', description: 'Numerai correlation of submission with the 20-day signals target'},
+        {name: 'CORR20', description: 'Correlation of submission with the 20-day signals target'},
+        // {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
+        {name: 'ICV2', description: 'Correlation of users unneutralized submissions with binned raw returns (target_20d_raw_return)'},
         {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
         {name: 'Payout', description: 'Latest projected payout'},
       ] : [
         {name: 'Round', description: null},
         {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
         {name: 'Stake Type', description: null},
-        {name: 'CORR', description: 'Correlation of submission with target nomi_20'},
-        {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
+        {name: 'CORR20V2', description: 'Numerai correlation of submission with target cyrus_20'},
+        {name: 'CORR20', description: 'Correlation of submission with target nomi_20'},
+        // {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
         {name: 'FNCV3', description: 'The mean correlation of this submission after it have been neutralized to the 420 features in the medium subset of the V3 dataset'},
         {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
         {name: 'Payout', description: 'Latest projected payout'},
@@ -346,8 +354,8 @@ export default {
     owner() {
       return this.$route.params.owner || this.productGetters.getOwner(this.product);
     },
-    socialRocketChat() {
-      return this.product?.owner?.social_rocketchat;
+    socialDiscord() {
+      return this.product?.owner?.social_discord;
     },
     socialLinkedIn() {
       return this.product?.owner?.social_linkedin;
@@ -359,7 +367,7 @@ export default {
       return this.product?.owner?.social_website;
     },
     hasSocials() {
-      return Boolean(this.socialRocketChat || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
+      return Boolean(this.socialDiscord || this.socialLinkedIn || this.socialTwitter || this.socialWebsite);
     },
     isNumeraiChartReady() {
       return Boolean(this.v2RoundModelPerformances)

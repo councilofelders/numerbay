@@ -33,6 +33,28 @@ _SORT_OPTION_LOOKUP = {
     "return1y-down": desc(
         Model.latest_returns.cast(JSON)["oneYear"].as_string().cast(Float)
     ),
+    "corr20v2-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float),
+    "corr20v2-down": desc(
+        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    ),
+    "corr20v2tc-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr20v2tc-down": desc(
+        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+        + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr20v22tc-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr20v22tc-down": desc(
+        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+        + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
+    "corr20v23tc-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "corr20v23tc-down": desc(
+        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
     "corr20-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float),
     "corr20-down": desc(Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)),
     "corr20tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
@@ -55,8 +77,6 @@ _SORT_OPTION_LOOKUP = {
     ),
     "corj60-up": Model.latest_reps.cast(JSON)["corj60"].as_string().cast(Float),
     "corj60-down": desc(Model.latest_reps.cast(JSON)["corj60"].as_string().cast(Float)),
-    "fnc-up": Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float),
-    "fnc-down": desc(Model.latest_reps.cast(JSON)["fnc"].as_string().cast(Float)),
     "fncV3-up": Model.latest_reps.cast(JSON)["fnc_v3"].as_string().cast(Float),
     "fncV3-down": desc(Model.latest_reps.cast(JSON)["fnc_v3"].as_string().cast(Float)),
     "corr-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float),
@@ -161,7 +181,7 @@ def parse_encryption_filter(filter_item: Dict) -> Any:
     return Product.use_encryption.in_(encryption_list)
 
 
-def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
+def parse_rank_filter(filter_item: Dict, metric_name: str) -> Optional[Any]:
     """Parse rank filter"""
     try:
         if len(filter_item["in"]) > 0:
@@ -170,9 +190,9 @@ def parse_rank_filter(filter_item: Dict) -> Optional[Any]:
                 rank_range = rank_range.split(",")
             rank_from, rank_to = int(rank_range[0]), int(rank_range[1])
             return and_(
-                Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+                Model.latest_ranks.cast(JSON)[metric_name].as_string().cast(Integer)
                 >= rank_from,
-                Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
+                Model.latest_ranks.cast(JSON)[metric_name].as_string().cast(Integer)
                 <= rank_to,
             )
     except Exception as e:  # pylint: disable=broad-except
@@ -230,6 +250,7 @@ def parse_filters(
     query_filters: Optional[List] = None,
     stake_step: Union[int, float] = 1,
     return3m_step: float = 0.01,
+    tournament_id: int = 8,
 ) -> List:
     """Parse filters"""
     if not isinstance(query_filters, list):
@@ -253,8 +274,15 @@ def parse_filters(
         if filter_key == "user":
             user_id_list = [int(i) for i in filter_item["in"]]
             query_filters.append(Product.owner_id.in_(user_id_list))
-        if filter_key == "rank":
-            query_filters.append(parse_rank_filter(filter_item))
+        if filter_key == "rank_tc":
+            query_filters.append(parse_rank_filter(filter_item, "tc"))
+        if filter_key == "rank_v2_corr20":
+            query_filters.append(parse_rank_filter(filter_item, "v2_corr20"))
+        if filter_key == "rank_fnc":
+            if tournament_id == 11:
+                query_filters.append(parse_rank_filter(filter_item, "fnc_v4"))
+            else:
+                query_filters.append(parse_rank_filter(filter_item, "fnc_v3"))
         if filter_key == "stake":
             query_filters.append(parse_stake_filter(filter_item, stake_step))
         if filter_key == "return3m":
@@ -305,12 +333,44 @@ def generate_aggregations(
             ],
         },
         {
-            "attribute_code": "rank",
+            "attribute_code": "rank_tc",
             "count": None,
-            "label": "Rank",
+            "label": "TC Rank",
             "options": [
-                {"label": "from", "value": agg_stats.min_rank},
-                {"label": "to", "value": agg_stats.max_rank},
+                {"label": "from", "value": agg_stats.min_rank_tc},
+                {"label": "to", "value": agg_stats.max_rank_tc},
+                {"label": "step", "value": 1},
+                {"label": "decimals", "value": 0},
+            ],
+        },
+        {
+            "attribute_code": "rank_v2_corr20",
+            "count": None,
+            "label": "CORR20V2 Rank",
+            "options": [
+                {"label": "from", "value": agg_stats.min_rank_v2_corr20},
+                {"label": "to", "value": agg_stats.max_rank_v2_corr20},
+                {"label": "step", "value": 1},
+                {"label": "decimals", "value": 0},
+            ],
+        },
+        {
+            "attribute_code": "rank_fnc",
+            "count": None,
+            "label": "FNC Rank",
+            "options": [
+                {
+                    "label": "from",
+                    "value": agg_stats.min_rank_fnc_v3
+                    if agg_stats.min_rank_fnc_v3
+                    else agg_stats.min_rank_fnc_v4,
+                },
+                {
+                    "label": "to",
+                    "value": agg_stats.max_rank_fnc_v3
+                    if agg_stats.max_rank_fnc_v3
+                    else agg_stats.max_rank_fnc_v4,
+                },
                 {"label": "step", "value": 1},
                 {"label": "decimals", "value": 0},
             ],
@@ -461,12 +521,13 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         stake_step = 1
         return3m_step = 0.01
-
+        print(all_child_categories)
         query_filters = parse_filters(
             filters=filters,
             query_filters=query_filters,
             stake_step=stake_step,
             return3m_step=return3m_step,
+            tournament_id=all_child_categories[0][3] if all_child_categories else None,
         )
 
         query = (
@@ -490,11 +551,29 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         agg_query = (
             db.query(
                 func.min(
-                    Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
-                ).label("min_rank"),
+                    Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)
+                ).label("min_rank_tc"),
                 func.max(
-                    Model.latest_ranks.cast(JSON)["corr"].as_string().cast(Integer)
-                ).label("max_rank"),
+                    Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)
+                ).label("max_rank_tc"),
+                func.min(
+                    Model.latest_ranks.cast(JSON)["v2_corr20"].as_string().cast(Integer)
+                ).label("min_rank_v2_corr20"),
+                func.max(
+                    Model.latest_ranks.cast(JSON)["v2_corr20"].as_string().cast(Integer)
+                ).label("max_rank_v2_corr20"),
+                func.min(
+                    Model.latest_ranks.cast(JSON)["fnc_v3"].as_string().cast(Integer)
+                ).label("min_rank_fnc_v3"),
+                func.max(
+                    Model.latest_ranks.cast(JSON)["fnc_v3"].as_string().cast(Integer)
+                ).label("max_rank_fnc_v3"),
+                func.min(
+                    Model.latest_ranks.cast(JSON)["fnc_v4"].as_string().cast(Integer)
+                ).label("min_rank_fnc_v4"),
+                func.max(
+                    Model.latest_ranks.cast(JSON)["fnc_v4"].as_string().cast(Integer)
+                ).label("max_rank_fnc_v4"),
                 func.min(Model.nmr_staked).label("min_stake"),
                 func.max(Model.nmr_staked).label("max_stake"),
                 func.min(

@@ -16,7 +16,7 @@ If you registered an account with username before and did not connect a MetaMask
 
 If you had a connected MetaMask wallet, make sure you are using the correct wallet for login.
 
-If you forgot your account username or wallet, please post in [#numerbay](https://rocketchat.numer.ai/channel/numerbay) for assistance.
+If you forgot your account username or wallet, please post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance.
 
 ### I'm getting "Numerai API Error: Insufficient Permission"
 
@@ -30,9 +30,9 @@ Sorry to hear that. Unfortunately the market can be quite unpredictable, past pe
 
 ### Seller didn't upload files for my order
 
-If the round has not ended yet, then be patient. Some sellers might upload closer to the deadline. If you are unsure, feel free to reach out to the seller privately or post in [#numerbay](https://rocketchat.numer.ai/channel/numerbay) for assistance.
+If the round has not ended yet, then be patient. Some sellers might upload closer to the deadline. If you are unsure, feel free to reach out to the seller privately or post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance.
 
-NumerBay doesn't yet provide automated dispute resolution. If you did not receive anything after the round deadline, you can try to contact the seller in private or post in [#numerbay](https://rocketchat.numer.ai/channel/numerbay) for assistance. Depending on the specific situation, you might be able to get a refund or order extension.
+NumerBay doesn't yet provide automated dispute resolution. If you did not receive anything after the round deadline, you can try to contact the seller in private or post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance. Depending on the specific situation, you might be able to get a refund or order extension.
 
 ### I changed model name, but my order's submission slot is still the old name
 
@@ -57,4 +57,4 @@ If you don't want to do this, check the answer for the previous question for sol
 
 ### I missed upload for a buyer
 
-NumerBay doesn't yet provide automated dispute resolution, please post in [#numerbay](https://rocketchat.numer.ai/channel/numerbay) for assistance. You can offer a refund, or an order extension.
+NumerBay doesn't yet provide automated dispute resolution, please post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance. You can offer a refund, or an order extension.

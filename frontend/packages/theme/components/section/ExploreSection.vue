@@ -252,7 +252,7 @@ export default {
     const {categories, search: categorySearch} = useCategory(`${path}`);
     const products = computed(() => facetGetters.getProducts(result.value));
     const categoryTree = computed(() => facetGetters.getCategoryTree({data: {categories: (categories.value || [])}}));
-    const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'ready', 'encryption', 'rank', 'stake', 'return3m']));
+    const facets = computed(() => facetGetters.getGrouped(result.value, ['status', 'ready', 'encryption', 'rank_tc', 'rank_v2_corr20', 'rank_fnc', 'stake', 'return3m']));
     const pagination = computed(() => facetGetters.getPagination(result.value));
 
     const {changeFilters, isFacetCheckbox} = useUiHelpers();

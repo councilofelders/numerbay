@@ -82,7 +82,7 @@ Payment needs to be made **in full** and **in one single transaction** from your
 
 NumerBay currently does not support payment from arbitrary NMR wallet, **DO NOT** send NMR from your own wallet or exchange wallets.
 
-If you need help, please contact support by posting in the [#numerbay](https://community.numer.ai/channel/numerbay) channel on RocketChat.
+If you need help, please contact support by posting in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai).
 
 :::
 
