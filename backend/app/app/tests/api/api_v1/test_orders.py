@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.api.dependencies.orders import get_order_weekend_round_numbers
+from app.api.dependencies.orders import get_order_round_numbers
 from app.core.config import settings
 from app.schemas import ArtifactCreate
 from app.tests.utils.order import get_random_order
@@ -37,7 +37,7 @@ def test_create_order(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_weekend_round_numbers(selling_round, 1),
+            "rounds": get_order_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -48,7 +48,7 @@ def test_create_order(
         content = response.json()
         assert content["buyer"]["id"] == current_user["id"]
         assert content["product"]["id"] == product.id
-        assert content["rounds"] == get_order_weekend_round_numbers(selling_round, 1)
+        assert content["rounds"] == get_order_round_numbers(selling_round, 1)
 
         # Negative or 0 quantity: reject
         order_data["rounds"] = []
@@ -62,7 +62,7 @@ def test_create_order(
 
         # Wrong quantity for category: reject
         crud.product.update(db, db_obj=product, obj_in={"category_id": 4})
-        order_data["rounds"] = get_order_weekend_round_numbers(selling_round, 2)
+        order_data["rounds"] = get_order_round_numbers(selling_round, 2)
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
             headers=superuser_token_headers,
@@ -99,9 +99,9 @@ def test_create_order_invalid_duplicated(
             db,
             db_obj=order,
             obj_in={
-                "round_order": order.round_order - 5,
-                "rounds": get_order_weekend_round_numbers(
-                    order.round_order - 5,  # type: ignore
+                "round_order": order.round_order - 1,
+                "rounds": get_order_round_numbers(
+                    order.round_order - 1,  # type: ignore
                     2,
                 ),
                 "state": "confirmed",
@@ -112,7 +112,7 @@ def test_create_order_invalid_duplicated(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_weekend_round_numbers(
+            "rounds": get_order_round_numbers(
                 crud.globals.get_singleton(db).selling_round,  # type: ignore
                 1,
             ),
@@ -149,7 +149,7 @@ def test_create_order_invalid_self(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_weekend_round_numbers(selling_round, 1),
+            "rounds": get_order_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -164,7 +164,7 @@ def test_create_order_invalid_self(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_weekend_round_numbers(selling_round, 1),
+            "rounds": get_order_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -199,7 +199,7 @@ def test_create_order_invalid_api_permissions(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_weekend_round_numbers(selling_round, 1),
+            "rounds": get_order_round_numbers(selling_round, 1),
         }
         response = client.post(
             f"{settings.API_V1_STR}/orders/",
@@ -217,7 +217,7 @@ def test_create_order_invalid_api_permissions(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,
-            "rounds": get_order_weekend_round_numbers(selling_round, 1),
+            "rounds": get_order_round_numbers(selling_round, 1),
             "submit_model_id": "test_model_id",
         }  # type: ignore
         response = client.post(
@@ -246,7 +246,7 @@ def test_create_order_invalid_api_permissions(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,
-            "rounds": get_order_weekend_round_numbers(selling_round, 1),
+            "rounds": get_order_round_numbers(selling_round, 1),
             "submit_model_id": "test_model_id",
         }  # type: ignore
         response = client.post(
@@ -300,7 +300,7 @@ def test_order_artifact(
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
-            "rounds": get_order_weekend_round_numbers(
+            "rounds": get_order_round_numbers(
                 crud.globals.get_singleton(db).selling_round, 1  # type: ignore
             ),
         }

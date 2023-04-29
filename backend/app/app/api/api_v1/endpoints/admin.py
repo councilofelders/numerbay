@@ -12,7 +12,7 @@ from app import crud, models
 from app.api import deps
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import (
-    get_order_weekend_round_numbers,
+    get_order_round_numbers,
     send_order_confirmation_emails,
 )
 from app.api.deps import make_gcp_authorized_post_request
@@ -96,7 +96,7 @@ def fill_order_rounds(
     for order_obj in crud.order.get_multi(db):
         if order_obj.rounds is not None:
             continue
-        order_obj.rounds = get_order_weekend_round_numbers(
+        order_obj.rounds = get_order_round_numbers(
             order_obj.round_order, order_obj.quantity  # type: ignore
         )
     db.commit()
