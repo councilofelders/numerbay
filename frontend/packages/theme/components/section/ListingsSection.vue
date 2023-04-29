@@ -16,14 +16,25 @@
     </div><!-- end alert -->
     <div class="profile-setting-panel">
       <router-link :class="(!userGetters.getNumeraiApiKeyPublicId(user) || userLoading) ? 'disabled' : ''" :to="`/create-listing`"
-                   class="btn btn-outline-dark mb-4"><em
+                   class="btn btn-outline-dark mb-1"><em
         class="ni ni-plus"></em> New Listing
       </router-link>
-      <div class="row g-gs">
-        <div v-if="!displayedProducts || displayedProducts.length === 0" class="col-xl-12">You currently have no
-          listing
+      <div class="row g-gs" v-if="!displayedProducts || displayedProducts.length === 0">
+        <div class="col-xl-12">You currently have no listing
         </div>
-        <div v-for="product in displayedProducts" :key="productGetters.getId(product)" class="col-xl-6">
+      </div>
+      <div v-else class="row g-gs mt-5" v-for="category in ['numerai-predictions', 'signals-predictions', 'numerai-models', 'signals-data', 'other']">
+        <div class="row" v-if="filterProductsByCategory(displayedProducts, category).length > 0">
+          <div class="col-12">
+            <ul class="nav nav-tabs nav-tabs-s3" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button :id="'past'" class="nav-link" type="button">{{ category }}</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div v-for="product in filterProductsByCategory(displayedProducts, category)" :key="productGetters.getId(product)"
+             class="col-xl-6">
           <div class="card card-full">
             <div class="card-body card-body-s1">
               <p class="mb-3 fs-13 mb-4">Sold {{ productGetters.getQtySales(product) }}<span
@@ -83,9 +94,9 @@
         </div><!-- end col -->
       </div><!-- end row -->
       <!-- pagination -->
-      <div class="text-center mt-4 mt-md-5">
+<!--      <div class="text-center mt-4 mt-md-5">
         <Pagination v-model="page" :per-page="perPage" :records="products.length"></Pagination>
-      </div>
+      </div>-->
     </div><!-- end profile-setting-panel -->
   </div><!-- end col-lg-8 -->
 </template>
@@ -112,9 +123,18 @@ export default {
   },
   computed: {
     displayedProducts() {
-      const startIndex = this.perPage * (this.page - 1);
-      const endIndex = startIndex + this.perPage;
-      return this.products?.slice(startIndex, endIndex);
+      // const startIndex = this.perPage * (this.page - 1);
+      // const endIndex = startIndex + this.perPage;
+      // return this.products?.slice(startIndex, endIndex);
+      return this.products
+    }
+  },
+  methods: {
+    filterProductsByCategory(products, category) {
+      if (category === 'other') {
+        return products.filter(product => productGetters.getCategory(product).slug !== 'numerai-predictions' && productGetters.getCategory(product).slug !== 'signals-predictions' && productGetters.getCategory(product).slug !== 'numerai-models' && productGetters.getCategory(product).slug !== 'signals-data');
+      }
+      return products.filter(product => productGetters.getCategory(product).slug === category);
     }
   },
   setup() {
