@@ -244,6 +244,7 @@ export default {
 
       const encryptedPrivateKeyObj = JSON.parse(this.encryptedPrivateKeyV2);
       const symmetricalKeySalt = encryptedPrivateKeyObj.salt;
+      await this.$wallet.provider.send('eth_requestAccounts', []);
       const storageEncryptionKey = (await this.$encryption.getSymmetricalKeyFromSignature(this.$wallet.provider.getSigner(), symmetricalKeySalt)).symmetricalKey;
 
       const privateKey = this.$encryption.symmetricalDecrypt(
