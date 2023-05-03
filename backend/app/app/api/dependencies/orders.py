@@ -34,16 +34,8 @@ def validate_existing_order(db: Session, order_id: int) -> models.Order:
     return order
 
 
-def get_order_weekend_round_numbers(round_order: int, quantity: int) -> List[int]:
-    original_end_round = round_order + quantity - 1
-    if original_end_round <= 339:
-        return list(range(round_order, round_order + quantity))
-    else:
-        daily_base_round = max(339, round_order)
-        daily_quantity = original_end_round - daily_base_round
-        return list(range(round_order, 339)) + list(
-            range(daily_base_round, daily_base_round + daily_quantity * 5 + 1, 5)
-        )
+def get_order_round_numbers(round_order: int, quantity: int) -> List[int]:
+    return list(range(round_order, round_order + quantity))
 
 
 def any_weekday_round(rounds_numbers: List[int]) -> bool:
