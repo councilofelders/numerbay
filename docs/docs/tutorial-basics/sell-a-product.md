@@ -30,6 +30,8 @@ To create a listing, head to **[My listings](https://numerbay.ai/listings)** pag
 * Avatar image URL:
     - This defaults to your numerai model avatar after selecting the model
     - This must be an HTTPS URL
+* Sell for weekday rounds:
+    - Sell for all daily tournament rounds (default)
 
 ### Product description
 An informative product description will help potential buyers make decisions. 
@@ -88,20 +90,14 @@ Click **Show advanced settings** for additional configurations.
 <img alt="Listing Option" src="/img/tutorial/listingOption.png" width="800"/>
 
 * Platform
-    - `On-Platform`: Product is sold on NumerBay with full features
+    - `On-Platform`: Product is sold on NumerBay with full features (recommended)
     - `Off-Platform`: Product only links to an external listing page
+* Total price: Total price for the option including all bundled quantities. 
+* Number of bundled rounds: Number of tournament rounds bundled into this pricing option.
 * Listing mode:
     - `File Mode`: Buyers can download artifact files and optionally designate a model slot for submission. You can upload artifacts to NumerBay or add external file URLs
     - `Stake Only Mode`: Submit for buyers automatically without distributing artifact files, without stake limit. You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
     - `Stake Only Mode with Limit`: Submit for buyers automatically without distributing artifact files, with a stake limit (in NMR). You must upload artifacts to NumerBay. [only available for "numerai-predictions" and "signals-predictions" categories]
-* Number of bundled rounds per unit sold: Number of tournament rounds bundled into this pricing option. 
-* Total price: Total price for the option including all bundled quantities. 
-
-:::info
-
-Total number of rounds for an order will be `[order quantity] x [bundled number of rounds per unit]`
-
-:::
 
 ### Reward coupons on sale
 If you want to reward coupons to buyers meeting certain conditions, tick the **Reward coupons to buyers** box and configure as shown below.
