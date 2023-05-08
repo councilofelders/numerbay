@@ -63,6 +63,7 @@ def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
                   oneDay
                   threeMonths
                   oneYear
+                  allTime
                 }
               }
             }
@@ -90,6 +91,7 @@ def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
                   oneDay
                   threeMonths
                   oneYear
+                  allTime
                 }
               }
             }

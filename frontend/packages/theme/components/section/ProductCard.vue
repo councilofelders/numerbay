@@ -124,7 +124,8 @@ export default {
       return {
         oneDay: this.productGetters.getModelReturn(this.product, 'oneDay'),
         threeMonths: this.productGetters.getModelReturn(this.product, 'threeMonths'),
-        oneYear: this.productGetters.getModelReturn(this.product, 'oneYear')
+        oneYear: this.productGetters.getModelReturn(this.product, 'oneYear'),
+        allTime: this.productGetters.getModelReturn(this.product, 'allTime')
       };
     }
   },
