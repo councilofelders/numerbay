@@ -275,7 +275,7 @@ export default {
       variables() {
         return {
           model_id: this.product?.model?.id,
-          lastNRounds: 107,
+          lastNRounds: 260,
           tournament: this.product?.model?.tournament
         }
       },
@@ -311,7 +311,7 @@ export default {
       return !this.v2RoundModelPerformances? {} : numeraiGetters.getSignalsTcIcChartData(this.v2RoundModelPerformances)
     },
     roundModelPerformancesTableData() {
-      return !this.v2RoundModelPerformances? {} : numeraiGetters.getRoundModelPerformancesTableData(this.v2RoundModelPerformances).slice(0, 6)
+      return !this.v2RoundModelPerformances? {} : numeraiGetters.getRoundModelPerformancesTableData(this.v2RoundModelPerformances).slice(0, 12)
     },
     isSignalsTournament() {
       return this.productGetters.getCategory(this.product).tournament !== 8;
@@ -405,7 +405,8 @@ export default {
       return {
         oneDay: this.$route.params.latestReturnOneDay || this.productGetters.getModelReturn(this.product, 'oneDay'),
         threeMonths: this.$route.params.latestReturnThreeMonths || this.productGetters.getModelReturn(this.product, 'threeMonths'),
-        oneYear: this.$route.params.latestReturnOneYear || this.productGetters.getModelReturn(this.product, 'oneYear')
+        oneYear: this.$route.params.latestReturnOneYear || this.productGetters.getModelReturn(this.product, 'oneYear'),
+        allTime: this.$route.params.latestReturnAllTime || this.productGetters.getModelReturn(this.product, 'allTime')
       };
     },
 

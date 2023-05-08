@@ -28,6 +28,12 @@
             </tr>
             <tr>
               <td>
+                All Time Stake Return
+              </td>
+              <td :class="`stats text-${getMetricColor(latestReturns.allTime)}`">{{ latestReturns.allTime }}%</td>
+            </tr>
+            <tr>
+              <td>
                 NMR Stake
               </td>
               <td class="stats">{{ nmrStaked }} NMR</td>

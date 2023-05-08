@@ -75,7 +75,8 @@ export const extractNumeraiV2Scores = (numerai: any, scoreName: string, isPercen
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiCorrCorr60TcChartData = (numerai: any) => {
+export const getNumeraiCorrCorr60TcChartData = (numerai_raw: any) => {
+  const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
     labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
@@ -106,7 +107,8 @@ export const getNumeraiCorrCorr60TcChartData = (numerai: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getSignalsCorrChartData = (numerai: any) => {
+export const getSignalsCorrChartData = (numerai_raw: any) => {
+  const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
     labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
@@ -126,7 +128,8 @@ export const getSignalsCorrChartData = (numerai: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getSignalsTcIcChartData = (numerai: any) => {
+export const getSignalsTcIcChartData = (numerai_raw: any) => {
+  const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
     labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
