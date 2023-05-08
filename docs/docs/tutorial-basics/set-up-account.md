@@ -48,6 +48,8 @@ Additional API permissions may be needed depending on what you want to do on Num
 After creating an API key with the permissions required, plug them into the form as shown below, wait for a few seconds for validation, and the updated API Key permission info will be reflected:
 ![Numerai API Key](/img/tutorial/numeraiApiKey.png)
 
+When you changed your model names or created new model slots, it's recommended to refresh the API using the `refresh` button on the top right.
+
 :::info
 
 If you encounter errors while updating with a valid Numerai API key, it may be likely that you are not logged in with the correct NumerBay account, you might have another old account bound to the same Numerai account. 

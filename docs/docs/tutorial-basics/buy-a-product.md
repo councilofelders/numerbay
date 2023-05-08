@@ -48,14 +48,14 @@ Learn more about [client-side encryption](/updates/encryption).
     - `File Mode`: You can download artifact files and optionally designate a model slot for submission
     - `Stake Only Mode`: Submit for you automatically without distributing artifact files, without stake limit. [only available for "numerai-predictions" and "signals-predictions" categories]
     - `Stake Only Mode with Limit`: Submit for you automatically without distributing artifact files, with a stake limit (in NMR). [only available for "numerai-predictions" and "signals-predictions" categories]
-* Ready: If an `Ready` badge is shown for a product, this means the product artifact files are ready for download immediately after purchasing (for unencrypted listings), or the seller has delivered for at least one buyer (for encrypted listings). If not shown, you will need to wait for seller to upload after your purchase. 
-  This badge is reset every week for per-round categories `numerai-predictions`, `signals-predictions` and `signals-data`.
-
+* Ready: If a `Ready` badge is shown for a product, this means the product artifact files are ready for download immediately after purchasing (for unencrypted listings), or the seller has delivered for at least one buyer (for encrypted listings). If the ready badge is not shown or if the product uses encryption, you will need to wait for seller to upload after your purchase. 
+  This badge is reset every round for per-round categories `numerai-predictions`, `signals-predictions` and `signals-data`.
+* Daily: If a `Daily` badge is shown for a product, this product uploads for every round, otherwise the product might only upload on weekends.
 
 ## Checkout and payment
 
 ### Place an order
-Navigate to a product you are interested in, and click **Buy**. Then, select your preferred **product option** and the **quantity** of that product option you would like to buy, read the disclaimer, and click **Place an Order**.
+Navigate to a product you are interested in, and click **Buy**. Then, select your preferred **product option** and the **quantity (number of rounds)** of that product option you would like to buy, read the disclaimer, and click **Place an Order**.
 
 If the product you are buying is a tournament submission, you can select a model slot to **auto-submit** to. This is mandatory if the product is sold in "Stake Only" mode. 
 
@@ -65,9 +65,9 @@ If you have a valid discount **coupon** for the product, you can also apply it b
 
 :::info
 
-The **quantity** selected here is the amount of the product option selected (which may bundle more than 1 tournament round) rather than the number of tournament rounds.
+The **quantity** selected here is the number of tournament rounds based on the pricing option selected.
 
-E.g. buying 3 of `2 x files for 4 NMR` option will result in an order of `3 x 2 = 6` tournament rounds totaling `3 x 4 = 12` NMRs.
+Each week consists of 5 daily rounds, therefore enter 5 if you want to buy for a week. Alternatively you can use the advanced calendar date picker to select specific days to buy.
 
 :::
 
@@ -80,7 +80,7 @@ Your orders are viewable in the **[Purchases](https://numerbay.ai/purchases)** p
 
 Payment needs to be made **in full** and **in one single transaction** from your **Numerai wallet** within **45 minutes** after order creation. If no matching payment transaction is found within the time limit, the order will expire.
 
-NumerBay currently does not support payment from arbitrary NMR wallet, **DO NOT** send NMR from your own wallet or exchange wallets.
+NumerBay currently does not fully support payment from arbitrary NMR wallet, **DO NOT** send NMR from your own wallet or exchange wallets.
 
 If you need help, please contact support by posting in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai).
 
@@ -92,11 +92,10 @@ If you need help, please contact support by posting in the #numerbay channel in 
 
 Head to the **[Purchases](https://numerbay.ai/purchases)** page. Click the **download** button next to your order to view the list of downloadable artifact files. Then, click on the file name to download the file.
 
-If you purchased before Numerai tournament round starts (Saturday 18:00 UTC), artifacts may not be available for immediate download. 
-Sellers will be notified of your order and will upload artifacts once the tournament round starts.
+If you purchased before Numerai tournament round starts, artifacts may not be available for immediate download. 
+Sellers will be notified of your order and will upload artifacts once the tournament round starts. You cannot download artifacts for past rounds.
 
-You can download artifacts for the currently active tournament round **until 30 minutes before the round submission deadline** (until Monday 14:00 UTC). 
-After Monday 14:00 UTC, the active round will rollover and sale for the next round will open, you cannot download artifacts during rollover and for past rounds.
+It is recommended to place orders early so sellers would have enough time to fulfill the upload.
 
 :::tip Advanced tip
 

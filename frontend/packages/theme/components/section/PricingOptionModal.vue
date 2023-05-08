@@ -30,7 +30,7 @@
         <ValidationProvider key="onPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity (Number of rounds)</label>
               <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                      min="1" placeholder="Quantity or number of rounds per unit" type="number">
               <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
@@ -52,7 +52,7 @@
         <ValidationProvider key="offPlatformQuantity" v-slot="{ errors }" rules="required|integer|min_value:1" slim>
           <div class="form-item mb-4">
             <div class="mb-4">
-              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity</label>
+              <label :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-2 form-label">Bundled quantity (Number of rounds)</label>
               <input v-model="quantity" :class="!errors[0] ? '' : 'is-invalid'" class="form-control form-control-s1"
                      min="1" placeholder="Quantity or number of rounds per unit" type="number">
               <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>

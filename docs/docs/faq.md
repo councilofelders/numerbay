@@ -32,11 +32,15 @@ Sorry to hear that. Unfortunately the market can be quite unpredictable, past pe
 
 If the round has not ended yet, then be patient. Some sellers might upload closer to the deadline. If you are unsure, feel free to reach out to the seller privately or post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance.
 
-NumerBay doesn't yet provide automated dispute resolution. If you did not receive anything after the round deadline, you can try to contact the seller in private or post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance. Depending on the specific situation, you might be able to get a refund or order extension.
+You can use the `Send Reminder` button on the Download popup to reminder the seller. Alternatively you can also request a refund on the purchases page which also allows attaching a message to the seller. 
+
+NumerBay doesn't yet provide fully automated dispute resolution. If you did not receive anything after the round deadline, you can request a refund with a message to try to contact the seller in private or post in the #numerbay channel in [Numerai Discord Server](https://discord.gg/numerai) for assistance. Depending on the specific situation, you might be able to get a refund or order extension.
 
 ### I changed model name, but my order's submission slot is still the old name
 
 Don't worry, the submission will go to the correct slot. To show the new model name in the future, go to the [Numerai Settings page](https://numerbay.ai/numerai-settings) and click the `sync` button on the top right to sync your model slots with Numerai. 
+
+When you changed your model names or created new model slots, it's recommended to refresh the API using the `refresh` button on the top right of the Numerai API Key form on the [Numerai Settings page](https://numerbay.ai/numerai-settings).
 
 
 ## Selling
