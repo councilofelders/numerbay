@@ -229,7 +229,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
 
         # Update user models
         updated_username = None
-        if user_has_valid_numerai_api:
+        if user_has_valid_numerai_api["success"]:
             updated_username = crud.model.update_model(db, user_json)
 
         # Handled users that failed authenticated updates
