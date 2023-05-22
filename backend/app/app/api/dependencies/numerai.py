@@ -636,8 +636,8 @@ def check_user_numerai_api(user: models.User) -> None:
 
 def sync_user_numerai_api(db: Session, user_json: dict) -> None:
     numerai_api_updated = crud.user.update_numerai_api(db, user_json)
-    if not numerai_api_updated:
-        raise HTTPException(status_code=400, detail="Failed to update Numerai API")
+    if not numerai_api_updated["success"]:
+        raise HTTPException(status_code=400, detail=numerai_api_updated["message"])
     result = crud.model.update_model(db, user_json=user_json)
     if not result:
         raise HTTPException(
