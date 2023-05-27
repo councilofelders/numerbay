@@ -48,13 +48,19 @@ def any_weekday_round(rounds_numbers: List[int]) -> bool:
 
 
 def valid_rounds(
-    rounds_numbers: List[int], selling_round: int, max_round_offset: int
+    rounds_numbers: List[int],
+    selling_round: int,
+    max_round_offset: int,
+    round_lock: Optional[int] = None,
 ) -> bool:
     for round_number in rounds_numbers:
         if (
             round_number < selling_round
             or round_number > selling_round + max_round_offset
         ):
+            return False
+
+        if round_lock and round_number <= round_lock:
             return False
     return True
 

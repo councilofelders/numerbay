@@ -47,6 +47,7 @@ class Product(Base):
     last_sale_price_delta = Column(Numeric)
     webhook = Column(String)
     featured_products = Column(ARRAY(Integer))
+    round_lock = Column(Integer, nullable=True)
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="products")
     category_id = Column(Integer, ForeignKey("category.id"))

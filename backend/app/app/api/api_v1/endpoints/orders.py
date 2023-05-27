@@ -142,6 +142,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             rounds,
             selling_round=selling_round,
             max_round_offset=settings.MAX_ROUND_OFFSET,
+            round_lock=product.round_lock,
         )
         and not current_user.is_superuser
     ):

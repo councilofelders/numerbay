@@ -397,3 +397,19 @@ def validate_existing_product_option(
     if not product_option:
         raise HTTPException(status_code=404, detail="Product option not found")
     return product_option
+
+
+def lock_product_for_round(
+    db: Session, product_id: int, round_number: int
+) -> models.Product:
+    """Lock product for round"""
+    product = validate_existing_product(db, product_id)
+    if product.round_lock and product.round_lock >= round_number:
+        raise HTTPException(
+            status_code=400,
+            detail="Product is already locked for this round",
+        )
+    product = crud.product.update(
+        db, db_obj=product, obj_in={"round_lock": round_number}
+    )
+    return product

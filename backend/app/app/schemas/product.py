@@ -35,6 +35,7 @@ class ProductBase(BaseModel):
     last_sale_price_delta: Optional[Decimal] = None
     webhook: Optional[HttpUrl] = None
     featured_products: Optional[List[int]] = None
+    round_lock: Optional[int] = None
 
 
 # Properties to receive on product creation
