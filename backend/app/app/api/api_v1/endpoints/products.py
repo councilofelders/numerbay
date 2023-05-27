@@ -24,6 +24,7 @@ from app.api.dependencies.order_artifacts import (
     get_object_name,
 )
 from app.api.dependencies.products import (
+    lock_product_for_round,
     validate_buyer,
     validate_existing_product,
     validate_product_input,
@@ -691,3 +692,27 @@ def delete_product_artifact(
         except NotFound:
             pass
     return artifact
+
+
+@router.post("/{product_id}/lock")
+def lock_for_round(
+    *,
+    product_id: int,
+    round_number: int = Body(None, embed=True),
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Lock sales for a round"""
+    validate_product_owner(db, product_id=product_id, currend_user_id=current_user.id)
+
+    selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+    if round_number is None:
+        round_number = selling_round
+
+    if round_number < selling_round:
+        raise HTTPException(status_code=400, detail="Cannot lock for a past round")
+
+    product = lock_product_for_round(
+        db, product_id=product_id, round_number=round_number
+    )
+    return product

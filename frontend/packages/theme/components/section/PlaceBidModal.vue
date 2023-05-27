@@ -100,6 +100,18 @@
                 loss resulted from this transaction. </label>
             </div>
           </div>
+          <div v-if="!!product && product.round_lock === sellingRound"
+               class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-2">
+            <div class="alert alert-warning d-flex mb-2" role="alert">
+              <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
+                <path
+                  d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+              </svg>
+              <p class="fs-14">
+                Sale for round {{ product.round_lock }} has ended for this product, you can pre-order for future rounds.
+              </p>
+            </div><!-- end alert -->
+          </div>
           <div v-if="!!product && product.use_encryption"
                class="d-flex flex-wrap align-items-center justify-content-between mt-2 mb-4">
             <div class="alert alert-info d-flex mb-4" role="alert">
@@ -108,7 +120,7 @@
                   d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
               </svg>
               <p class="fs-14">
-                Upload is per-order for this product. You need to wait for upload even if a ready badge is shown.
+                Upload is per-order for this product. Please wait for the seller to upload after buying.
               </p>
             </div><!-- end alert -->
           </div>
@@ -342,7 +354,8 @@ export default {
     },
 
     async onQuantityChange() {
-      this.selectedRounds = Array.from({length: this.quantity}, (x, i) => ({"roundNumber": parseInt(this.sellingRound) + i}));
+      const offset = this.product.round_lock >= this.sellingRound ? (this.product.round_lock-this.sellingRound+1) : 0;
+      this.selectedRounds = Array.from({length: this.quantity}, (x, i) => ({"roundNumber": parseInt(this.sellingRound) + offset + i}));
       this.$emit('onQuantityChange', {selectedRounds: this.selectedRounds, coupon: this.coupon})
     },
 
