@@ -210,6 +210,7 @@ export interface ProductGetters<PRODUCT, PRODUCT_FILTER> {
     getLastPrice: (product: PRODUCT) => number;
     getLastPriceDelta: (product: PRODUCT) => number;
     getOnTimeRating: (product: PRODUCT) => string;
+    getRoundLock: (product: PRODUCT) => number;
     [getterName: string]: any;
 }
 

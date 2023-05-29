@@ -266,6 +266,8 @@ export const getProductOnTimeRating = (product: ProductVariant): string => {
   return null;
 };
 
+export const getProductRoundLock = (product: ProductVariant): number => (product as any)?.round_lock;
+
 const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getName: getProductName,
   getSlug: getProductSlug,
@@ -316,7 +318,8 @@ const productGetters: ProductGetters<ProductVariant, ProductVariantFilters> = {
   getQtyDelivered: getProductQtyDelivered,
   getLastPrice: getProductLastPrice,
   getLastPriceDelta: getProductLastPriceDelta,
-  getOnTimeRating: getProductOnTimeRating
+  getOnTimeRating: getProductOnTimeRating,
+  getRoundLock: getProductRoundLock
 };
 
 export default productGetters;

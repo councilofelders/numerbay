@@ -22,7 +22,8 @@ export default async function updateProduct(context, params, customQuery?: Custo
     description: params.description,
     options: params.options,
     // eslint-disable-next-line camelcase
-    featured_products: params.featuredProducts ? params.featuredProducts.map(p => p.id) : null
+    featured_products: params.featuredProducts ? params.featuredProducts.map(p => p.id) : null,
+    round_lock: params.roundLock,
   };
 
   // Use axios to send a PUT request
