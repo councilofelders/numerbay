@@ -445,3 +445,26 @@ Download artifact file.
   api.download_artifact("predictions.csv", product_id=2, artifact_id=744)
   ```
 
+### lock\_product
+
+```python
+def lock_product(self, product_id: int = None, product_full_name: str = None, round_number: int = None) -> Dict
+```
+
+Lock product.
+
+**Arguments**:
+
+- `product_id` _int, optional_ - NumerBay product ID
+- `product_full_name` _str, optional_ - NumerBay product full name
+  (e.g. numerai-predictions-numerbay),
+  used for resolving product_id if product_id is not provided
+- `round_number` _int, optional_ - round number to lock, defaults to current selling round
+
+**Example**:
+
+  ```python
+  api = NumerBay(username="..", password="..")
+  api.lock_product(product_id=2)
+  ```
+
