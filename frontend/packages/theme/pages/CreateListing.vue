@@ -214,6 +214,28 @@
                       </multiselect>
                     </client-only>
                   </div><!-- end form-item -->
+                  <ValidationProvider v-slot="{ errors }" rules="integer|min_value:1" slim>
+                    <div class="form-item mb-4">
+                      <div class="mb-4">
+                        <h5 :class="{ 'text-danger': Boolean(errors[0]) }" class="mb-1">Locked up to round</h5>
+                        <p :class="{ 'text-danger': Boolean(errors[0]) }" class="form-text">Round until which there will be no new sales</p>
+                        <div class="row g-4">
+                          <div class="col-lg-10 col-sm-8">
+                            <input v-model="form.roundLock" :class="!errors[0] ? '' : 'is-invalid'"
+                                   class="form-control form-control-s1"
+                                   placeholder="Lock till round" min="1" step="1" type="number">
+                          </div>
+                          <div class="col-lg-2 col-sm-4">
+                            <button class="btn btn-outline-dark" type="button"
+                                    @click="handleClearLockRound()">
+                              <span>Clear</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+                      </div>
+                    </div><!-- end form-item -->
+                  </ValidationProvider>
                 </div>
                 <div class="form-item mb-4">
                   <h5 class="mb-3">Pricing options</h5>
@@ -508,7 +530,7 @@ export default {
     onProductsLoaded(products) {
       this.currentListing = products?.data?.find((p) => p.id === parseInt(this.id));
       this.form = this.resetForm(this.currentListing);
-      this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts) && this.form.featuredProducts.length > 0) || (this.form.webhook);
+      this.showAdvanced = (!this.form.isActive) || (this.form.autoExpiration) || (!this.form.useEncryption) || (Boolean(this.form.featuredProducts) && this.form.featuredProducts.length > 0) || (this.form.webhook) || Boolean(this.form.roundLock);
     },
     async handleTestProductWebhook(url) {
       await this.testProductWebhook({url})
@@ -523,6 +545,9 @@ export default {
         return;
       }
       this.webhookResponseCode = 200;
+    },
+    async handleClearLockRound() {
+      this.form.roundLock = null;
     }
   },
   watch: {
@@ -615,7 +640,8 @@ export default {
       autoExpiration: productGetters.getExpirationRound(product) !== null,
       expirationRound: productGetters.getExpirationRound(product),
       options: product ? product.options : [],
-      featuredProducts: product?.featured_products ? product?.featured_products.map(id => groupedProducts.value.map(gp => gp.products).flat().find((p) => parseInt(p.id) === parseInt(String(id)))) : []
+      featuredProducts: product?.featured_products ? product?.featured_products.map(id => groupedProducts.value.map(gp => gp.products).flat().find((p) => parseInt(p.id) === parseInt(String(id)))) : [],
+      roundLock: product ? productGetters.getRoundLock(product) : null
     });
 
     const form = ref(resetForm(currentListing.value));
