@@ -166,9 +166,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 secret_key=user_json.get("numerai_api_key_secret"),  # type: ignore
             )  # type: ignore
         except ValueError as e:
-            if "invalid or has expired" in str(e):  # invalid API keys
-                self.delist_all(db, user_json["username"])
-                print(f"Delisted all products for user {user_json['username']}")
+            # if "invalid or has expired" in str(e):  # invalid API keys
+            #     self.delist_all(db, user_json["username"])
+            #     print(f"Delisted all products for user {user_json['username']}")
 
             print(
                 f"Numerai API Key update failed for {user_json['username']}: {str(e)}"
