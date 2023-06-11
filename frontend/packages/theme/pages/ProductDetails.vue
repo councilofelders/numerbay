@@ -140,10 +140,10 @@
                             <span> {{ roundPerformance.tcMultiplier }}xTC</span>
                           </td>
                           <td class="text-end"><span class="tooltip-s1">{{
-                              formatDecimal(getRoundScore(roundPerformance, 'v2_corr20', false), 4)
+                              formatDecimal(getRoundScore(roundPerformance, 'fnc_v4', false), 4)
                             }}<span
                               class="tooltip-s1-text tooltip-text">Percentile: {{
-                                formatDecimal(getRoundScore(roundPerformance, 'v2_corr20', true) * 100, 1)
+                                formatDecimal(getRoundScore(roundPerformance, 'fnc_v4', true) * 100, 1)
                               }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
                               formatDecimal(getRoundScore(roundPerformance, 'corr', false), 4)
@@ -321,7 +321,7 @@ export default {
         {name: 'Round', description: null},
         {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
         {name: 'Stake Type', description: null},
-        {name: 'CORR20V2', description: 'Numerai correlation of submission with the 20-day signals target'},
+        {name: 'FNCV4', description: 'Correlation of users neutralized submissions with target_20d_factor_feat_neutral'},
         {name: 'CORR20', description: 'Correlation of submission with the 20-day signals target'},
         // {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
         {name: 'ICV2', description: 'Correlation of users unneutralized submissions with binned raw returns (target_20d_raw_return)'},
