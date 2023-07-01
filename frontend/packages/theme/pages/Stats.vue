@@ -1,25 +1,25 @@
 <template>
   <div class="page-wrap" v-if="!statsLoading && !!stats">
-    <!-- Total Estimated Stake Chart -->
+<!--    &lt;!&ndash; Total Estimated Stake Chart &ndash;&gt;
     <section class="section-space">
       <div class="container">
-        <!-- section heading -->
+        &lt;!&ndash; section heading &ndash;&gt;
         <SectionHeading :content="`By tournament round`" :text="`Estimated Stake using NumerBay`"
                         classname="text-center" isMargin="mb-3"></SectionHeading>
         <StatsChart :chartdata="getStatsChartData(stats, 'estimated_stake', 'Estimated Stake (NMR)', false)"
                     class="numerai-chart"></StatsChart>
-      </div><!-- end container -->
+      </div>&lt;!&ndash; end container &ndash;&gt;
     </section>
-    <!-- Estimated Stake by Tournament Chart -->
+    &lt;!&ndash; Estimated Stake by Tournament Chart &ndash;&gt;
     <section class="section-space">
       <div class="container">
-        <!-- section heading -->
+        &lt;!&ndash; section heading &ndash;&gt;
         <SectionHeading :content="`By tournament round`" :text="`Estimated Stake by Tournament`"
                         classname="text-center" isMargin="mb-3"></SectionHeading>
         <StatsStackedChart :chartdata="getStatsStackedChartData(stats, ['estimated_stake_numerai', 'estimated_stake_signals'], ['Numerai (NMR)', 'Signals (NMR)'], false)"
                     class="numerai-chart"></StatsStackedChart>
-      </div><!-- end container -->
-    </section>
+      </div>&lt;!&ndash; end container &ndash;&gt;
+    </section>-->
 
     <!-- Total Sales Value Chart -->
     <section class="section-space">
@@ -102,35 +102,35 @@
       </div><!-- end container -->
     </section>
     <!-- Total Unique Models Sold Chart -->
-    <section class="section-space">
+<!--    <section class="section-space">
       <div class="container">
-        <!-- section heading -->
+        &lt;!&ndash; section heading &ndash;&gt;
         <SectionHeading :content="`By tournament round`" :text="`Total Unique Models Sold`"
                         classname="text-center" isMargin="mb-3"></SectionHeading>
         <StatsChart :chartdata="getStatsChartData(stats, 'unique_models_sold', 'Unique Models', false)"
                     class="numerai-chart"></StatsChart>
-      </div><!-- end container -->
-    </section>
+      </div>&lt;!&ndash; end container &ndash;&gt;
+    </section>-->
     <!-- Unique Models Sold by Tournament Chart -->
-    <section class="section-space">
+<!--    <section class="section-space">
       <div class="container">
-        <!-- section heading -->
+        &lt;!&ndash; section heading &ndash;&gt;
         <SectionHeading :content="`By tournament round`" :text="`Unique Models Sold by Tournament`"
                         classname="text-center" isMargin="mb-3"></SectionHeading>
         <StatsStackedChart :chartdata="getStatsStackedChartData(stats, ['unique_models_sold_numerai', 'unique_models_sold_signals'], ['Numerai', 'Signals'], false)"
                     class="numerai-chart"></StatsStackedChart>
-      </div><!-- end container -->
-    </section>
+      </div>&lt;!&ndash; end container &ndash;&gt;
+    </section>-->
     <!-- Unique Buyers Chart -->
-    <section class="section-space">
+<!--    <section class="section-space">
       <div class="container">
-        <!-- section heading -->
+        &lt;!&ndash; section heading &ndash;&gt;
         <SectionHeading :content="`By tournament round`" :text="`Unique Buyers`"
                         classname="text-center" isMargin="mb-3"></SectionHeading>
         <StatsChart :chartdata="getStatsChartData(stats, 'unique_buyers', 'Unique Buyers', false)"
                     class="numerai-chart"></StatsChart>
-      </div><!-- end container -->
-    </section>
+      </div>&lt;!&ndash; end container &ndash;&gt;
+    </section>-->
   </div><!-- end page-wrap -->
 </template>
 

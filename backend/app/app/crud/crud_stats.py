@@ -261,6 +261,63 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
         instance = self.get_singleton(db)
         stats = {}
 
+        # sales value
+        quantity_results = {}
+        quantity_results_numerai = {}
+        quantity_results_signals = {}
+        value_results = {}
+        value_results_numerai = {}
+        value_results_signals = {}
+        orders = db.query(Order).filter(Order.state == "confirmed").all()
+        # Calculate the sum of price distributed over the rounds
+        for order in orders:
+            rounds = order.rounds
+            price = order.price
+            distributed_price = price / len(rounds)  # This is assuming equal distribution over all rounds
+            for round in rounds:
+                if round not in value_results:
+                    quantity_results[round] = 0
+                    quantity_results_numerai[round] = 0
+                    quantity_results_signals[round] = 0
+                    value_results[round] = 0
+                    value_results_numerai[round] = 0
+                    value_results_signals[round] = 0
+                quantity_results[round] += 1
+                value_results[round] += distributed_price
+                if order.product.category.tournament == 8:
+                    quantity_results_numerai[round] += 1
+                    value_results_numerai[round] += distributed_price
+                else:
+                    quantity_results_signals[round] += 1
+                    value_results_signals[round] += distributed_price
+
+        quantity_results = sorted([(k, v) for k, v in quantity_results.items()])
+        quantity_results_numerai = sorted([(k, v) for k, v in quantity_results_numerai.items()])
+        quantity_results_signals = sorted([(k, v) for k, v in quantity_results_signals.items()])
+        value_results = sorted([(k, v) for k, v in value_results.items()])
+        value_results_numerai = sorted([(k, v) for k, v in value_results_numerai.items()])
+        value_results_signals = sorted([(k, v) for k, v in value_results_signals.items()])
+
+        stats["sales_quantity"] = [{"round_tournament": k, "value": float(v)} for k, v in quantity_results]
+        stats["sales_quantity_numerai"] = [{"round_tournament": k, "value": float(v)} for k, v in quantity_results_numerai]
+        stats["sales_quantity_signals"] = [{"round_tournament": k, "value": float(v)} for k, v in quantity_results_signals]
+        stats["sales_value"] = [{"round_tournament": k, "value": float(v)} for k, v in value_results]
+        stats["sales_value_numerai"] = [{"round_tournament": k, "value": float(v)} for k, v in value_results_numerai]
+        stats["sales_value_signals"] = [{"round_tournament": k, "value": float(v)} for k, v in value_results_signals]
+
+        return super().update(
+            db,
+            db_obj=instance,  # type: ignore
+            obj_in={
+                "stats": stats,
+            },
+        )
+
+    def update_stats_legacy(self, db: Session) -> Stats:
+        """Update stats stats"""
+        instance = self.get_singleton(db)
+        stats = {}
+
         # Sales value
         sales_value_base_query = db.query(
             Order.round_order.label("round_tournament"),
