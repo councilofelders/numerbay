@@ -273,7 +273,9 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
         for order in orders:
             rounds = order.rounds
             price = order.price
-            distributed_price = price / len(rounds)  # This is assuming equal distribution over all rounds
+            distributed_price = price / len(
+                rounds
+            )  # This is assuming equal distribution over all rounds
             for round in rounds:
                 if round not in value_results:
                     quantity_results[round] = 0
@@ -291,19 +293,41 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
                     quantity_results_signals[round] += 1
                     value_results_signals[round] += distributed_price
 
-        quantity_results = sorted([(k, v) for k, v in quantity_results.items()])
-        quantity_results_numerai = sorted([(k, v) for k, v in quantity_results_numerai.items()])
-        quantity_results_signals = sorted([(k, v) for k, v in quantity_results_signals.items()])
-        value_results = sorted([(k, v) for k, v in value_results.items()])
-        value_results_numerai = sorted([(k, v) for k, v in value_results_numerai.items()])
-        value_results_signals = sorted([(k, v) for k, v in value_results_signals.items()])
+        quantity_results = sorted([(k, v) for k, v in quantity_results.items()])  # type: ignore
+        quantity_results_numerai = sorted(  # type: ignore
+            [(k, v) for k, v in quantity_results_numerai.items()]
+        )
+        quantity_results_signals = sorted(  # type: ignore
+            [(k, v) for k, v in quantity_results_signals.items()]
+        )
+        value_results = sorted([(k, v) for k, v in value_results.items()])  # type: ignore
+        value_results_numerai = sorted(  # type: ignore
+            [(k, v) for k, v in value_results_numerai.items()]
+        )
+        value_results_signals = sorted(  # type: ignore
+            [(k, v) for k, v in value_results_signals.items()]
+        )
 
-        stats["sales_quantity"] = [{"round_tournament": k, "value": float(v)} for k, v in quantity_results]
-        stats["sales_quantity_numerai"] = [{"round_tournament": k, "value": float(v)} for k, v in quantity_results_numerai]
-        stats["sales_quantity_signals"] = [{"round_tournament": k, "value": float(v)} for k, v in quantity_results_signals]
-        stats["sales_value"] = [{"round_tournament": k, "value": float(v)} for k, v in value_results]
-        stats["sales_value_numerai"] = [{"round_tournament": k, "value": float(v)} for k, v in value_results_numerai]
-        stats["sales_value_signals"] = [{"round_tournament": k, "value": float(v)} for k, v in value_results_signals]
+        stats["sales_quantity"] = [
+            {"round_tournament": k, "value": float(v)} for k, v in quantity_results
+        ]
+        stats["sales_quantity_numerai"] = [
+            {"round_tournament": k, "value": float(v)}
+            for k, v in quantity_results_numerai
+        ]
+        stats["sales_quantity_signals"] = [
+            {"round_tournament": k, "value": float(v)}
+            for k, v in quantity_results_signals
+        ]
+        stats["sales_value"] = [
+            {"round_tournament": k, "value": float(v)} for k, v in value_results
+        ]
+        stats["sales_value_numerai"] = [
+            {"round_tournament": k, "value": float(v)} for k, v in value_results_numerai
+        ]
+        stats["sales_value_signals"] = [
+            {"round_tournament": k, "value": float(v)} for k, v in value_results_signals
+        ]
 
         return super().update(
             db,
