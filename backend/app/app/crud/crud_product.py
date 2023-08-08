@@ -245,6 +245,23 @@ def parse_return3m_filter(
     return None
 
 
+def parse_num_sales_filter(filter_item: Dict) -> Optional[Any]:
+    """Parse num sales filter"""
+    try:
+        if len(filter_item["in"]) > 0:
+            rank_range = filter_item["in"][0]
+            if isinstance(rank_range, str):
+                rank_range = rank_range.split(",")
+            rank_from, rank_to = int(rank_range[0]), int(rank_range[1])
+            return and_(
+                Product.total_qty_sales >= rank_from,
+                Product.total_qty_sales <= rank_to,
+            )
+    except Exception as e:  # pylint: disable=broad-except
+        print(e)
+    return None
+
+
 def parse_filters(
     filters: Optional[Dict] = None,
     query_filters: Optional[List] = None,
@@ -287,6 +304,8 @@ def parse_filters(
             query_filters.append(parse_stake_filter(filter_item, stake_step))
         if filter_key == "return3m":
             query_filters.append(parse_return3m_filter(filter_item, return3m_step))
+        if filter_key == "num_sales":
+            query_filters.append(parse_num_sales_filter(filter_item))
 
     return query_filters
 
@@ -395,6 +414,17 @@ def generate_aggregations(
                 {"label": "to", "value": agg_stats.max_return3m},
                 {"label": "step", "value": return3m_step},
                 {"label": "decimals", "value": 2},
+            ],
+        },
+        {
+            "attribute_code": "num_sales",
+            "count": None,
+            "label": "# Sales",
+            "options": [
+                {"label": "from", "value": agg_stats.min_num_sales},
+                {"label": "to", "value": agg_stats.max_num_sales},
+                {"label": "step", "value": 1},
+                {"label": "decimals", "value": 0},
             ],
         },
     ]
@@ -586,6 +616,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
                     .as_string()
                     .cast(Float)
                 ).label("max_return3m"),
+                func.min(Product.total_qty_sales).label("min_num_sales"),
+                func.max(Product.total_qty_sales).label("max_num_sales"),
             )
             .select_from(self.model)
             .join(self.model.model, isouter=True)
