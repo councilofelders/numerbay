@@ -70,7 +70,7 @@
                     }'
                         :disabled="false"
                         :value="getSelectedRangeFilterValue(facet)"
-                        class="form-range"
+                        class="form-range mb-5"
                         @change="(values) => updateRangeFilter(facet, values)"
                       />
                     </div>
