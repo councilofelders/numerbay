@@ -3,11 +3,8 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 WORKDIR /app/
 
 # Install Poetry
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false && \
-    poetry config installer.parallel false
+RUN pip install poetry && \
+poetry config virtualenvs.create false
 
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./app/pyproject.toml ./app/poetry.lock* /app/
