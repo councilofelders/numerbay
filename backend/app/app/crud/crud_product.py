@@ -37,43 +37,11 @@ _SORT_OPTION_LOOKUP = {
     "corr20v2-down": desc(
         Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
     ),
-    "corr20v2tc-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    "2corr20v2tc-up": 2.0 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
     + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr20v2tc-down": desc(
-        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    "2corr20v2tc-down": desc(
+        2.0 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
         + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
-    "corr20v22tc-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
-    + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr20v22tc-down": desc(
-        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
-        + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
-    "corr20v23tc-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
-    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr20v23tc-down": desc(
-        Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
-        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
-    "corr20-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float),
-    "corr20-down": desc(Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)),
-    "corr20tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
-    + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr20tc-down": desc(
-        Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
-        + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
-    "corr202tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
-    + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr202tc-down": desc(
-        Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
-        + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
-    "corr203tc-up": Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
-    + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr203tc-down": desc(
-        Model.latest_reps.cast(JSON)["corr20"].as_string().cast(Float)
-        + 3.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
     ),
     "corj60-up": Model.latest_reps.cast(JSON)["corj60"].as_string().cast(Float),
     "corj60-down": desc(Model.latest_reps.cast(JSON)["corj60"].as_string().cast(Float)),
@@ -81,18 +49,6 @@ _SORT_OPTION_LOOKUP = {
     "fncV3-down": desc(Model.latest_reps.cast(JSON)["fnc_v3"].as_string().cast(Float)),
     "corr-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float),
     "corr-down": desc(Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)),
-    "corrtc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corrtc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
-    "corr2tc-up": Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-    + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
-    "corr2tc-down": desc(
-        Model.latest_reps.cast(JSON)["corr"].as_string().cast(Float)
-        + 2.0 * Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
-    ),
     "corr60-up": Model.latest_reps.cast(JSON)["corr60"].as_string().cast(Float),
     "corr60-down": desc(Model.latest_reps.cast(JSON)["corr60"].as_string().cast(Float)),
     "corrv4-up": Model.latest_reps.cast(JSON)["corr_v4"].as_string().cast(Float),
@@ -103,6 +59,12 @@ _SORT_OPTION_LOOKUP = {
     "icv2-down": desc(Model.latest_reps.cast(JSON)["ic_v2"].as_string().cast(Float)),
     "fncv4-up": Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float),
     "fncv4-down": desc(Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float)),
+    "2fncv4tc-up": 2.0 * Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float)
+    + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
+    "2fncv4tc-down": desc(
+        2.0 * Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float)
+        + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float)
+    ),
     "ric-up": Model.latest_reps.cast(JSON)["ric"].as_string().cast(Float),
     "ric-down": desc(Model.latest_reps.cast(JSON)["ric"].as_string().cast(Float)),
     "tc-up": Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
