@@ -78,17 +78,17 @@ export const extractNumeraiV2Scores = (numerai: any, scoreName: string, isPercen
 export const getNumeraiCorrCorr60TcChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
     datasets: [
       {
-        label: 'CORR',
+        label: 'CORR20V2',
         borderColor: '#666666',
         fill: false,
         lineTension: 0,
         borderWidth: 2,
         pointRadius: 0,
-        data: extractNumeraiV2Scores(numerai, 'corr20', false),
-        data1: extractNumeraiV2Scores(numerai, 'corr20', true).map(o=>o?.y),
+        data: extractNumeraiV2Scores(numerai, 'v2_corr20', false),
+        data1: extractNumeraiV2Scores(numerai, 'v2_corr20', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
       {
@@ -108,19 +108,20 @@ export const getNumeraiCorrCorr60TcChartData = (numerai_raw: any) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getSignalsCorrChartData = (numerai_raw: any) => {
+  console.log(numerai_raw)
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
     datasets: [
       {
-        label: 'CORR',
+        label: 'FNCV4',
         borderColor: '#666666',
         fill: false,
         lineTension: 0,
         borderWidth: 2,
         pointRadius: 0,
-        data: extractNumeraiV2Scores(numerai, 'corr', false),
-        data1: extractNumeraiV2Scores(numerai, 'corr', true).map(o=>o?.y),
+        data: extractNumeraiV2Scores(numerai, 'fnc_v4', false),
+        data1: extractNumeraiV2Scores(numerai, 'fnc_v4', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
     ]
@@ -131,7 +132,7 @@ export const getSignalsCorrChartData = (numerai_raw: any) => {
 export const getSignalsTcIcChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
     datasets: [
       {
         label: 'TC',
@@ -145,14 +146,14 @@ export const getSignalsTcIcChartData = (numerai_raw: any) => {
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
       {
-        label: 'IC',
+        label: 'ICV2',
         borderColor: '#acacac',
         fill: false,
         lineTension: 0,
         borderWidth: 2,
         pointRadius: 0,
-        data: extractNumeraiV2Scores(numerai, 'ic', false),
-        data1: extractNumeraiV2Scores(numerai, 'ic', true).map(o=>o?.y),
+        data: extractNumeraiV2Scores(numerai, 'ic_v2', false),
+        data1: extractNumeraiV2Scores(numerai, 'ic_v2', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
     ]
