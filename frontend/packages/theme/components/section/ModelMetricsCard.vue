@@ -54,12 +54,6 @@
             </tr>
             <tr>
               <td>
-                CORR20 Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'corr20')  }}</td>
-            </tr>
-            <tr>
-              <td>
                 CORJ60 Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'corj60') }}</td>
@@ -86,21 +80,9 @@
             <tbody>
             <tr>
               <td>
-                CORR20V2 Reputation
+                FNCV4 Reputation
               </td>
-              <td class="stats">{{ formatReputation(latestReps, 'v2_corr20')  }}</td>
-            </tr>
-            <tr>
-              <td>
-                CORR20 Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'corr')  }}</td>
-            </tr>
-            <tr>
-              <td>
-                CORR60 Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'corr60') }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'fnc_v4') }}</td>
             </tr>
             <tr>
               <td>
@@ -113,12 +95,6 @@
                 ICV2 Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'ic_v2') }}</td>
-            </tr>
-            <tr>
-              <td>
-                FNCV4 Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'fnc_v4') }}</td>
             </tr>
             <tr>
               <td>
@@ -180,21 +156,9 @@
             <tbody>
             <tr>
               <td>
-                CORR20V2 Rank
+                FNCV4 Rank
               </td>
-              <td class="stats">{{ formatRank(latestRanks, 'v2_corr20') }}</td>
-            </tr>
-            <tr>
-              <td>
-                CORR20 Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'corr') }}</td>
-            </tr>
-            <tr>
-              <td>
-                CORR60 Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'corr60') }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'fnc_v4') }}</td>
             </tr>
             <tr>
               <td>
@@ -207,12 +171,6 @@
                 ICV2 Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'ic_v2') }}</td>
-            </tr>
-            <tr>
-              <td>
-                FNCV4 Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'fnc_v4') }}</td>
             </tr>
             <tr>
               <td>
