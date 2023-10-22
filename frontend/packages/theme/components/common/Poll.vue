@@ -12,6 +12,7 @@
       <span class="dot-separeted"></span>
       <span class="item-detail-text-meta">Weight <span class="text-primary fw-semibold">{{ weightMode }}</span></span>
       <div v-if="!canShowResults">
+        <span class="dot-separeted"></span>
         <span class="item-detail-text-meta">Results to be shown after poll ends</span>
       </div>
     </div>

@@ -52,6 +52,12 @@ export default {
             type: 'bg-danger',
             icon: 'ni-alert-circle'
           });
+        } else {
+          await this.send({
+            message: 'Thanks for your vote',
+            type: 'bg-success',
+            icon: 'ni-check'
+          });
         }
       } else {
         await this.vote({id: this.poll.id, options: [obj]});
@@ -60,6 +66,12 @@ export default {
             message: this.pollError.voting.message,
             type: 'bg-danger',
             icon: 'ni-alert-circle'
+          });
+        } else {
+          await this.send({
+            message: 'Thanks for your vote',
+            type: 'bg-success',
+            icon: 'ni-check'
           });
         }
       }
