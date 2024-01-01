@@ -89,7 +89,8 @@ def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) 
         default_option = desc(
             0.5 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
             + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
-        ) if category.tournament == 8 else Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer)
+        ) if category.tournament == 8 else (
+            Model.latest_ranks.cast(JSON)["tc"].as_string().cast(Integer))
     else:
         default_option = desc(Product.id)
 
