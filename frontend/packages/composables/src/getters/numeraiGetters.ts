@@ -101,6 +101,17 @@ export const getNumeraiCorrCorr60TcChartData = (numerai_raw: any) => {
         data: extractNumeraiV2Scores(numerai, 'tc', false),
         data1: extractNumeraiV2Scores(numerai, 'tc', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
+      },
+      {
+        label: 'MMC',
+        borderColor: '#ff6e40',
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'mmc', false),
+        data1: extractNumeraiV2Scores(numerai, 'mmc', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       }
     ]
   };

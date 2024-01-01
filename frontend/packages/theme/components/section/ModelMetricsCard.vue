@@ -66,6 +66,12 @@
             </tr>
             <tr>
               <td>
+                MMC Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
+            </tr>
+            <tr>
+              <td>
                 TC Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
@@ -139,6 +145,12 @@
                 FNCV3 Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'fnc_v3') }}</td>
+            </tr>
+            <tr>
+              <td>
+                MMC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
             </tr>
             <tr>
               <td>
