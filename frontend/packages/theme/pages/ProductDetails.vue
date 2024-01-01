@@ -184,6 +184,11 @@
                             class="tooltip-s1-text tooltip-text">Percentile: {{
                               formatDecimal(getRoundScore(roundPerformance, 'tc', true) * 100, 1)
                             }}</span></span></td>
+                          <td class="text-end"><span
+                            class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'mmc', false), 4) }}<span
+                            class="tooltip-s1-text tooltip-text">Percentile: {{
+                              formatDecimal(getRoundScore(roundPerformance, 'mmc', true) * 100, 1)
+                            }}</span></span></td>
                           <td class="text-end"><span class="tooltip-s1 text-primary"><span
                             :class="`text-${getMetricColor(Number(getRoundScore(roundPerformance, 'payout')) || 0)}`">{{
                               formatPayout(getRoundScore(roundPerformance, 'payout'))
@@ -335,6 +340,7 @@ export default {
         // {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
         {name: 'FNCV3', description: 'The mean correlation of this submission after it have been neutralized to the 420 features in the medium subset of the V3 dataset'},
         {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+        {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
         {name: 'Payout', description: 'Latest projected payout'},
       ]
     },
