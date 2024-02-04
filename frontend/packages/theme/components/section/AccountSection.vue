@@ -38,6 +38,26 @@
                 </ValidationProvider>
               </div><!-- end row -->
               <div class="row">
+                <ValidationProvider v-slot="{ errors }" rules="min:2" slim>
+                  <div class="col-lg-12 mb-3">
+                    <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label"
+                           for="defaultReceivingWalletAddress">Default non-Numerai wallet for receiving payments (seller)</label>
+                    <input id="defaultReceivingWalletAddress" v-model="form.defaultReceivingWalletAddress" :class="!errors[0] ? '' : 'is-invalid'"
+                           class="form-control form-control-s1" placeholder="MUST NOT BE NUMERAI WALLET"  type="text">
+                    <div :class="{ 'show': Boolean(errors[0]) }" class="text-danger fade">{{ errors[0] }}</div>
+                  </div><!-- end col -->
+                </ValidationProvider>
+                <div v-if="!Boolean(userGetters.getDefaultReceivingWalletAddress(user))" class="alert alert-warning d-flex mb-4" role="alert">
+                  <svg class="flex-shrink-0 me-3" fill="currentColor" height="30" viewBox="0 0 24 24" width="30">
+                    <path
+                      d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"></path>
+                  </svg>
+                  <p class="fs-14">
+                    For sellers: Numerai no longer allows internal transfers, if you plan to receive payments from Numerai wallets, set an external wallet for receiving payments here or in listing settings.
+                  </p>
+                </div><!-- end alert -->
+              </div><!-- end row -->
+              <div class="row">
                 <ValidationProvider v-slot="{ errors }" rules="url" slim>
                   <div class="col-lg-6 mb-3">
                     <label :class="{ 'text-danger': Boolean(errors[0]) }" class="form-label" for="discordLink">Discord
@@ -231,6 +251,7 @@ import {useUser, userGetters} from '@vue-storefront/numerbay';
 import {useUiNotification} from '~/composables';
 import {extend} from 'vee-validate';
 import {confirmed} from 'vee-validate/dist/rules';
+import {getDefaultReceivingWalletAddress} from "@vue-storefront/numerbay/src/getters/userGetters";
 
 extend('confirmed', {
   ...confirmed,
@@ -315,11 +336,13 @@ export default {
 
   },
   methods: {
+    getDefaultReceivingWalletAddress,
     async onUpdateProfile() {
       await this.updateUser({
         user: {
           username: this.form.username,
           email: this.form.email,
+          defaultReceivingWalletAddress: this.form.defaultReceivingWalletAddress,
           socialDiscord: this.form.socialDiscord,
           socialLinkedIn: this.form.socialLinkedIn,
           socialTwitter: this.form.socialTwitter,
@@ -507,6 +530,7 @@ export default {
     const resetForm = () => ({
       username: userGetters.getUsername(user.value),
       email: userGetters.getEmailAddress(user.value),
+      defaultReceivingWalletAddress: userGetters.getDefaultReceivingWalletAddress(user.value),
       socialDiscord: userGetters.getSocialDiscord(user.value),
       socialLinkedIn: userGetters.getSocialLinkedIn(user.value),
       socialTwitter: userGetters.getSocialTwitter(user.value),

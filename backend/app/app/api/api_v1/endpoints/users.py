@@ -77,6 +77,7 @@ def update_user_me(  # pylint: disable=too-many-locals
     username: str = Body(None),
     password: str = Body(None),
     email: EmailStr = Body(None),
+    default_receiving_wallet_address: str = Body(None),
     social_discord: str = Body(None),
     social_linkedin: str = Body(None),
     social_twitter: str = Body(None),
@@ -105,6 +106,10 @@ def update_user_me(  # pylint: disable=too-many-locals
         user_in.username = username
     if email is not None:
         user_in.email = email
+
+    # Update default receiving wallet
+    if default_receiving_wallet_address is not None:
+        user_in.default_receiving_wallet_address = default_receiving_wallet_address
 
     # Update socials
     user_in.social_discord = social_discord

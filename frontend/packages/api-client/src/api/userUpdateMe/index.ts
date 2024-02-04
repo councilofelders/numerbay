@@ -12,6 +12,8 @@ export default async function userUpdateMe(context, params, customQuery?: Custom
     password: params.password,
     email: params.email ? params.email : null,
     // eslint-disable-next-line camelcase
+    default_receiving_wallet_address: params.defaultReceivingWalletAddress ? params.defaultReceivingWalletAddress : null,
+    // eslint-disable-next-line camelcase
     social_discord: params.socialDiscord,
     // eslint-disable-next-line camelcase
     social_linkedin: params.socialLinkedIn,
