@@ -168,9 +168,9 @@
         <a class="btn btn-dark d-block" href="https://numer.ai/wallet" target="_blank">Open Numerai Wallet
           (Gas-free)</a>
       </div>
-      <div class="mb-2">
+<!--      <div class="mb-2">
         <a class="btn btn-light d-block" href="javascript:void(0);" @click="onMetaMaskPayBtn">Pay with MetaMask</a>
-      </div>
+      </div>-->
       <div v-if="metaMaskPayMsg" class="mb-2">
         <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
         <span class="text-primary">{{ metaMaskPayMsg }}</span>

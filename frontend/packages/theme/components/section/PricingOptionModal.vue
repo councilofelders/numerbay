@@ -84,21 +84,22 @@
           <div class="mb-4">
             <div class="d-flex align-items-center justify-content-between">
               <div class="me-2">
-                <h5 class="mb-1">Use Numerai wallet</h5>
-                <p class="form-text text-break">Receive payments with your Numerai wallet <a :href="`https://etherscan.io/address/${user.numerai_wallet_address}`"
+                <h5 class="mb-1">Override default external wallet</h5>
+<!--                <p class="form-text text-break">Receive payments with your Numerai wallet <a :href="`https://etherscan.io/address/${user.numerai_wallet_address}`"
                                                                                              class="link-secondary"
                                                                                              target="_blank">{{
                     user.numerai_wallet_address
                   }}</a>
-                </p>
+                </p>-->
               </div>
               <div class="form-check form-switch form-switch-s1">
-                <input v-model="useNumeraiWallet" class="form-check-input" type="checkbox">
+                <input v-model="overrideExternalWallet" class="form-check-input" type="checkbox">
               </div><!-- end form-check -->
             </div><!-- end d-flex -->
-            <div class="mt-4">
-              <input v-if="!useNumeraiWallet" v-model="wallet"
-                     class="form-control form-control-s1" placeholder="Alternative wallet for receiving payments" type="text">
+            <div v-if="overrideExternalWallet" class="mt-4">
+              <label class="mb-2 form-label">External wallet for receiving payments</label>
+              <input v-model="wallet"
+                     class="form-control form-control-s1" placeholder="External wallet for receiving payments" type="text">
             </div>
           </div>
         </div><!-- end form-item -->
@@ -323,7 +324,7 @@ export default {
       id: null,
       isOnPlatform: true,
       currency: 'NMR',
-      useNumeraiWallet: true,
+      overrideExternalWallet: false,
       mode: 'file',
       stakeLimit: null,
       quantity: 1,
@@ -349,7 +350,7 @@ export default {
         id: null,
         isOnPlatform: true,
         currency: 'NMR',
-        useNumeraiWallet: true,
+        overrideExternalWallet: false,
         mode: 'file',
         stakeLimit: null,
         quantity: 1,

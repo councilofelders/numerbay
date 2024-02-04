@@ -23,6 +23,8 @@ export type User = {
   username?: string;
   email?: string;
   // eslint-disable-next-line camelcase
+  default_receiving_wallet_address?: string;
+  // eslint-disable-next-line camelcase
   social_discord?: string;
   // eslint-disable-next-line camelcase
   social_linkedin?: string;
@@ -142,6 +144,7 @@ export interface UserGetters<USER> {
     getId: (customer: USER) => number;
     getUsername: (customer: USER) => string;
     getEmailAddress: (customer: USER) => string;
+    getDefaultReceivingWalletAddress: (customer: USER) => string;
     getSocialDiscord: (customer: USER) => string;
     getSocialLinkedIn: (customer: USER) => string;
     getSocialTwitter: (customer: USER) => string;

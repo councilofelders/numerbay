@@ -37,6 +37,7 @@ class User(Base):
     numerai_api_key_can_read_user_info = Column(Boolean, nullable=True)
     date_last_numerai_sync = Column(DateTime)
     numerai_wallet_address = Column(String, nullable=True, unique=True)
+    default_receiving_wallet_address = Column(String, nullable=True, unique=True)
     public_key = Column(String)
     encrypted_private_key = Column(String)
     public_key_v2 = Column(String)

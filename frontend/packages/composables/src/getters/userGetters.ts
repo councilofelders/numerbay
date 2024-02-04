@@ -8,6 +8,8 @@ export const getUsername = (user: User): string => user?.username || '';
 
 export const getUserEmailAddress = (user: User): string => user?.email || '';
 
+export const getDefaultReceivingWalletAddress = (user: User): string => user?.default_receiving_wallet_address || '';
+
 export const getUserSocialDiscord = (user: User): string => user?.social_discord || '';
 
 export const getUserSocialLinkedIn = (user: User): string => user?.social_linkedin || '';
@@ -43,6 +45,7 @@ const userGetters: UserGetters<User> = {
   getId: getId,
   getUsername: getUsername,
   getEmailAddress: getUserEmailAddress,
+  getDefaultReceivingWalletAddress: getDefaultReceivingWalletAddress,
   getSocialDiscord: getUserSocialDiscord,
   getSocialLinkedIn: getUserSocialLinkedIn,
   getSocialTwitter: getUserSocialTwitter,

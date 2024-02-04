@@ -157,7 +157,9 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     to_address = (
         product_option.wallet
         if product_option.wallet
-        else product.owner.numerai_wallet_address
+        else (product.owner.default_receiving_wallet_address
+              if product.owner.default_receiving_wallet_address
+              else product.owner.numerai_wallet_address)
     )
 
     if not to_address or not from_address:
