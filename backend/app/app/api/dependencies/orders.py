@@ -77,7 +77,7 @@ def match_transaction_for_order(db: Session, order_obj: models.Order) -> Optiona
             time = pd.to_datetime(transaction["time"]).tz_localize(None).to_pydatetime()
             if time < order_obj.date_order:
                 continue
-            if transaction["to"] == order_obj.to_address:
+            if transaction["to"].lower() == order_obj.to_address.lower():
                 print(
                     f"Transaction match for order {order_obj.id} "
                     f"[{order_obj.buyer.username}->{order_obj.product.name}], "
