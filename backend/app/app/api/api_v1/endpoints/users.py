@@ -109,7 +109,7 @@ def update_user_me(  # pylint: disable=too-many-locals
 
     # Update default receiving wallet
     if default_receiving_wallet_address is not None:
-        user_in.default_receiving_wallet_address = default_receiving_wallet_address
+        user_in.default_receiving_wallet_address = default_receiving_wallet_address.lower()
 
     # Update socials
     user_in.social_discord = social_discord
