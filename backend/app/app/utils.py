@@ -957,6 +957,36 @@ def send_failed_autosubmit_buyer_email(
     )
 
 
+def send_change_wallet_email(
+    email_to: str,
+    username: str
+) -> None:
+    """
+    Send change wallet email
+
+    Args:
+        email_to (str): recipient email
+        username (str): seller username
+    """
+    subject = f"{settings.PROJECT_NAME} Sellers - External Wallet for Payments [Action Needed]"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "change_wallet.html", encoding="utf8"
+    ) as f:
+        template_str = f.read()
+    celery_app.send_task(
+        "app.worker.send_email_task",
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": "NumerBay",
+                "username": username,
+            },
+        ),
+    )
+
+
 def generate_password_reset_token(email: str) -> str:
     """
     Generate password reset token (placeholder, not used)
