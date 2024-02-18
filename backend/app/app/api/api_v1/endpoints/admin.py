@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -11,8 +12,10 @@ from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import send_order_confirmation_emails
 from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
+from app.core.config import settings
 from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
 from app.models import Artifact
+from app.utils import send_change_wallet_email
 
 router = APIRouter()
 
@@ -122,6 +125,32 @@ def fill_coupon_creator(
                 coupon.creator_id = product.owner_id
     db.commit()
     return {"msg": "success!"}
+
+
+@router.post("/send-seller-wallet-emails")
+def send_seller_wallet_emails(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    users = db.query(models.User).join(
+        models.User.products
+    ).filter(
+        or_(
+            models.User.default_receiving_wallet_address == '',
+            models.User.default_receiving_wallet_address.is_(None)
+        )
+    ).group_by(
+        models.User.id
+    ).all()
+
+    for user_obj in users:
+        if settings.EMAILS_ENABLED:
+            send_change_wallet_email(
+                email_to=user_obj.email,
+                username=user_obj.username
+            )
+    return [u.username for u in users]
 
 
 # @router.post("/resend-seller-order-emails")

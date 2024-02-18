@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .link-nostyle { color: inherit; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555" font-family="helvetica">{{ project_name }} Sellers - External Wallet for Payments [Action Needed]</mj-text>
+        <mj-text font-size="16px" color="#555">Hi {{ username }}, if you wish to continue to sell on NumerBay, please designate a default external (non-Numerai) wallet to receive payments on your profile settings page. This is required due to Numerai no longer supporting transfers between Numerai wallets.</mj-text>
+        <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the #numerbay channel in <a href="https://discord.gg/numerai" class="link-nostyle" target="_blank">Numerai Discord Server</a>.</mj-text>
+        <mj-divider border-color="#555" border-width="2px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
