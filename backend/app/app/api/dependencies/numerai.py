@@ -453,8 +453,7 @@ def set_target_stake(  # pylint: disable=too-many-locals
     result_stake = api.stake_change(
         str(abs(net_delta_amount)),
         action="increase" if net_delta_amount > 0 else "decrease",
-        model_id=matched_model["id"],
-        tournament=tournament,
+        model_id=matched_model["id"]
     )
     return result_stake
 
