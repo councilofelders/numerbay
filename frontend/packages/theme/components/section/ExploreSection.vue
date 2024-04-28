@@ -225,7 +225,7 @@ export default {
       // this.getActiveClass(this.activeId = this.activeCategory);
     // },
     facets() {
-      this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || (this.result?.data?.categories[0].tournament ? (this.result?.data?.categories[0].tournament===8?'0.5corr20v22mmc-down':'rank-best') : 'latest')));
+      this.selectedSortBy = this.sortBy?.options?.find(o => o.id === (this.$route?.query?.sort || (this.result?.data?.categories[0].tournament ? (this.result?.data?.categories[0].tournament===8?'0.5corr20v22mmc-down':'fncv42mmc-down') : 'latest')));
     }
   },
   computed: {
