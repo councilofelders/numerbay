@@ -48,6 +48,8 @@ const getSortOptions = (searchData): AgnosticSort => {
             { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
             { type: 'sort', id: 'fncv4-down', value: 'FNCV4 from high to low', count: null },
             { type: 'sort', id: '2fncv4tc-down', value: '2xFNCV4+TC from high to low', count: null },
+            { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
+            { type: 'sort', id: 'fncv42mmc-down', value: '1xFNCV4+2xMMC from high to low', count: null },
             { type: 'sort', id: 'corrv4-down', value: 'CORRV4 from high to low', count: null },
             { type: 'sort', id: 'icv2-down', value: 'ICV2 from high to low', count: null },
             { type: 'sort', id: 'ric-down', value: 'RIC from high to low', count: null },

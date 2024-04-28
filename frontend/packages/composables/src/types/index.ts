@@ -8,11 +8,6 @@ import {
 import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
-import {
-    getRoundModelPerformancesTableData,
-    getSignalsCorrChartData,
-    getSignalsTcIcChartData
-} from "../getters/numeraiGetters";
 
 export type Address = Record<string, unknown>;
 
@@ -282,9 +277,8 @@ export interface NumeraiGetters<NUMERAI> {
     getWokeDateTime: (numerai: NUMERAI) => string,
     getWokeDate: (numerai: NUMERAI) => string,
     getFormatted: (value: number, decimals: number) => string,
-    getNumeraiCorrCorr60TcChartData: (numerai: NUMERAI) => any,
-    getSignalsCorrChartData: (numerai: NUMERAI) => any,
-    getSignalsTcIcChartData: (numerai: NUMERAI) => any,
+    getNumeraiChartData: (numerai: NUMERAI) => any,
+    getSignalsChartData: (numerai: NUMERAI) => any,
     getRoundModelPerformancesTableData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }
