@@ -75,7 +75,7 @@ export const extractNumeraiV2Scores = (numerai: any, scoreName: string, isPercen
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNumeraiCorrCorr60TcChartData = (numerai_raw: any) => {
+export const getNumeraiChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
     labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
@@ -117,14 +117,14 @@ export const getNumeraiCorrCorr60TcChartData = (numerai_raw: any) => {
   };
 };
 
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getSignalsCorrChartData = (numerai_raw: any) => {
-  console.log(numerai_raw)
+export const getSignalsChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
     labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
     datasets: [
-      {
+       {
         label: 'FNCV4',
         borderColor: '#666666',
         fill: false,
@@ -135,16 +135,6 @@ export const getSignalsCorrChartData = (numerai_raw: any) => {
         data1: extractNumeraiV2Scores(numerai, 'fnc_v4', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
-    ]
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getSignalsTcIcChartData = (numerai_raw: any) => {
-  const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
-  return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
-    datasets: [
       {
         label: 'TC',
         borderColor: '#a278dc',
@@ -157,16 +147,16 @@ export const getSignalsTcIcChartData = (numerai_raw: any) => {
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
       {
-        label: 'ICV2',
-        borderColor: '#acacac',
+        label: 'MMC',
+        borderColor: '#ff6e40',
         fill: false,
         lineTension: 0,
         borderWidth: 2,
         pointRadius: 0,
-        data: extractNumeraiV2Scores(numerai, 'ic_v2', false),
-        data1: extractNumeraiV2Scores(numerai, 'ic_v2', true).map(o=>o?.y),
+        data: extractNumeraiV2Scores(numerai, 'mmc', false),
+        data1: extractNumeraiV2Scores(numerai, 'mmc', true).map(o=>o?.y),
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
-      },
+      }
     ]
   };
 };
@@ -189,9 +179,8 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getWokeDateTime,
   getWokeDate,
   getFormatted,
-  getNumeraiCorrCorr60TcChartData,
-  getSignalsCorrChartData,
-  getSignalsTcIcChartData,
+  getNumeraiChartData,
+  getSignalsChartData,
   getRoundModelPerformancesTableData
 };
 

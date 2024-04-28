@@ -110,6 +110,12 @@
             </tr>
             <tr>
               <td>
+                MMC Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
+            </tr>
+            <tr>
+              <td>
                 TC Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
@@ -192,6 +198,13 @@
             </tr>
             <tr>
               <td>
+                MMC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
+            </tr>
+            <tr>
+            <tr>
+              <td>
                 TC Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
@@ -200,7 +213,7 @@
           </table>
         </div>
       </div>
-      <div class="col-xl-12">
+<!--      <div class="col-xl-12">
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
@@ -216,7 +229,7 @@
             </tbody>
           </table>
         </div>
-      </div>
+      </div>-->
     </div>
   </div><!-- end row -->
 </template>
