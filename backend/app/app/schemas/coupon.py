@@ -14,7 +14,7 @@ class CouponBase(BaseModel):
     applicability: Optional[str] = None
     applicable_product_ids: Optional[List[int]] = None
     min_spend: Optional[Decimal] = None
-    max_discount: Optional[int] = None
+    max_discount: Optional[Decimal] = None
     discount_mode: Optional[str] = None
     discount_percent: Optional[int] = None
     quantity_total: Optional[int] = None
