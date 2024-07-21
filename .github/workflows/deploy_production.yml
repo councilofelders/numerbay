@@ -138,7 +138,7 @@ jobs:
           echo "Setup Remote Docker Swarm"
           ssh $USER@${{ secrets.REMOTE_DOCKER_HOST }} "(docker swarm init || true) && docker-credential-gcr configure-docker"
           echo "Set Docker Context"
-          docker context create remote --default-stack-orchestrator=swarm --docker "host=ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
+          docker context create remote --docker "host=ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
           docker context use remote
           export DOCKER_HOST="ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
           pip install paramiko docker-auto-labels
