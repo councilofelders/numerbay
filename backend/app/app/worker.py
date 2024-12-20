@@ -954,6 +954,8 @@ def batch_update_stake_snapshots() -> None:
         # Pull new snapshots
         date_creation = datetime.utcnow()
         active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
+
+        # Numerai tournament
         numerai_models = numerai.get_leaderboard(tournament=8)
 
         db_models = db.query(Model).filter(Model.tournament == 8).all()
@@ -978,6 +980,7 @@ def batch_update_stake_snapshots() -> None:
         db.add_all(db_stake_snapshots_dict.values())
         db.commit()
 
+        # Signal tournament
         signals_models = numerai.get_leaderboard(tournament=11)
 
         db_models = db.query(Model).filter(Model.tournament == 11).all()
@@ -1001,6 +1004,33 @@ def batch_update_stake_snapshots() -> None:
             db_stake_snapshots_dict[model["username"]] = new_snapshot
         db.add_all(db_stake_snapshots_dict.values())
         db.commit()
+
+        # Crypto tournament
+        # TODO: Check correctness
+        crypto_models = numerai.get_leaderboard(tournament=12)
+
+        db_models = db.query(Model).filter(Model.tournament == 12).all()
+        db_models_dict = {}
+        for model in db_models:
+            db_models_dict[model.name] = model
+
+        db_stake_snapshots_dict = {}
+        for model in signals_models:
+            new_snapshot = StakeSnapshot(
+                date_creation=date_creation,
+                round_tournament=active_round,
+                name=model["username"],
+                tournament=12,
+                nmr_staked=model["nmrStaked"],
+                return_13_weeks=model["return13Weeks"],
+                return_52_weeks=model["return52Weeks"],
+            )
+            if model["username"] in db_models_dict:
+                new_snapshot.model_id = db_models_dict[model["username"]].id
+            db_stake_snapshots_dict[model["username"]] = new_snapshot
+        db.add_all(db_stake_snapshots_dict.values())
+        db.commit()
+
     finally:
         db.close()
 

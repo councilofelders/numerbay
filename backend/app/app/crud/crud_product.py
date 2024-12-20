@@ -278,7 +278,7 @@ def parse_filters(
         if filter_key == "rank_v2_corr20":
             query_filters.append(parse_rank_filter(filter_item, "v2_corr20"))
         if filter_key == "rank_fnc":
-            if tournament_id == 11:
+            if tournament_id == 11:  # TODO: Check for Crypto Tournament
                 query_filters.append(parse_rank_filter(filter_item, "fnc_v4"))
             else:
                 query_filters.append(parse_rank_filter(filter_item, "fnc_v3"))
