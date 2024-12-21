@@ -42,8 +42,8 @@ def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
 def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
     """Get Numerai model performance"""
     numerai_query = """
-            query($username: String!) {
-              v3UserProfile(modelName: $username) {
+            query($username: String!, $tournament: Int!) {
+              v3UserProfile(modelName: $username, tournament: $tournament) {
                 id
                 username
                 startDate
@@ -102,12 +102,15 @@ def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
         query = signals_query
 
     arguments = {"username": model_name}
+    if tournament != 11:
+        arguments["tournament"] = tournament
+
     api = NumerAPI()
     data = api.raw_query(query, arguments)["data"]
 
     return (
         data.get("v3UserProfile", {})
-        if tournament == 8
+        if tournament in [8, 12]
         else data.get("v2SignalsProfile", {})
     )
 

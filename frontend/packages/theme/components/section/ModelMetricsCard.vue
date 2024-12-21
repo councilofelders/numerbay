@@ -42,7 +42,7 @@
           </table>
         </div>
       </div>
-      <div class="col-xl-12" v-if="tournament===8 || tournament===12">  <!-- TODO: Check correctness -->
+      <div class="col-xl-12" v-if="tournament===8">
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
@@ -112,7 +112,27 @@
           </table>
         </div>
       </div>
-      <div class="col-xl-12" v-if="tournament===8 || tournament===12">  <!-- TODO: Check correctness -->
+      <div class="col-xl-12" v-if="tournament===12">
+        <div class="card-media card-media-s1">
+          <table class="table mb-0 table-s1 item-detail-metrics-table">
+            <tbody>
+            <tr>
+              <td>
+                CORR Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'corr')  }}</td>
+            </tr>
+            <tr>
+              <td>
+                MMC Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-xl-12" v-if="tournament===8">
         <div class="card-media card-media-s1">
           <table class="table mb-0 table-s1 item-detail-metrics-table">
             <tbody>
@@ -121,12 +141,6 @@
                 CORR20V2 Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'v2_corr20') }}</td>
-            </tr>
-            <tr>
-              <td>
-                CORR20 Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'corr20') }}</td>
             </tr>
             <tr>
               <td>
@@ -177,6 +191,26 @@
                 RIC Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'ric') }}</td>
+            </tr>
+            <tr>
+              <td>
+                MMC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-xl-12" v-if="tournament===12">
+        <div class="card-media card-media-s1">
+          <table class="table mb-0 table-s1 item-detail-metrics-table">
+            <tbody>
+            <tr>
+              <td>
+                CORR Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'corr') }}</td>
             </tr>
             <tr>
               <td>

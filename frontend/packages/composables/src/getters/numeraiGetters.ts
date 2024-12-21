@@ -133,6 +133,38 @@ export const getSignalsChartData = (numerai_raw: any) => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getCryptoChartData = (numerai_raw: any) => {
+  const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
+  return {
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
+    datasets: [
+      {
+        label: 'CORR',
+        borderColor: '#666666',
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'corr', false),
+        data1: extractNumeraiV2Scores(numerai, 'corr', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
+      },
+      {
+        label: 'MMC',
+        borderColor: '#ff6e40',
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        pointRadius: 0,
+        data: extractNumeraiV2Scores(numerai, 'mmc', false),
+        data1: extractNumeraiV2Scores(numerai, 'mmc', true).map(o=>o?.y),
+        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
+      }
+    ]
+  };
+};
+
 
 const numeraiGetters: NumeraiGetters<Numerai> = {
   getCorrRank,
@@ -151,6 +183,7 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getFormatted,
   getNumeraiChartData,
   getSignalsChartData,
+  getCryptoChartData,
   getRoundModelPerformancesTableData
 };
 
