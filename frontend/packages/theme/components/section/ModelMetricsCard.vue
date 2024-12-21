@@ -70,12 +70,6 @@
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
             </tr>
-            <tr>
-              <td>
-                TC Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
-            </tr>
             </tbody>
           </table>
         </div>
@@ -113,12 +107,6 @@
                 MMC Reputation
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
-            </tr>
-            <tr>
-              <td>
-                TC Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -158,12 +146,6 @@
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
             </tr>
-            <tr>
-              <td>
-                TC Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
-            </tr>
             </tbody>
           </table>
         </div>
@@ -201,13 +183,6 @@
                 MMC Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
-            </tr>
-            <tr>
-            <tr>
-              <td>
-                TC Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
             </tr>
             </tbody>
           </table>

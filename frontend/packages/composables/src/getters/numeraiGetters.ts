@@ -12,9 +12,6 @@ export const getMmcRank = (numerai: any): number => numerai?.modelInfo?.modelPer
 export const getFncRank = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestRanks?.fnc;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getTcRank = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestRanks?.tc;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getCorrRep = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestReps?.corr;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,9 +19,6 @@ export const getMmcRep = (numerai: any): number => numerai?.modelInfo?.modelPerf
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getFncRep = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestReps?.fnc;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getTcRep = (numerai: any): number => numerai?.modelInfo?.modelPerformance?.latestReps?.tc;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getMetaCorr = (numerai: any): number => {
@@ -92,17 +86,6 @@ export const getNumeraiChartData = (numerai_raw: any) => {
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
       {
-        label: 'TC',
-        borderColor: '#a278dc',
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        pointRadius: 0,
-        data: extractNumeraiV2Scores(numerai, 'tc', false),
-        data1: extractNumeraiV2Scores(numerai, 'tc', true).map(o=>o?.y),
-        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
-      },
-      {
         label: 'MMC',
         borderColor: '#ff6e40',
         fill: false,
@@ -136,17 +119,6 @@ export const getSignalsChartData = (numerai_raw: any) => {
         data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
       },
       {
-        label: 'TC',
-        borderColor: '#a278dc',
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        pointRadius: 0,
-        data: extractNumeraiV2Scores(numerai, 'tc', false),
-        data1: extractNumeraiV2Scores(numerai, 'tc', true).map(o=>o?.y),
-        data2: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => o?.roundNumber)
-      },
-      {
         label: 'MMC',
         borderColor: '#ff6e40',
         fill: false,
@@ -166,11 +138,9 @@ const numeraiGetters: NumeraiGetters<Numerai> = {
   getCorrRank,
   getMmcRank,
   getFncRank,
-  getTcRank,
   getCorrRep,
   getMmcRep,
   getFncRep,
-  getTcRep,
   getMetaCorr,
   getOneDayReturn,
   getThreeMonthsReturn,

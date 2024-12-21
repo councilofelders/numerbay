@@ -264,11 +264,9 @@ export interface NumeraiGetters<NUMERAI> {
     getCorrRank: (numerai: NUMERAI) => number;
     getMmcRank: (numerai: NUMERAI) => number;
     getFncRank: (numerai: NUMERAI) => number;
-    getTcRank: (numerai: NUMERAI) => number;
     getCorrRep: (numerai: NUMERAI) => number,
     getMmcRep: (numerai: NUMERAI) => number,
     getFncRep: (numerai: NUMERAI) => number,
-    getTcRep: (numerai: NUMERAI) => number,
     getMetaCorr: (numerai: NUMERAI) => number,
     getOneDayReturn: (numerai: NUMERAI) => number,
     getThreeMonthsReturn: (numerai: NUMERAI) => number,

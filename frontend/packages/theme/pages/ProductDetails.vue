@@ -178,11 +178,6 @@
                               formatDecimal(getRoundScore(roundPerformance, 'fnc_v3', true) * 100, 1)
                             }}</span></span></td>
                           <td class="text-end"><span
-                            class="tooltip-s1 text-primary">{{ formatDecimal(getRoundScore(roundPerformance, 'tc', false), 4) }}<span
-                            class="tooltip-s1-text tooltip-text">Percentile: {{
-                              formatDecimal(getRoundScore(roundPerformance, 'tc', true) * 100, 1)
-                            }}</span></span></td>
-                          <td class="text-end"><span
                             class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'mmc', false), 4) }}<span
                             class="tooltip-s1-text tooltip-text">Percentile: {{
                               formatDecimal(getRoundScore(roundPerformance, 'mmc', true) * 100, 1)
@@ -325,7 +320,7 @@ export default {
         {name: 'CORRV4', description: 'Correlation of unneutralized submission with target_20d_factor_feat_neutral'},
         // {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
         {name: 'ICV2', description: 'Correlation of users unneutralized submissions with binned raw returns (target_20d_raw_return)'},
-        {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+        // {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
         {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
         {name: 'Payout', description: 'Latest projected payout'},
       ] : [
@@ -335,7 +330,7 @@ export default {
         {name: 'CORR20V2', description: 'Numerai correlation of submission with target cyrus_20'},
         // {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
         {name: 'FNCV3', description: 'The mean correlation of this submission after it have been neutralized to the 420 features in the medium subset of the V3 dataset'},
-        {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+        // {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
         {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
         {name: 'Payout', description: 'Latest projected payout'},
       ]
