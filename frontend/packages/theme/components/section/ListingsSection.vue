@@ -23,7 +23,7 @@
         <div class="col-xl-12">You currently have no listing
         </div>
       </div>
-      <div v-else class="row g-gs mt-5" v-for="category in ['numerai-predictions', 'signals-predictions', 'numerai-models', 'signals-data', 'other']">
+      <div v-else class="row g-gs mt-5" v-for="category in ['numerai-predictions', 'signals-predictions', 'crypto-predictions', 'numerai-models', 'signals-data', 'other']">
         <div class="row" v-if="filterProductsByCategory(displayedProducts, category).length > 0">
           <div class="col-12">
             <ul class="nav nav-tabs nav-tabs-s3" role="tablist">
@@ -132,7 +132,7 @@ export default {
   methods: {
     filterProductsByCategory(products, category) {
       if (category === 'other') {
-        return products.filter(product => productGetters.getCategory(product).slug !== 'numerai-predictions' && productGetters.getCategory(product).slug !== 'signals-predictions' && productGetters.getCategory(product).slug !== 'numerai-models' && productGetters.getCategory(product).slug !== 'signals-data');
+        return products.filter(product => !['numerai-predictions', 'signals-predictions', 'numerai-models', 'signals-data', 'crypto-predictions'].includes(productGetters.getCategory(product).slug));
       }
       return products.filter(product => productGetters.getCategory(product).slug === category);
     }
