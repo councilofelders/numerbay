@@ -25,6 +25,9 @@
                     <router-link to="/explore/signals-predictions">Signals</router-link>
                   </li>
                   <li>
+                    <router-link to="/explore/crypto-predictions">Crypto</router-link>
+                  </li>
+                  <li>
                     <router-link to="/explore/onlyfams">OnlyFams</router-link>
                   </li>
                   <li>
@@ -67,6 +70,7 @@
                 <ul class="list-item list-item-s1">
                   <li><a href="https://numer.ai/" target="_blank">Numerai</a></li>
                   <li><a href="https://signals.numer.ai/" target="_blank">Signals</a></li>
+                  <li><a href="https://crypto.numer.ai/" target="_blank">Crypto</a></li>
                   <li><a href="https://forum.numer.ai/" target="_blank">Forum</a></li>
                   <li><a href="https://discord.gg/numerai" target="_blank">Discord</a></li>
                 </ul>
