@@ -181,6 +181,8 @@ export const getProductTournamentId = (product: ProductVariant): number => {
       return 11;
     } else if (slug.startsWith('numerai-')) {
       return 8;
+    } else if (slug.startsWith('crypto-')) {
+      return 12;
     }
   }
   return null;
@@ -227,6 +229,8 @@ export const getProductModelUrl = (product: ProductVariant): string => {
       return `https://numer.ai/${(product as any)?.model?.name}`;
     } else if (tournament === 11) {
       return `https://signals.numer.ai/${(product as any)?.model?.name}`;
+    } else if (tournament === 12) {
+      return `https://crypto.numer.ai/${(product as any)?.model?.name}`;
     }
   }
   return null;

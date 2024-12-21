@@ -508,6 +508,8 @@ export default {
         let tournament = 8;
         if (category.slug.startsWith('signals-')) {
           tournament = 11;
+        } else if (category.slug.startsWith('crypto-')) {
+          tournament = 12;
         }
         return userGetters.getModels(this.numerai, tournament, false);
       }
