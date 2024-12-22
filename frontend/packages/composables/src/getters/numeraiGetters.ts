@@ -72,7 +72,7 @@ export const extractNumeraiV2Scores = (numerai: any, scoreName: string, isPercen
 export const getNumeraiChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
       {
         label: 'CORR20V2',
@@ -105,7 +105,7 @@ export const getNumeraiChartData = (numerai_raw: any) => {
 export const getSignalsChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
        {
         label: 'FNCV4',
@@ -137,7 +137,7 @@ export const getSignalsChartData = (numerai_raw: any) => {
 export const getCryptoChartData = (numerai_raw: any) => {
   const numerai = numerai_raw.filter(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD") >= moment().subtract(1, 'years'))
   return {
-    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment(o?.roundResolveTime).format('YYYY-MM-DD')),
+    labels: numerai.filter(o => Boolean(o?.submissionScores)).slice().reverse().map(o => moment.utc(o?.roundDataDatestamp, "YYYYMMDD").format('YYYY-MM-DD')),
     datasets: [
       {
         label: 'CORR',
