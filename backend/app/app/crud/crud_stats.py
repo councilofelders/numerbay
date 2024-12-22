@@ -14,6 +14,7 @@ from app.models import Artifact, Category, Model, Order, Product
 from app.models.stats import Stats
 from app.schemas.stats import StatsCreate, StatsUpdate
 
+
 # TODO: Add stats for Crypto Tournament
 def parse_round_stats(
     series: List[Dict], fill_value: Union[int, float], min_round: int, max_round: int
