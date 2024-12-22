@@ -93,9 +93,11 @@
                   <div class="card-body card-body-s1">
                     <h5 class="mb-3">Recent Performance</h5>
                     <div v-if="isNumeraiChartReady" class="item-detail-list">
-                      <NumeraiChart v-if="!isSignalsTournament" :chartdata="numeraiCorrCorr60TcChartData"
+                      <NumeraiChart v-if="tournamentId == 8" :chartdata="numeraiCorrCorr60TcChartData"
                                     class="numerai-chart"></NumeraiChart>
-                      <NumeraiChart v-if="isSignalsTournament" :chartdata="signalsTcIcChartData"
+                      <NumeraiChart v-else-if="tournamentId == 11" :chartdata="signalsTcIcChartData"
+                                    class="numerai-chart"></NumeraiChart>
+                      <NumeraiChart v-else-if="tournamentId == 12" :chartdata="cryptoCorrChartData"
                                     class="numerai-chart"></NumeraiChart>
                     </div>
                     <div v-else class="item-detail-list placeholder-glow">
@@ -143,11 +145,17 @@
                               class="tooltip-s1-text tooltip-text">Percentile: {{
                                 formatDecimal(getRoundScore(roundPerformance, 'fnc_v4', true) * 100, 1)
                               }}</span></span></td>
-                          <td class="text-end" v-else><span class="tooltip-s1">{{
+                          <td class="text-end" v-else-if="tournamentId == 8"><span class="tooltip-s1">{{
                               formatDecimal(getRoundScore(roundPerformance, 'v2_corr20', false), 4)
                             }}<span
                               class="tooltip-s1-text tooltip-text">Percentile: {{
                                 formatDecimal(getRoundScore(roundPerformance, 'v2_corr20', true) * 100, 1)
+                              }}</span></span></td>
+                          <td class="text-end" v-else-if="tournamentId == 12"><span class="tooltip-s1">{{
+                              formatDecimal(getRoundScore(roundPerformance, 'corr', false), 4)
+                            }}<span
+                              class="tooltip-s1-text tooltip-text">Percentile: {{
+                                formatDecimal(getRoundScore(roundPerformance, 'corr', true) * 100, 1)
                               }}</span></span></td>
                           <td class="text-end" v-if="isSignalsTournament"><span class="tooltip-s1">{{
                               formatDecimal(getRoundScore(roundPerformance, 'corr_v4', false), 4)
@@ -172,15 +180,10 @@
                             class="tooltip-s1-text tooltip-text">Percentile: {{
                               formatDecimal(getRoundScore(roundPerformance, 'ic_v2', true) * 100, 1)
                             }}</span></span></td>
-                          <td class="text-end" v-if="!isSignalsTournament"><span
+                          <td class="text-end" v-if="tournamentId == 8"><span
                             class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'fnc_v3', false), 4) }}<span
                             class="tooltip-s1-text tooltip-text">Percentile: {{
                               formatDecimal(getRoundScore(roundPerformance, 'fnc_v3', true) * 100, 1)
-                            }}</span></span></td>
-                          <td class="text-end"><span
-                            class="tooltip-s1 text-primary">{{ formatDecimal(getRoundScore(roundPerformance, 'tc', false), 4) }}<span
-                            class="tooltip-s1-text tooltip-text">Percentile: {{
-                              formatDecimal(getRoundScore(roundPerformance, 'tc', true) * 100, 1)
                             }}</span></span></td>
                           <td class="text-end"><span
                             class="tooltip-s1">{{ formatDecimal(getRoundScore(roundPerformance, 'mmc', false), 4) }}<span
@@ -310,35 +313,54 @@ export default {
     signalsTcIcChartData() {
       return !this.v2RoundModelPerformances? {} : numeraiGetters.getSignalsChartData(this.v2RoundModelPerformances)
     },
+    cryptoCorrChartData() {
+      return !this.v2RoundModelPerformances? {} : numeraiGetters.getCryptoChartData(this.v2RoundModelPerformances)
+    },
     roundModelPerformancesTableData() {
       return !this.v2RoundModelPerformances? {} : numeraiGetters.getRoundModelPerformancesTableData(this.v2RoundModelPerformances).slice(0, 12)
     },
+    tournamentId() {
+      return this.productGetters.getCategory(this.product).tournament;
+    },
     isSignalsTournament() {
-      return this.productGetters.getCategory(this.product).tournament !== 8;
+      return this.productGetters.getCategory(this.product).tournament == 11;
     },
     performanceTableHeaders() {
-      return this.isSignalsTournament ? [
-        {name: 'Round', description: null},
-        {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
-        // {name: 'Stake Type', description: null},
-        {name: 'FNCV4', description: 'Correlation of users neutralized submissions with target_20d_factor_feat_neutral'},
-        {name: 'CORRV4', description: 'Correlation of unneutralized submission with target_20d_factor_feat_neutral'},
-        // {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
-        {name: 'ICV2', description: 'Correlation of users unneutralized submissions with binned raw returns (target_20d_raw_return)'},
-        {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
-        {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
-        {name: 'Payout', description: 'Latest projected payout'},
-      ] : [
-        {name: 'Round', description: null},
-        {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
-        // {name: 'Stake Type', description: null},
-        {name: 'CORR20V2', description: 'Numerai correlation of submission with target cyrus_20'},
-        // {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
-        {name: 'FNCV3', description: 'The mean correlation of this submission after it have been neutralized to the 420 features in the medium subset of the V3 dataset'},
-        {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
-        {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
-        {name: 'Payout', description: 'Latest projected payout'},
-      ]
+      if (this.productGetters.getCategory(this.product).tournament == 11) {
+        return [
+          {name: 'Round', description: null},
+          {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
+          // {name: 'Stake Type', description: null},
+          {name: 'FNCV4', description: 'Correlation of users neutralized submissions with target_20d_factor_feat_neutral'},
+          {name: 'CORRV4', description: 'Correlation of unneutralized submission with target_20d_factor_feat_neutral'},
+          // {name: 'CORR60', description: 'Correlation of submission with the 60-day signals target'},
+          {name: 'ICV2', description: 'Correlation of users unneutralized submissions with binned raw returns (target_20d_raw_return)'},
+          // {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+          {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
+          {name: 'Payout', description: 'Latest projected payout'},
+        ]
+      } else if (this.productGetters.getCategory(this.product).tournament == 8) {
+        return [
+          {name: 'Round', description: null},
+          {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
+          // {name: 'Stake Type', description: null},
+          {name: 'CORR20V2', description: 'Numerai correlation of submission with target cyrus_20'},
+          // {name: 'CORJ60', description: 'Correlation of submission with target_jerome_v4_60'},
+          {name: 'FNCV3', description: 'The mean correlation of this submission after it have been neutralized to the 420 features in the medium subset of the V3 dataset'},
+          // {name: 'TC', description: 'How much this submission contributed to Meta Model performance'},
+          {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
+          {name: 'Payout', description: 'Latest projected payout'},
+        ]
+      } else if (this.productGetters.getCategory(this.product).tournament == 12) {
+        return [
+          {name: 'Round', description: null},
+          {name: 'At-risk', description: 'The NMR at-risk for this model for this particular round. Equal to the model’s stake value minus any pending releases at round deadline.'},
+          // {name: 'Stake Type', description: null},
+          {name: 'CORR', description: 'Numerai correlation of submission with target'},
+          {name: 'MMC', description: 'This submission\'s Meta Model Contribution'},
+          {name: 'Payout', description: 'Latest projected payout'},
+        ]
+      }
     },
     selectedOption() {
       return this.productGetters.getOrderedOption(this.product, this.optionIdx);

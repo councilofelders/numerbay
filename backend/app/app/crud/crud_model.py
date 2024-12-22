@@ -131,6 +131,16 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                         ),
                         models.StakeSnapshot.tournament == 11,
                     ),
+                    and_(
+                        models.StakeSnapshot.name.in_(
+                            [
+                                model.name
+                                for model in numerai_models
+                                if int(model.tournament) == 12  # type: ignore
+                            ]
+                        ),
+                        models.StakeSnapshot.tournament == 12,
+                    ),
                 )
             ).update(
                 {
@@ -238,6 +248,16 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                             ]
                         ),
                         models.StakeSnapshot.tournament == 11,
+                    ),
+                    and_(
+                        models.StakeSnapshot.name.in_(
+                            [
+                                model["name"]
+                                for model in numerai_models
+                                if int(model["tournament"]) == 12
+                            ]
+                        ),
+                        models.StakeSnapshot.tournament == 12,
                     ),
                 )
             ).update(

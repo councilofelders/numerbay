@@ -9,7 +9,7 @@ export default async ({env}, inject) => {
 
   const wallet = Vue.observable({
     account: null,
-    accountCompact: 'Connect Wallet',
+    accountCompact: 'Connect',
     network: null,
     balance: null,
     provider: null,
@@ -41,7 +41,7 @@ export default async ({env}, inject) => {
         this.balance = `${(Number(ethers.utils.formatEther(balance))).toFixed(3)} ${getCurrency(this.network.chainId)}`;
       } else {
         this.account = null;
-        this.accountCompact = 'Connect Wallet';
+        this.accountCompact = 'Connect';
         this.balance = null;
       }
     },

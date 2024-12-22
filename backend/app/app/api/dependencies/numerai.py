@@ -42,8 +42,8 @@ def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
 def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
     """Get Numerai model performance"""
     numerai_query = """
-            query($username: String!) {
-              v3UserProfile(modelName: $username) {
+            query($username: String!, $tournament: Int!) {
+              v3UserProfile(modelName: $username, tournament: $tournament) {
                 id
                 username
                 startDate
@@ -102,12 +102,15 @@ def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
         query = signals_query
 
     arguments = {"username": model_name}
+    if tournament != 11:
+        arguments["tournament"] = tournament
+
     api = NumerAPI()
     data = api.raw_query(query, arguments)["data"]
 
     return (
         data.get("v3UserProfile", {})
-        if tournament == 8
+        if tournament in [8, 12]
         else data.get("v2SignalsProfile", {})
     )
 
@@ -215,7 +218,7 @@ def get_numerai_wallet_transactions(public_id: str, secret_key: str) -> Any:
 def normalize_data(data: Dict, tournament: int = 8) -> Dict:
     """Normalize Numerai data"""
     normalized_data = {"rounds": data["rounds"], "modelPerformance": {}}
-    if tournament == 8:
+    if tournament in [8, 12]:
         normalized_data["modelPerformance"] = data["v3UserProfile"]
         normalized_data["nmrStaked"] = data["v3UserProfile"]["nmrStaked"]
         normalized_data["startDate"] = data["v3UserProfile"]["startDate"]
@@ -299,6 +302,17 @@ def get_leaderboard(tournament: int) -> Any:
             }
     """
 
+    crypto_query = """
+                query {
+                  cryptosignalsLeaderboard {
+                    username
+                    nmrStaked
+                    return13Weeks
+                    return52Weeks
+                  }
+                }
+        """
+
     api = NumerAPI()
 
     data = None
@@ -308,6 +322,9 @@ def get_leaderboard(tournament: int) -> Any:
     elif tournament == 11:
         query = signals_query
         data = api.raw_query(query)["data"]["signalsLeaderboard"]
+    elif tournament == 12:
+        query = crypto_query
+        data = api.raw_query(query)["data"]["cryptosignalsLeaderboard"]
 
     return data
 
@@ -532,7 +549,7 @@ def generate_numerai_submission_url(
         public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
     )
 
-    if tournament == 8:
+    if tournament in [8, 12]:
         auth_query = """
                             query($filename: String!
                                   $tournament: Int!
@@ -588,7 +605,7 @@ def validate_numerai_submission(
         public_id=numerai_api_key_public_id, secret_key=numerai_api_key_secret
     )
 
-    if tournament == 8:
+    if tournament in [8, 12]:
         # Create submission
         create_query = """
                                     mutation($filename: String!
@@ -654,7 +671,7 @@ def validate_numerai_submission(
     if create:
         submission_id = (
             create["data"]["create_submission"]["id"]
-            if tournament == 8
+            if tournament in [8, 12]
             else create["data"]["createSignalsSubmission"]["id"]
         )
         print(f"submission_id: {submission_id}")

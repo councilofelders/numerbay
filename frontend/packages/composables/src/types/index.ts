@@ -8,6 +8,7 @@ import {
 import { AgnosticCoupon, AgnosticDiscount, AgnosticTotals } from '@vue-storefront/core/lib/src/types';
 export { UseCategory, UseProduct, UseUserFactoryParams } from '@vue-storefront/core';
 import {ProductVariant} from '@vue-storefront/numerbay-api';
+import {getCryptoChartData} from "../getters/numeraiGetters";
 
 export type Address = Record<string, unknown>;
 
@@ -264,11 +265,9 @@ export interface NumeraiGetters<NUMERAI> {
     getCorrRank: (numerai: NUMERAI) => number;
     getMmcRank: (numerai: NUMERAI) => number;
     getFncRank: (numerai: NUMERAI) => number;
-    getTcRank: (numerai: NUMERAI) => number;
     getCorrRep: (numerai: NUMERAI) => number,
     getMmcRep: (numerai: NUMERAI) => number,
     getFncRep: (numerai: NUMERAI) => number,
-    getTcRep: (numerai: NUMERAI) => number,
     getMetaCorr: (numerai: NUMERAI) => number,
     getOneDayReturn: (numerai: NUMERAI) => number,
     getThreeMonthsReturn: (numerai: NUMERAI) => number,
@@ -279,6 +278,7 @@ export interface NumeraiGetters<NUMERAI> {
     getFormatted: (value: number, decimals: number) => string,
     getNumeraiChartData: (numerai: NUMERAI) => any,
     getSignalsChartData: (numerai: NUMERAI) => any,
+    getCryptoChartData: (numerai: NUMERAI) => any,
     getRoundModelPerformancesTableData: (numerai: NUMERAI) => any,
     [getterName: string]: (element: any, options?: any) => unknown;
 }

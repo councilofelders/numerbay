@@ -29,6 +29,16 @@
         </ul>
       </div>
     </li>
+    <li class="menu-item has-sub">
+      <nuxt-link class="menu-link menu-toggle" to="/explore/crypto-predictions">Crypto</nuxt-link>
+      <div class="menu-sub">
+        <ul class="menu-list">
+          <li class="menu-item">
+            <nuxt-link class="menu-link" to="/explore/crypto-predictions">Predictions</nuxt-link>
+          </li>
+        </ul>
+      </div>
+    </li>
     <li class="menu-item">
       <a class="menu-link" href="https://docs.numerbay.ai/" target="_blank">Docs</a>
     </li>

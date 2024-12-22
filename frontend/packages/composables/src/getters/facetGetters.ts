@@ -27,14 +27,12 @@ const getSortOptions = (searchData): AgnosticSort => {
     if (tournament) {  // if is tournament category
       if (tournament === 8) {  // if is Numerai tournament
         options.push(
-            { type: 'sort', id: 'rank-best', value: 'TC from high to low', count: null },
             { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
             { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
             { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
             { type: 'sort', id: 'corr20v2-down', value: 'CORR20V2 from high to low', count: null },
             { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
             { type: 'sort', id: '0.5corr20v22mmc-down', value: '0.5xCORR20V2+2xMMC from high to low', count: null },
-            { type: 'sort', id: '2corr20v2tc-down', value: '2xCORR20V2+TC from high to low', count: null },
             { type: 'sort', id: 'corj60-down', value: 'CORJ60 from high to low', count: null },
             { type: 'sort', id: 'fncV3-down', value: 'FNCV3 from high to low', count: null },
         );
@@ -42,17 +40,28 @@ const getSortOptions = (searchData): AgnosticSort => {
 
       if (tournament === 11) {  // if is Signals tournament
         options.push(
-            { type: 'sort', id: 'rank-best', value: 'TC from high to low', count: null },
             { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
             { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
             { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
             { type: 'sort', id: 'fncv4-down', value: 'FNCV4 from high to low', count: null },
-            { type: 'sort', id: '2fncv4tc-down', value: '2xFNCV4+TC from high to low', count: null },
             { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
             { type: 'sort', id: 'fncv42mmc-down', value: '1xFNCV4+2xMMC from high to low', count: null },
             { type: 'sort', id: 'corrv4-down', value: 'CORRV4 from high to low', count: null },
             { type: 'sort', id: 'icv2-down', value: 'ICV2 from high to low', count: null },
             { type: 'sort', id: 'ric-down', value: 'RIC from high to low', count: null },
+        );
+      }
+
+      if (tournament === 12) {  // if is Crypto tournament TODO: Check correctness
+        options.push(
+            { type: 'sort', id: 'stake-down', value: 'Stake from high to low', count: null },
+            { type: 'sort', id: 'return3m-down', value: '3M Return from high to low', count: null },
+            { type: 'sort', id: 'return1y-down', value: '1Y Return from high to low', count: null },
+            { type: 'sort', id: 'corr20v2-down', value: 'CORR20V2 from high to low', count: null },
+            { type: 'sort', id: 'mmc-down', value: 'MMC from high to low', count: null },
+            { type: 'sort', id: '0.5corr20v22mmc-down', value: '0.5xCORR20V2+2xMMC from high to low', count: null },
+            { type: 'sort', id: 'corj60-down', value: 'CORJ60 from high to low', count: null },
+            { type: 'sort', id: 'fncV3-down', value: 'FNCV3 from high to low', count: null },
         );
       }
     }

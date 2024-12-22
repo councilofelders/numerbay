@@ -70,12 +70,6 @@
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
             </tr>
-            <tr>
-              <td>
-                TC Reputation
-              </td>
-              <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
-            </tr>
             </tbody>
           </table>
         </div>
@@ -114,11 +108,25 @@
               </td>
               <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
             </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-xl-12" v-if="tournament===12">
+        <div class="card-media card-media-s1">
+          <table class="table mb-0 table-s1 item-detail-metrics-table">
+            <tbody>
             <tr>
               <td>
-                TC Reputation
+                CORR Reputation
               </td>
-              <td class="stats">{{ formatReputation(latestReps, 'tc') }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'corr')  }}</td>
+            </tr>
+            <tr>
+              <td>
+                MMC Reputation
+              </td>
+              <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -133,12 +141,6 @@
                 CORR20V2 Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'v2_corr20') }}</td>
-            </tr>
-            <tr>
-              <td>
-                CORR20 Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'corr20') }}</td>
             </tr>
             <tr>
               <td>
@@ -157,12 +159,6 @@
                 MMC Rank
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
-            </tr>
-            <tr>
-              <td>
-                TC Rank
-              </td>
-              <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -202,12 +198,25 @@
               </td>
               <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
             </tr>
-            <tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-xl-12" v-if="tournament===12">
+        <div class="card-media card-media-s1">
+          <table class="table mb-0 table-s1 item-detail-metrics-table">
+            <tbody>
             <tr>
               <td>
-                TC Rank
+                CORR Rank
               </td>
-              <td class="stats">{{ formatRank(latestRanks, 'tc') }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'corr') }}</td>
+            </tr>
+            <tr>
+              <td>
+                MMC Rank
+              </td>
+              <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
             </tr>
             </tbody>
           </table>

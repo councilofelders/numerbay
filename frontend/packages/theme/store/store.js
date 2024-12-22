@@ -43,7 +43,7 @@ const SectionData = {
   ],
   // Header data
   headerData: {
-    btnText: 'Connect Wallet',
+    btnText: 'Connect',
     inputPlaceholderText: 'Search item here...',
     menuList: {
       title: 'Home',
@@ -232,7 +232,21 @@ const SectionData = {
         icon: 'icon ni ni-signal mb-3 mx-auto icon-circle icon-wbg icon-lg',
         title: 'Signals Data',
         path: '/explore/signals-data'
-      }
+      },
+      {
+        id: 7,
+        class: 'text-green',
+        icon: 'icon ni ni-bulb mb-3 mx-auto icon-circle icon-wbg icon-lg',
+        title: 'Crypto',
+        path: '/explore/crypto'
+      },
+      {
+        id: 8,
+        class: 'text-green',
+        icon: 'icon ni ni-bulb mb-3 mx-auto icon-circle icon-wbg icon-lg',
+        title: 'Crypto Predictions',
+        path: '/explore/crypto-predictions'
+      },
     ]
   },
   // account sidebar
