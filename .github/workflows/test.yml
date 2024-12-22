@@ -39,7 +39,7 @@ jobs:
   backend-test:
     name: Test Backend
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    # if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
