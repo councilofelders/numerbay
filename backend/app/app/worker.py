@@ -1015,7 +1015,7 @@ def batch_update_stake_snapshots() -> None:
             db_models_dict[model.name] = model
 
         db_stake_snapshots_dict = {}
-        for model in signals_models:
+        for model in crypto_models:
             new_snapshot = StakeSnapshot(
                 date_creation=date_creation,
                 round_tournament=active_round,
