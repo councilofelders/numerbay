@@ -44,7 +44,7 @@ jobs:
       # (docker pull is faster than caching in most cases.)
       - name: Pull Docker Images
         run: |
-          docker-compose pull --quiet proxy db pgadmin queue flower
+          docker compose pull --quiet proxy db pgadmin queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
           docker pull --quiet node:12
