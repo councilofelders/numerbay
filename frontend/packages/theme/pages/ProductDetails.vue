@@ -281,7 +281,7 @@ export default {
       variables() {
         return {
           model_id: this.product?.model?.id,
-          lastNRounds: 260,
+          lastNRounds: 290,
           tournament: this.product?.model?.tournament
         }
       },
@@ -437,7 +437,7 @@ export default {
   methods: {
     getRoundScore(roundPerformance, scoreName, isPercentile) {
       if (scoreName === 'payout') {
-        return (roundPerformance?.submissionScores || []).filter(o=>(o.displayName==='tc'))[0]?.payoutPending
+        return (roundPerformance?.submissionScores || []).filter(o=>(o.displayName==='canon_mmc'))[0]?.payoutPending
       }
 
       if (isPercentile) {
