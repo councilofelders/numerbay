@@ -50,7 +50,7 @@
               <td>
                 CORR20V2 Reputation
               </td>
-              <td class="stats">{{ formatReputation(latestReps, 'v2_corr20')  }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'canon_corr')  }}</td>
             </tr>
             <tr>
               <td>
@@ -68,7 +68,7 @@
               <td>
                 MMC Reputation
               </td>
-              <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'canon_mmc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -120,13 +120,13 @@
               <td>
                 CORR Reputation
               </td>
-              <td class="stats">{{ formatReputation(latestReps, 'corr')  }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'canon_corr')  }}</td>
             </tr>
             <tr>
               <td>
                 MMC Reputation
               </td>
-              <td class="stats">{{ formatReputation(latestReps, 'mmc') }}</td>
+              <td class="stats">{{ formatReputation(latestReps, 'canon_mmc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -140,7 +140,7 @@
               <td>
                 CORR20V2 Rank
               </td>
-              <td class="stats">{{ formatRank(latestRanks, 'v2_corr20') }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'canon_corr') }}</td>
             </tr>
             <tr>
               <td>
@@ -158,7 +158,7 @@
               <td>
                 MMC Rank
               </td>
-              <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'canon_mmc') }}</td>
             </tr>
             </tbody>
           </table>
@@ -210,13 +210,13 @@
               <td>
                 CORR Rank
               </td>
-              <td class="stats">{{ formatRank(latestRanks, 'corr') }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'canon_corr') }}</td>
             </tr>
             <tr>
               <td>
                 MMC Rank
               </td>
-              <td class="stats">{{ formatRank(latestRanks, 'mmc') }}</td>
+              <td class="stats">{{ formatRank(latestRanks, 'canon_mmc') }}</td>
             </tr>
             </tbody>
           </table>
