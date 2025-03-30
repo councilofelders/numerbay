@@ -150,31 +150,19 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def update_numerai_api(self, db: Session, user_json: Dict) -> Any:
         """Update Numerai API key"""
-        if (
-            "numerai_api_key_secret" not in user_json
-            or user_json["numerai_api_key_secret"] is None
-            or user_json["numerai_api_key_secret"] == ""
-        ):
-            print(
-                f"Numerai API Key update failed for {user_json['username']}: No secret key"
-            )
-            return {"success": False, "message": "No secret key"}
-
-        try:
-            account = numerai.get_numerai_api_user_info(
-                public_id=user_json.get("numerai_api_key_public_id", None),
-                secret_key=user_json.get("numerai_api_key_secret"),  # type: ignore
-            )  # type: ignore
-        except ValueError as e:
-            # if "invalid or has expired" in str(e):  # invalid API keys
-            #     self.delist_all(db, user_json["username"])
-            #     print(f"Delisted all products for user {user_json['username']}")
-
-            print(
-                f"Numerai API Key update failed for {user_json['username']}: {str(e)}"
-            )
-            return {"success": False, "message": str(e)}
-
+        # Check if we already have API data (for compatibility with existing code)
+        if user_json.get("_api_data"):
+            api_result = user_json["_api_data"]
+        else:
+            # Otherwise make the API call (this maintains backward compatibility)
+            api_result = self.get_numerai_api_info(user_json)
+        
+        if not api_result["success"]:
+            return {"success": False, "message": api_result["message"]}
+            
+        user_update_json = api_result["data"]
+        account = user_update_json.pop("account")  # Remove account from update data
+            
         # check for duplicated numerai wallet
         duplicated_user = (
             db.query(User)
@@ -192,30 +180,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 f"(Duplicated wallet {account['walletAddress']})"
             )
             return {"success": False, "message": "Duplicated Numerai wallet"}
-
-        api_key = list(
-            filter(
-                lambda token: token["publicId"]
-                == user_json.get("numerai_api_key_public_id"),
-                account["apiTokens"],
-            )
-        )
-        if len(api_key) < 1:
-            print(
-                f"Numerai API Key update failed for {user_json['username']}: Invalid API Key"
-            )
-            return {"success": False, "message": "Invalid API Key"}
-
-        api_scopes = api_key[0]["scopes"]
-
-        user_update_json = {
-            "numerai_api_key_can_upload_submission": "upload_submission" in api_scopes,
-            "numerai_api_key_can_stake": "stake" in api_scopes,
-            "numerai_api_key_can_read_submission_info": "read_submission_info"
-            in api_scopes,
-            "numerai_api_key_can_read_user_info": "read_user_info" in api_scopes,
-            "numerai_wallet_address": account["walletAddress"],
-        }
 
         user_obj = self.get(db, user_json["id"])
 

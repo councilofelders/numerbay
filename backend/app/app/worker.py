@@ -31,7 +31,7 @@ from app.api.dependencies.orders import (
 from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
 from app.core.config import settings
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, with_db_session
 from app.models import (
     Artifact,
     Category,
@@ -221,21 +221,34 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
         user_json (dict): dict of user information
         retries (int): number of retries
     """
-    db = SessionLocal()
-
     try:
-        # Update user info
-        user_has_valid_numerai_api = crud.user.update_numerai_api(db, user_json)
+        # Make a copy of the user_json
+        user_json_copy = user_json.copy()
+        
+        # Make the slow Numerai API call outside of any database session
+        api_result = numerai.get_numerai_api_info(user_json_copy)
+        
+        # Add the API result to the user_json to prevent another API call
+        user_json_copy["_api_data"] = api_result
+        
+        # Now use with_db_session with the prepared API data
+        def update_user_and_models(db):
+            # Update user info (won't make another API call because we included _api_data)
+            user_has_valid_numerai_api = crud.user.update_numerai_api(db, user_json)
 
-        # Update user models
-        updated_username = None
-        if user_has_valid_numerai_api["success"]:
-            updated_username = crud.model.update_model(db, user_json)
+            # Update user models
+            updated_username = None
+            if user_has_valid_numerai_api["success"]:
+                updated_username = crud.model.update_model(db, user_json)
 
-        # Handled users that failed authenticated updates
-        if updated_username is None:
-            print(f"Trying to update user {user_json['username']} without auth")
-            crud.model.update_model_unauthenticated(db, user_json)
+            # Handled users that failed authenticated updates
+            if updated_username is None:
+                print(f"Trying to update user {user_json['username']} without auth")
+                crud.model.update_model_unauthenticated(db, user_json)
+            
+            return updated_username
+
+        with_db_session(update_user_and_models)
     except Exception as e:  # pylint: disable=broad-except
         print(
             f"Error updating model scores for user {user_json['username']}: "
@@ -251,35 +264,33 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
                 countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
                 kwargs=dict(user_json=user_json, retries=retries - 1),
             )
-    finally:
-        db.close()
     return None
 
 
 @celery_app.task  # (acks_late=True)
 def batch_update_models_task() -> None:
     """Batch upload Numerai models task"""
-    db = SessionLocal()
-    try:
+    def get_users_with_api_keys(db):
         users = crud.user.search(
             # type: ignore
             db,
             filters={"numerai_api_key_public_id": ["any"]},
             limit=None,
         )["data"]
-        print(f"total: {len(users)}")
-        # result = chord([fetch_model_subtask.s(jsonable_encoder(user), 0) for user in users],
-        # commit_models_subtask.s(0)).delay()
-        group(
-            [
-                update_model_subtask.s(jsonable_encoder(user), retries=10).set(
-                    countdown=i // 5
-                )
-                for i, user in enumerate(users)
-            ]
-        ).delay()
-    finally:
-        db.close()
+        return users
+    
+    users = with_db_session(get_users_with_api_keys)
+    print(f"total: {len(users)}")
+    
+    # Schedule update tasks with staggered start times to avoid connection pool exhaustion
+    group(
+        [
+            update_model_subtask.s(jsonable_encoder(user), retries=10).set(
+                countdown=i // 5
+            )
+            for i, user in enumerate(users)
+        ]
+    ).delay()
 
 
 @celery_app.task  # (acks_late=True)
@@ -292,31 +303,29 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
     """
     try:
         pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
+        
         if pipeline_status["isScoringDay"]:
             if pipeline_status.get("resolvedAt", None):
                 print("Numerai pipeline completed, update model scores...")
-                db = SessionLocal()
-                try:
-                    users = crud.user.search(
-                        # type: ignore
-                        db,
-                        filters={"numerai_api_key_public_id": ["any"]},
-                        limit=None,
-                    )["data"]
-                    print(f"total: {len(users)}")
-                    # result = chord([fetch_model_subtask
-                    # .s(jsonable_encoder(user), 0) for user in users],
-                    # commit_models_subtask.s(0)).delay()
-                    group(
-                        [
-                            update_model_subtask.s(
-                                jsonable_encoder(user), retries=10
-                            ).set(countdown=60 + i // 5)
-                            for i, user in enumerate(users)
-                        ]
-                    ).apply_async()
-                finally:
-                    db.close()
+                
+                # Get users with API keys
+                users = with_db_session(lambda db: crud.user.search(
+                    db,
+                    filters={"numerai_api_key_public_id": ["any"]},
+                    limit=None,
+                )["data"])
+                
+                print(f"total: {len(users)}")
+                
+                # Schedule update tasks with staggered start times
+                group(
+                    [
+                        update_model_subtask.s(
+                            jsonable_encoder(user), retries=10
+                        ).set(countdown=60 + i // 5)
+                        for i, user in enumerate(users)
+                    ]
+                ).apply_async()
             else:
                 print(
                     f"Numerai pipeline not ready, checking again "
@@ -350,18 +359,6 @@ def update_globals_stats_task() -> None:
         crud.stats.update_stats(db)
     finally:
         db.close()
-
-
-def with_db_session(func: Callable):
-    """Execute a function with a database session and ensure it's closed properly."""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        db = SessionLocal()
-        try:
-            return func(db, *args, **kwargs)
-        finally:
-            db.close()
-    return wrapper
 
 
 @celery_app.task  # (acks_late=True)
@@ -545,24 +542,22 @@ def update_payment_subtask(order_id: int) -> None:
     Args:
         order_id (int): order id
     """
-    db = SessionLocal()
-    try:
-        # Update order payment
-        update_payment(db, order_id)
-    finally:
-        db.close()
+    with_db_session(lambda db: update_payment(db, order_id))
 
 
 @celery_app.task  # (acks_late=True)
 def batch_update_payments_task() -> None:
     """Batch update payments task"""
-    db = SessionLocal()
-    try:
+    def get_pending_orders(db):
         orders = crud.order.get_multi_by_state(db, state="pending")
-        print(f"total pending orders: {len(orders)}")
-        group([update_payment_subtask.s(order.id) for order in orders]).delay()
-    finally:
-        db.close()
+        return orders
+        
+    orders = with_db_session(get_pending_orders)
+    print(f"total pending orders: {len(orders)}")
+    
+    # Extract just the IDs to avoid serialization issues
+    order_ids = [order.id for order in orders]
+    group([update_payment_subtask.s(order_id) for order_id in order_ids]).delay()
 
 
 @celery_app.task  # (acks_late=True)
@@ -587,8 +582,8 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         tournament (int): Tournament ID
         version (int): Data version (placeholder, not used)
     """
-    db = SessionLocal()
-    try:
+    # First check and mark order as queued in a short DB session
+    def mark_order_queued(db):
         order = crud.order.get(db=db, id=order_id)
         if not order:
             print(f"Order {order_id} not found, skipped")
@@ -597,76 +592,93 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         # if order.submit_state == "queued":  # already queued for submission
         #     print(f"Order {order.id} already queued for submission, skipped")
         #     return None
-        crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
-    finally:
-        db.close()
+        order = crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
+        return order
+    
+    order = with_db_session(mark_order_queued)
+    if order is None:
+        return None
 
-    # Has csv artifact and uploaded
-    url = generate_gcs_signed_url(
-        bucket=deps.get_gcs_bucket(),
-        object_name=object_name,
-        action="GET",
-        expiration_minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES,
-        is_upload=False,
-    )
+    # All API calls and file operations outside of DB session
+    try:
+        # Has csv artifact and uploaded
+        url = generate_gcs_signed_url(
+            bucket=deps.get_gcs_bucket(),
+            object_name=object_name,
+            action="GET",
+            expiration_minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES,
+            is_upload=False,
+        )
 
-    # Upload URL
-    submission_auth = numerai.generate_numerai_submission_url(
-        object_name=object_name,
-        model_id=model_id,
-        tournament=tournament,
-        numerai_api_key_public_id=numerai_api_key_public_id,
-        numerai_api_key_secret=numerai_api_key_secret,
-    )
+        # Upload URL
+        submission_auth = numerai.generate_numerai_submission_url(
+            object_name=object_name,
+            model_id=model_id,
+            tournament=tournament,
+            numerai_api_key_public_id=numerai_api_key_public_id,
+            numerai_api_key_secret=numerai_api_key_secret,
+        )
 
-    # Bridge Upload file
-    file_stream = requests.get(url, stream=True)
-    requests.put(
-        submission_auth["url"], data=io.BytesIO(file_stream.content), stream=True
-    )
+        # Bridge Upload file
+        file_stream = requests.get(url, stream=True)
+        requests.put(
+            submission_auth["url"], data=io.BytesIO(file_stream.content), stream=True
+        )
 
-    # Validate Upload
-    submission_id = numerai.validate_numerai_submission(
-        object_name=submission_auth["filename"],
-        model_id=model_id,
-        tournament=tournament,
-        numerai_api_key_public_id=numerai_api_key_public_id,
-        numerai_api_key_secret=numerai_api_key_secret,
-    )
+        # Validate Upload
+        submission_id = numerai.validate_numerai_submission(
+            object_name=submission_auth["filename"],
+            model_id=model_id,
+            tournament=tournament,
+            numerai_api_key_public_id=numerai_api_key_public_id,
+            numerai_api_key_secret=numerai_api_key_secret,
+        )
 
-    if submission_id:
-        # submision successful, mark order submit_state to completed
-        db = SessionLocal()
-        try:
-            order = crud.order.get(db, id=order_id)
-            crud.order.update(
-                db,
-                db_obj=order,  # type: ignore
-                obj_in={
-                    "submit_state": "completed",
-                    "last_submit_round": crud.globals.get_singleton(  # type: ignore
-                        db=db
-                    ).selling_round,
-                },
-            )
-        finally:
-            db.close()
-    else:
-        # mark failed submission
-        db = SessionLocal()
-        try:
-            order = crud.order.get(db, id=order_id)
-            crud.order.update(
-                db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
-            )
-
+        # Update order status based on submission result
+        if submission_id:
+            # submission successful, mark order submit_state to completed
+            def mark_submission_completed(db):
+                order = crud.order.get(db, id=order_id)
+                crud.order.update(
+                    db,
+                    db_obj=order,  # type: ignore
+                    obj_in={
+                        "submit_state": "completed",
+                        "last_submit_round": crud.globals.get_singleton(  # type: ignore
+                            db=db
+                        ).selling_round,
+                    },
+                )
+            
+            with_db_session(mark_submission_completed)
+        else:
+            # mark failed submission
+            def mark_submission_failed(db):
+                order = crud.order.get(db, id=order_id)
+                crud.order.update(
+                    db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
+                )
+            
+            with_db_session(mark_submission_failed)
             # send auto-submit failure emails
             send_failed_autosubmit_emails(
                 order_obj=order, artifact_name=object_name  # type: ignore
             )
-        finally:
-            db.close()
-    return submission_id
+            
+        return submission_id
+    except Exception as e:
+        print(f"Error uploading artifact: {str(e)}")
+        # Mark as failed on exception
+        with_db_session(lambda db: crud.order.update(
+            db, 
+            db_obj=crud.order.get(db, id=order_id), 
+            obj_in={"submit_state": "failed"}
+        ))
+        # send auto-submit failure emails
+        send_failed_autosubmit_emails(
+            order_obj=order, artifact_name=object_name  # type: ignore
+        )
+        return None
 
 
 @celery_app.task  # (acks_late=True)
@@ -1054,8 +1066,7 @@ def batch_update_stake_snapshots() -> None:
 @celery_app.task
 def batch_update_product_sales_stats() -> None:
     """Batch update product sales stats task"""
-    db = SessionLocal()
-    try:
+    def update_sales_stats(db):
         products = crud.product.get_multi(db=db)
         for product in products:
             if product.model:
@@ -1068,8 +1079,8 @@ def batch_update_product_sales_stats() -> None:
                 ]
                 product.total_qty_delivered = product_sales_stats["total_qty_delivered"]
         db.commit()
-    finally:
-        db.close()
+    
+    with_db_session(update_sales_stats)
 
 
 # @celery_app.task  # (acks_late=True)
@@ -1152,8 +1163,7 @@ def batch_update_product_sales_stats() -> None:
 @celery_app.task  # (acks_late=True)
 def batch_update_polls() -> None:
     """Batch update polls task"""
-    db = SessionLocal()
-    try:
+    def update_expired_polls(db):
         date_now = datetime.utcnow()
         expired_polls = db.query(Poll).filter(
             and_(Poll.date_finish <= date_now, Poll.is_finished.is_(False))
@@ -1162,16 +1172,15 @@ def batch_update_polls() -> None:
             # todo if poll.weight_mode not poll.is_stake_predetermined
             poll.is_finished = True
         db.commit()
-    finally:
-        db.close()
+    
+    with_db_session(update_expired_polls)
 
 
 @celery_app.task  # (acks_late=True)
 def batch_prune_storage() -> None:
     """Batch prune storage task"""
     # prune artifacts
-    db = SessionLocal()
-    try:
+    def get_artifacts_to_prune(db):
         query_filters = [Category.is_per_round, Artifact.state != "pruned"]
         query_filter = functools.reduce(and_, query_filters)
 
@@ -1198,48 +1207,69 @@ def batch_prune_storage() -> None:
             .filter(query_filter)
             .all()
         )
+        
+        # Get a list of object names and IDs
+        return [{"id": artifact.id, "object_name": artifact.object_name} for artifact in artifacts_to_prune]
+    
+    # Get artifacts to prune
+    artifacts_to_prune = with_db_session(get_artifacts_to_prune)
+    print(f"{len(artifacts_to_prune)} artifacts to prune")
 
-        print(f"{len(artifacts_to_prune)} artifacts to prune")
-
-        bucket = deps.get_gcs_bucket()
-        for artifact in artifacts_to_prune:
-            object_name = artifact.object_name
-            if object_name:
-                try:
-                    blob = bucket.blob(object_name)
-                    blob.delete()
-                except NotFound:
-                    pass
-
-            artifact.state = "pruned"
+    # Delete files from GCS bucket
+    bucket = deps.get_gcs_bucket()
+    for artifact in artifacts_to_prune:
+        object_name = artifact["object_name"]
+        if object_name:
+            try:
+                blob = bucket.blob(object_name)
+                blob.delete()
+            except NotFound:
+                pass
+    
+    # Mark artifacts as pruned
+    def mark_artifacts_pruned(db):
+        for artifact_data in artifacts_to_prune:
+            artifact = crud.artifact.get(db, id=artifact_data["id"])
+            if artifact:
+                artifact.state = "pruned"
         db.commit()
-    finally:
-        db.close()
+    
+    with_db_session(mark_artifacts_pruned)
 
     # prune order artifacts
-    db = SessionLocal()
-    try:
+    def get_order_artifacts_to_prune(db):
         order_artifacts_to_prune = (
             db.query(OrderArtifact)
             .filter(OrderArtifact.state == "marked_for_pruning")
             .all()
         )
-        print(f"{len(order_artifacts_to_prune)} order artifacts to prune")
+        # Get a list of object names and IDs
+        return [{"id": artifact.id, "object_name": artifact.object_name} 
+                for artifact in order_artifacts_to_prune]
+    
+    # Get order artifacts to prune in a short DB session
+    order_artifacts_to_prune = with_db_session(get_order_artifacts_to_prune)
+    print(f"{len(order_artifacts_to_prune)} order artifacts to prune")
 
-        bucket = deps.get_gcs_bucket()
-        for order_artifact in order_artifacts_to_prune:
-            object_name = order_artifact.object_name
-            if object_name:
-                try:
-                    blob = bucket.blob(object_name)
-                    blob.delete()
-                except NotFound:
-                    pass
-
-            order_artifact.state = "pruned"
+    # Delete files from GCS bucket
+    for order_artifact in order_artifacts_to_prune:
+        object_name = order_artifact["object_name"]
+        if object_name:
+            try:
+                blob = bucket.blob(object_name)
+                blob.delete()
+            except NotFound:
+                pass
+    
+    # Mark order artifacts as pruned
+    def mark_order_artifacts_pruned(db):
+        for artifact_data in order_artifacts_to_prune:
+            order_artifact = crud.order_artifact.get(db, id=artifact_data["id"])
+            if order_artifact:
+                order_artifact.state = "pruned"
         db.commit()
-    finally:
-        db.close()
+    
+    with_db_session(mark_order_artifacts_pruned)
 
 
 @celery_app.task  # (acks_late=True)
