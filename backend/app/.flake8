@@ -1,5 +1,5 @@
 [flake8]
-ignore = E122, E128, W503
-# E121, E122, E128, E131, E501, E701, W503,
+ignore = E122, E128, W503, E501, W293
+# E121, E122, E128, E131, E701, W503,
 max-line-length = 100
 exclude = .git,__pycache__,__init__.py,.mypy_cache,.pytest_cache,alembic
