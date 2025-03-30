@@ -14,6 +14,7 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def with_db_session(func: Callable):
     """Execute a function with a database session and ensure it's closed properly."""
     @functools.wraps(func)

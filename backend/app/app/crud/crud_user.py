@@ -155,7 +155,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             api_result = user_json["_api_data"]
         else:
             # Otherwise make the API call (this maintains backward compatibility)
-            api_result = self.get_numerai_api_info(user_json)
+            api_result = numerai.get_numerai_api_info(user_json)
         
         if not api_result["success"]:
             return {"success": False, "message": api_result["message"]}

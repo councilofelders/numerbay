@@ -670,8 +670,8 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         print(f"Error uploading artifact: {str(e)}")
         # Mark as failed on exception
         with_db_session(lambda db: crud.order.update(
-            db, 
-            db_obj=crud.order.get(db, id=order_id), 
+            db,
+            db_obj=crud.order.get(db, id=order_id),
             obj_in={"submit_state": "failed"}
         ))
         # send auto-submit failure emails
@@ -1244,7 +1244,7 @@ def batch_prune_storage() -> None:
             .all()
         )
         # Get a list of object names and IDs
-        return [{"id": artifact.id, "object_name": artifact.object_name} 
+        return [{"id": artifact.id, "object_name": artifact.object_name}
                 for artifact in order_artifacts_to_prune]
     
     # Get order artifacts to prune in a short DB session
