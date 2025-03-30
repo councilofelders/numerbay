@@ -31,7 +31,7 @@ from app.api.dependencies.orders import (
 from app.api.deps import make_gcp_authorized_post_request
 from app.core.celery_app import celery_app
 from app.core.config import settings
-from app.db.session import SessionLocal, with_db_session
+from app.db.session import SessionLocal, run_with_db_session
 from app.models import (
     Artifact,
     Category,
@@ -231,7 +231,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
         # Add the API result to the user_json to prevent another API call
         user_json_copy["_api_data"] = api_result
         
-        # Now use with_db_session with the prepared API data
+        # Now use run_with_db_session with the prepared API data
         def update_user_and_models(db):
             # Update user info (won't make another API call because we included _api_data)
             user_has_valid_numerai_api = crud.user.update_numerai_api(db, user_json)
@@ -248,7 +248,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
             
             return updated_username
 
-        with_db_session(update_user_and_models)
+        run_with_db_session(update_user_and_models)
     except Exception as e:  # pylint: disable=broad-except
         print(
             f"Error updating model scores for user {user_json['username']}: "
@@ -279,7 +279,7 @@ def batch_update_models_task() -> None:
         )["data"]
         return users
     
-    users = with_db_session(get_users_with_api_keys)
+    users = run_with_db_session(get_users_with_api_keys)
     print(f"total: {len(users)}")
     
     # Schedule update tasks with staggered start times to avoid connection pool exhaustion
@@ -309,7 +309,7 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
                 print("Numerai pipeline completed, update model scores...")
                 
                 # Get users with API keys
-                users = with_db_session(lambda db: crud.user.search(
+                users = run_with_db_session(lambda db: crud.user.search(
                     db,
                     filters={"numerai_api_key_public_id": ["any"]},
                     limit=None,
@@ -377,7 +377,7 @@ def update_active_round() -> None:
     )
     
     # Get current globals with minimal DB session
-    site_globals = with_db_session(lambda db: crud.globals.get_singleton(db))
+    site_globals = run_with_db_session(lambda db: crud.globals.get_singleton(db))
     
     if open_time <= utc_time <= close_staking_time:
         if site_globals.active_round != active_round_number:  # type: ignore
@@ -389,7 +389,7 @@ def update_active_round() -> None:
             print(f"Round {active_round_number} opened")
             
             # Update active round
-            with_db_session(lambda db: crud.globals.update(
+            run_with_db_session(lambda db: crud.globals.update(
                 db,
                 db_obj=crud.globals.get_singleton(db),  # type: ignore
                 obj_in={"active_round": active_round_number},
@@ -399,7 +399,7 @@ def update_active_round() -> None:
             celery_app.send_task("app.worker.batch_submit_numerai_models_task")
 
             # trigger other actions on round open
-            with_db_session(lambda db: on_round_open(db))
+            run_with_db_session(lambda db: on_round_open(db))
             
         if close_staking_time - utc_time <= timedelta(minutes=2):
             # round about to close
@@ -449,10 +449,10 @@ def update_active_round() -> None:
                 return site_globals_obj
             
             # Execute all database operations in a single session
-            with_db_session(update_and_process)
+            run_with_db_session(update_and_process)
     
     # Print current global state with minimal DB session
-    current_globals = with_db_session(lambda db: jsonable_encoder(crud.globals.get_singleton(db)))
+    current_globals = run_with_db_session(lambda db: jsonable_encoder(crud.globals.get_singleton(db)))
     print(f"Current global state: {current_globals}")
 
 
@@ -542,7 +542,7 @@ def update_payment_subtask(order_id: int) -> None:
     Args:
         order_id (int): order id
     """
-    with_db_session(lambda db: update_payment(db, order_id))
+    run_with_db_session(lambda db: update_payment(db, order_id))
 
 
 @celery_app.task  # (acks_late=True)
@@ -552,7 +552,7 @@ def batch_update_payments_task() -> None:
         orders = crud.order.get_multi_by_state(db, state="pending")
         return orders
         
-    orders = with_db_session(get_pending_orders)
+    orders = run_with_db_session(get_pending_orders)
     print(f"total pending orders: {len(orders)}")
     
     # Extract just the IDs to avoid serialization issues
@@ -595,7 +595,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         order = crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
         return order
     
-    order = with_db_session(mark_order_queued)
+    order = run_with_db_session(mark_order_queued)
     if order is None:
         return None
 
@@ -650,7 +650,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
                     },
                 )
             
-            with_db_session(mark_submission_completed)
+            run_with_db_session(mark_submission_completed)
         else:
             # mark failed submission
             def mark_submission_failed(db):
@@ -659,7 +659,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
                     db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
                 )
             
-            with_db_session(mark_submission_failed)
+            run_with_db_session(mark_submission_failed)
             # send auto-submit failure emails
             send_failed_autosubmit_emails(
                 order_obj=order, artifact_name=object_name  # type: ignore
@@ -669,7 +669,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
     except Exception as e:
         print(f"Error uploading artifact: {str(e)}")
         # Mark as failed on exception
-        with_db_session(lambda db: crud.order.update(
+        run_with_db_session(lambda db: crud.order.update(
             db,
             db_obj=crud.order.get(db, id=order_id),
             obj_in={"submit_state": "failed"}
@@ -1080,7 +1080,7 @@ def batch_update_product_sales_stats() -> None:
                 product.total_qty_delivered = product_sales_stats["total_qty_delivered"]
         db.commit()
     
-    with_db_session(update_sales_stats)
+    run_with_db_session(update_sales_stats)
 
 
 # @celery_app.task  # (acks_late=True)
@@ -1173,7 +1173,7 @@ def batch_update_polls() -> None:
             poll.is_finished = True
         db.commit()
     
-    with_db_session(update_expired_polls)
+    run_with_db_session(update_expired_polls)
 
 
 @celery_app.task  # (acks_late=True)
@@ -1212,7 +1212,7 @@ def batch_prune_storage() -> None:
         return [{"id": artifact.id, "object_name": artifact.object_name} for artifact in artifacts_to_prune]
     
     # Get artifacts to prune
-    artifacts_to_prune = with_db_session(get_artifacts_to_prune)
+    artifacts_to_prune = run_with_db_session(get_artifacts_to_prune)
     print(f"{len(artifacts_to_prune)} artifacts to prune")
 
     # Delete files from GCS bucket
@@ -1234,7 +1234,7 @@ def batch_prune_storage() -> None:
                 artifact.state = "pruned"
         db.commit()
     
-    with_db_session(mark_artifacts_pruned)
+    run_with_db_session(mark_artifacts_pruned)
 
     # prune order artifacts
     def get_order_artifacts_to_prune(db):
@@ -1248,7 +1248,7 @@ def batch_prune_storage() -> None:
                 for artifact in order_artifacts_to_prune]
     
     # Get order artifacts to prune in a short DB session
-    order_artifacts_to_prune = with_db_session(get_order_artifacts_to_prune)
+    order_artifacts_to_prune = run_with_db_session(get_order_artifacts_to_prune)
     print(f"{len(order_artifacts_to_prune)} order artifacts to prune")
 
     # Delete files from GCS bucket
@@ -1269,7 +1269,7 @@ def batch_prune_storage() -> None:
                 order_artifact.state = "pruned"
         db.commit()
     
-    with_db_session(mark_order_artifacts_pruned)
+    run_with_db_session(mark_order_artifacts_pruned)
 
 
 @celery_app.task  # (acks_late=True)
