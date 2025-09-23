@@ -202,7 +202,7 @@
                       </table>
                     </div><!-- end table-responsive -->
                     <a target="_blank" class="btn btn-light btn-full d-flex justify-content-center mt-1"
-                       :href="`${productGetters.getModelUrl(product)}/submissions`">All Rounds</a>
+                       :href="productGetters.getModelUrl(product)">All Rounds</a>
                   </div><!-- end card-body -->
                 </div><!-- end card-border -->
               </div><!-- end item-detail-performance-table-container -->
