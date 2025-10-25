@@ -957,10 +957,7 @@ def send_failed_autosubmit_buyer_email(
     )
 
 
-def send_change_wallet_email(
-    email_to: str,
-    username: str
-) -> None:
+def send_change_wallet_email(email_to: str, username: str) -> None:
     """
     Send change wallet email
 

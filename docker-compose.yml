@@ -1,4 +1,3 @@
-version: "3.6"
 services:
 
   proxy:
@@ -76,6 +75,12 @@ services:
       - .env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     deploy:
       placement:
         constraints:
@@ -108,6 +113,12 @@ services:
     # image: rabbitmq:3-management
     #
     # You also have to change the flower command
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   flower:
     image: mher/flower:0.9.5
@@ -158,6 +169,9 @@ services:
       dockerfile: backend.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+    depends_on:
+      db:
+        condition: service_healthy
     deploy:
       labels:
         - traefik.enable=true
@@ -188,6 +202,11 @@ services:
       dockerfile: celeryworker.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+    depends_on:
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
     command: bash -c "python /app/app/celeryworker_pre_start.py && celery -A app.worker worker -l info -Q main-queue,beat-queue -P eventlet -c 100"
 
   celerybeat:
@@ -213,6 +232,11 @@ services:
       dockerfile: celeryworker.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+    depends_on:
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
     command: bash -c "python /app/app/celeryworker_pre_start.py && celery -A app.worker beat -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
 
   # frontend:

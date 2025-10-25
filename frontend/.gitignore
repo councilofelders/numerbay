@@ -10,6 +10,11 @@ lerna-debug.log*
 # NPM config
 .npmrc
 
+# Environment files (keep .env.example in repo)
+.env
+.env.local
+.env.*.local
+
 # Yarn Integrity file
 .yarn-integrity
 

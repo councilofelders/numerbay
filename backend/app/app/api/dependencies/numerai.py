@@ -33,11 +33,9 @@ def get_numerai_api_info(user_json: Dict) -> Dict:
             secret_key=user_json.get("numerai_api_key_secret"),
         )
     except ValueError as e:
-        print(
-            f"Numerai API Key update failed for {user_json['username']}: {str(e)}"
-        )
+        print(f"Numerai API Key update failed for {user_json['username']}: {str(e)}")
         return {"success": False, "message": str(e), "data": None}
-    
+
     # Process API key scopes
     api_key = list(
         filter(
@@ -64,7 +62,7 @@ def get_numerai_api_info(user_json: Dict) -> Dict:
         "numerai_wallet_address": account["walletAddress"],
         "account": account,  # Include full account data
     }
-    
+
     return {"success": True, "message": "", "data": user_update_json}
 
 
@@ -526,7 +524,7 @@ def set_target_stake(  # pylint: disable=too-many-locals
     result_stake = api.stake_change(
         str(abs(net_delta_amount)),
         action="increase" if net_delta_amount > 0 else "decrease",
-        model_id=matched_model["id"]
+        model_id=matched_model["id"],
     )
     return result_stake
 
@@ -554,9 +552,8 @@ def get_numerai_active_round() -> Dict:
 
 async def fetch_single_user_models(user: models.User) -> Dict:
     """Fetch single user models"""
-    from app.api.api_v1.endpoints.numerai import (  # pylint: disable=import-outside-toplevel
+    from app.api.api_v1.endpoints.numerai import (  # pylint: disable=import-outside-toplevel; get_numerai_model_profile_endpoint,
         get_numerai_models_endpoint,
-        # get_numerai_model_profile_endpoint,
     )
 
     numerai_models = get_numerai_models_endpoint(current_user=user)  # type: ignore

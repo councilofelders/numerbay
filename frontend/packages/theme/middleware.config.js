@@ -4,7 +4,7 @@ module.exports = {
       location: '@vue-storefront/numerbay-api/server',
       configuration: {
         api: {
-          url: `http://${process.env.VUE_APP_DOMAIN_DEV || 'localhost'}/backend-api/v1/`
+          url: process.env.VUE_APP_API_URL || 'http://localhost:8091/api/v1/'
         }
       }
     }

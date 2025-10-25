@@ -8,14 +8,14 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
+    from .coupon import Coupon  # noqa: F401
     from .favorite import Favorite  # noqa: F401
-    from .product import Product  # noqa: F401
     from .model import Model  # noqa: F401
     from .order import Order  # noqa: F401
     from .poll import Poll  # noqa: F401
+    from .product import Product  # noqa: F401
     from .review import Review  # noqa: F401
     from .vote import Vote  # noqa: F401
-    from .coupon import Coupon  # noqa: F401
 
 
 class User(Base):

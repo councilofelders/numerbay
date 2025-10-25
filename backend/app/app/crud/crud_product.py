@@ -39,13 +39,15 @@ _SORT_OPTION_LOOKUP = {
     ),
     "mmc-up": Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
     "mmc-down": desc(Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)),
-    "0.5corr20v22mmc-up": 0.5 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    "0.5corr20v22mmc-up": 0.5
+    * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
     + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float),
     "0.5corr20v22mmc-down": desc(
         0.5 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
         + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
     ),
-    "2corr20v2tc-up": 2.0 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
+    "2corr20v2tc-up": 2.0
+    * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
     + Model.latest_reps.cast(JSON)["tc"].as_string().cast(Float),
     "2corr20v2tc-down": desc(
         2.0 * Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float)
@@ -92,12 +94,17 @@ _SORT_OPTION_LOOKUP = {
 def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) -> Any:
     """Parse sort option"""
     if category is not None and category.tournament:
-        default_option = desc(
-            0.5 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
-            + 2.0 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
-        ) if category.tournament in [8, 12] else desc(
-            Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float)
-            + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
+        default_option = (
+            desc(
+                0.5 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
+                + 2.0
+                * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
+            )
+            if category.tournament in [8, 12]
+            else desc(
+                Model.latest_reps.cast(JSON)["fnc_v4"].as_string().cast(Float)
+                + 2.0 * Model.latest_reps.cast(JSON)["mmc"].as_string().cast(Float)
+            )
         )
     else:
         default_option = desc(Product.id)

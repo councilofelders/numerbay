@@ -3,6 +3,7 @@
 from decimal import Decimal
 from typing import Any, Dict, List
 
+import requests
 from fastapi import APIRouter, Body, Depends, HTTPException
 
 from app import models
@@ -127,3 +128,27 @@ def set_numerai_model_target_stake(
             detail="Numerai API Error: " + str(e) + " Please try changing the API key.",
         )
     return result_stake
+
+
+@router.post("/graphql-proxy", response_model=Dict)
+def numerai_graphql_proxy(
+    query_data: Dict[str, Any] = Body(...),
+) -> Any:
+    """Proxy GraphQL requests to Numerai Tournament API to avoid CORS issues"""
+    try:
+        response = requests.post(
+            "https://api-tournament.numer.ai/",
+            json=query_data,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to proxy request to Numerai API: {str(e)}",
+        )

@@ -62,8 +62,6 @@ class CouponOwner(BaseModel):
 class CouponCreator(CouponOwner):
     """API data schema for coupon creator"""
 
-    pass
-
 
 # Properties to return to client
 class Coupon(CouponInDBBase):

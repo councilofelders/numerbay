@@ -1,6 +1,7 @@
 """ Backend pre-start script """
 
 import logging
+import os
 
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
@@ -9,8 +10,8 @@ from app.db.session import SessionLocal
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-max_tries = 60 * 5  # 5 minutes  # pylint: disable=invalid-name
-wait_seconds = 1  # pylint: disable=invalid-name
+max_tries = int(os.getenv("DB_CONNECT_MAX_TRIES", "5"))  # pylint: disable=invalid-name
+wait_seconds = int(os.getenv("DB_CONNECT_WAIT_SECONDS", "1"))  # pylint: disable=invalid-name
 
 
 @retry(
@@ -23,8 +24,10 @@ def init() -> None:
     """Init db"""
 
     try:
+        logger.info(f"connecting to db")
         db = SessionLocal()
         # Try to create session to check if DB is awake
+        logger.info(f"running select")
         db.execute("SELECT 1")
     except Exception as e:
         logger.error(e)

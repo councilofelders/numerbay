@@ -17,13 +17,13 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
-    from .favorite import Favorite  # noqa: F401
-    from .user import User  # noqa: F401
-    from .category import Category  # noqa: F401
-    from .model import Model  # noqa: F401
     from .artifact import Artifact  # noqa: F401
+    from .category import Category  # noqa: F401
+    from .favorite import Favorite  # noqa: F401
+    from .model import Model  # noqa: F401
     from .product_option import ProductOption  # noqa: F401
     from .review import Review  # noqa: F401
+    from .user import User  # noqa: F401
 
 
 class Product(Base):

@@ -19,9 +19,9 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .coupon import Coupon  # noqa: F401
-    from .user import User  # noqa: F401
-    from .product import Product  # noqa: F401
     from .order_artifact import OrderArtifact  # noqa: F401
+    from .product import Product  # noqa: F401
+    from .user import User  # noqa: F401
 
 
 class Order(Base):

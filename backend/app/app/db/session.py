@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import functools
 from typing import Callable
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
@@ -17,6 +18,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def with_db_session(func: Callable):
     """Execute a function with a database session and ensure it's closed properly."""
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         db = SessionLocal()
@@ -24,4 +26,5 @@ def with_db_session(func: Callable):
             return func(db, *args, **kwargs)
         finally:
             db.close()
+
     return wrapper

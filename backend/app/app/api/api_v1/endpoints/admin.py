@@ -133,22 +133,23 @@ def send_seller_wallet_emails(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
-    users = db.query(models.User).join(
-        models.User.products
-    ).filter(
-        or_(
-            models.User.default_receiving_wallet_address == '',
-            models.User.default_receiving_wallet_address.is_(None)
+    users = (
+        db.query(models.User)
+        .join(models.User.products)
+        .filter(
+            or_(
+                models.User.default_receiving_wallet_address == "",
+                models.User.default_receiving_wallet_address.is_(None),
+            )
         )
-    ).group_by(
-        models.User.id
-    ).all()
+        .group_by(models.User.id)
+        .all()
+    )
 
     for user_obj in users:
         if settings.EMAILS_ENABLED:
             send_change_wallet_email(
-                email_to=user_obj.email,
-                username=user_obj.username
+                email_to=user_obj.email, username=user_obj.username
             )
     return [u.username for u in users]
 
