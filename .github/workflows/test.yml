@@ -23,7 +23,6 @@ jobs:
     # Set job outputs to values from filter step
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
     - uses: actions/checkout@v2
     - uses: dorny/paths-filter@v2
@@ -32,8 +31,6 @@ jobs:
         filters: |
           backend:
             - 'backend/**'
-          frontend:
-            - 'frontend/**'
 
   # backend jobs
   backend-test:
@@ -59,96 +56,3 @@ jobs:
         env:
           GCP_STORAGE_BUCKET: storage.test.numerbay.ai
           GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
-
-  # frontend jobs
-  frontend-prepare-dependencies:
-    name: Prepare frontend dependencies
-    needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14'
-
-      - name: Get cached dependencies
-        uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-yarn-2-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
-
-  # frontend-lint:
-  #   name: Lint
-  #   needs: prepare-frontend-dependencies
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-
-  #     - name: Setup node
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: '14'
-
-  #     - name: Get cached dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: '**/node_modules'
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-
-  #     - name: Run linter
-  #       run: yarn lint
-
-  frontend-test:
-    name: Test frontend
-    needs: frontend-prepare-dependencies
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14'
-
-      - name: Get cached dependencies
-        uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-yarn-2-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Build api-client
-        run: yarn build:api-client
-
-      - name: Test api-client
-        run: yarn test:api-client
-
-      - name: Build composables
-        run: yarn build:composables
-
-      - name: Test composables
-        run: yarn test:composables
-
-      - name: Build theme
-        run: yarn build:theme
-
-      - name: Test theme
-        run: yarn test:theme
-
-#      - name: Test e2e integration
-#        run: cd packages/theme && yarn test:e2e:hl

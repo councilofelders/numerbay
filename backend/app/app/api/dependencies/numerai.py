@@ -12,6 +12,62 @@ from sqlalchemy.orm import Session
 from app import crud, models
 
 
+def get_numerai_api_info(user_json: Dict) -> Dict:
+    """
+    Get Numerai API info.
+    Returns success status, user data for update, and any error messages.
+    """
+    if (
+        "numerai_api_key_secret" not in user_json
+        or user_json["numerai_api_key_secret"] is None
+        or user_json["numerai_api_key_secret"] == ""
+    ):
+        print(
+            f"Numerai API Key update failed for {user_json['username']}: No secret key"
+        )
+        return {"success": False, "message": "No secret key", "data": None}
+
+    try:
+        account = get_numerai_api_user_info(
+            public_id=user_json.get("numerai_api_key_public_id", None),
+            secret_key=user_json.get("numerai_api_key_secret"),
+        )
+    except ValueError as e:
+        print(
+            f"Numerai API Key update failed for {user_json['username']}: {str(e)}"
+        )
+        return {"success": False, "message": str(e), "data": None}
+    
+    # Process API key scopes
+    api_key = list(
+        filter(
+            lambda token: token["publicId"]
+            == user_json.get("numerai_api_key_public_id"),
+            account["apiTokens"],
+        )
+    )
+    if len(api_key) < 1:
+        print(
+            f"Numerai API Key update failed for {user_json['username']}: Invalid API Key"
+        )
+        return {"success": False, "message": "Invalid API Key", "data": None}
+
+    api_scopes = api_key[0]["scopes"]
+
+    # Prepare user data for update
+    user_update_json = {
+        "numerai_api_key_can_upload_submission": "upload_submission" in api_scopes,
+        "numerai_api_key_can_stake": "stake" in api_scopes,
+        "numerai_api_key_can_read_submission_info": "read_submission_info"
+        in api_scopes,
+        "numerai_api_key_can_read_user_info": "read_user_info" in api_scopes,
+        "numerai_wallet_address": account["walletAddress"],
+        "account": account,  # Include full account data
+    }
+    
+    return {"success": True, "message": "", "data": user_update_json}
+
+
 def get_numerai_api_user_info(public_id: str, secret_key: str) -> Any:
     """
     Retrieve Numerai user info.
