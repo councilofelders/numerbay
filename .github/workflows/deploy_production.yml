@@ -50,7 +50,6 @@ jobs:
           docker compose pull --quiet proxy db pgadmin queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
-          docker pull --quiet node:14
 
       - name: Build and Push Production Images
         run: |
@@ -59,9 +58,7 @@ jobs:
         env:
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
           TAG: prod
-          FRONTEND_ENV: production
           DOMAIN: numerbay.ai
 
   # deploy production
@@ -141,9 +138,7 @@ jobs:
         env:
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
           TAG: prod
-          FRONTEND_ENV: production
           DOMAIN: numerbay.ai
           TRAEFIK_TAG: numerbay.ai
           STACK_NAME: numerbay-ai

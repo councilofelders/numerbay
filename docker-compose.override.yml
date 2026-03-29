@@ -117,22 +117,22 @@ services:
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
     command: bash -c "python /app/app/celeryworker_pre_start.py && celery -A app.worker beat -l info -s /tmp/celerybeat-schedule --pidfile /tmp/celerybeat.pid"
 
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        FRONTEND_ENV: dev
-    depends_on:
-      - backend
-    links:
-      - backend
-    environment:
-      - VUE_APP_DOMAIN_DEV=backend
-    labels:
-      - traefik.enable=true
-      - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
-      - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=3000
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     args:
+  #       FRONTEND_ENV: dev
+  #   depends_on:
+  #     - backend
+  #   links:
+  #     - backend
+  #   environment:
+  #     - VUE_APP_DOMAIN_DEV=backend
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
+  #     - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
+  #     - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=3000
 
 networks:
   traefik-public:

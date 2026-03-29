@@ -47,7 +47,6 @@ jobs:
           docker compose pull --quiet proxy db pgadmin queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
-          docker pull --quiet node:12
 
       - name: Build and Push Staging Images
         run: |
@@ -56,9 +55,7 @@ jobs:
         env:
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
           TAG: stag
-          FRONTEND_ENV: staging
           DOMAIN: stag.numerbay.ai
 
   # deploy staging
@@ -108,9 +105,7 @@ jobs:
         env:
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
           TAG: stag
-          FRONTEND_ENV: staging
           DOMAIN: stag.numerbay.ai
           TRAEFIK_TAG: stag.numerbay.ai
           STACK_NAME: stag-numerbay-ai
