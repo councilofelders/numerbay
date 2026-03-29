@@ -1,10 +1,13 @@
 #! /usr/bin/env bash
+set -e
 
 # Let the DB start
 python /app/app/backend_pre_start.py
 
-# Run migrations
-alembic upgrade head
+if [ "${RUN_DB_MIGRATIONS_ON_STARTUP:-false}" = "true" ]; then
+  alembic upgrade head
+fi
 
-# Create initial data in DB
-python /app/app/initial_data.py
+if [ "${RUN_INIT_DATA_ON_STARTUP:-false}" = "true" ]; then
+  python /app/app/initial_data.py
+fi

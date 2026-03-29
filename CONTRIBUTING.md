@@ -284,6 +284,14 @@ $ alembic revision --autogenerate -m "Add column last_name to User model"
 $ alembic upgrade head
 ```
 
+For database bootstrap against the bundled Docker Compose database, use:
+
+```console
+$ docker compose run --rm --no-deps backend bash /app/bootstrap-db.sh
+```
+
+That command waits for the database, applies migrations, and seeds initial data. Normal production-style backend startup no longer performs those steps automatically.
+
 If you don't want to use migrations at all, uncomment the line in the file at `./backend/app/app/db/init_db.py` with:
 
 ```python

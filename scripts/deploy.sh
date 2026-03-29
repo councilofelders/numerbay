@@ -4,6 +4,7 @@
 set -e
 
 STACK_COMPOSE_FILE=${STACK_COMPOSE_FILE:-docker-compose.yml}
+BOOTSTRAP_DB_BEFORE_DEPLOY=${BOOTSTRAP_DB_BEFORE_DEPLOY:-true}
 
 DOMAIN=${DOMAIN?Variable not set} \
 TRAEFIK_TAG=${TRAEFIK_TAG?Variable not set} \
@@ -29,6 +30,10 @@ fi
 
 if [ -n "${POSTGRES_DB:-}" ]; then
   sed -r "s/^(\s*POSTGRES_DB\s*:\s*).*/\1${POSTGRES_DB}/" -i docker-stack.yml
+fi
+
+if [ "${BOOTSTRAP_DB_BEFORE_DEPLOY}" = "true" ]; then
+  sh ./scripts/bootstrap-db.sh
 fi
 
 docker stack deploy -c docker-stack.yml --with-registry-auth --prune "${STACK_NAME?Variable not set}"

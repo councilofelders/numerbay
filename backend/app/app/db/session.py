@@ -6,10 +6,10 @@ from sqlalchemy.orm import sessionmaker
 
 engine = create_engine(
     settings.SQLALCHEMY_DATABASE_URI,
-    pool_size=15,
-    max_overflow=20,
-    pool_timeout=60,
-    pool_pre_ping=True,
+    pool_size=settings.SQLALCHEMY_POOL_SIZE,
+    max_overflow=settings.SQLALCHEMY_MAX_OVERFLOW,
+    pool_timeout=settings.SQLALCHEMY_POOL_TIMEOUT,
+    pool_pre_ping=settings.SQLALCHEMY_POOL_PRE_PING,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

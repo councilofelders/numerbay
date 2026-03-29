@@ -113,3 +113,6 @@ jobs:
           FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
           FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
           POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
+          BOOTSTRAP_DB_BEFORE_DEPLOY: "false"
+          RUN_DB_MIGRATIONS_ON_STARTUP: "true"
+          RUN_INIT_DATA_ON_STARTUP: "true"

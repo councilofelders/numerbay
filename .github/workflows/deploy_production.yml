@@ -159,3 +159,6 @@ jobs:
           MAILGUN_DOMAIN_NAME: numerbay.ai
           MAILGUN_API_KEY: ${{ secrets.APP_MAILGUN_API_KEY }}
           WEBHOOK_ENABLED: True
+          BOOTSTRAP_DB_BEFORE_DEPLOY: "true"
+          RUN_DB_MIGRATIONS_ON_STARTUP: "false"
+          RUN_INIT_DATA_ON_STARTUP: "false"

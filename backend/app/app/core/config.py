@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    SQLALCHEMY_POOL_SIZE: int = 15
+    SQLALCHEMY_MAX_OVERFLOW: int = 20
+    SQLALCHEMY_POOL_TIMEOUT: int = 60
+    SQLALCHEMY_POOL_PRE_PING: bool = True
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:

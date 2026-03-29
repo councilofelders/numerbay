@@ -121,6 +121,8 @@ services:
     environment:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=https://${DOMAIN?Variable not set}
+      - RUN_DB_MIGRATIONS_ON_STARTUP=${RUN_DB_MIGRATIONS_ON_STARTUP-false}
+      - RUN_INIT_DATA_ON_STARTUP=${RUN_INIT_DATA_ON_STARTUP-false}
       # Allow explicit env var override for tests
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_USER=${SMTP_USER}
