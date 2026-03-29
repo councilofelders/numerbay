@@ -4,8 +4,9 @@ set -e
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(dirname "$SCRIPT_DIR")
+LOAD_DOTENV="${LOAD_DOTENV:-true}"
 
-if [ -f "$REPO_ROOT/.env" ]; then
+if [ "$LOAD_DOTENV" = "true" ] && [ -f "$REPO_ROOT/.env" ]; then
   set -a
   . "$REPO_ROOT/.env"
   set +a
