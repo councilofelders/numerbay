@@ -47,7 +47,7 @@ jobs:
       # (docker pull is faster than caching in most cases.)
       - name: Pull Docker Images
         run: |
-          docker compose pull --quiet proxy db pgadmin queue flower
+          docker compose pull --quiet proxy queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
@@ -105,7 +105,6 @@ jobs:
 #          FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
 #          FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
 #          POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
-#          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
 #          GCP_STORAGE_BUCKET: storage.numerbay.ai
 #          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
 #          INFURA_PROJECT_ID: ${{ secrets.APP_INFURA_PROJECT_ID }}
@@ -136,6 +135,7 @@ jobs:
           export DOMAIN=numerbay.ai
           bash ./scripts/deploy.sh
         env:
+          STACK_COMPOSE_FILE: docker-compose.production.yml
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
           TAG: prod
@@ -149,7 +149,6 @@ jobs:
           POSTGRES_USER: ${{ secrets.APP_POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.APP_POSTGRES_DB }}
           POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
-          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
           GCP_STORAGE_BUCKET: storage.numerbay.ai
           GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
           GCP_WEBHOOK_FUNCTION: ${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}

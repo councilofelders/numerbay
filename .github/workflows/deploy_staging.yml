@@ -44,7 +44,7 @@ jobs:
       # (docker pull is faster than caching in most cases.)
       - name: Pull Docker Images
         run: |
-          docker compose pull --quiet proxy db pgadmin queue flower
+          docker compose pull --quiet proxy db queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
@@ -113,4 +113,3 @@ jobs:
           FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
           FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
           POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
-          PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
