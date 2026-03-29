@@ -112,6 +112,27 @@ class Settings(BaseSettings):
     ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS: int = 60
     MAX_ROUND_OFFSET: int = 50
     WEBHOOK_ENABLED: bool = False
+    SCHEDULER_OWNER_GLOBALS_STATS: str = "celery"
+    SCHEDULER_OWNER_STAKE_SNAPSHOTS: str = "celery"
+    SCHEDULER_OWNER_PRODUCT_SALES_STATS: str = "celery"
+    SCHEDULER_OWNER_POLLS: str = "celery"
+    SCHEDULER_OWNER_PRUNE_STORAGE: str = "celery"
+    SCHEDULER_OWNER_ARTIFACT_REMINDERS: str = "celery"
+
+    @validator(
+        "SCHEDULER_OWNER_GLOBALS_STATS",
+        "SCHEDULER_OWNER_STAKE_SNAPSHOTS",
+        "SCHEDULER_OWNER_PRODUCT_SALES_STATS",
+        "SCHEDULER_OWNER_POLLS",
+        "SCHEDULER_OWNER_PRUNE_STORAGE",
+        "SCHEDULER_OWNER_ARTIFACT_REMINDERS",
+        pre=True,
+    )
+    def validate_scheduler_owner(cls, v: Optional[str]) -> str:
+        owner = (v or "celery").strip().lower()
+        if owner not in {"celery", "gcp"}:
+            raise ValueError("scheduler owner must be either 'celery' or 'gcp'")
+        return owner
 
     class Config:
         case_sensitive = True

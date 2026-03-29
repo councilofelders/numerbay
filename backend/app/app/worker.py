@@ -1340,6 +1340,75 @@ def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> N
     return None
 
 
+def is_celery_schedule_owner(owner: str) -> bool:
+    """Return whether the given scheduler owner should stay on Celery Beat."""
+
+    return owner == "celery"
+
+
+def build_beat_schedule() -> Dict[str, Dict[str, Any]]:
+    """Build Beat schedules for task families still owned by Celery."""
+
+    beat_schedule = {
+        "test_tick": {
+            "task": "app.worker.tick",
+            "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
+            "args": (["cron test"]),
+        },
+        "batch_update_model_scores": {
+            "task": "app.worker.batch_update_model_scores_task",
+            "schedule": crontab(day_of_week="tue-sat", hour=14, minute=5),
+            "kwargs": dict(retries=10),
+        },
+        "update_active_round": {
+            "task": "app.worker.update_active_round",
+            "schedule": crontab(),
+        },
+    }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_GLOBALS_STATS):
+        beat_schedule["update_globals_stats_task"] = {
+            "task": "app.worker.update_globals_stats_task",
+            "schedule": crontab(hour=0, minute=0),
+        }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_STAKE_SNAPSHOTS):
+        beat_schedule["batch_update_stake_snapshots"] = {
+            "task": "app.worker.batch_update_stake_snapshots",
+            "schedule": crontab(day_of_week="mon", hour=14, minute=0),
+        }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_PRODUCT_SALES_STATS):
+        beat_schedule["batch_update_product_sales_stats"] = {
+            "task": "app.worker.batch_update_product_sales_stats",
+            "schedule": crontab(hour=0, minute=0),
+        }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_POLLS):
+        beat_schedule["batch_update_polls"] = {
+            "task": "app.worker.batch_update_polls",
+            "schedule": crontab(hour=0, minute=0),
+        }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_PRUNE_STORAGE):
+        beat_schedule["batch_prune_storage"] = {
+            "task": "app.worker.batch_prune_storage",
+            "schedule": crontab(day_of_week="wed", hour=0, minute=0),
+        }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_ARTIFACT_REMINDERS):
+        beat_schedule["batch_send_order_artifact_upload_reminder_emails_1"] = {
+            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+            "schedule": crontab(day_of_week="sun", hour=12, minute=0),
+        }
+        beat_schedule["batch_send_order_artifact_upload_reminder_emails_2"] = {
+            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+            "schedule": crontab(day_of_week="mon", hour=12, minute=0),
+        }
+
+    return beat_schedule
+
+
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
     sender,  # type: ignore
@@ -1348,60 +1417,12 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
     """Setup celery scheduled tasks"""
 
     print("Setup Cron Tasks")
-    sender.conf.beat_schedule = {
-        "test_tick": {
-            "task": "app.worker.tick",
-            "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
-            "args": (["cron test"]),
-        },
-        # "batch_update_models": {
-        #     "task": "app.worker.batch_update_models_task",
-        #     "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
-        # },
-        "batch_update_model_scores": {
-            "task": "app.worker.batch_update_model_scores_task",
-            "schedule": crontab(day_of_week="tue-sat", hour=14, minute=5),
-            "kwargs": dict(retries=10),
-        },
-        "update_globals_stats_task": {
-            "task": "app.worker.update_globals_stats_task",
-            "schedule": crontab(hour=0, minute=0),
-        },
-        "update_active_round": {
-            "task": "app.worker.update_active_round",
-            "schedule": crontab(),
-        },
-        # "update_round_rollover": {
-        #     "task": "app.worker.update_round_rollover",
-        #     "schedule": crontab(day_of_week="mon", hour=14, minute=0),
-        # },
-        "batch_update_stake_snapshots": {
-            "task": "app.worker.batch_update_stake_snapshots",
-            "schedule": crontab(day_of_week="mon", hour=14, minute=0),
-        },
-        "batch_update_product_sales_stats": {
-            "task": "app.worker.batch_update_product_sales_stats",
-            "schedule": crontab(hour=0, minute=0),
-        },
-        "batch_update_polls": {
-            "task": "app.worker.batch_update_polls",
-            "schedule": crontab(hour=0, minute=0),
-        },
-        "batch_prune_storage": {
-            "task": "app.worker.batch_prune_storage",
-            "schedule": crontab(day_of_week="wed", hour=0, minute=0),
-        },
-        "batch_send_order_artifact_upload_reminder_emails_1": {
-            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-            "schedule": crontab(day_of_week="sun", hour=12, minute=0),
-        },
-        "batch_send_order_artifact_upload_reminder_emails_2": {
-            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-            "schedule": crontab(day_of_week="mon", hour=12, minute=0),
-        },
-    }
+    sender.conf.beat_schedule = build_beat_schedule()
     sender.add_periodic_task(
         settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
         batch_update_payments_task.s(),
-        name=f"batch update payments every {settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS} seconds",
+        name=(
+            "batch update payments every "
+            f"{settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS} seconds"
+        ),
     )
