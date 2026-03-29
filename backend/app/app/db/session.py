@@ -15,13 +15,15 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def with_db_session(func: Callable):
-    """Execute a function with a database session and ensure it's closed properly."""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        db = SessionLocal()
-        try:
-            return func(db, *args, **kwargs)
-        finally:
-            db.close()
-    return wrapper
+def run_with_db_session(func: Callable, *args, **kwargs):
+    """Execute a function with a database session and immediately return the result.
+    This is a direct call version that doesn't require calling the wrapped function.
+    
+    Usage:
+        result = run_with_db_session(lambda db: crud.user.get(db, id=1))
+    """
+    db = SessionLocal()
+    try:
+        return func(db, *args, **kwargs)
+    finally:
+        db.close()
