@@ -153,6 +153,7 @@ jobs:
           GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
           GCP_WEBHOOK_FUNCTION: ${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}
           INFURA_PROJECT_ID: ${{ secrets.APP_INFURA_PROJECT_ID }}
+          SENTRY_DSN: ${{ secrets.APP_SENTRY_DSN }}
 #          SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
 #          SMTP_USER: ${{ secrets.APP_SMTP_USER }}
 #          SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
