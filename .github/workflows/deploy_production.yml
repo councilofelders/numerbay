@@ -145,6 +145,9 @@ jobs:
           SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
           FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
           FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
+          POSTGRES_SERVER: ${{ secrets.APP_POSTGRES_SERVER }}
+          POSTGRES_USER: ${{ secrets.APP_POSTGRES_USER }}
+          POSTGRES_DB: ${{ secrets.APP_POSTGRES_DB }}
           POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
           PGADMIN_DEFAULT_PASSWORD: ${{ secrets.APP_PGADMIN_DEFAULT_PASSWORD }}
           GCP_STORAGE_BUCKET: storage.numerbay.ai

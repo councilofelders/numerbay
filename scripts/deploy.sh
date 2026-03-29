@@ -18,6 +18,17 @@ sed -r "s/^(\s*FIRST_SUPERUSER_PASSWORD\s*:\s*).*/\1${FIRST_SUPERUSER_PASSWORD?V
 sed -r "s/^(\s*FLOWER_BASIC_AUTH\s*:\s*).*/\1${FLOWER_BASIC_AUTH?Variable not set}/" -i docker-stack.yml
 sed -r "s/^(\s*POSTGRES_PASSWORD\s*:\s*).*/\1${POSTGRES_PASSWORD?Variable not set}/" -i docker-stack.yml
 sed -r "s/^(\s*PGADMIN_DEFAULT_PASSWORD\s*:\s*).*/\1${PGADMIN_DEFAULT_PASSWORD?Variable not set}/" -i docker-stack.yml
-cat docker-stack.yml
+
+if [ -n "${POSTGRES_SERVER:-}" ]; then
+  sed -r "s/^(\s*POSTGRES_SERVER\s*:\s*).*/\1${POSTGRES_SERVER}/" -i docker-stack.yml
+fi
+
+if [ -n "${POSTGRES_USER:-}" ]; then
+  sed -r "s/^(\s*POSTGRES_USER\s*:\s*).*/\1${POSTGRES_USER}/" -i docker-stack.yml
+fi
+
+if [ -n "${POSTGRES_DB:-}" ]; then
+  sed -r "s/^(\s*POSTGRES_DB\s*:\s*).*/\1${POSTGRES_DB}/" -i docker-stack.yml
+fi
 
 docker stack deploy -c docker-stack.yml --with-registry-auth "${STACK_NAME?Variable not set}"
