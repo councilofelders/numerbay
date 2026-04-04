@@ -2,3 +2,5 @@
 .mypy_cache
 .idea
 docker-stack.yml
+ops/gcp/env/*.env
+!ops/gcp/env/*.env.example

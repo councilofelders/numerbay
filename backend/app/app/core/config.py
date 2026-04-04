@@ -117,7 +117,6 @@ class Settings(BaseSettings):
     SCHEDULER_OWNER_PRODUCT_SALES_STATS: str = "celery"
     SCHEDULER_OWNER_POLLS: str = "celery"
     SCHEDULER_OWNER_PRUNE_STORAGE: str = "celery"
-    SCHEDULER_OWNER_ARTIFACT_REMINDERS: str = "celery"
 
     @validator(
         "SCHEDULER_OWNER_GLOBALS_STATS",
@@ -125,7 +124,6 @@ class Settings(BaseSettings):
         "SCHEDULER_OWNER_PRODUCT_SALES_STATS",
         "SCHEDULER_OWNER_POLLS",
         "SCHEDULER_OWNER_PRUNE_STORAGE",
-        "SCHEDULER_OWNER_ARTIFACT_REMINDERS",
         pre=True,
     )
     def validate_scheduler_owner(cls, v: Optional[str]) -> str:

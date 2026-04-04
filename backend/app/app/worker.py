@@ -1396,15 +1396,14 @@ def build_beat_schedule() -> Dict[str, Dict[str, Any]]:
             "schedule": crontab(day_of_week="wed", hour=0, minute=0),
         }
 
-    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_ARTIFACT_REMINDERS):
-        beat_schedule["batch_send_order_artifact_upload_reminder_emails_1"] = {
-            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-            "schedule": crontab(day_of_week="sun", hour=12, minute=0),
-        }
-        beat_schedule["batch_send_order_artifact_upload_reminder_emails_2"] = {
-            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-            "schedule": crontab(day_of_week="mon", hour=12, minute=0),
-        }
+    beat_schedule["batch_send_order_artifact_upload_reminder_emails_1"] = {
+        "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+        "schedule": crontab(day_of_week="sun", hour=12, minute=0),
+    }
+    beat_schedule["batch_send_order_artifact_upload_reminder_emails_2"] = {
+        "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+        "schedule": crontab(day_of_week="mon", hour=12, minute=0),
+    }
 
     return beat_schedule
 

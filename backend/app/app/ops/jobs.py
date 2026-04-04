@@ -8,7 +8,6 @@ from app.worker import (
     batch_update_polls,
     batch_update_product_sales_stats,
     batch_update_stake_snapshots,
-    send_order_artifact_upload_reminder_emails_task,
     update_globals_stats_task,
 )
 
@@ -16,7 +15,6 @@ JobRunner = Callable[[], None]
 
 
 JOB_RUNNERS: Dict[str, JobRunner] = {
-    "artifact-reminders": send_order_artifact_upload_reminder_emails_task,
     "globals-stats": update_globals_stats_task,
     "polls": batch_update_polls,
     "product-sales-stats": batch_update_product_sales_stats,
