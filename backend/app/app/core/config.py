@@ -35,6 +35,12 @@ class Settings(BaseSettings):
             return None
         return v
 
+    @validator("ASYNC_WORKER_DISPATCH_URL", pre=True)
+    def async_worker_dispatch_url_can_be_blank(cls, v: str) -> Optional[str]:
+        if not v:
+            return None
+        return v
+
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -96,6 +102,14 @@ class Settings(BaseSettings):
     # GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
     GCP_SERVICE_ACCOUNT_INFO: Optional[str] = None
     GCP_WEBHOOK_FUNCTION: Optional[str] = None
+    GCP_TASKS_LOCATION: str = "us-central1"
+    GCP_TASKS_QUEUE_NOTIFICATIONS: str = "notifications"
+    GCP_TASKS_QUEUE_WEBHOOKS: str = "webhooks"
+    GCP_TASKS_QUEUE_PAYMENTS: str = "payments"
+    GCP_TASKS_QUEUE_SUBMISSIONS: str = "submissions"
+    ASYNC_WORKER_DISPATCH_URL: Optional[AnyHttpUrl] = None
+    ASYNC_WORKER_DISPATCH_TOKEN: Optional[str] = None
+    ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL: Optional[str] = None
 
     # Web3
     INFURA_PROJECT_ID: Optional[str] = None
@@ -112,6 +126,10 @@ class Settings(BaseSettings):
     ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS: int = 60
     MAX_ROUND_OFFSET: int = 50
     WEBHOOK_ENABLED: bool = False
+    ASYNC_OWNER_NOTIFICATIONS: str = "celery"
+    ASYNC_OWNER_WEBHOOKS: str = "celery"
+    ASYNC_OWNER_PAYMENTS: str = "celery"
+    ASYNC_OWNER_SUBMISSIONS: str = "celery"
     SCHEDULER_OWNER_GLOBALS_STATS: str = "celery"
     SCHEDULER_OWNER_STAKE_SNAPSHOTS: str = "celery"
     SCHEDULER_OWNER_PRODUCT_SALES_STATS: str = "celery"
@@ -119,6 +137,10 @@ class Settings(BaseSettings):
     SCHEDULER_OWNER_PRUNE_STORAGE: str = "celery"
 
     @validator(
+        "ASYNC_OWNER_NOTIFICATIONS",
+        "ASYNC_OWNER_WEBHOOKS",
+        "ASYNC_OWNER_PAYMENTS",
+        "ASYNC_OWNER_SUBMISSIONS",
         "SCHEDULER_OWNER_GLOBALS_STATS",
         "SCHEDULER_OWNER_STAKE_SNAPSHOTS",
         "SCHEDULER_OWNER_PRODUCT_SALES_STATS",

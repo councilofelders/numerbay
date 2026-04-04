@@ -16,6 +16,7 @@ from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
     any_weekday_round,
     on_order_confirmed,
+    schedule_initial_payment_update,
     send_order_canceled_emails,
     send_order_refund_request_emails,
     send_order_upload_reminder_emails,
@@ -27,7 +28,7 @@ from app.api.dependencies.products import (
     validate_existing_product_option,
 )
 from app.api.dependencies.site_globals import validate_not_during_rollover
-from app.core.celery_app import celery_app
+from app.core.async_tasks import enqueue_upload_numerai_artifact
 from app.core.config import settings
 from app.utils import send_new_order_email
 
@@ -317,6 +318,8 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             db=db, obj_in=order_in, buyer_id=current_user.id
         )
 
+        schedule_initial_payment_update(order)
+
         if settings.EMAILS_ENABLED:
             # email buyer
             if current_user.email:
@@ -386,17 +389,14 @@ def submit_artifact(
     if artfact.product_id != order.product_id:
         raise HTTPException(status_code=400, detail="Invalid artifact")
 
-    celery_app.send_task(
-        "app.worker.upload_numerai_artifact_task",
-        kwargs=dict(
-            order_id=order.id,
-            object_name=artfact.object_name,
-            model_id=order.submit_model_id,
-            numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-            numerai_api_key_secret=order.buyer.numerai_api_key_secret,
-            tournament=order.product.model.tournament,
-            version=1,
-        ),
+    enqueue_upload_numerai_artifact(
+        order_id=order.id,
+        object_name=artfact.object_name,
+        model_id=order.submit_model_id,
+        numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
+        numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+        tournament=order.product.model.tournament,
+        version=1,
     )
     crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
     return {"msg": "success!"}

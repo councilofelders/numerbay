@@ -6,6 +6,10 @@ from fastapi import APIRouter, Depends
 
 from app import models
 from app.api import deps
+from app.core.async_tasks import (
+    enqueue_pending_payment_updates,
+    enqueue_trigger_webhook_for_product,
+)
 from app.core.celery_app import celery_app
 
 router = APIRouter()
@@ -88,9 +92,7 @@ def add_job_payments(
     ),  # pylint: disable=W0613
 ) -> Any:
     """Add payments job"""
-    celery_app.send_task("app.worker.batch_update_payments_task")
-
-    return {"msg": "success!"}
+    return {"queued": enqueue_pending_payment_updates()}
 
 
 @router.post("/submit")
@@ -180,7 +182,7 @@ def trigger_webhook_for_product(
     ),  # pylint: disable=W0613
 ) -> Any:
     """Trigger webhook for product"""
-    celery_app.send_task("app.worker.trigger_webhook_for_product_task", args=[id])
+    enqueue_trigger_webhook_for_product(id)
 
     return {"msg": "success!"}
 

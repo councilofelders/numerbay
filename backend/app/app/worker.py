@@ -1,7 +1,6 @@
 """ Celery worker tasks """
 
 import functools
-import io
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -9,7 +8,6 @@ from decimal import Decimal
 from typing import Any, Dict, Optional
 
 import pandas as pd
-import requests
 from celery import group
 from celery.schedules import crontab
 from fastapi.encoders import jsonable_encoder
@@ -22,13 +20,18 @@ from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
 from app.api.dependencies.commons import on_round_open
-from app.api.dependencies.order_artifacts import generate_gcs_signed_url
 from app.api.dependencies.orders import (
-    send_failed_autosubmit_emails,
     send_order_upload_reminder_emails,
-    update_payment,
 )
-from app.api.deps import make_gcp_authorized_post_request
+from app.core.async_tasks import (
+    TASK_SEND_EMAIL,
+    TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
+    TASK_UPDATE_PAYMENT,
+    TASK_UPLOAD_NUMERAI_ARTIFACT,
+    enqueue_pending_payment_updates,
+    enqueue_upload_numerai_artifact,
+    run_async_task,
+)
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.session import SessionLocal, run_with_db_session
@@ -42,12 +45,9 @@ from app.models import (
     StakeSnapshot,
 )
 from app.utils import (
-    send_email,
     send_failed_artifact_seller_email,
-    send_failed_webhook_email,
     send_new_artifact_email,
     send_new_artifact_seller_email,
-    send_succeeded_webhook_email,
 )
 
 client_sentry = Client(settings.SENTRY_DSN)
@@ -98,13 +98,14 @@ def send_email_task(
         environment (dict): env variables for email template
     """
 
-    if environment is None:
-        environment = {}
-    send_email(
-        email_to=email_to,
-        subject_template=subject_template,
-        html_template=html_template,
-        environment=environment,
+    return run_async_task(
+        TASK_SEND_EMAIL,
+        kwargs=dict(
+            email_to=email_to,
+            subject_template=subject_template,
+            html_template=html_template,
+            environment=environment or {},
+        ),
     )
 
 
@@ -542,22 +543,14 @@ def update_payment_subtask(order_id: int) -> None:
     Args:
         order_id (int): order id
     """
-    run_with_db_session(lambda db: update_payment(db, order_id))
+    return run_async_task(TASK_UPDATE_PAYMENT, args=[order_id])
 
 
 @celery_app.task  # (acks_late=True)
 def batch_update_payments_task() -> None:
     """Batch update payments task"""
-    def get_pending_orders(db):
-        orders = crud.order.get_multi_by_state(db, state="pending")
-        return orders
-        
-    orders = run_with_db_session(get_pending_orders)
-    print(f"total pending orders: {len(orders)}")
-    
-    # Extract just the IDs to avoid serialization issues
-    order_ids = [order.id for order in orders]
-    group([update_payment_subtask.s(order_id) for order_id in order_ids]).delay()
+    total_queued = enqueue_pending_payment_updates()
+    print(f"total pending orders: {total_queued}")
 
 
 @celery_app.task  # (acks_late=True)
@@ -582,103 +575,18 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         tournament (int): Tournament ID
         version (int): Data version (placeholder, not used)
     """
-    # First check and mark order as queued in a short DB session
-    def mark_order_queued(db):
-        order = crud.order.get(db=db, id=order_id)
-        if not order:
-            print(f"Order {order_id} not found, skipped")
-            return None
-        # Disable queue check to always redo submission
-        # if order.submit_state == "queued":  # already queued for submission
-        #     print(f"Order {order.id} already queued for submission, skipped")
-        #     return None
-        order = crud.order.update(db, db_obj=order, obj_in={"submit_state": "queued"})
-        return order
-    
-    order = run_with_db_session(mark_order_queued)
-    if order is None:
-        return None
-
-    # All API calls and file operations outside of DB session
-    try:
-        # Has csv artifact and uploaded
-        url = generate_gcs_signed_url(
-            bucket=deps.get_gcs_bucket(),
-            object_name=object_name,
-            action="GET",
-            expiration_minutes=settings.ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES,
-            is_upload=False,
-        )
-
-        # Upload URL
-        submission_auth = numerai.generate_numerai_submission_url(
+    return run_async_task(
+        TASK_UPLOAD_NUMERAI_ARTIFACT,
+        kwargs=dict(
+            order_id=order_id,
             object_name=object_name,
             model_id=model_id,
-            tournament=tournament,
             numerai_api_key_public_id=numerai_api_key_public_id,
             numerai_api_key_secret=numerai_api_key_secret,
-        )
-
-        # Bridge Upload file
-        file_stream = requests.get(url, stream=True)
-        requests.put(
-            submission_auth["url"], data=io.BytesIO(file_stream.content), stream=True
-        )
-
-        # Validate Upload
-        submission_id = numerai.validate_numerai_submission(
-            object_name=submission_auth["filename"],
-            model_id=model_id,
             tournament=tournament,
-            numerai_api_key_public_id=numerai_api_key_public_id,
-            numerai_api_key_secret=numerai_api_key_secret,
-        )
-
-        # Update order status based on submission result
-        if submission_id:
-            # submission successful, mark order submit_state to completed
-            def mark_submission_completed(db):
-                order = crud.order.get(db, id=order_id)
-                crud.order.update(
-                    db,
-                    db_obj=order,  # type: ignore
-                    obj_in={
-                        "submit_state": "completed",
-                        "last_submit_round": crud.globals.get_singleton(  # type: ignore
-                            db=db
-                        ).selling_round,
-                    },
-                )
-            
-            run_with_db_session(mark_submission_completed)
-        else:
-            # mark failed submission
-            def mark_submission_failed(db):
-                order = crud.order.get(db, id=order_id)
-                crud.order.update(
-                    db, db_obj=order, obj_in={"submit_state": "failed"}  # type: ignore
-                )
-            
-            run_with_db_session(mark_submission_failed)
-            # send auto-submit failure emails
-            send_failed_autosubmit_emails(
-                order_obj=order, artifact_name=object_name  # type: ignore
-            )
-            
-        return submission_id
-    except Exception as e:
-        print(f"Error uploading artifact: {str(e)}")
-        # Mark as failed on exception
-        run_with_db_session(lambda db: crud.order.update(
-            db,
-            db_obj=crud.order.get(db, id=order_id),
-            obj_in={"submit_state": "failed"}
-        ))
-        # send auto-submit failure emails
-        send_failed_autosubmit_emails(
-            order_obj=order, artifact_name=object_name  # type: ignore
-        )
-        return None
+            version=version,
+        ),
+    )
 
 
 @celery_app.task  # (acks_late=True)
@@ -770,17 +678,14 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
             print(
                 f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}"
             )
-            celery_app.send_task(
-                "app.worker.upload_numerai_artifact_task",
-                kwargs=dict(
-                    order_id=order_id,
-                    object_name=csv_artifact.object_name,
-                    model_id=order_json["submit_model_id"],
-                    numerai_api_key_public_id=buyer.numerai_api_key_public_id,
-                    numerai_api_key_secret=buyer.numerai_api_key_secret,
-                    tournament=product.model.tournament,  # type: ignore
-                    version=1,
-                ),
+            enqueue_upload_numerai_artifact(
+                order_id=order_id,
+                object_name=csv_artifact.object_name,
+                model_id=order_json["submit_model_id"],
+                numerai_api_key_public_id=buyer.numerai_api_key_public_id,
+                numerai_api_key_secret=buyer.numerai_api_key_secret,
+                tournament=product.model.tournament,  # type: ignore
+                version=1,
             )
     finally:
         db.close()
@@ -880,17 +785,14 @@ def validate_artifact_upload_task(  # pylint: disable=too-many-branches
                     print(
                         f"Uploading csv artifact {artifact.object_name} for order {order.id}"
                     )
-                    celery_app.send_task(
-                        "app.worker.upload_numerai_artifact_task",
-                        kwargs=dict(
-                            order_id=order.id,
-                            object_name=artifact.object_name,
-                            model_id=order.submit_model_id,
-                            numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-                            numerai_api_key_secret=order.buyer.numerai_api_key_secret,
-                            tournament=order.product.model.tournament,
-                            version=1,
-                        ),
+                    enqueue_upload_numerai_artifact(
+                        order_id=order.id,
+                        object_name=artifact.object_name,
+                        model_id=order.submit_model_id,
+                        numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
+                        numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+                        tournament=order.product.model.tournament,
+                        version=1,
                     )
 
             # if artifact.state == "pending":  # artifact not yet validated and
@@ -1281,63 +1183,10 @@ def trigger_webhook_for_product_task(product_id: int, order_id: int = None) -> N
         product_id (int): product ID
         order_id (int): order ID
     """
-    if not settings.WEBHOOK_ENABLED:
-        return None
-
-    db = SessionLocal()
-    try:
-        site_globals = crud.globals.update_singleton(db)
-        selling_round = site_globals.selling_round  # type: ignore
-        if site_globals.active_round != selling_round:  # round not open
-            return None
-
-        product = crud.product.get(db, id=product_id)
-        if not product:
-            return None
-        if not product.webhook:
-            return None
-        date_str = datetime.now().isoformat()
-        response = make_gcp_authorized_post_request(
-            settings.GCP_WEBHOOK_FUNCTION,  # type: ignore
-            settings.GCP_WEBHOOK_FUNCTION,  # type: ignore
-            payload={
-                "url": product.webhook,
-                "payload": {
-                    "date": date_str,
-                    "product_id": product.id,
-                    "product_category": product.category.slug,  # type: ignore
-                    "product_name": product.name,
-                    "product_full_name": product.sku,
-                    "model_id": product.model_id,
-                    "tournament": product.category.tournament,  # type: ignore
-                    "order_id": order_id,
-                    "round_tournament": selling_round,
-                },
-            },
-            headers={"Content-Type": "application/json"},
-        )
-        if response.status_code != 200:
-            send_failed_webhook_email(
-                email_to=product.owner.email,  # type: ignore
-                username=product.owner.username,
-                date=date_str,
-                product=product.sku,
-            )
-            print(
-                f"Webhook for {product.sku} ({product.id}) "
-                f"returned an error {response.status_code}"
-            )
-            return None
-        send_succeeded_webhook_email(
-            email_to=product.owner.email,  # type: ignore
-            username=product.owner.username,
-            date=date_str,
-            product=product.sku,
-        )
-        print(f"Webhook for {product.sku} ({product.id}) succeeded")
-    finally:
-        db.close()
-    return None
+    return run_async_task(
+        TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
+        args=[product_id, order_id],
+    )
 
 
 def is_celery_schedule_owner(owner: str) -> bool:
@@ -1417,11 +1266,12 @@ def setup_periodic_tasks(  # type: ignore  # pylint: disable=unused-argument
 
     print("Setup Cron Tasks")
     sender.conf.beat_schedule = build_beat_schedule()
-    sender.add_periodic_task(
-        settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
-        batch_update_payments_task.s(),
-        name=(
-            "batch update payments every "
-            f"{settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS} seconds"
-        ),
-    )
+    if settings.ASYNC_OWNER_PAYMENTS == "celery":
+        sender.add_periodic_task(
+            settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
+            batch_update_payments_task.s(),
+            name=(
+                "batch update payments every "
+                f"{settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS} seconds"
+            ),
+        )

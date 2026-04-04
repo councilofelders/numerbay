@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.core.celery_app import celery_app
+from app.core.async_tasks import enqueue_trigger_webhook_for_product
 
 
 def validate_search_params(skip: int = None) -> None:
@@ -30,7 +30,4 @@ def on_round_open(db: Session) -> None:
             active_order_products_with_webhook[order.product.id] = order.product  # type: ignore
 
     for _, product in active_order_products_with_webhook.items():
-        celery_app.send_task(
-            "app.worker.trigger_webhook_for_product_task",
-            args=[product.id, None],
-        )
+        enqueue_trigger_webhook_for_product(product.id, None)

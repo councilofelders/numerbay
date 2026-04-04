@@ -11,7 +11,7 @@ from emails.template import JinjaTemplate
 from jose import jwt
 from requests import Response
 
-from app.core.celery_app import celery_app
+from app.core.async_tasks import enqueue_send_email
 from app.core.config import settings
 
 
@@ -95,6 +95,22 @@ def send_email_smtp(
         smtp_options["password"] = settings.SMTP_PASSWORD
     response = message.send(to=email_to, render=environment, smtp=smtp_options)
     logging.info(f"send email result: {response}")
+
+
+def _enqueue_email(
+    email_to: str,
+    subject_template: str = "",
+    html_template: str = "",
+    environment: Dict = None,
+) -> None:
+    """Send email through the configured async owner."""
+
+    enqueue_send_email(
+        email_to=email_to,
+        subject_template=subject_template,
+        html_template=html_template,
+        environment=environment or {},
+    )
 
 
 def send_test_email(email_to: str) -> None:
@@ -203,26 +219,23 @@ def send_new_order_email(  # pylint: disable=too-many-arguments
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/purchases"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "timeout": timeout,
-                "round_order": round_order,
-                "date_order": date_order,
-                "product": product,
-                "from_address": from_address,
-                "to_address": to_address,
-                "amount": amount,
-                "currency": currency,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "timeout": timeout,
+            "round_order": round_order,
+            "date_order": date_order,
+            "product": product,
+            "from_address": from_address,
+            "to_address": to_address,
+            "amount": amount,
+            "currency": currency,
+            "link": link,
+        },
     )
     # send_email(
     #     email_to=email_to,
@@ -275,26 +288,23 @@ def send_new_confirmed_sale_email(  # pylint: disable=too-many-arguments
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/sales"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_order": round_order,
-                "date_order": date_order,
-                "product": product,
-                "buyer": buyer,
-                "transaction_hash": transaction_hash,
-                "amount": amount,
-                "currency": currency,
-                "link": link,
-                "use_encryption": use_encryption,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_order": round_order,
+            "date_order": date_order,
+            "product": product,
+            "buyer": buyer,
+            "transaction_hash": transaction_hash,
+            "amount": amount,
+            "currency": currency,
+            "link": link,
+            "use_encryption": use_encryption,
+        },
     )
 
 
@@ -332,26 +342,23 @@ def send_order_confirmed_email(  # pylint: disable=too-many-arguments
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/purchases"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_order": round_order,
-                "date_order": date_order,
-                "product": product,
-                "from_address": from_address,
-                "to_address": to_address,
-                "transaction_hash": transaction_hash,
-                "amount": amount,
-                "currency": currency,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_order": round_order,
+            "date_order": date_order,
+            "product": product,
+            "from_address": from_address,
+            "to_address": to_address,
+            "transaction_hash": transaction_hash,
+            "amount": amount,
+            "currency": currency,
+            "link": link,
+        },
     )
 
 
@@ -387,25 +394,22 @@ def send_order_expired_email(  # pylint: disable=too-many-arguments
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/purchases"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_order": round_order,
-                "date_order": date_order,
-                "product": product,
-                "from_address": from_address,
-                "to_address": to_address,
-                "amount": amount,
-                "currency": currency,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_order": round_order,
+            "date_order": date_order,
+            "product": product,
+            "from_address": from_address,
+            "to_address": to_address,
+            "amount": amount,
+            "currency": currency,
+            "link": link,
+        },
     )
 
 
@@ -441,25 +445,22 @@ def send_order_canceled_email(  # pylint: disable=too-many-arguments
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/purchases"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_order": round_order,
-                "date_order": date_order,
-                "product": product,
-                "from_address": from_address,
-                "to_address": to_address,
-                "amount": amount,
-                "currency": currency,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_order": round_order,
+            "date_order": date_order,
+            "product": product,
+            "from_address": from_address,
+            "to_address": to_address,
+            "amount": amount,
+            "currency": currency,
+            "link": link,
+        },
     )
 
 
@@ -489,22 +490,19 @@ def send_new_artifact_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/purchases"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_order": round_order,
-                "product": product,
-                "order_id": order_id,
-                "artifact": artifact,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_order": round_order,
+            "product": product,
+            "order_id": order_id,
+            "artifact": artifact,
+            "link": link,
+        },
     )
 
 
@@ -532,21 +530,18 @@ def send_new_artifact_seller_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/listings"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_tournament": round_tournament,
-                "product": product,
-                "artifact": artifact,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_tournament": round_tournament,
+            "product": product,
+            "artifact": artifact,
+            "link": link,
+        },
     )
 
 
@@ -583,26 +578,23 @@ def send_new_coupon_email(  # pylint: disable=too-many-arguments
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/coupons"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "code": code,
-                "date_expiration": date_expiration,
-                "applicable_product_ids": applicable_product_ids,
-                "min_spend": min_spend,
-                "max_discount": max_discount,
-                "discount_percent": discount_percent,
-                "quantity_total": quantity_total,
-                "message": message,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "code": code,
+            "date_expiration": date_expiration,
+            "applicable_product_ids": applicable_product_ids,
+            "min_spend": min_spend,
+            "max_discount": max_discount,
+            "discount_percent": discount_percent,
+            "quantity_total": quantity_total,
+            "message": message,
+            "link": link,
+        },
     )
 
 
@@ -631,21 +623,18 @@ def send_failed_artifact_seller_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/listings"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "round_tournament": round_tournament,
-                "product": product,
-                "artifact": artifact,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "round_tournament": round_tournament,
+            "product": product,
+            "artifact": artifact,
+            "link": link,
+        },
     )
 
 
@@ -676,22 +665,19 @@ def send_order_artifact_upload_reminder_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/listings"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "order_id": order_id,
-                "round_order": round_order,
-                "product": product,
-                "buyer": buyer,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "order_id": order_id,
+            "round_order": round_order,
+            "product": product,
+            "buyer": buyer,
+            "link": link,
+        },
     )
 
 
@@ -752,27 +738,24 @@ def send_order_refund_request_email(
             },
         )
     )
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "order_id": order_id,
-                "round_order": round_order,
-                "product": product,
-                "buyer": buyer,
-                "amount": amount,
-                "currency": currency,
-                "wallet": wallet,
-                "contact": contact,
-                "message": message,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "order_id": order_id,
+            "round_order": round_order,
+            "product": product,
+            "buyer": buyer,
+            "amount": amount,
+            "currency": currency,
+            "wallet": wallet,
+            "contact": contact,
+            "message": message,
+            "link": link,
+        },
     )
 
 
@@ -799,20 +782,17 @@ def send_succeeded_webhook_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/sales"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "date": date,
-                "product": product,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "date": date,
+            "product": product,
+            "link": link,
+        },
     )
 
 
@@ -839,20 +819,17 @@ def send_failed_webhook_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/sales"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "date": date,
-                "product": product,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "date": date,
+            "product": product,
+            "link": link,
+        },
     )
 
 
@@ -887,24 +864,21 @@ def send_failed_autosubmit_seller_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/sales"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "buyer": buyer,
-                "model": model,
-                "artifact": artifact,
-                "order_id": order_id,
-                "round_tournament": round_tournament,
-                "product": product,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "buyer": buyer,
+            "model": model,
+            "artifact": artifact,
+            "order_id": order_id,
+            "round_tournament": round_tournament,
+            "product": product,
+            "link": link,
+        },
     )
 
 
@@ -937,23 +911,20 @@ def send_failed_autosubmit_buyer_email(
     ) as f:
         template_str = f.read()
     link = settings.SERVER_HOST + "/purchases"
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-                "model": model,
-                "artifact": artifact,
-                "order_id": order_id,
-                "round_tournament": round_tournament,
-                "product": product,
-                "link": link,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "model": model,
+            "artifact": artifact,
+            "order_id": order_id,
+            "round_tournament": round_tournament,
+            "product": product,
+            "link": link,
+        },
     )
 
 
@@ -973,17 +944,14 @@ def send_change_wallet_email(
         Path(settings.EMAIL_TEMPLATES_DIR) / "change_wallet.html", encoding="utf8"
     ) as f:
         template_str = f.read()
-    celery_app.send_task(
-        "app.worker.send_email_task",
-        kwargs=dict(
-            email_to=email_to,
-            subject_template=subject,
-            html_template=template_str,
-            environment={
-                "project_name": "NumerBay",
-                "username": username,
-            },
-        ),
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+        },
     )
 
 

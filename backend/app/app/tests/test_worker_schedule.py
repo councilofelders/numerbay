@@ -28,6 +28,7 @@ def test_setup_periodic_tasks_skips_gcp_owned_jobs(monkeypatch) -> None:
 
     monkeypatch.setattr(worker.settings, "SCHEDULER_OWNER_GLOBALS_STATS", "gcp")
     monkeypatch.setattr(worker.settings, "SCHEDULER_OWNER_PRUNE_STORAGE", "gcp")
+    monkeypatch.setattr(worker.settings, "ASYNC_OWNER_PAYMENTS", "gcp")
 
     worker.setup_periodic_tasks(sender)
 
@@ -43,4 +44,4 @@ def test_setup_periodic_tasks_skips_gcp_owned_jobs(monkeypatch) -> None:
         "batch_send_order_artifact_upload_reminder_emails_2"
         in sender.conf.beat_schedule
     )
-    assert len(sender.periodic_calls) == 1
+    assert len(sender.periodic_calls) == 0

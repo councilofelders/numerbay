@@ -1,8 +1,9 @@
 """ Dependencies for orders endpoints """
 
+import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import List, Optional
+from typing import Callable, Dict, List, Optional
 
 import pandas as pd
 from fastapi import HTTPException
@@ -11,7 +12,15 @@ from sqlalchemy.orm import Session
 from app import crud, models
 from app.api import deps
 from app.api.dependencies import numerai
-from app.api.dependencies.coupons import create_coupon_for_order
+from app.api.dependencies.coupons import (
+    create_coupon_for_order,
+    send_new_coupon_email_for_coupon,
+)
+from app.core.async_tasks import (
+    enqueue_trigger_webhook_for_product,
+    enqueue_update_payment,
+    enqueue_upload_numerai_artifact,
+)
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import (
@@ -24,6 +33,11 @@ from app.utils import (
     send_order_expired_email,
     send_order_refund_request_email,
 )
+
+ORDER_CONFIRMATION_SIDE_EFFECTS_KEY = "confirmation_side_effects"
+ORDER_CONFIRMATION_UPLOAD_ENQUEUED_KEY = "upload_enqueued"
+ORDER_CONFIRMATION_WEBHOOK_ENQUEUED_KEY = "webhook_enqueued"
+ORDER_CONFIRMATION_EMAILS_SENT_KEY = "emails_sent"
 
 
 def validate_existing_order(db: Session, order_id: int) -> models.Order:
@@ -113,42 +127,134 @@ def on_order_confirmed(
     db: Session, order_obj: models.Order, transaction: Optional[str] = None
 ) -> None:
     """On order confirmed"""
-    # update order
-    # order_obj.transaction_hash = transaction
-    # order_obj.state = "confirmed"
-    # db.commit()
-    # db.refresh(order_obj)
-    crud.order.update(
-        db,
-        db_obj=order_obj,
-        obj_in={"transaction_hash": transaction, "state": "confirmed"},
-    )
+    coupon_obj = None
+    if order_obj.state != "confirmed":
+        order_obj.transaction_hash = transaction
+        order_obj.state = "confirmed"
+        db.add(order_obj)
+        db.flush()
 
-    # Generate coupon if applicable
-    create_coupon_for_order(db, order_obj)
-
-    # Update product sales stats
-    crud.product.update(
-        db,
-        db_obj=order_obj.product,
-        obj_in={
-            "total_num_sales": order_obj.product.total_num_sales + 1,
-            "last_sale_price_delta": order_obj.price - order_obj.product.last_sale_price
-            if order_obj.product.last_sale_price
-            else None,
-            "last_sale_price": order_obj.price,
-        },
-    )
-
-    # Upload csv artifact for order if round open
-    site_globals = crud.globals.update_singleton(db)
-    selling_round = site_globals.selling_round  # type: ignore
-    if (
-        selling_round == site_globals.active_round and order_obj.submit_model_id
-    ):  # if round open
-        print(
-            f"Round {site_globals.active_round} is open, search for artifact to upload"
+        coupon_obj = create_coupon_for_order(
+            db,
+            order_obj,
+            commit=False,
+            send_email=False,
         )
+
+        order_obj.product.total_num_sales = order_obj.product.total_num_sales + 1
+        order_obj.product.last_sale_price_delta = (
+            order_obj.price - order_obj.product.last_sale_price
+            if order_obj.product.last_sale_price
+            else None
+        )
+        order_obj.product.last_sale_price = order_obj.price
+        db.add(order_obj.product)
+        db.flush()
+
+    dispatch_order_confirmation_side_effects(db, order_obj)
+    if coupon_obj is not None:
+        send_new_coupon_email_for_coupon(coupon_obj)
+
+
+def get_order_confirmation_side_effects_state(
+    order_obj: models.Order,
+) -> Dict[str, bool]:
+    """Return persisted confirmation side-effect status for an order."""
+
+    props = order_obj.props if isinstance(order_obj.props, dict) else {}
+    side_effects_state = props.get(ORDER_CONFIRMATION_SIDE_EFFECTS_KEY)
+    if not isinstance(side_effects_state, dict):
+        return {}
+    return {
+        key: bool(value)
+        for key, value in side_effects_state.items()
+        if isinstance(key, str)
+    }
+
+
+def mark_order_confirmation_side_effect_complete(
+    db: Session,
+    order_obj: models.Order,
+    side_effect_key: str,
+) -> None:
+    """Persist that a confirmation side effect has completed."""
+
+    side_effects_state = get_order_confirmation_side_effects_state(order_obj)
+    if side_effects_state.get(side_effect_key):
+        return None
+
+    updated_side_effects_state = dict(side_effects_state)
+    updated_side_effects_state[side_effect_key] = True
+
+    props = dict(order_obj.props or {})
+    props[ORDER_CONFIRMATION_SIDE_EFFECTS_KEY] = updated_side_effects_state
+    order_obj.props = props
+    db.add(order_obj)
+    db.flush()
+    return None
+
+
+def clear_order_confirmation_side_effect_complete(
+    db: Session,
+    order_obj: models.Order,
+    side_effect_key: str,
+) -> None:
+    """Clear persisted confirmation side-effect status for an order."""
+
+    side_effects_state = get_order_confirmation_side_effects_state(order_obj)
+    if not side_effects_state.get(side_effect_key):
+        return None
+
+    updated_side_effects_state = dict(side_effects_state)
+    updated_side_effects_state.pop(side_effect_key, None)
+
+    props = dict(order_obj.props or {})
+    if updated_side_effects_state:
+        props[ORDER_CONFIRMATION_SIDE_EFFECTS_KEY] = updated_side_effects_state
+    else:
+        props.pop(ORDER_CONFIRMATION_SIDE_EFFECTS_KEY, None)
+    order_obj.props = props
+    db.add(order_obj)
+    db.flush()
+    return None
+
+
+def get_order_confirmation_round_state(db: Session) -> Dict[str, int]:
+    """Return current round state without persisting unrelated DB updates."""
+
+    site_globals = (
+        db.query(models.Globals.active_round, models.Globals.selling_round)
+        .filter(models.Globals.id == 0)
+        .one_or_none()
+    )
+    if site_globals is not None:
+        return {
+            "active_round": site_globals.active_round,
+            "selling_round": site_globals.selling_round,
+        }
+
+    active_round = numerai.get_numerai_active_round()
+    return {
+        "active_round": active_round["number"],
+        "selling_round": crud.globals.get_selling_round(active_round),
+    }
+
+
+def dispatch_order_confirmation_side_effects(
+    db: Session, order_obj: models.Order
+) -> None:
+    """Dispatch confirmation follow-up work."""
+    side_effects_state = get_order_confirmation_side_effects_state(order_obj)
+    round_state = get_order_confirmation_round_state(db)
+    active_round = round_state["active_round"]
+    selling_round = round_state["selling_round"]
+    pending_side_effects: List[Dict[str, Callable[[], None]]] = []
+    if (
+        selling_round == active_round and order_obj.submit_model_id
+        and order_obj.submit_state not in {"queued", "completed"}
+        and not side_effects_state.get(ORDER_CONFIRMATION_UPLOAD_ENQUEUED_KEY)
+    ):  # if round open
+        print(f"Round {active_round} is open, search for artifact to upload")
         artifacts = crud.artifact.get_multi_by_product_round(
             db,
             product=order_obj.product,
@@ -165,37 +271,112 @@ def on_order_confirmed(
                 bucket = deps.get_gcs_bucket()
                 blob = bucket.blob(csv_artifact.object_name)
                 if blob.exists():
-                    print(
-                        f"Uploading csv artifact {csv_artifact.object_name} "
-                        f"for order {order_obj.id}"
-                    )
-                    celery_app.send_task(
-                        "app.worker.upload_numerai_artifact_task",
-                        kwargs=dict(
-                            order_id=order_obj.id,
-                            object_name=csv_artifact.object_name,
-                            model_id=order_obj.submit_model_id,
-                            numerai_api_key_public_id=order_obj.buyer.numerai_api_key_public_id,
-                            numerai_api_key_secret=order_obj.buyer.numerai_api_key_secret,
-                            tournament=order_obj.product.model.tournament,
-                            version=1,
-                        ),
+                    pending_side_effects.append(
+                        {
+                            "key": ORDER_CONFIRMATION_UPLOAD_ENQUEUED_KEY,
+                            "run": lambda csv_artifact=csv_artifact: (
+                                print(
+                                    f"Uploading csv artifact {csv_artifact.object_name} "
+                                    f"for order {order_obj.id}"
+                                ),
+                                enqueue_upload_numerai_artifact(
+                                    order_id=order_obj.id,
+                                    object_name=csv_artifact.object_name,
+                                    model_id=order_obj.submit_model_id,
+                                    numerai_api_key_public_id=order_obj.buyer.numerai_api_key_public_id,
+                                    numerai_api_key_secret=order_obj.buyer.numerai_api_key_secret,
+                                    tournament=order_obj.product.model.tournament,
+                                    version=1,
+                                ),
+                            ),
+                        }
                     )
 
     # trigger webhook if available
-    celery_app.send_task(
-        "app.worker.trigger_webhook_for_product_task",
-        args=[order_obj.product_id, order_obj.id],
-    )
+    if not side_effects_state.get(ORDER_CONFIRMATION_WEBHOOK_ENQUEUED_KEY):
+        pending_side_effects.append(
+            {
+                "key": ORDER_CONFIRMATION_WEBHOOK_ENQUEUED_KEY,
+                "run": lambda: enqueue_trigger_webhook_for_product(
+                    order_obj.product_id, order_obj.id
+                ),
+            }
+        )
 
     # send order confirmation email
-    send_order_confirmation_emails(order_obj)
+    if not side_effects_state.get(ORDER_CONFIRMATION_EMAILS_SENT_KEY):
+        pending_side_effects.append(
+            {
+                "key": ORDER_CONFIRMATION_EMAILS_SENT_KEY,
+                "run": lambda: send_order_confirmation_emails(order_obj),
+            }
+        )
+
+    for side_effect in pending_side_effects:
+        mark_order_confirmation_side_effect_complete(
+            db,
+            order_obj,
+            side_effect["key"],
+        )
+        side_effects_state[side_effect["key"]] = True
+
+    db.commit()
+    db.refresh(order_obj)
+
+    for idx, side_effect in enumerate(pending_side_effects):
+        try:
+            side_effect["run"]()
+        except Exception:
+            for failed_side_effect in pending_side_effects[idx:]:
+                clear_order_confirmation_side_effect_complete(
+                    db,
+                    order_obj,
+                    failed_side_effect["key"],
+                )
+            db.commit()
+            db.refresh(order_obj)
+            raise
+
+
+def schedule_initial_payment_update(order_obj: models.Order) -> None:
+    """Best-effort initial payment enqueue after order creation."""
+
+    if order_obj.currency != "NMR" or settings.ASYNC_OWNER_PAYMENTS != "gcp":
+        return None
+    try:
+        enqueue_update_payment(order_obj.id)
+    except Exception:  # pylint: disable=broad-except
+        logging.exception(
+            "Failed to enqueue initial payment update for order %s", order_obj.id
+        )
+        try:
+            celery_app.send_task(
+                "app.worker.update_payment_subtask",
+                args=[order_obj.id],
+                countdown=settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
+            )
+        except Exception:  # pylint: disable=broad-except
+            logging.exception(
+                "Failed to queue legacy payment reconciliation fallback for order %s",
+                order_obj.id,
+            )
+    return None
 
 
 def update_payment(db: Session, order_id: int) -> None:
     """Update payment for order"""
-    order_obj = crud.order.get(db, id=order_id)
+    order_obj = (
+        db.query(models.Order)
+        .filter(models.Order.id == order_id)
+        .with_for_update()
+        .first()
+    )
     if order_obj:
+        if order_obj.state == "confirmed":
+            on_order_confirmed(db, order_obj, order_obj.transaction_hash)
+            return None
+        if order_obj.state != "pending":
+            return None
         if order_obj.currency == "NMR":
             # handle 100% discount
             if order_obj.price == 0:
