@@ -340,6 +340,24 @@ def _run_update_payment_in_db(order_id: int) -> None:
     run_with_db_session(lambda db: update_payment(db, order_id))
 
 
+def _send_failed_autosubmit_emails_in_db(order_id: int, artifact_name: str) -> None:
+    from app import crud
+    from app.api.dependencies.orders import send_failed_autosubmit_emails
+    from app.db.session import run_with_db_session
+
+    def send_failed_emails(db):
+        order_obj = crud.order.get(db, id=order_id)
+        if order_obj is None:
+            return None
+        send_failed_autosubmit_emails(
+            order_obj=order_obj,
+            artifact_name=artifact_name,
+        )
+        return None
+
+    run_with_db_session(send_failed_emails)
+
+
 def _run_upload_numerai_artifact(
     order_id: int,
     object_name: str,
@@ -353,9 +371,6 @@ def _run_upload_numerai_artifact(
     from app.api import deps
     from app.api.dependencies import numerai
     from app.api.dependencies.order_artifacts import generate_gcs_signed_url
-    from app.api.dependencies.orders import (
-        send_failed_autosubmit_emails,
-    )
     from app.db.session import run_with_db_session
 
     def mark_order_queued(db):
@@ -427,7 +442,7 @@ def _run_upload_numerai_artifact(
             db.refresh(order_obj)
 
         run_with_db_session(mark_submission_failed)
-        send_failed_autosubmit_emails(order_obj=order, artifact_name=object_name)  # type: ignore
+        _send_failed_autosubmit_emails_in_db(order_id, object_name)
         return None
     except Exception as exc:  # pylint: disable=broad-except
         print(f"Error uploading artifact: {str(exc)}")
@@ -442,7 +457,7 @@ def _run_upload_numerai_artifact(
             db.refresh(order_obj)
 
         run_with_db_session(mark_submission_failed)
-        send_failed_autosubmit_emails(order_obj=order, artifact_name=object_name)  # type: ignore
+        _send_failed_autosubmit_emails_in_db(order_id, object_name)
         return None
 
 

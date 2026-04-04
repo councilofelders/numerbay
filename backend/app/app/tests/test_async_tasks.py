@@ -1,5 +1,6 @@
 import base64
 import json
+from types import SimpleNamespace
 
 from app.core import async_tasks
 
@@ -182,3 +183,32 @@ def test_run_update_payment_does_not_reschedule_pending_orders(monkeypatch) -> N
     )
 
     assert calls == []
+
+
+def test_send_failed_autosubmit_emails_in_db_reloads_order(monkeypatch) -> None:
+    captured = []
+    fake_order = SimpleNamespace(id=7)
+
+    from app import crud
+    from app.api.dependencies import orders
+    from app.db import session
+
+    monkeypatch.setattr(
+        crud.order,
+        "get",
+        lambda db, id: fake_order if id == 7 else None,
+    )
+    monkeypatch.setattr(
+        orders,
+        "send_failed_autosubmit_emails",
+        lambda order_obj, artifact_name: captured.append((order_obj, artifact_name)),
+    )
+    monkeypatch.setattr(
+        session,
+        "run_with_db_session",
+        lambda fn: fn("db-session"),
+    )
+
+    async_tasks._send_failed_autosubmit_emails_in_db(7, "artifact.csv")
+
+    assert captured == [(fake_order, "artifact.csv")]
