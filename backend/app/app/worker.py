@@ -18,14 +18,16 @@ from sqlalchemy import and_, func, select
 from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
-from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import send_order_upload_reminder_emails
 from app.core.async_tasks import (
     TASK_SEND_EMAIL,
+    TASK_SEND_NEW_ARTIFACT_EMAILS,
+    TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
     TASK_UPDATE_PAYMENT,
     TASK_UPLOAD_NUMERAI_ARTIFACT,
+    TASK_VALIDATE_ARTIFACT_UPLOAD,
     enqueue_pending_payment_updates,
     enqueue_upload_numerai_artifact,
     run_async_task,
@@ -41,11 +43,6 @@ from app.models import (
     Poll,
     Product,
     StakeSnapshot,
-)
-from app.utils import (
-    send_failed_artifact_seller_email,
-    send_new_artifact_email,
-    send_new_artifact_seller_email,
 )
 
 client_sentry = Client(settings.SENTRY_DSN)
@@ -115,18 +112,7 @@ def send_new_artifact_emails_task(artifact_id: int) -> None:
     Args:
         artifact_id (int): artifact id
     """
-    if settings.EMAILS_ENABLED:
-        db = SessionLocal()
-        try:
-            artifact = crud.artifact.get(db, id=artifact_id)
-
-            if not artifact:
-                return None
-
-            send_artifact_emails_for_active_orders(db, artifact)
-        finally:
-            db.close()
-    return None
+    return run_async_task(TASK_SEND_NEW_ARTIFACT_EMAILS, args=[artifact_id])
 
 
 @celery_app.task  # (acks_late=True)
@@ -137,39 +123,7 @@ def send_new_order_artifact_emails_task(artifact_id: str) -> None:
     Args:
         artifact_id (str): order artifact id
     """
-    if settings.EMAILS_ENABLED:
-        db = SessionLocal()
-        try:
-            artifact = crud.order_artifact.get(db, id=artifact_id)
-
-            if not artifact:
-                return None
-
-            order = artifact.order
-
-            # Send new artifact email notifications to buyers
-            if order.buyer.email:
-                send_new_artifact_email(
-                    email_to=order.buyer.email,
-                    username=order.buyer.username,
-                    round_order=order.round_order,
-                    product=order.product.sku,
-                    order_id=order.id,
-                    artifact=artifact.object_name,  # type: ignore
-                )
-
-            # Send new artifact email notification to seller
-            if order.product.owner.email:
-                send_new_artifact_seller_email(
-                    email_to=order.product.owner.email,
-                    username=order.product.owner.username,
-                    round_tournament=artifact.round_tournament,  # type: ignore
-                    product=order.product.sku,
-                    artifact=artifact.object_name,  # type: ignore
-                )
-        finally:
-            db.close()
-    return None
+    return run_async_task(TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS, args=[artifact_id])
 
 
 @celery_app.task  # (acks_late=True)
@@ -731,96 +685,10 @@ def validate_artifact_upload_task(  # pylint: disable=too-many-branches
         artifact_id (int): artifact ID
         skip_if_active (bool): whether to skip validation if artifact has already been validated
     """
-    db = SessionLocal()
-    try:
-        artifact = crud.artifact.get(db, id=artifact_id)
-
-        if skip_if_active and artifact and artifact.state == "active":
-            print(
-                f"Artifact {artifact_id} {artifact.object_name} already validated, skipping"
-            )
-            return None
-
-        if artifact and artifact.object_name:  # if is file
-            bucket = deps.get_gcs_bucket()
-            blob = bucket.blob(artifact.object_name)
-            if not blob.exists():
-                print(
-                    f"Artifact {artifact_id} {artifact.object_name} not uploaded, deleting"
-                )
-
-                if settings.EMAILS_ENABLED:
-                    # Send failed artifact email notification to seller
-                    if artifact.product.owner.email:
-                        send_failed_artifact_seller_email(
-                            email_to=artifact.product.owner.email,
-                            username=artifact.product.owner.username,
-                            round_tournament=artifact.round_tournament,  # type: ignore
-                            product=artifact.product.sku,
-                            artifact=artifact.object_name,
-                        )
-
-                # crud.artifact.remove(db, id=artifact_id)
-                crud.artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
-                return None
-
-            print(
-                f"Artifact {artifact_id} {artifact.object_name} is valid, "
-                f"searching for orders to upload..."
-            )
-
-            selling_round = crud.globals.get_singleton(  # type: ignore
-                db=db
-            ).selling_round
-
-            # Submit for all confirmed orders with submit_model_id regardless if submitted or not
-            # orders = crud.order.get_multi_by_state(
-            #     db, state="confirmed", round_order=selling_round  # type: ignore
-            # )
-            orders = crud.order.get_active_orders(db, round_order=selling_round)
-            for order in orders:
-                if not order.submit_model_id:
-                    continue
-                # Disable queue check to always redo queuing
-                # if (
-                #     order.submit_state == "queued"
-                # ):  # already queued for submission, skip
-                #     print(f"Order {order.id} already queued for submission, skipped")
-                #     continue
-
-                if order.submit_model_id and order.product_id == artifact.product_id:
-                    print(
-                        f"Uploading csv artifact {artifact.object_name} for order {order.id}"
-                    )
-                    enqueue_upload_numerai_artifact(
-                        order_id=order.id,
-                        object_name=artifact.object_name,
-                        model_id=order.submit_model_id,
-                        numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-                        numerai_api_key_secret=order.buyer.numerai_api_key_secret,
-                        tournament=order.product.model.tournament,
-                        version=1,
-                    )
-
-            # if artifact.state == "pending":  # artifact not yet validated and
-            # notified
-            print(
-                f"Mark artifact {artifact.id} as active and send out email notifications"
-            )
-            celery_app.send_task(
-                "app.worker.send_new_artifact_emails_task",
-                kwargs=dict(artifact_id=artifact.id),
-            )
-            crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
-
-            # mark product as ready
-            product = crud.product.get(db, id=artifact.product_id)
-            if product:
-                if not product.is_ready:
-                    crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
-    finally:
-        db.close()
-    return None
+    return run_async_task(
+        TASK_VALIDATE_ARTIFACT_UPLOAD,
+        kwargs=dict(artifact_id=artifact_id, skip_if_active=skip_if_active),
+    )
 
 
 @celery_app.task  # (acks_late=True)
@@ -1259,14 +1127,15 @@ def build_beat_schedule() -> Dict[str, Dict[str, Any]]:
             "schedule": crontab(day_of_week="wed", hour=0, minute=0),
         }
 
-    beat_schedule["batch_send_order_artifact_upload_reminder_emails_1"] = {
-        "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-        "schedule": crontab(day_of_week="sun", hour=12, minute=0),
-    }
-    beat_schedule["batch_send_order_artifact_upload_reminder_emails_2"] = {
-        "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
-        "schedule": crontab(day_of_week="mon", hour=12, minute=0),
-    }
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_ARTIFACT_REMINDERS):
+        beat_schedule["batch_send_order_artifact_upload_reminder_emails_1"] = {
+            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+            "schedule": crontab(day_of_week="sun", hour=12, minute=0),
+        }
+        beat_schedule["batch_send_order_artifact_upload_reminder_emails_2"] = {
+            "task": "app.worker.send_order_artifact_upload_reminder_emails_task",
+            "schedule": crontab(day_of_week="mon", hour=12, minute=0),
+        }
 
     return beat_schedule
 

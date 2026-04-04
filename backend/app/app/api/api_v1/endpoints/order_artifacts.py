@@ -25,7 +25,7 @@ from app.api.dependencies.orders import (
 )
 from app.api.dependencies.products import validate_buyer, validate_product_owner
 from app.api.dependencies.site_globals import validate_not_during_rollover
-from app.core.celery_app import celery_app
+from app.core.async_tasks import enqueue_send_new_order_artifact_emails
 from app.core.config import settings
 from app.utils import send_failed_artifact_seller_email
 
@@ -225,10 +225,7 @@ def validate_upload(
                 detail="Artifact file not uploaded",
             )
 
-        celery_app.send_task(
-            "app.worker.send_new_order_artifact_emails_task",
-            kwargs=dict(artifact_id=artifact.id),
-        )
+        enqueue_send_new_order_artifact_emails(artifact.id)
 
     crud.order_artifact.update(
         db, db_obj=artifact, obj_in={"state": "active"}  # type: ignore

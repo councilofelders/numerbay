@@ -31,7 +31,7 @@ from app.api.dependencies.products import (
     validate_product_owner,
 )
 from app.api.dependencies.site_globals import validate_not_during_rollover
-from app.core.celery_app import celery_app
+from app.core.async_tasks import enqueue_validate_artifact_upload
 from app.core.config import settings
 
 router = APIRouter()
@@ -507,10 +507,9 @@ def generate_upload_url(  # pylint: disable=too-many-locals
         )
 
     # Check upload later after link expires
-    celery_app.send_task(
-        "app.worker.validate_artifact_upload_task",
-        kwargs=dict(artifact_id=artifact.id),
-        countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
+    enqueue_validate_artifact_upload(
+        artifact.id,
+        delay_seconds=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
     )
 
     # Upload artifact for confirmed orders
@@ -580,10 +579,7 @@ def validate_upload(
             crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
 
     # validate and fulfill orders immediately
-    celery_app.send_task(
-        "app.worker.validate_artifact_upload_task",
-        kwargs=dict(artifact_id=artifact.id, skip_if_active=False),
-    )
+    enqueue_validate_artifact_upload(artifact.id, skip_if_active=False)
 
     return artifact
 

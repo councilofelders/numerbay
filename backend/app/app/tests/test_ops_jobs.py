@@ -3,6 +3,7 @@ from app.ops import jobs
 
 def test_list_jobs_includes_phase_one_families() -> None:
     assert list(jobs.list_jobs()) == [
+        "artifact-reminders",
         "globals-stats",
         "polls",
         "product-sales-stats",

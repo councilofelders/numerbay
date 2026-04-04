@@ -15,14 +15,27 @@ from app.core.celery_app import celery_app
 from app.core.config import settings
 
 TASK_SEND_EMAIL = "send-email"
+TASK_SEND_NEW_ARTIFACT_EMAILS = "send-new-artifact-emails"
+TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS = "send-new-order-artifact-emails"
 TASK_TRIGGER_WEBHOOK_FOR_PRODUCT = "trigger-webhook-for-product"
 TASK_UPDATE_PAYMENT = "update-payment"
 TASK_UPLOAD_NUMERAI_ARTIFACT = "upload-numerai-artifact"
+TASK_VALIDATE_ARTIFACT_UPLOAD = "validate-artifact-upload"
 
 
 ASYNC_TASK_DEFINITIONS = {
     TASK_SEND_EMAIL: {
         "celery_task": "app.worker.send_email_task",
+        "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
+        "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
+    },
+    TASK_SEND_NEW_ARTIFACT_EMAILS: {
+        "celery_task": "app.worker.send_new_artifact_emails_task",
+        "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
+        "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
+    },
+    TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS: {
+        "celery_task": "app.worker.send_new_order_artifact_emails_task",
         "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
         "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
     },
@@ -38,6 +51,11 @@ ASYNC_TASK_DEFINITIONS = {
     },
     TASK_UPLOAD_NUMERAI_ARTIFACT: {
         "celery_task": "app.worker.upload_numerai_artifact_task",
+        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
+        "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
+    },
+    TASK_VALIDATE_ARTIFACT_UPLOAD: {
+        "celery_task": "app.worker.validate_artifact_upload_task",
         "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
     },
@@ -111,6 +129,24 @@ def enqueue_trigger_webhook_for_product(
     )
 
 
+def enqueue_send_new_artifact_emails(artifact_id: int) -> Any:
+    """Enqueue new artifact notification fan-out."""
+
+    return enqueue_async_task(
+        TASK_SEND_NEW_ARTIFACT_EMAILS,
+        args=[artifact_id],
+    )
+
+
+def enqueue_send_new_order_artifact_emails(artifact_id: str) -> Any:
+    """Enqueue new order artifact notification fan-out."""
+
+    return enqueue_async_task(
+        TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS,
+        args=[artifact_id],
+    )
+
+
 def enqueue_update_payment(
     order_id: int,
     delay_seconds: Optional[float] = None,
@@ -157,6 +193,24 @@ def enqueue_upload_numerai_artifact(
             tournament=tournament,
             version=version,
         ),
+    )
+
+
+def enqueue_validate_artifact_upload(
+    artifact_id: int,
+    *,
+    skip_if_active: bool = True,
+    delay_seconds: Optional[float] = None,
+) -> Any:
+    """Enqueue artifact upload validation."""
+
+    return enqueue_async_task(
+        TASK_VALIDATE_ARTIFACT_UPLOAD,
+        kwargs=dict(
+            artifact_id=artifact_id,
+            skip_if_active=skip_if_active,
+        ),
+        delay_seconds=delay_seconds,
     )
 
 
@@ -290,6 +344,63 @@ def _run_send_email(
         html_template=html_template,
         environment=environment or {},
     )
+
+
+def _run_send_new_artifact_emails(artifact_id: int) -> None:
+    from app import crud
+    from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
+    from app.db.session import run_with_db_session
+
+    if not settings.EMAILS_ENABLED:
+        return None
+
+    def send_artifact_emails(db):
+        artifact = crud.artifact.get(db, id=artifact_id)
+        if artifact is None:
+            return None
+        send_artifact_emails_for_active_orders(db, artifact)
+        return None
+
+    run_with_db_session(send_artifact_emails)
+    return None
+
+
+def _run_send_new_order_artifact_emails(artifact_id: str) -> None:
+    from app import crud
+    from app.db.session import run_with_db_session
+    from app.utils import send_new_artifact_email, send_new_artifact_seller_email
+
+    if not settings.EMAILS_ENABLED:
+        return None
+
+    def send_order_artifact_emails(db):
+        artifact = crud.order_artifact.get(db, id=artifact_id)
+        if artifact is None:
+            return None
+
+        order = artifact.order
+        if order.buyer.email:
+            send_new_artifact_email(
+                email_to=order.buyer.email,
+                username=order.buyer.username,
+                round_order=order.round_order,
+                product=order.product.sku,
+                order_id=order.id,
+                artifact=artifact.object_name,  # type: ignore[arg-type]
+            )
+
+        if order.product.owner.email:
+            send_new_artifact_seller_email(
+                email_to=order.product.owner.email,
+                username=order.product.owner.username,
+                round_tournament=artifact.round_tournament,  # type: ignore[arg-type]
+                product=order.product.sku,
+                artifact=artifact.object_name,  # type: ignore[arg-type]
+            )
+        return None
+
+    run_with_db_session(send_order_artifact_emails)
+    return None
 
 
 def _run_update_payment(order_id: int, poll_slot: Optional[str] = None) -> None:
@@ -461,6 +572,81 @@ def _run_upload_numerai_artifact(
         return None
 
 
+def _run_validate_artifact_upload(
+    artifact_id: int,
+    skip_if_active: bool = True,
+) -> None:
+    from app import crud
+    from app.api import deps
+    from app.db.session import run_with_db_session
+    from app.utils import send_failed_artifact_seller_email
+
+    def validate_artifact(db):
+        artifact = crud.artifact.get(db, id=artifact_id)
+
+        if skip_if_active and artifact and artifact.state == "active":
+            print(
+                f"Artifact {artifact_id} {artifact.object_name} already validated, skipping"
+            )
+            return None
+
+        if artifact is None or not artifact.object_name:
+            return None
+
+        bucket = deps.get_gcs_bucket()
+        blob = bucket.blob(artifact.object_name)
+        if not blob.exists():
+            print(f"Artifact {artifact_id} {artifact.object_name} not uploaded, deleting")
+
+            if settings.EMAILS_ENABLED and artifact.product.owner.email:
+                send_failed_artifact_seller_email(
+                    email_to=artifact.product.owner.email,
+                    username=artifact.product.owner.username,
+                    round_tournament=artifact.round_tournament,  # type: ignore[arg-type]
+                    product=artifact.product.sku,
+                    artifact=artifact.object_name,
+                )
+
+            crud.artifact.update(db, db_obj=artifact, obj_in={"state": "failed"})
+            return None
+
+        print(
+            f"Artifact {artifact_id} {artifact.object_name} is valid, "
+            f"searching for orders to upload..."
+        )
+
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+        orders = crud.order.get_active_orders(db, round_order=selling_round)
+        for order in orders:
+            if not order.submit_model_id:
+                continue
+            if order.product_id != artifact.product_id:
+                continue
+
+            print(f"Uploading csv artifact {artifact.object_name} for order {order.id}")
+            enqueue_upload_numerai_artifact(
+                order_id=order.id,
+                object_name=artifact.object_name,
+                model_id=order.submit_model_id,
+                numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
+                numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+                tournament=order.product.model.tournament,
+                version=1,
+            )
+
+        print(f"Mark artifact {artifact.id} as active and send out email notifications")
+        enqueue_send_new_artifact_emails(artifact.id)
+        crud.artifact.update(db, db_obj=artifact, obj_in={"state": "active"})
+
+        product = crud.product.get(db, id=artifact.product_id)
+        if product and not product.is_ready:
+            crud.product.update(db, db_obj=product, obj_in={"is_ready": True})
+        return None
+
+    run_with_db_session(validate_artifact)
+    return None
+
+
 def _run_trigger_webhook_for_product(
     product_id: int, order_id: Optional[int] = None
 ) -> None:
@@ -530,7 +716,10 @@ def _run_trigger_webhook_for_product(
 
 TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
     TASK_SEND_EMAIL: _run_send_email,
+    TASK_SEND_NEW_ARTIFACT_EMAILS: _run_send_new_artifact_emails,
+    TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS: _run_send_new_order_artifact_emails,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT: _run_trigger_webhook_for_product,
     TASK_UPDATE_PAYMENT: _run_update_payment,
     TASK_UPLOAD_NUMERAI_ARTIFACT: _run_upload_numerai_artifact,
+    TASK_VALIDATE_ARTIFACT_UPLOAD: _run_validate_artifact_upload,
 }

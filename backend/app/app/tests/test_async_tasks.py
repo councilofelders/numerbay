@@ -123,6 +123,58 @@ def test_enqueue_update_payment_uses_poll_slot_dedupe(monkeypatch) -> None:
     assert captured["dedupe_key"] == "order-42-slot-202604041305"
 
 
+def test_enqueue_validate_artifact_upload_uses_submissions_owner(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_SUBMISSIONS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_validate_artifact_upload(
+        12,
+        skip_if_active=False,
+        delay_seconds=30,
+    )
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.validate_artifact_upload_task",
+            {
+                "args": [],
+                "kwargs": {"artifact_id": 12, "skip_if_active": False},
+                "countdown": 30,
+            },
+        )
+    ]
+
+
+def test_enqueue_send_new_order_artifact_emails_uses_notifications_owner(
+    monkeypatch,
+) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_NOTIFICATIONS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_send_new_order_artifact_emails("artifact-123")
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.send_new_order_artifact_emails_task",
+            {"args": ["artifact-123"], "kwargs": {}},
+        )
+    ]
+
+
 def test_enqueue_async_task_requires_dispatch_token(monkeypatch) -> None:
     monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_NOTIFICATIONS", "gcp")
     monkeypatch.setattr(
