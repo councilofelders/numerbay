@@ -7,7 +7,6 @@ from decimal import Decimal
 from typing import Any, Optional
 
 from fastapi import HTTPException
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -180,11 +179,7 @@ def send_new_coupon_email_for_coupon(
 
 
 def create_coupon_for_order(
-    db: Session,
-    order_obj: models.Order,
-    *,
-    commit: bool = True,
-    send_email: bool = True,
+    db: Session, order_obj: models.Order
 ) -> Optional[models.Coupon]:
     """Create coupon for order"""
     if order_obj.coupon and order_obj.coupon_specs:
@@ -209,24 +204,13 @@ def create_coupon_for_order(
                 "quantity_total": 1,
                 "creator_id": order_obj.product.owner_id,  # type: ignore
             }
-            coupon_in = schemas.CouponCreate(**data)
-            if commit:
-                coupon_obj = crud.coupon.create_with_owner(
-                    db,
-                    obj_in=coupon_in,
-                    owner_id=order_obj.buyer_id,  # type: ignore
-                )
-            else:
-                coupon_obj = models.Coupon(
-                    **jsonable_encoder(coupon_in),
-                    owner_id=order_obj.buyer_id,  # type: ignore
-                )
-                db.add(coupon_obj)
-                db.flush()
-                db.refresh(coupon_obj)
+            coupon_obj = crud.coupon.create_with_owner(
+                db,
+                obj_in=schemas.CouponCreate(**data),
+                owner_id=order_obj.buyer_id,  # type: ignore
+            )
 
-            if send_email:
-                send_new_coupon_email_for_coupon(coupon_obj)
+            send_new_coupon_email_for_coupon(coupon_obj)
 
             return coupon_obj
     return None

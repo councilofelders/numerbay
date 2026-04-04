@@ -2,6 +2,7 @@
 
 import base64
 import json
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional
 
@@ -49,6 +50,7 @@ def enqueue_async_task(
     args: Optional[List[Any]] = None,
     kwargs: Optional[Dict[str, Any]] = None,
     delay_seconds: Optional[float] = None,
+    dedupe_key: Optional[str] = None,
 ) -> Any:
     """Send an async task to the currently configured owner."""
 
@@ -74,6 +76,7 @@ def enqueue_async_task(
         args=task_args,
         kwargs=task_kwargs,
         delay_seconds=delay_seconds,
+        dedupe_key=dedupe_key,
     )
 
 
@@ -109,14 +112,25 @@ def enqueue_trigger_webhook_for_product(
 
 
 def enqueue_update_payment(
-    order_id: int, delay_seconds: Optional[float] = None
+    order_id: int,
+    delay_seconds: Optional[float] = None,
+    poll_slot: Optional[str] = None,
 ) -> Any:
     """Enqueue the payment update task."""
+
+    task_kwargs: Dict[str, Any] = {}
+    dedupe_key = None
+    if poll_slot is not None:
+        task_kwargs["poll_slot"] = poll_slot
+        if settings.ASYNC_OWNER_PAYMENTS == "gcp":
+            dedupe_key = get_payment_poll_dedupe_key(order_id, poll_slot)
 
     return enqueue_async_task(
         TASK_UPDATE_PAYMENT,
         args=[order_id],
+        kwargs=task_kwargs,
         delay_seconds=delay_seconds,
+        dedupe_key=dedupe_key,
     )
 
 
@@ -146,12 +160,14 @@ def enqueue_upload_numerai_artifact(
     )
 
 
-def enqueue_pending_payment_updates() -> int:
+def enqueue_pending_payment_updates(poll_slot: Optional[str] = None) -> int:
     """Seed payment updates for all currently pending orders."""
 
+    if poll_slot is None and settings.ASYNC_OWNER_PAYMENTS == "gcp":
+        poll_slot = get_current_payment_reconcile_slot()
     order_ids = _get_pending_order_ids()
     for order_id in order_ids:
-        enqueue_update_payment(order_id)
+        enqueue_update_payment(order_id, poll_slot=poll_slot)
     return len(order_ids)
 
 
@@ -176,6 +192,7 @@ def _enqueue_cloud_task(
     args: List[Any],
     kwargs: Dict[str, Any],
     delay_seconds: Optional[float],
+    dedupe_key: Optional[str],
 ) -> Dict[str, Any]:
     worker_url = settings.ASYNC_WORKER_DISPATCH_URL
     if not worker_url:
@@ -230,12 +247,24 @@ def _enqueue_cloud_task(
         f"projects/{settings.GCP_PROJECT}/locations/{settings.GCP_TASKS_LOCATION}"
         f"/queues/{queue_name}"
     )
-    response = _get_cloud_tasks_session().post(
-        f"https://cloudtasks.googleapis.com/v2/{queue_parent}/tasks",
-        json=request_body,
-    )
-    response.raise_for_status()
-    return response.json()
+    if dedupe_key:
+        request_body["task"]["name"] = build_cloud_task_name(
+            queue_parent=queue_parent,
+            task_name=task_name,
+            dedupe_key=dedupe_key,
+        )
+
+    try:
+        response = _get_cloud_tasks_session().post(
+            f"https://cloudtasks.googleapis.com/v2/{queue_parent}/tasks",
+            json=request_body,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.HTTPError as exc:
+        if dedupe_key and exc.response is not None and exc.response.status_code == 409:
+            return {"duplicate": True}
+        raise
 
 
 def _get_cloud_tasks_session() -> AuthorizedSession:
@@ -263,17 +292,34 @@ def _run_send_email(
     )
 
 
-def _run_update_payment(order_id: int) -> None:
+def _run_update_payment(order_id: int, poll_slot: Optional[str] = None) -> None:
+    del poll_slot
     _run_update_payment_in_db(order_id)
-    if settings.ASYNC_OWNER_PAYMENTS != "gcp":
-        return None
-
-    if _get_order_state(order_id) == "pending":
-        enqueue_update_payment(
-            order_id,
-            delay_seconds=settings.ORDER_PAYMENT_POLL_FREQUENCY_SECONDS,
-        )
     return None
+
+
+def get_current_payment_reconcile_slot(
+    now: Optional[datetime] = None,
+) -> str:
+    """Return the current minute slot for payment reconciliation."""
+
+    if now is None:
+        now = datetime.now(timezone.utc)
+    return now.astimezone(timezone.utc).strftime("%Y%m%d%H%M")
+
+
+def get_payment_poll_dedupe_key(order_id: int, poll_slot: str) -> str:
+    """Return a deterministic dedupe key for one order in one poll slot."""
+
+    return f"order-{order_id}-slot-{poll_slot}"
+
+
+def build_cloud_task_name(queue_parent: str, task_name: str, dedupe_key: str) -> str:
+    """Return a stable Cloud Tasks task name for deduped dispatch."""
+
+    safe_task_name = re.sub(r"[^A-Za-z0-9_-]", "-", task_name).strip("-") or "task"
+    safe_dedupe_key = re.sub(r"[^A-Za-z0-9_-]", "-", dedupe_key).strip("-")
+    return f"{queue_parent}/tasks/{safe_task_name}-{safe_dedupe_key}"
 
 
 def _get_pending_order_ids() -> List[int]:
@@ -294,17 +340,6 @@ def _run_update_payment_in_db(order_id: int) -> None:
     run_with_db_session(lambda db: update_payment(db, order_id))
 
 
-def _get_order_state(order_id: int) -> Optional[str]:
-    from app import crud
-    from app.db.session import run_with_db_session
-
-    def get_order_state(db):
-        order = crud.order.get(db, id=order_id)
-        return order.state if order else None
-
-    return run_with_db_session(get_order_state)
-
-
 def _run_upload_numerai_artifact(
     order_id: int,
     object_name: str,
@@ -319,8 +354,6 @@ def _run_upload_numerai_artifact(
     from app.api.dependencies import numerai
     from app.api.dependencies.order_artifacts import generate_gcs_signed_url
     from app.api.dependencies.orders import (
-        ORDER_CONFIRMATION_UPLOAD_ENQUEUED_KEY,
-        clear_order_confirmation_side_effect_complete,
         send_failed_autosubmit_emails,
     )
     from app.db.session import run_with_db_session
@@ -387,11 +420,6 @@ def _run_upload_numerai_artifact(
             order_obj = crud.order.get(db, id=order_id)
             if order_obj is None:
                 return None
-            clear_order_confirmation_side_effect_complete(
-                db,
-                order_obj,
-                ORDER_CONFIRMATION_UPLOAD_ENQUEUED_KEY,
-            )
             order_obj.submit_state = "failed"
             db.add(order_obj)
             db.commit()
@@ -407,11 +435,6 @@ def _run_upload_numerai_artifact(
             order_obj = crud.order.get(db, id=order_id)
             if order_obj is None:
                 return None
-            clear_order_confirmation_side_effect_complete(
-                db,
-                order_obj,
-                ORDER_CONFIRMATION_UPLOAD_ENQUEUED_KEY,
-            )
             order_obj.submit_state = "failed"
             db.add(order_obj)
             db.commit()

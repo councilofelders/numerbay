@@ -107,6 +107,23 @@ def test_enqueue_async_task_uses_cloud_tasks(monkeypatch) -> None:
     }
 
 
+def test_enqueue_update_payment_uses_poll_slot_dedupe(monkeypatch) -> None:
+    captured = {}
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_PAYMENTS", "gcp")
+    monkeypatch.setattr(
+        async_tasks,
+        "_enqueue_cloud_task",
+        lambda **kwargs: captured.update(kwargs) or {"name": "task-created"},
+    )
+
+    result = async_tasks.enqueue_update_payment(42, poll_slot="202604041305")
+
+    assert result == {"name": "task-created"}
+    assert captured["kwargs"] == {"poll_slot": "202604041305"}
+    assert captured["dedupe_key"] == "order-42-slot-202604041305"
+
+
 def test_enqueue_async_task_requires_dispatch_token(monkeypatch) -> None:
     monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_NOTIFICATIONS", "gcp")
     monkeypatch.setattr(
@@ -128,21 +145,42 @@ def test_enqueue_async_task_requires_dispatch_token(monkeypatch) -> None:
         assert "ASYNC_WORKER_DISPATCH_TOKEN" in str(exc)
 
 
-def test_run_update_payment_reschedules_pending_orders(monkeypatch) -> None:
+def test_enqueue_pending_payment_updates_uses_shared_poll_slot(monkeypatch) -> None:
     calls = []
 
-    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_PAYMENTS", "gcp")
-    monkeypatch.setattr(
-        async_tasks.settings, "ORDER_PAYMENT_POLL_FREQUENCY_SECONDS", 20.0
-    )
-    monkeypatch.setattr(async_tasks, "_run_update_payment_in_db", lambda order_id: None)
-    monkeypatch.setattr(async_tasks, "_get_order_state", lambda order_id: "pending")
+    monkeypatch.setattr(async_tasks, "_get_pending_order_ids", lambda: [10, 20])
     monkeypatch.setattr(
         async_tasks,
         "enqueue_update_payment",
-        lambda order_id, delay_seconds=None: calls.append((order_id, delay_seconds)),
+        lambda order_id, delay_seconds=None, poll_slot=None: calls.append(
+            (order_id, delay_seconds, poll_slot)
+        ),
     )
 
-    async_tasks.run_async_task(async_tasks.TASK_UPDATE_PAYMENT, args=[42])
+    total = async_tasks.enqueue_pending_payment_updates(poll_slot="202604041305")
 
-    assert calls == [(42, 20.0)]
+    assert total == 2
+    assert calls == [
+        (10, None, "202604041305"),
+        (20, None, "202604041305"),
+    ]
+
+
+def test_run_update_payment_does_not_reschedule_pending_orders(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_PAYMENTS", "gcp")
+    monkeypatch.setattr(async_tasks, "_run_update_payment_in_db", lambda order_id: None)
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_update_payment",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
+
+    async_tasks.run_async_task(
+        async_tasks.TASK_UPDATE_PAYMENT,
+        args=[42],
+        kwargs={"poll_slot": "202604041305"},
+    )
+
+    assert calls == []

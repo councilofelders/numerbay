@@ -1,4 +1,5 @@
 """ Orders endpoints """
+import logging
 import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
@@ -16,7 +17,6 @@ from app.api.dependencies.coupons import calculate_option_price
 from app.api.dependencies.orders import (
     any_weekday_round,
     on_order_confirmed,
-    schedule_initial_payment_update,
     send_order_canceled_emails,
     send_order_refund_request_emails,
     send_order_upload_reminder_emails,
@@ -318,23 +318,26 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             db=db, obj_in=order_in, buyer_id=current_user.id
         )
 
-        schedule_initial_payment_update(order)
-
         if settings.EMAILS_ENABLED:
             # email buyer
             if current_user.email:
-                send_new_order_email(
-                    email_to=current_user.email,
-                    username=current_user.username,
-                    timeout=settings.PENDING_ORDER_EXPIRE_MINUTES,
-                    round_order=order.round_order,
-                    date_order=order.date_order,
-                    product=product.sku,
-                    from_address=order.from_address,  # type: ignore
-                    to_address=order.to_address,  # type: ignore
-                    amount=order.price,
-                    currency=order.currency,  # type: ignore
-                )
+                try:
+                    send_new_order_email(
+                        email_to=current_user.email,
+                        username=current_user.username,
+                        timeout=settings.PENDING_ORDER_EXPIRE_MINUTES,
+                        round_order=order.round_order,
+                        date_order=order.date_order,
+                        product=product.sku,
+                        from_address=order.from_address,  # type: ignore
+                        to_address=order.to_address,  # type: ignore
+                        amount=order.price,
+                        currency=order.currency,  # type: ignore
+                    )
+                except Exception:  # pylint: disable=broad-except
+                    logging.exception(
+                        "Failed to enqueue new order email for order %s", order.id
+                    )
         return order
     return None
 

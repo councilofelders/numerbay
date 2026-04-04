@@ -7,6 +7,7 @@ def test_list_jobs_includes_phase_one_families() -> None:
         "polls",
         "product-sales-stats",
         "prune-storage",
+        "reconcile-payments",
         "stake-snapshots",
     ]
 
