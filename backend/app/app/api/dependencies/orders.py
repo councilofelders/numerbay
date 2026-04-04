@@ -8,6 +8,7 @@ from typing import Callable, Dict, List, Optional
 import pandas as pd
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import lazyload
 
 from app import crud, models
 from app.api import deps
@@ -367,6 +368,7 @@ def update_payment(db: Session, order_id: int) -> None:
     """Update payment for order"""
     order_obj = (
         db.query(models.Order)
+        .options(lazyload("*"))
         .filter(models.Order.id == order_id)
         .with_for_update()
         .first()

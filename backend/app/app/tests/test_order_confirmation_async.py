@@ -169,6 +169,9 @@ def test_update_payment_retries_confirmed_orders(monkeypatch) -> None:
     calls = []
 
     class FakeQuery:
+        def options(self, *_args, **_kwargs):
+            return self
+
         def filter(self, *_args, **_kwargs):
             return self
 
