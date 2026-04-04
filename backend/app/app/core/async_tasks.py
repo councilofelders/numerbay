@@ -219,9 +219,9 @@ def _enqueue_cloud_task(
                 "headers": {
                     "Content-Type": "application/json",
                 },
-                "body": base64.b64encode(
-                    json.dumps(payload).encode("utf-8")
-                ).decode("utf-8"),
+                "body": base64.b64encode(json.dumps(payload).encode("utf-8")).decode(
+                    "utf-8"
+                ),
             }
         }
     }
@@ -400,6 +400,7 @@ def _run_upload_numerai_artifact(
         )
 
         if submission_id:
+
             def mark_submission_completed(db):
                 order_obj = crud.order.get(db, id=order_id)
                 crud.order.update(

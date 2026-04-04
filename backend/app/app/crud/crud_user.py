@@ -156,13 +156,13 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         else:
             # Otherwise make the API call (this maintains backward compatibility)
             api_result = numerai.get_numerai_api_info(user_json)
-        
+
         if not api_result["success"]:
             return {"success": False, "message": api_result["message"]}
-            
+
         user_update_json = api_result["data"]
         account = user_update_json.pop("account")  # Remove account from update data
-            
+
         # check for duplicated numerai wallet
         duplicated_user = (
             db.query(User)

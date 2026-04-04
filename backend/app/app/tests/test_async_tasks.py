@@ -87,9 +87,7 @@ def test_enqueue_async_task_uses_cloud_tasks(monkeypatch) -> None:
         == "https://cloudtasks.googleapis.com/v2/projects/numerbay/locations/us-central1/queues/notifications/tasks"
     )
     http_request = captured["json"]["task"]["httpRequest"]
-    assert (
-        http_request["headers"]["X-Internal-Task-Token"] == "secret"
-    )
+    assert http_request["headers"]["X-Internal-Task-Token"] == "secret"
     assert http_request["oidcToken"]["serviceAccountEmail"] == (
         "worker-invoker@numerbay.iam.gserviceaccount.com"
     )

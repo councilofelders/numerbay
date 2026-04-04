@@ -76,9 +76,14 @@ def test_on_order_confirmed_dispatches_legacy_side_effects(monkeypatch) -> None:
         lambda order: calls.append(("emails.send", order.id)),
     )
 
-    orders.on_order_confirmed(db=SimpleNamespace(), order_obj=order_obj, transaction="0xabc")
+    orders.on_order_confirmed(
+        db=SimpleNamespace(), order_obj=order_obj, transaction="0xabc"
+    )
 
-    assert ("order.update", {"transaction_hash": "0xabc", "state": "confirmed"}) in calls
+    assert (
+        "order.update",
+        {"transaction_hash": "0xabc", "state": "confirmed"},
+    ) in calls
     assert ("coupon.create", None) in calls
     assert any(call[0] == "product.update" for call in calls)
     assert any(call[0] == "upload.enqueue" for call in calls)
@@ -98,7 +103,9 @@ def test_update_payment_confirms_manual_transaction(monkeypatch) -> None:
     calls = []
 
     monkeypatch.setattr(orders.crud.order, "get", lambda *_args, **_kwargs: order_obj)
-    monkeypatch.setattr(orders, "match_transaction_for_order", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        orders, "match_transaction_for_order", lambda *_args, **_kwargs: None
+    )
     monkeypatch.setattr(
         orders,
         "on_order_confirmed",
@@ -167,13 +174,17 @@ def test_create_order_ignores_new_order_email_failures(monkeypatch) -> None:
         currency="NMR",
     )
 
-    monkeypatch.setattr(orders_endpoint, "validate_existing_product", lambda *_args, **_kwargs: product)
+    monkeypatch.setattr(
+        orders_endpoint, "validate_existing_product", lambda *_args, **_kwargs: product
+    )
     monkeypatch.setattr(
         orders_endpoint,
         "validate_existing_product_option",
         lambda *_args, **_kwargs: product_option,
     )
-    monkeypatch.setattr(orders_endpoint, "any_weekday_round", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(
+        orders_endpoint, "any_weekday_round", lambda *_args, **_kwargs: False
+    )
     monkeypatch.setattr(
         orders_endpoint,
         "validate_not_during_rollover",
@@ -185,8 +196,14 @@ def test_create_order_ignores_new_order_email_failures(monkeypatch) -> None:
         "search",
         lambda *_args, **_kwargs: {"data": []},
     )
-    monkeypatch.setattr(orders_endpoint.numerai, "check_user_numerai_api", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(orders_endpoint.crud.coupon, "get_by_code", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        orders_endpoint.numerai,
+        "check_user_numerai_api",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        orders_endpoint.crud.coupon, "get_by_code", lambda *_args, **_kwargs: None
+    )
     monkeypatch.setattr(
         orders_endpoint.schemas.ProductOption,
         "from_orm",

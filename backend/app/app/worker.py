@@ -20,9 +20,7 @@ from app.api import deps
 from app.api.dependencies import numerai
 from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
 from app.api.dependencies.commons import on_round_open
-from app.api.dependencies.orders import (
-    send_order_upload_reminder_emails,
-)
+from app.api.dependencies.orders import send_order_upload_reminder_emails
 from app.core.async_tasks import (
     TASK_SEND_EMAIL,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
@@ -225,13 +223,13 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
     try:
         # Make a copy of the user_json
         user_json_copy = user_json.copy()
-        
+
         # Make the slow Numerai API call outside of any database session
         api_result = numerai.get_numerai_api_info(user_json_copy)
-        
+
         # Add the API result to the user_json to prevent another API call
         user_json_copy["_api_data"] = api_result
-        
+
         # Now use run_with_db_session with the prepared API data
         def update_user_and_models(db):
             # Update user info (won't make another API call because we included _api_data)
@@ -246,7 +244,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
             if updated_username is None:
                 print(f"Trying to update user {user_json['username']} without auth")
                 crud.model.update_model_unauthenticated(db, user_json)
-            
+
             return updated_username
 
         run_with_db_session(update_user_and_models)
@@ -271,6 +269,7 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
 @celery_app.task  # (acks_late=True)
 def batch_update_models_task() -> None:
     """Batch upload Numerai models task"""
+
     def get_users_with_api_keys(db):
         users = crud.user.search(
             # type: ignore
@@ -279,10 +278,10 @@ def batch_update_models_task() -> None:
             limit=None,
         )["data"]
         return users
-    
+
     users = run_with_db_session(get_users_with_api_keys)
     print(f"total: {len(users)}")
-    
+
     # Schedule update tasks with staggered start times to avoid connection pool exhaustion
     group(
         [
@@ -304,26 +303,28 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
     """
     try:
         pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
-        
+
         if pipeline_status["isScoringDay"]:
             if pipeline_status.get("resolvedAt", None):
                 print("Numerai pipeline completed, update model scores...")
-                
+
                 # Get users with API keys
-                users = run_with_db_session(lambda db: crud.user.search(
-                    db,
-                    filters={"numerai_api_key_public_id": ["any"]},
-                    limit=None,
-                )["data"])
-                
+                users = run_with_db_session(
+                    lambda db: crud.user.search(
+                        db,
+                        filters={"numerai_api_key_public_id": ["any"]},
+                        limit=None,
+                    )["data"]
+                )
+
                 print(f"total: {len(users)}")
-                
+
                 # Schedule update tasks with staggered start times
                 group(
                     [
-                        update_model_subtask.s(
-                            jsonable_encoder(user), retries=10
-                        ).set(countdown=60 + i // 5)
+                        update_model_subtask.s(jsonable_encoder(user), retries=10).set(
+                            countdown=60 + i // 5
+                        )
                         for i, user in enumerate(users)
                     ]
                 ).apply_async()
@@ -369,17 +370,19 @@ def update_active_round() -> None:
     active_round = numerai.get_numerai_active_round()
     utc_time = datetime.now(timezone.utc)
     open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
-    close_staking_time = pd.to_datetime(active_round["closeStakingTime"]).to_pydatetime()
+    close_staking_time = pd.to_datetime(
+        active_round["closeStakingTime"]
+    ).to_pydatetime()
     active_round_number = active_round["number"]
-    
+
     print(
         f"UTC time: {utc_time}, round open: {open_time}, "
         f"round close: {close_staking_time}, round: {active_round_number}"
     )
-    
+
     # Get current globals with minimal DB session
     site_globals = run_with_db_session(lambda db: crud.globals.get_singleton(db))
-    
+
     if open_time <= utc_time <= close_staking_time:
         if site_globals.active_round != active_round_number:  # type: ignore
             # new round opened and active
@@ -388,20 +391,22 @@ def update_active_round() -> None:
                 f"round close: {close_staking_time}, round: {active_round_number}"
             )
             print(f"Round {active_round_number} opened")
-            
+
             # Update active round
-            run_with_db_session(lambda db: crud.globals.update(
-                db,
-                db_obj=crud.globals.get_singleton(db),  # type: ignore
-                obj_in={"active_round": active_round_number},
-            ))
-            
+            run_with_db_session(
+                lambda db: crud.globals.update(
+                    db,
+                    db_obj=crud.globals.get_singleton(db),  # type: ignore
+                    obj_in={"active_round": active_round_number},
+                )
+            )
+
             # trigger Numerai submissions
             celery_app.send_task("app.worker.batch_submit_numerai_models_task")
 
             # trigger other actions on round open
             run_with_db_session(lambda db: on_round_open(db))
-            
+
         if close_staking_time - utc_time <= timedelta(minutes=2):
             # round about to close
             print("Activities freezed due to round rollover")
@@ -411,7 +416,7 @@ def update_active_round() -> None:
             #     db_obj=site_globals,  # type: ignore
             #     obj_in={"is_doing_round_rollover": True},
             # )
-            
+
             # check order stake
             celery_app.send_task(
                 "app.worker.batch_validate_numerai_models_stake_task",
@@ -425,7 +430,7 @@ def update_active_round() -> None:
         else:
             print("Unfreeze activities, rollover completed")
             selling_round = active_round_number + 1
-            
+
             def update_and_process(db):
                 # Update globals
                 site_globals_obj = crud.globals.update(
@@ -437,23 +442,25 @@ def update_active_round() -> None:
                         "is_doing_round_rollover": False,
                     },
                 )
-                
+
                 # expire old products
                 crud.product.bulk_expire(db, current_round=site_globals.selling_round)  # type: ignore
-                
+
                 # mark order artifacts for pruning
                 crud.order_artifact.bulk_mark_for_pruning(db, current_round=site_globals.selling_round)  # type: ignore
-                
+
                 # unmark product readiness
                 crud.product.bulk_unmark_is_ready(db)
-                
+
                 return site_globals_obj
-            
+
             # Execute all database operations in a single session
             run_with_db_session(update_and_process)
-    
+
     # Print current global state with minimal DB session
-    current_globals = run_with_db_session(lambda db: jsonable_encoder(crud.globals.get_singleton(db)))
+    current_globals = run_with_db_session(
+        lambda db: jsonable_encoder(crud.globals.get_singleton(db))
+    )
     print(f"Current global state: {current_globals}")
 
 
@@ -968,6 +975,7 @@ def batch_update_stake_snapshots() -> None:
 @celery_app.task
 def batch_update_product_sales_stats() -> None:
     """Batch update product sales stats task"""
+
     def update_sales_stats(db):
         products = crud.product.get_multi(db=db)
         for product in products:
@@ -981,7 +989,7 @@ def batch_update_product_sales_stats() -> None:
                 ]
                 product.total_qty_delivered = product_sales_stats["total_qty_delivered"]
         db.commit()
-    
+
     run_with_db_session(update_sales_stats)
 
 
@@ -1065,6 +1073,7 @@ def batch_update_product_sales_stats() -> None:
 @celery_app.task  # (acks_late=True)
 def batch_update_polls() -> None:
     """Batch update polls task"""
+
     def update_expired_polls(db):
         date_now = datetime.utcnow()
         expired_polls = db.query(Poll).filter(
@@ -1074,7 +1083,7 @@ def batch_update_polls() -> None:
             # todo if poll.weight_mode not poll.is_stake_predetermined
             poll.is_finished = True
         db.commit()
-    
+
     run_with_db_session(update_expired_polls)
 
 
@@ -1109,10 +1118,13 @@ def batch_prune_storage() -> None:
             .filter(query_filter)
             .all()
         )
-        
+
         # Get a list of object names and IDs
-        return [{"id": artifact.id, "object_name": artifact.object_name} for artifact in artifacts_to_prune]
-    
+        return [
+            {"id": artifact.id, "object_name": artifact.object_name}
+            for artifact in artifacts_to_prune
+        ]
+
     # Get artifacts to prune
     artifacts_to_prune = run_with_db_session(get_artifacts_to_prune)
     print(f"{len(artifacts_to_prune)} artifacts to prune")
@@ -1127,7 +1139,7 @@ def batch_prune_storage() -> None:
                 blob.delete()
             except NotFound:
                 pass
-    
+
     # Mark artifacts as pruned
     def mark_artifacts_pruned(db):
         for artifact_data in artifacts_to_prune:
@@ -1135,7 +1147,7 @@ def batch_prune_storage() -> None:
             if artifact:
                 artifact.state = "pruned"
         db.commit()
-    
+
     run_with_db_session(mark_artifacts_pruned)
 
     # prune order artifacts
@@ -1146,9 +1158,11 @@ def batch_prune_storage() -> None:
             .all()
         )
         # Get a list of object names and IDs
-        return [{"id": artifact.id, "object_name": artifact.object_name}
-                for artifact in order_artifacts_to_prune]
-    
+        return [
+            {"id": artifact.id, "object_name": artifact.object_name}
+            for artifact in order_artifacts_to_prune
+        ]
+
     # Get order artifacts to prune in a short DB session
     order_artifacts_to_prune = run_with_db_session(get_order_artifacts_to_prune)
     print(f"{len(order_artifacts_to_prune)} order artifacts to prune")
@@ -1162,7 +1176,7 @@ def batch_prune_storage() -> None:
                 blob.delete()
             except NotFound:
                 pass
-    
+
     # Mark order artifacts as pruned
     def mark_order_artifacts_pruned(db):
         for artifact_data in order_artifacts_to_prune:
@@ -1170,7 +1184,7 @@ def batch_prune_storage() -> None:
             if order_artifact:
                 order_artifact.state = "pruned"
         db.commit()
-    
+
     run_with_db_session(mark_order_artifacts_pruned)
 
 

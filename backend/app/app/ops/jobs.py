@@ -4,8 +4,8 @@ import argparse
 from typing import Callable, Dict, Iterable, Optional
 
 from app.worker import (
-    batch_update_payments_task,
     batch_prune_storage,
+    batch_update_payments_task,
     batch_update_polls,
     batch_update_product_sales_stats,
     batch_update_stake_snapshots,

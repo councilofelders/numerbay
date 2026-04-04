@@ -1,8 +1,9 @@
 from typing import Callable
 
-from app.core.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from app.core.config import settings
 
 engine = create_engine(
     settings.SQLALCHEMY_DATABASE_URI,

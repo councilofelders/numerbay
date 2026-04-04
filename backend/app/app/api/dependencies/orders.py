@@ -10,9 +10,7 @@ from sqlalchemy.orm import Session
 from app import crud, models
 from app.api import deps
 from app.api.dependencies import numerai
-from app.api.dependencies.coupons import (
-    create_coupon_for_order,
-)
+from app.api.dependencies.coupons import create_coupon_for_order
 from app.core.async_tasks import (
     enqueue_trigger_webhook_for_product,
     enqueue_upload_numerai_artifact,
@@ -28,6 +26,7 @@ from app.utils import (
     send_order_expired_email,
     send_order_refund_request_email,
 )
+
 
 def validate_existing_order(db: Session, order_id: int) -> models.Order:
     """Validate existing order"""
