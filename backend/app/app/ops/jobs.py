@@ -5,11 +5,11 @@ from typing import Callable, Dict, Iterable, Optional
 
 from app.worker import (
     batch_prune_storage,
-    batch_validate_numerai_models_stake_task,
     batch_update_payments_task,
     batch_update_polls,
     batch_update_product_sales_stats,
     batch_update_stake_snapshots,
+    batch_validate_numerai_models_stake_task,
     send_order_artifact_upload_reminder_emails_task,
     update_globals_stats_task,
 )

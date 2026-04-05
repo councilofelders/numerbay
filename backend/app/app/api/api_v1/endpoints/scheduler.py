@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends
 from app import models
 from app.api import deps
 from app.core.async_tasks import (
-    enqueue_batch_update_numerai_models,
     enqueue_batch_update_numerai_model_scores,
-    enqueue_pending_submission_checks,
+    enqueue_batch_update_numerai_models,
     enqueue_pending_payment_updates,
+    enqueue_pending_submission_checks,
     enqueue_trigger_webhook_for_product,
 )
 from app.ops.jobs import run_job

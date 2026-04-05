@@ -19,8 +19,8 @@ from app.api.dependencies import numerai
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import send_order_upload_reminder_emails
 from app.core.async_tasks import (
-    TASK_BATCH_UPDATE_NUMERAI_MODELS,
     TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
+    TASK_BATCH_UPDATE_NUMERAI_MODELS,
     TASK_CHECK_NUMERAI_SUBMISSION,
     TASK_SEND_EMAIL,
     TASK_SEND_NEW_ARTIFACT_EMAILS,
@@ -31,7 +31,6 @@ from app.core.async_tasks import (
     TASK_UPLOAD_NUMERAI_ARTIFACT,
     TASK_VALIDATE_ARTIFACT_UPLOAD,
     enqueue_pending_payment_updates,
-    enqueue_upload_numerai_artifact,
     run_async_task,
 )
 from app.core.celery_app import celery_app
@@ -48,6 +47,7 @@ from app.models import (
 )
 
 client_sentry = Client(settings.SENTRY_DSN)
+
 
 @celery_app.task  # (acks_late=True)
 def send_email_task(
