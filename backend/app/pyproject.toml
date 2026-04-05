@@ -13,6 +13,7 @@ email-validator = "^1.0.5, <=1.1.3" # https://github.com/JoshData/python-email-v
 requests = "^2.23.0"
 celery = "^5.2.7"
 importlib-metadata = "<5.0" # https://github.com/celery/celery/issues/7783
+bcrypt = "4.0.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.2"}
 tenacity = "^6.1.0"
 pydantic = "^1.4"
