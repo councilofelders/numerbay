@@ -1,5 +1,6 @@
 import base64
 import json
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 from app.core import async_tasks
@@ -75,6 +76,51 @@ def test_enqueue_batch_update_numerai_model_scores_uses_ops_owner(monkeypatch) -
         (
             "app.worker.batch_update_model_scores_task",
             {"args": [], "kwargs": {"retries": 3}, "countdown": 30},
+        )
+    ]
+
+
+def test_enqueue_update_active_round_uses_ops_owner(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_OPS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_update_active_round(schedule_slot="202604050901")
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.update_active_round",
+            {"args": [], "kwargs": {"schedule_slot": "202604050901"}},
+        )
+    ]
+
+
+def test_enqueue_validate_numerai_models_stake_uses_ops_owner(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_OPS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_validate_numerai_models_stake(
+        dedupe_key="validate-stake-round-1234-slot-202604050901",
+        delay_seconds=5,
+    )
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.batch_validate_numerai_models_stake_task",
+            {"args": [], "kwargs": {}, "countdown": 5},
         )
     ]
 
@@ -252,6 +298,26 @@ def test_enqueue_check_numerai_submission_uses_submissions_owner(monkeypatch) ->
     ]
 
 
+def test_enqueue_batch_submit_numerai_models_uses_submissions_owner(
+    monkeypatch,
+) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_SUBMISSIONS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_batch_submit_numerai_models()
+
+    assert result == "celery-task"
+    assert calls == [
+        ("app.worker.batch_submit_numerai_models_task", {"args": [], "kwargs": {}})
+    ]
+
+
 def test_enqueue_send_new_order_artifact_emails_uses_notifications_owner(
     monkeypatch,
 ) -> None:
@@ -343,6 +409,20 @@ def test_enqueue_pending_submission_checks_seeds_all_pending_orders(monkeypatch)
     ]
 
 
+def test_run_batch_submit_numerai_models_seeds_all_pending_orders(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_pending_submission_checks",
+        lambda: calls.append("seed") or 3,
+    )
+
+    async_tasks.run_async_task(async_tasks.TASK_BATCH_SUBMIT_NUMERAI_MODELS)
+
+    assert calls == ["seed"]
+
+
 def test_run_update_payment_does_not_reschedule_pending_orders(monkeypatch) -> None:
     calls = []
 
@@ -415,6 +495,108 @@ def test_run_batch_update_numerai_model_scores_requeues_until_ready(monkeypatch)
     )
 
     assert calls == [(4, async_tasks.settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS)]
+
+
+def test_run_update_active_round_on_round_open_seeds_submissions(monkeypatch) -> None:
+    calls = []
+    now = datetime.now(timezone.utc)
+    site_globals = SimpleNamespace(active_round=1238, selling_round=1239)
+
+    from app import crud
+    from app.api.dependencies import commons, numerai
+    from app.db import session
+
+    monkeypatch.setattr(
+        numerai,
+        "get_numerai_active_round",
+        lambda: {
+            "openTime": (now - timedelta(minutes=30)).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "closeStakingTime": (now + timedelta(minutes=30)).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "number": 1239,
+        },
+    )
+    monkeypatch.setattr(
+        session,
+        "run_with_db_session",
+        lambda fn: fn("db-session"),
+    )
+    monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
+    monkeypatch.setattr(
+        crud.globals,
+        "update",
+        lambda db, db_obj, obj_in: calls.append(("update-globals", obj_in)) or site_globals,
+    )
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_batch_submit_numerai_models",
+        lambda: calls.append(("enqueue-submissions", None)) or {"name": "task"},
+    )
+    monkeypatch.setattr(
+        commons,
+        "on_round_open",
+        lambda db: calls.append(("on-round-open", db)),
+    )
+
+    async_tasks.run_async_task(
+        async_tasks.TASK_UPDATE_ACTIVE_ROUND,
+        kwargs={"schedule_slot": "202604050901"},
+    )
+
+    assert calls[:3] == [
+        ("update-globals", {"active_round": 1239}),
+        ("enqueue-submissions", None),
+        ("on-round-open", "db-session"),
+    ]
+
+
+def test_run_update_active_round_near_close_enqueues_stake_validation(
+    monkeypatch,
+) -> None:
+    calls = []
+    now = datetime.now(timezone.utc)
+    site_globals = SimpleNamespace(active_round=1239, selling_round=1239)
+
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.db import session
+
+    monkeypatch.setattr(
+        numerai,
+        "get_numerai_active_round",
+        lambda: {
+            "openTime": (now - timedelta(minutes=30)).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "closeStakingTime": (now + timedelta(minutes=1)).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "number": 1239,
+        },
+    )
+    monkeypatch.setattr(
+        session,
+        "run_with_db_session",
+        lambda fn: fn("db-session"),
+    )
+    monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_validate_numerai_models_stake",
+        lambda dedupe_key=None, delay_seconds=None: calls.append(
+            (dedupe_key, delay_seconds)
+        ),
+    )
+
+    async_tasks.run_async_task(
+        async_tasks.TASK_UPDATE_ACTIVE_ROUND,
+        kwargs={"schedule_slot": "202604050901"},
+    )
+
+    assert calls == [("validate-stake-round-1239-slot-202604050901", None)]
 
 
 def test_send_failed_autosubmit_emails_in_db_reloads_order(monkeypatch) -> None:

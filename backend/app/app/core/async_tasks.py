@@ -17,13 +17,16 @@ from app.core.config import settings
 TASK_SEND_EMAIL = "send-email"
 TASK_BATCH_UPDATE_NUMERAI_MODELS = "batch-update-numerai-models"
 TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES = "batch-update-numerai-model-scores"
+TASK_BATCH_SUBMIT_NUMERAI_MODELS = "batch-submit-numerai-models"
 TASK_CHECK_NUMERAI_SUBMISSION = "check-numerai-submission"
 TASK_SEND_NEW_ARTIFACT_EMAILS = "send-new-artifact-emails"
 TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS = "send-new-order-artifact-emails"
 TASK_TRIGGER_WEBHOOK_FOR_PRODUCT = "trigger-webhook-for-product"
+TASK_UPDATE_ACTIVE_ROUND = "update-active-round"
 TASK_UPDATE_NUMERAI_MODEL = "update-numerai-model"
 TASK_UPDATE_PAYMENT = "update-payment"
 TASK_UPLOAD_NUMERAI_ARTIFACT = "upload-numerai-artifact"
+TASK_VALIDATE_NUMERAI_MODELS_STAKE = "validate-numerai-models-stake"
 TASK_VALIDATE_ARTIFACT_UPLOAD = "validate-artifact-upload"
 
 
@@ -40,6 +43,16 @@ ASYNC_TASK_DEFINITIONS = {
     },
     TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES: {
         "celery_task": "app.worker.batch_update_model_scores_task",
+        "owner_setting": "ASYNC_OWNER_OPS",
+        "queue_setting": "GCP_TASKS_QUEUE_OPS",
+    },
+    TASK_BATCH_SUBMIT_NUMERAI_MODELS: {
+        "celery_task": "app.worker.batch_submit_numerai_models_task",
+        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
+        "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
+    },
+    TASK_VALIDATE_NUMERAI_MODELS_STAKE: {
+        "celery_task": "app.worker.batch_validate_numerai_models_stake_task",
         "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
@@ -60,6 +73,11 @@ ASYNC_TASK_DEFINITIONS = {
     },
     TASK_UPDATE_NUMERAI_MODEL: {
         "celery_task": "app.worker.update_model_subtask",
+        "owner_setting": "ASYNC_OWNER_OPS",
+        "queue_setting": "GCP_TASKS_QUEUE_OPS",
+    },
+    TASK_UPDATE_ACTIVE_ROUND: {
+        "celery_task": "app.worker.update_active_round",
         "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
@@ -149,7 +167,10 @@ def enqueue_batch_update_numerai_models() -> Any:
 
 
 def enqueue_batch_update_numerai_model_scores(
-    *, retries: int = 0, delay_seconds: Optional[float] = None
+    *,
+    retries: int = 0,
+    delay_seconds: Optional[float] = None,
+    dedupe_key: Optional[str] = None,
 ) -> Any:
     """Enqueue the Numerai model scores batch task."""
 
@@ -157,7 +178,14 @@ def enqueue_batch_update_numerai_model_scores(
         TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
         kwargs=dict(retries=retries),
         delay_seconds=delay_seconds,
+        dedupe_key=dedupe_key,
     )
+
+
+def enqueue_batch_submit_numerai_models() -> Any:
+    """Enqueue the batch submission seed task."""
+
+    return enqueue_async_task(TASK_BATCH_SUBMIT_NUMERAI_MODELS)
 
 
 def enqueue_trigger_webhook_for_product(
@@ -183,6 +211,41 @@ def enqueue_update_numerai_model(
         TASK_UPDATE_NUMERAI_MODEL,
         kwargs=dict(user_json=user_json, retries=retries),
         delay_seconds=delay_seconds,
+    )
+
+
+def enqueue_update_active_round(
+    *,
+    schedule_slot: Optional[str] = None,
+    delay_seconds: Optional[float] = None,
+) -> Any:
+    """Enqueue one active-round sync task."""
+
+    dedupe_key = None
+    task_kwargs: Dict[str, Any] = {}
+    if schedule_slot is not None:
+        task_kwargs["schedule_slot"] = schedule_slot
+        dedupe_key = get_active_round_dedupe_key(schedule_slot)
+
+    return enqueue_async_task(
+        TASK_UPDATE_ACTIVE_ROUND,
+        kwargs=task_kwargs,
+        delay_seconds=delay_seconds,
+        dedupe_key=dedupe_key,
+    )
+
+
+def enqueue_validate_numerai_models_stake(
+    *,
+    dedupe_key: Optional[str] = None,
+    delay_seconds: Optional[float] = None,
+) -> Any:
+    """Enqueue one batch Numerai stake validation task."""
+
+    return enqueue_async_task(
+        TASK_VALIDATE_NUMERAI_MODELS_STAKE,
+        delay_seconds=delay_seconds,
+        dedupe_key=dedupe_key,
     )
 
 
@@ -543,6 +606,101 @@ def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
     return None
 
 
+def _run_batch_submit_numerai_models() -> None:
+    total_queued = enqueue_pending_submission_checks()
+    print(f"total orders to submit: {total_queued}")
+    return None
+
+
+def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
+    import pandas as pd
+
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.api.dependencies.commons import on_round_open
+    from app.db.session import run_with_db_session
+
+    active_round = numerai.get_numerai_active_round()
+    utc_time = datetime.now(timezone.utc)
+    open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
+    close_staking_time = pd.to_datetime(
+        active_round["closeStakingTime"]
+    ).to_pydatetime()
+    active_round_number = active_round["number"]
+
+    print(
+        f"UTC time: {utc_time}, round open: {open_time}, "
+        f"round close: {close_staking_time}, round: {active_round_number}"
+    )
+
+    site_globals = run_with_db_session(lambda db: crud.globals.get_singleton(db))
+
+    if open_time <= utc_time <= close_staking_time:
+        if site_globals.active_round != active_round_number:  # type: ignore
+            print(
+                f"UTC time: {utc_time}, round open: {open_time}, "
+                f"round close: {close_staking_time}, round: {active_round_number}"
+            )
+            print(f"Round {active_round_number} opened")
+
+            run_with_db_session(
+                lambda db: crud.globals.update(
+                    db,
+                    db_obj=crud.globals.get_singleton(db),  # type: ignore
+                    obj_in={"active_round": active_round_number},
+                )
+            )
+
+            enqueue_batch_submit_numerai_models()
+            run_with_db_session(lambda db: on_round_open(db))
+
+        if close_staking_time - utc_time <= timedelta(minutes=2):
+            print("Activities freezed due to round rollover")
+            stake_dedupe_key = None
+            if schedule_slot is not None:
+                stake_dedupe_key = get_validate_numerai_models_stake_dedupe_key(
+                    active_round_number,
+                    schedule_slot,
+                )
+            enqueue_validate_numerai_models_stake(dedupe_key=stake_dedupe_key)
+    else:
+        if (
+            site_globals.active_round == active_round_number  # type: ignore
+            and site_globals.selling_round == active_round_number + 1  # type: ignore
+        ):
+            print("Round already up-to-date, no action")
+        else:
+            print("Unfreeze activities, rollover completed")
+            selling_round = active_round_number + 1
+
+            def update_and_process(db):
+                site_globals_obj = crud.globals.update(
+                    db,
+                    db_obj=site_globals,  # type: ignore
+                    obj_in={
+                        "active_round": active_round_number,
+                        "selling_round": selling_round,
+                        "is_doing_round_rollover": False,
+                    },
+                )
+
+                crud.product.bulk_expire(db, current_round=site_globals.selling_round)  # type: ignore
+                crud.order_artifact.bulk_mark_for_pruning(
+                    db, current_round=site_globals.selling_round  # type: ignore
+                )
+                crud.product.bulk_unmark_is_ready(db)
+
+                return site_globals_obj
+
+            run_with_db_session(update_and_process)
+
+    current_globals = run_with_db_session(
+        lambda db: jsonable_encoder(crud.globals.get_singleton(db))
+    )
+    print(f"Current global state: {current_globals}")
+    return None
+
+
 def _run_send_new_artifact_emails(artifact_id: int) -> None:
     from app import crud
     from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
@@ -606,14 +764,86 @@ def _run_update_payment(order_id: int, poll_slot: Optional[str] = None) -> None:
     return None
 
 
+def _run_validate_numerai_models_stake() -> None:
+    from decimal import Decimal
+
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.db.session import SessionLocal
+
+    db = SessionLocal()
+    try:
+        orders = crud.order.get_active_orders(
+            db, round_order=crud.globals.update_singleton(db).selling_round
+        )
+
+        print(f"total orders to check for stake limit: {len(orders)}")
+
+        for order in orders:
+            if order.mode != "stake_with_limit" or not order.submit_model_id:
+                continue
+            target_stake = numerai.get_target_stake(
+                public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
+                secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
+                tournament=order.product.model.tournament,  # type: ignore
+                model_name=order.submit_model_name,  # type: ignore
+            )
+            stake_limit = Decimal(order.stake_limit)  # type: ignore
+            if target_stake > stake_limit:
+                print(
+                    f"Order {order.id} model {order.submit_model_name} "
+                    f"[user {order.buyer_id}: {order.buyer.username}] "
+                    f"exceeded stake limit {target_stake} / {stake_limit}"
+                )
+                result = numerai.set_target_stake(
+                    public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
+                    secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
+                    tournament=order.product.model.tournament,  # type: ignore
+                    model_name=order.submit_model_name,  # type: ignore
+                    target_stake_amount=stake_limit,
+                )
+                print(
+                    f"Adjustment result for model {order.submit_model_name}: {result}"
+                )
+    finally:
+        db.close()
+    return None
+
+
+def get_current_scheduler_slot(now: Optional[datetime] = None) -> str:
+    """Return the current UTC minute slot for scheduled reconciliation."""
+
+    if now is None:
+        now = datetime.now(timezone.utc)
+    return now.astimezone(timezone.utc).strftime("%Y%m%d%H%M")
+
+
 def get_current_payment_reconcile_slot(
     now: Optional[datetime] = None,
 ) -> str:
     """Return the current minute slot for payment reconciliation."""
 
-    if now is None:
-        now = datetime.now(timezone.utc)
-    return now.astimezone(timezone.utc).strftime("%Y%m%d%H%M")
+    return get_current_scheduler_slot(now)
+
+
+def get_active_round_dedupe_key(schedule_slot: str) -> str:
+    """Return a deterministic dedupe key for one active-round sync slot."""
+
+    return f"active-round-slot-{schedule_slot}"
+
+
+def get_batch_update_numerai_model_scores_dedupe_key(schedule_slot: str) -> str:
+    """Return a deterministic dedupe key for one model-scores sync slot."""
+
+    return f"numerai-model-scores-slot-{schedule_slot}"
+
+
+def get_validate_numerai_models_stake_dedupe_key(
+    active_round_number: int, schedule_slot: str
+) -> str:
+    """Return a deterministic dedupe key for stake validation in one slot."""
+
+    return f"validate-stake-round-{active_round_number}-slot-{schedule_slot}"
 
 
 def get_payment_poll_dedupe_key(order_id: int, poll_slot: str) -> str:
@@ -1008,6 +1238,7 @@ def _run_trigger_webhook_for_product(
 
 
 TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
+    TASK_BATCH_SUBMIT_NUMERAI_MODELS: _run_batch_submit_numerai_models,
     TASK_BATCH_UPDATE_NUMERAI_MODELS: _run_batch_update_numerai_models,
     TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES: _run_batch_update_numerai_model_scores,
     TASK_CHECK_NUMERAI_SUBMISSION: _run_check_numerai_submission,
@@ -1015,8 +1246,10 @@ TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
     TASK_SEND_NEW_ARTIFACT_EMAILS: _run_send_new_artifact_emails,
     TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS: _run_send_new_order_artifact_emails,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT: _run_trigger_webhook_for_product,
+    TASK_UPDATE_ACTIVE_ROUND: _run_update_active_round,
     TASK_UPDATE_NUMERAI_MODEL: _run_update_numerai_model,
     TASK_UPDATE_PAYMENT: _run_update_payment,
     TASK_UPLOAD_NUMERAI_ARTIFACT: _run_upload_numerai_artifact,
+    TASK_VALIDATE_NUMERAI_MODELS_STAKE: _run_validate_numerai_models_stake,
     TASK_VALIDATE_ARTIFACT_UPLOAD: _run_validate_artifact_upload,
 }

@@ -1,14 +1,10 @@
 """ Celery worker tasks """
 
 import functools
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
+from datetime import datetime
 from typing import Any, Dict, Optional
 
-import pandas as pd
-from celery import group
 from celery.schedules import crontab
-from fastapi.encoders import jsonable_encoder
 from google.api_core.exceptions import NotFound
 from raven import Client
 from sqlalchemy import and_, func, select
@@ -16,9 +12,9 @@ from sqlalchemy import and_, func, select
 from app import crud
 from app.api import deps
 from app.api.dependencies import numerai
-from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import send_order_upload_reminder_emails
 from app.core.async_tasks import (
+    TASK_BATCH_SUBMIT_NUMERAI_MODELS,
     TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
     TASK_BATCH_UPDATE_NUMERAI_MODELS,
     TASK_CHECK_NUMERAI_SUBMISSION,
@@ -26,10 +22,12 @@ from app.core.async_tasks import (
     TASK_SEND_NEW_ARTIFACT_EMAILS,
     TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
+    TASK_UPDATE_ACTIVE_ROUND,
     TASK_UPDATE_NUMERAI_MODEL,
     TASK_UPDATE_PAYMENT,
     TASK_UPLOAD_NUMERAI_ARTIFACT,
     TASK_VALIDATE_ARTIFACT_UPLOAD,
+    TASK_VALIDATE_NUMERAI_MODELS_STAKE,
     enqueue_pending_payment_updates,
     run_async_task,
 )
@@ -185,104 +183,12 @@ def update_globals_stats_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def update_active_round() -> None:
+def update_active_round(schedule_slot: Optional[str] = None) -> None:
     """Update active round task"""
-    # Get active round info from Numerai
-    active_round = numerai.get_numerai_active_round()
-    utc_time = datetime.now(timezone.utc)
-    open_time = pd.to_datetime(active_round["openTime"]).to_pydatetime()
-    close_staking_time = pd.to_datetime(
-        active_round["closeStakingTime"]
-    ).to_pydatetime()
-    active_round_number = active_round["number"]
-
-    print(
-        f"UTC time: {utc_time}, round open: {open_time}, "
-        f"round close: {close_staking_time}, round: {active_round_number}"
+    return run_async_task(
+        TASK_UPDATE_ACTIVE_ROUND,
+        kwargs=dict(schedule_slot=schedule_slot),
     )
-
-    # Get current globals with minimal DB session
-    site_globals = run_with_db_session(lambda db: crud.globals.get_singleton(db))
-
-    if open_time <= utc_time <= close_staking_time:
-        if site_globals.active_round != active_round_number:  # type: ignore
-            # new round opened and active
-            print(
-                f"UTC time: {utc_time}, round open: {open_time}, "
-                f"round close: {close_staking_time}, round: {active_round_number}"
-            )
-            print(f"Round {active_round_number} opened")
-
-            # Update active round
-            run_with_db_session(
-                lambda db: crud.globals.update(
-                    db,
-                    db_obj=crud.globals.get_singleton(db),  # type: ignore
-                    obj_in={"active_round": active_round_number},
-                )
-            )
-
-            # trigger Numerai submissions
-            celery_app.send_task("app.worker.batch_submit_numerai_models_task")
-
-            # trigger other actions on round open
-            run_with_db_session(lambda db: on_round_open(db))
-
-        if close_staking_time - utc_time <= timedelta(minutes=2):
-            # round about to close
-            print("Activities freezed due to round rollover")
-            # freeze activities
-            # crud.globals.update(
-            #     db,
-            #     db_obj=site_globals,  # type: ignore
-            #     obj_in={"is_doing_round_rollover": True},
-            # )
-
-            # check order stake
-            celery_app.send_task(
-                "app.worker.batch_validate_numerai_models_stake_task",
-            )
-    else:  # current round closed for staking, start selling next round, unfreeze activities
-        if (
-            site_globals.active_round == active_round_number  # type: ignore
-            and site_globals.selling_round == active_round_number + 1  # type: ignore
-        ):  # active round already up-to-date
-            print("Round already up-to-date, no action")
-        else:
-            print("Unfreeze activities, rollover completed")
-            selling_round = active_round_number + 1
-
-            def update_and_process(db):
-                # Update globals
-                site_globals_obj = crud.globals.update(
-                    db,
-                    db_obj=site_globals,  # type: ignore
-                    obj_in={
-                        "active_round": active_round_number,
-                        "selling_round": selling_round,
-                        "is_doing_round_rollover": False,
-                    },
-                )
-
-                # expire old products
-                crud.product.bulk_expire(db, current_round=site_globals.selling_round)  # type: ignore
-
-                # mark order artifacts for pruning
-                crud.order_artifact.bulk_mark_for_pruning(db, current_round=site_globals.selling_round)  # type: ignore
-
-                # unmark product readiness
-                crud.product.bulk_unmark_is_ready(db)
-
-                return site_globals_obj
-
-            # Execute all database operations in a single session
-            run_with_db_session(update_and_process)
-
-    # Print current global state with minimal DB session
-    current_globals = run_with_db_session(
-        lambda db: jsonable_encoder(crud.globals.get_singleton(db))
-    )
-    print(f"Current global state: {current_globals}")
 
 
 # @celery_app.task  # (acks_late=True)
@@ -438,22 +344,7 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
 @celery_app.task  # (acks_late=True)
 def batch_submit_numerai_models_task() -> None:
     """Batch submit Numerai models task"""
-    db = SessionLocal()
-    try:
-        orders = crud.order.get_pending_submission_orders(
-            db, round_order=crud.globals.update_singleton(db).selling_round
-        )
-
-        print(f"total orders to submit: {len(orders)}")
-
-        group(
-            [
-                submit_numerai_model_subtask.s(jsonable_encoder(order))
-                for order in orders
-            ]
-        ).delay()
-    finally:
-        db.close()
+    return run_async_task(TASK_BATCH_SUBMIT_NUMERAI_MODELS)
 
 
 @celery_app.task  # (acks_late=True)
@@ -476,45 +367,7 @@ def validate_artifact_upload_task(  # pylint: disable=too-many-branches
 @celery_app.task  # (acks_late=True)
 def batch_validate_numerai_models_stake_task() -> None:
     """batch validate Numerai models stake task"""
-    db = SessionLocal()
-    try:
-        # orders = crud.order.get_multi_by_state(
-        #     db, state="confirmed", round_order=globals.selling_round
-        # )
-        orders = crud.order.get_active_orders(
-            db, round_order=crud.globals.update_singleton(db).selling_round
-        )
-
-        print(f"total orders to check for stake limit: {len(orders)}")
-
-        for order in orders:
-            if order.mode != "stake_with_limit" or not order.submit_model_id:
-                continue
-            target_stake = numerai.get_target_stake(
-                public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
-                secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
-                tournament=order.product.model.tournament,  # type: ignore
-                model_name=order.submit_model_name,  # type: ignore
-            )
-            stake_limit = Decimal(order.stake_limit)  # type: ignore
-            if target_stake > stake_limit:
-                print(
-                    f"Order {order.id} model {order.submit_model_name} "
-                    f"[user {order.buyer_id}: {order.buyer.username}] "
-                    f"exceeded stake limit {target_stake} / {stake_limit}"
-                )
-                result = numerai.set_target_stake(
-                    public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
-                    secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
-                    tournament=order.product.model.tournament,  # type: ignore
-                    model_name=order.submit_model_name,  # type: ignore
-                    target_stake_amount=stake_limit,
-                )
-                print(
-                    f"Adjustment result for model {order.submit_model_name}: {result}"
-                )
-    finally:
-        db.close()
+    return run_async_task(TASK_VALIDATE_NUMERAI_MODELS_STAKE)
 
 
 @celery_app.task  # (acks_late=True)
@@ -862,17 +715,20 @@ def is_celery_schedule_owner(owner: str) -> bool:
 def build_beat_schedule() -> Dict[str, Dict[str, Any]]:
     """Build Beat schedules for task families still owned by Celery."""
 
-    beat_schedule = {
-        "batch_update_model_scores": {
+    beat_schedule = {}
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_MODEL_SCORES):
+        beat_schedule["batch_update_model_scores"] = {
             "task": "app.worker.batch_update_model_scores_task",
             "schedule": crontab(day_of_week="tue-sat", hour=14, minute=5),
             "kwargs": dict(retries=10),
-        },
-        "update_active_round": {
+        }
+
+    if is_celery_schedule_owner(settings.SCHEDULER_OWNER_ACTIVE_ROUND):
+        beat_schedule["update_active_round"] = {
             "task": "app.worker.update_active_round",
             "schedule": crontab(),
-        },
-    }
+        }
 
     if is_celery_schedule_owner(settings.SCHEDULER_OWNER_GLOBALS_STATS):
         beat_schedule["update_globals_stats_task"] = {

@@ -86,7 +86,7 @@ def test_scheduler_numerai_model_scores_route_enqueues_batch_update(
     assert calls == ["scores"]
 
 
-def test_scheduler_submit_route_enqueues_pending_submission_checks(
+def test_scheduler_submit_route_enqueues_batch_submission_seed(
     client: TestClient,
     superuser_token_headers: dict,
     monkeypatch,
@@ -95,8 +95,8 @@ def test_scheduler_submit_route_enqueues_pending_submission_checks(
 
     monkeypatch.setattr(
         scheduler,
-        "enqueue_pending_submission_checks",
-        lambda: calls.append("submit") or 3,
+        "enqueue_batch_submit_numerai_models",
+        lambda: calls.append("submit") or {"name": "task-created"},
     )
 
     response = client.post(

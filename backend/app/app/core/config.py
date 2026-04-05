@@ -138,6 +138,8 @@ class Settings(BaseSettings):
     SCHEDULER_OWNER_POLLS: str = "celery"
     SCHEDULER_OWNER_PRUNE_STORAGE: str = "celery"
     SCHEDULER_OWNER_ARTIFACT_REMINDERS: str = "celery"
+    SCHEDULER_OWNER_MODEL_SCORES: str = "celery"
+    SCHEDULER_OWNER_ACTIVE_ROUND: str = "celery"
 
     @validator(
         "ASYNC_OWNER_NOTIFICATIONS",
@@ -151,6 +153,8 @@ class Settings(BaseSettings):
         "SCHEDULER_OWNER_POLLS",
         "SCHEDULER_OWNER_PRUNE_STORAGE",
         "SCHEDULER_OWNER_ARTIFACT_REMINDERS",
+        "SCHEDULER_OWNER_MODEL_SCORES",
+        "SCHEDULER_OWNER_ACTIVE_ROUND",
         pre=True,
     )
     def validate_scheduler_owner(cls, v: Optional[str]) -> str:

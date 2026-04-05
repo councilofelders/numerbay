@@ -162,10 +162,12 @@ jobs:
           WEBHOOK_ENABLED: True
           GCP_TASKS_LOCATION: us-central1
           GCP_TASKS_QUEUE_NOTIFICATIONS: numerbay-queue-notifications
+          GCP_TASKS_QUEUE_OPS: numerbay-queue-ops
           GCP_TASKS_QUEUE_WEBHOOKS: numerbay-queue-webhooks
           GCP_TASKS_QUEUE_PAYMENTS: numerbay-queue-payments
           GCP_TASKS_QUEUE_SUBMISSIONS: numerbay-queue-submissions
           ASYNC_OWNER_NOTIFICATIONS: ${{ secrets.ASYNC_OWNER_NOTIFICATIONS }}
+          ASYNC_OWNER_OPS: ${{ secrets.ASYNC_OWNER_OPS }}
           ASYNC_OWNER_WEBHOOKS: ${{ secrets.ASYNC_OWNER_WEBHOOKS }}
           ASYNC_OWNER_PAYMENTS: ${{ secrets.ASYNC_OWNER_PAYMENTS }}
           ASYNC_OWNER_SUBMISSIONS: ${{ secrets.ASYNC_OWNER_SUBMISSIONS }}
@@ -178,6 +180,8 @@ jobs:
           SCHEDULER_OWNER_POLLS: ${{ secrets.SCHEDULER_OWNER_POLLS }}
           SCHEDULER_OWNER_PRUNE_STORAGE: ${{ secrets.SCHEDULER_OWNER_PRUNE_STORAGE }}
           SCHEDULER_OWNER_ARTIFACT_REMINDERS: ${{ secrets.SCHEDULER_OWNER_ARTIFACT_REMINDERS }}
+          SCHEDULER_OWNER_MODEL_SCORES: ${{ secrets.SCHEDULER_OWNER_MODEL_SCORES }}
+          SCHEDULER_OWNER_ACTIVE_ROUND: ${{ secrets.SCHEDULER_OWNER_ACTIVE_ROUND }}
           LOAD_DOTENV: "false"
           BOOTSTRAP_DB_BEFORE_DEPLOY: "true"
           RUN_DB_MIGRATIONS_ON_STARTUP: "false"
