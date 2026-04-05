@@ -1,8 +1,6 @@
 """ Celery worker tasks """
 
 import functools
-import sys
-import time
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
@@ -21,10 +19,14 @@ from app.api.dependencies import numerai
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import send_order_upload_reminder_emails
 from app.core.async_tasks import (
+    TASK_BATCH_UPDATE_NUMERAI_MODELS,
+    TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
+    TASK_CHECK_NUMERAI_SUBMISSION,
     TASK_SEND_EMAIL,
     TASK_SEND_NEW_ARTIFACT_EMAILS,
     TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
+    TASK_UPDATE_NUMERAI_MODEL,
     TASK_UPDATE_PAYMENT,
     TASK_UPLOAD_NUMERAI_ARTIFACT,
     TASK_VALIDATE_ARTIFACT_UPLOAD,
@@ -46,35 +48,6 @@ from app.models import (
 )
 
 client_sentry = Client(settings.SENTRY_DSN)
-
-
-@celery_app.task(acks_late=True)
-def test_celery(word: str) -> str:
-    """
-    Test celery task
-
-    Args:
-        word (str): message to send
-    """
-
-    return f"test task return {word}"
-
-
-@celery_app.task
-def tick(msg: str) -> str:
-    """
-    Simple tick task
-
-    Args:
-        msg (str): message to send
-    """
-
-    print(f"Tick! The time is: {datetime.now()}, arg: {msg}")
-    sys.stdout.flush()
-
-    time.sleep(2)
-    return msg
-
 
 @celery_app.task  # (acks_late=True)
 def send_email_task(
@@ -174,77 +147,16 @@ def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
         user_json (dict): dict of user information
         retries (int): number of retries
     """
-    try:
-        # Make a copy of the user_json
-        user_json_copy = user_json.copy()
-
-        # Make the slow Numerai API call outside of any database session
-        api_result = numerai.get_numerai_api_info(user_json_copy)
-
-        # Add the API result to the user_json to prevent another API call
-        user_json_copy["_api_data"] = api_result
-
-        # Now use run_with_db_session with the prepared API data
-        def update_user_and_models(db):
-            # Update user info (won't make another API call because we included _api_data)
-            user_has_valid_numerai_api = crud.user.update_numerai_api(db, user_json)
-
-            # Update user models
-            updated_username = None
-            if user_has_valid_numerai_api["success"]:
-                updated_username = crud.model.update_model(db, user_json)
-
-            # Handled users that failed authenticated updates
-            if updated_username is None:
-                print(f"Trying to update user {user_json['username']} without auth")
-                crud.model.update_model_unauthenticated(db, user_json)
-
-            return updated_username
-
-        run_with_db_session(update_user_and_models)
-    except Exception as e:  # pylint: disable=broad-except
-        print(
-            f"Error updating model scores for user {user_json['username']}: "
-            f"[{e}], {retries} retries remaining"
-        )
-        if retries > 0:
-            print(
-                f"Retrying updating model scores for user {user_json['username']} "
-                f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
-            )
-            celery_app.send_task(
-                "app.worker.update_model_subtask",
-                countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
-                kwargs=dict(user_json=user_json, retries=retries - 1),
-            )
-    return None
+    return run_async_task(
+        TASK_UPDATE_NUMERAI_MODEL,
+        kwargs=dict(user_json=user_json, retries=retries),
+    )
 
 
 @celery_app.task  # (acks_late=True)
 def batch_update_models_task() -> None:
     """Batch upload Numerai models task"""
-
-    def get_users_with_api_keys(db):
-        users = crud.user.search(
-            # type: ignore
-            db,
-            filters={"numerai_api_key_public_id": ["any"]},
-            limit=None,
-        )["data"]
-        return users
-
-    users = run_with_db_session(get_users_with_api_keys)
-    print(f"total: {len(users)}")
-
-    # Schedule update tasks with staggered start times to avoid connection pool exhaustion
-    group(
-        [
-            update_model_subtask.s(jsonable_encoder(user), retries=10).set(
-                countdown=i // 5
-            )
-            for i, user in enumerate(users)
-        ]
-    ).delay()
+    return run_async_task(TASK_BATCH_UPDATE_NUMERAI_MODELS)
 
 
 @celery_app.task  # (acks_late=True)
@@ -255,55 +167,10 @@ def batch_update_model_scores_task(retries: int = 0) -> None:
     Args:
         retries (int): number of tries
     """
-    try:
-        pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
-
-        if pipeline_status["isScoringDay"]:
-            if pipeline_status.get("resolvedAt", None):
-                print("Numerai pipeline completed, update model scores...")
-
-                # Get users with API keys
-                users = run_with_db_session(
-                    lambda db: crud.user.search(
-                        db,
-                        filters={"numerai_api_key_public_id": ["any"]},
-                        limit=None,
-                    )["data"]
-                )
-
-                print(f"total: {len(users)}")
-
-                # Schedule update tasks with staggered start times
-                group(
-                    [
-                        update_model_subtask.s(jsonable_encoder(user), retries=10).set(
-                            countdown=60 + i // 5
-                        )
-                        for i, user in enumerate(users)
-                    ]
-                ).apply_async()
-            else:
-                print(
-                    f"Numerai pipeline not ready, checking again "
-                    f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
-                )
-                celery_app.send_task(
-                    "app.worker.batch_update_model_scores_task",
-                    countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
-                    kwargs=dict(retries=retries),
-                )
-    except Exception as e:  # pylint: disable=broad-except
-        print(f"Error starting model scores update [{e}], {retries} retries remaining")
-        if retries > 0:
-            print(
-                f"Retrying starting model scores update "
-                f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
-            )
-            celery_app.send_task(
-                "app.worker.batch_update_model_scores_task",
-                countdown=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
-                kwargs=dict(retries=retries - 1),
-            )
+    return run_async_task(
+        TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
+        kwargs=dict(retries=retries),
+    )
 
 
 @celery_app.task  # (acks_late=True)
@@ -562,95 +429,10 @@ def submit_numerai_model_subtask(order_json: Dict, retry: bool = True) -> Option
     Returns:
 
     """
-    db = SessionLocal()
-    try:
-        order_id = order_json["id"]
-        print(f"Checking artifact submission for order [{order_id}]")
-
-        # Get artifacts
-        product = crud.product.get(db=db, id=order_json["product_id"])
-        site_globals = crud.globals.update_singleton(db)
-        selling_round = site_globals.selling_round  # type: ignore
-
-        artifacts = crud.artifact.get_multi_by_product_round(
-            db, product=product, round_tournament=selling_round  # type: ignore
-        )
-
-        # No csv artifact
-        if (
-            not artifacts
-            or len(artifacts) == 0
-            or len(
-                [
-                    artifact
-                    for artifact in artifacts
-                    if artifact.object_name.endswith(".csv")  # type: ignore
-                ]
-            )
-            == 0
-        ):
-            if site_globals.is_doing_round_rollover:  # Round about to close, finish
-                print(
-                    f"Submission for order [{order_id}] interrupted due to round closing"
-                )
-                return None
-            # Check again later
-            if retry:
-                print(
-                    f"No csv artifact for order [{order_id}], "
-                    f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
-                )
-                celery_app.send_task(
-                    "app.worker.submit_numerai_model_subtask",
-                    kwargs=dict(order_json=order_json),
-                    countdown=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
-                )
-            else:
-                print(f"No csv artifact for order [{order_id}]")
-            return None
-
-        # Has csv artifact
-        csv_artifact = [
-            artifact
-            for artifact in artifacts
-            if artifact.object_name.endswith(".csv")  # type: ignore
-        ][-1]
-        bucket = deps.get_gcs_bucket()
-        blob = bucket.blob(csv_artifact.object_name)
-        if not blob.exists():
-            if retry:
-                # Check again later
-                print(
-                    f"Csv artifact for order [{order_id}] not yet uploaded, "
-                    f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
-                )
-                celery_app.send_task(
-                    "app.worker.submit_numerai_model_subtask",
-                    kwargs=dict(order_json=order_json),
-                    countdown=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
-                )
-            else:
-                print(f"Csv artifact for order [{order_id}] not yet uploaded")
-            return None
-
-        buyer = crud.user.get(db, id=order_json["buyer_id"])
-
-        if buyer:
-            print(
-                f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}"
-            )
-            enqueue_upload_numerai_artifact(
-                order_id=order_id,
-                object_name=csv_artifact.object_name,
-                model_id=order_json["submit_model_id"],
-                numerai_api_key_public_id=buyer.numerai_api_key_public_id,
-                numerai_api_key_secret=buyer.numerai_api_key_secret,
-                tournament=product.model.tournament,  # type: ignore
-                version=1,
-            )
-    finally:
-        db.close()
-    return None
+    return run_async_task(
+        TASK_CHECK_NUMERAI_SUBMISSION,
+        kwargs=dict(order_json=order_json, retry=retry),
+    )
 
 
 @celery_app.task  # (acks_late=True)
@@ -1081,11 +863,6 @@ def build_beat_schedule() -> Dict[str, Dict[str, Any]]:
     """Build Beat schedules for task families still owned by Celery."""
 
     beat_schedule = {
-        "test_tick": {
-            "task": "app.worker.tick",
-            "schedule": crontab(day_of_week="wed-sun", hour=0, minute=0),
-            "args": (["cron test"]),
-        },
         "batch_update_model_scores": {
             "task": "app.worker.batch_update_model_scores_task",
             "schedule": crontab(day_of_week="tue-sat", hour=14, minute=5),

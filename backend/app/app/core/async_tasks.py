@@ -15,9 +15,13 @@ from app.core.celery_app import celery_app
 from app.core.config import settings
 
 TASK_SEND_EMAIL = "send-email"
+TASK_BATCH_UPDATE_NUMERAI_MODELS = "batch-update-numerai-models"
+TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES = "batch-update-numerai-model-scores"
+TASK_CHECK_NUMERAI_SUBMISSION = "check-numerai-submission"
 TASK_SEND_NEW_ARTIFACT_EMAILS = "send-new-artifact-emails"
 TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS = "send-new-order-artifact-emails"
 TASK_TRIGGER_WEBHOOK_FOR_PRODUCT = "trigger-webhook-for-product"
+TASK_UPDATE_NUMERAI_MODEL = "update-numerai-model"
 TASK_UPDATE_PAYMENT = "update-payment"
 TASK_UPLOAD_NUMERAI_ARTIFACT = "upload-numerai-artifact"
 TASK_VALIDATE_ARTIFACT_UPLOAD = "validate-artifact-upload"
@@ -28,6 +32,16 @@ ASYNC_TASK_DEFINITIONS = {
         "celery_task": "app.worker.send_email_task",
         "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
         "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
+    },
+    TASK_BATCH_UPDATE_NUMERAI_MODELS: {
+        "celery_task": "app.worker.batch_update_models_task",
+        "owner_setting": "ASYNC_OWNER_OPS",
+        "queue_setting": "GCP_TASKS_QUEUE_OPS",
+    },
+    TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES: {
+        "celery_task": "app.worker.batch_update_model_scores_task",
+        "owner_setting": "ASYNC_OWNER_OPS",
+        "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_SEND_NEW_ARTIFACT_EMAILS: {
         "celery_task": "app.worker.send_new_artifact_emails_task",
@@ -44,6 +58,11 @@ ASYNC_TASK_DEFINITIONS = {
         "owner_setting": "ASYNC_OWNER_WEBHOOKS",
         "queue_setting": "GCP_TASKS_QUEUE_WEBHOOKS",
     },
+    TASK_UPDATE_NUMERAI_MODEL: {
+        "celery_task": "app.worker.update_model_subtask",
+        "owner_setting": "ASYNC_OWNER_OPS",
+        "queue_setting": "GCP_TASKS_QUEUE_OPS",
+    },
     TASK_UPDATE_PAYMENT: {
         "celery_task": "app.worker.update_payment_subtask",
         "owner_setting": "ASYNC_OWNER_PAYMENTS",
@@ -56,6 +75,11 @@ ASYNC_TASK_DEFINITIONS = {
     },
     TASK_VALIDATE_ARTIFACT_UPLOAD: {
         "celery_task": "app.worker.validate_artifact_upload_task",
+        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
+        "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
+    },
+    TASK_CHECK_NUMERAI_SUBMISSION: {
+        "celery_task": "app.worker.submit_numerai_model_subtask",
         "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
     },
@@ -118,6 +142,24 @@ def enqueue_send_email(
     )
 
 
+def enqueue_batch_update_numerai_models() -> Any:
+    """Enqueue the Numerai model sync batch task."""
+
+    return enqueue_async_task(TASK_BATCH_UPDATE_NUMERAI_MODELS)
+
+
+def enqueue_batch_update_numerai_model_scores(
+    *, retries: int = 0, delay_seconds: Optional[float] = None
+) -> Any:
+    """Enqueue the Numerai model scores batch task."""
+
+    return enqueue_async_task(
+        TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
+        kwargs=dict(retries=retries),
+        delay_seconds=delay_seconds,
+    )
+
+
 def enqueue_trigger_webhook_for_product(
     product_id: int, order_id: Optional[int] = None
 ) -> Any:
@@ -126,6 +168,21 @@ def enqueue_trigger_webhook_for_product(
     return enqueue_async_task(
         TASK_TRIGGER_WEBHOOK_FOR_PRODUCT,
         args=[product_id, order_id],
+    )
+
+
+def enqueue_update_numerai_model(
+    user_json: Dict[str, Any],
+    *,
+    retries: int = 0,
+    delay_seconds: Optional[float] = None,
+) -> Any:
+    """Enqueue one Numerai model update task."""
+
+    return enqueue_async_task(
+        TASK_UPDATE_NUMERAI_MODEL,
+        kwargs=dict(user_json=user_json, retries=retries),
+        delay_seconds=delay_seconds,
     )
 
 
@@ -214,6 +271,21 @@ def enqueue_validate_artifact_upload(
     )
 
 
+def enqueue_check_numerai_submission(
+    order_json: Dict[str, Any],
+    *,
+    retry: bool = True,
+    delay_seconds: Optional[float] = None,
+) -> Any:
+    """Enqueue one order submission readiness check."""
+
+    return enqueue_async_task(
+        TASK_CHECK_NUMERAI_SUBMISSION,
+        kwargs=dict(order_json=order_json, retry=retry),
+        delay_seconds=delay_seconds,
+    )
+
+
 def enqueue_pending_payment_updates(poll_slot: Optional[str] = None) -> int:
     """Seed payment updates for all currently pending orders."""
 
@@ -223,6 +295,15 @@ def enqueue_pending_payment_updates(poll_slot: Optional[str] = None) -> int:
     for order_id in order_ids:
         enqueue_update_payment(order_id, poll_slot=poll_slot)
     return len(order_ids)
+
+
+def enqueue_pending_submission_checks() -> int:
+    """Seed submission readiness checks for all currently pending submission orders."""
+
+    orders = _get_pending_submission_orders_json()
+    for order_json in orders:
+        enqueue_check_numerai_submission(order_json)
+    return len(orders)
 
 
 def run_async_task(
@@ -346,6 +427,122 @@ def _run_send_email(
     )
 
 
+def _run_update_numerai_model(
+    user_json: Dict[str, Any], retries: int = 0
+) -> Optional[Any]:
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.db.session import run_with_db_session
+
+    try:
+        user_json_copy = user_json.copy()
+        api_result = numerai.get_numerai_api_info(user_json_copy)
+        user_json_copy["_api_data"] = api_result
+
+        def update_user_and_models(db):
+            user_has_valid_numerai_api = crud.user.update_numerai_api(db, user_json)
+
+            updated_username = None
+            if user_has_valid_numerai_api["success"]:
+                updated_username = crud.model.update_model(db, user_json)
+
+            if updated_username is None:
+                print(f"Trying to update user {user_json['username']} without auth")
+                crud.model.update_model_unauthenticated(db, user_json)
+
+            return updated_username
+
+        run_with_db_session(update_user_and_models)
+    except Exception as exc:  # pylint: disable=broad-except
+        print(
+            f"Error updating model scores for user {user_json['username']}: "
+            f"[{exc}], {retries} retries remaining"
+        )
+        if retries > 0:
+            print(
+                f"Retrying updating model scores for user {user_json['username']} "
+                f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
+            )
+            enqueue_update_numerai_model(
+                user_json,
+                retries=retries - 1,
+                delay_seconds=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+            )
+    return None
+
+
+def _run_batch_update_numerai_models() -> None:
+    from app import crud
+    from app.db.session import run_with_db_session
+
+    def get_users_with_api_keys(db):
+        return crud.user.search(
+            db,
+            filters={"numerai_api_key_public_id": ["any"]},
+            limit=None,
+        )["data"]
+
+    users = run_with_db_session(get_users_with_api_keys)
+    print(f"total: {len(users)}")
+    for i, user in enumerate(users):
+        enqueue_update_numerai_model(
+            jsonable_encoder(user),
+            retries=10,
+            delay_seconds=i // 5,
+        )
+    return None
+
+
+def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.db.session import run_with_db_session
+
+    try:
+        pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
+
+        if pipeline_status["isScoringDay"]:
+            if pipeline_status.get("resolvedAt", None):
+                print("Numerai pipeline completed, update model scores...")
+
+                users = run_with_db_session(
+                    lambda db: crud.user.search(
+                        db,
+                        filters={"numerai_api_key_public_id": ["any"]},
+                        limit=None,
+                    )["data"]
+                )
+
+                print(f"total: {len(users)}")
+                for i, user in enumerate(users):
+                    enqueue_update_numerai_model(
+                        jsonable_encoder(user),
+                        retries=10,
+                        delay_seconds=60 + i // 5,
+                    )
+            else:
+                print(
+                    f"Numerai pipeline not ready, checking again "
+                    f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS}s"
+                )
+                enqueue_batch_update_numerai_model_scores(
+                    retries=retries,
+                    delay_seconds=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+                )
+    except Exception as exc:  # pylint: disable=broad-except
+        print(f"Error starting model scores update [{exc}], {retries} retries remaining")
+        if retries > 0:
+            print(
+                f"Retrying starting model scores update "
+                f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
+            )
+            enqueue_batch_update_numerai_model_scores(
+                retries=retries - 1,
+                delay_seconds=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
+            )
+    return None
+
+
 def _run_send_new_artifact_emails(artifact_id: int) -> None:
     from app import crud
     from app.api.dependencies.artifacts import send_artifact_emails_for_active_orders
@@ -444,6 +641,20 @@ def _get_pending_order_ids() -> List[int]:
     return run_with_db_session(get_pending_order_ids)
 
 
+def _get_pending_submission_orders_json() -> List[Dict[str, Any]]:
+    from app import crud
+    from app.db.session import run_with_db_session
+
+    def get_pending_submission_orders_json(db):
+        orders = crud.order.get_pending_submission_orders(
+            db,
+            round_order=crud.globals.update_singleton(db).selling_round,
+        )
+        return [jsonable_encoder(order) for order in orders]
+
+    return run_with_db_session(get_pending_submission_orders_json)
+
+
 def _run_update_payment_in_db(order_id: int) -> None:
     from app.api.dependencies.orders import update_payment
     from app.db.session import run_with_db_session
@@ -467,6 +678,88 @@ def _send_failed_autosubmit_emails_in_db(order_id: int, artifact_name: str) -> N
         return None
 
     run_with_db_session(send_failed_emails)
+
+
+def _run_check_numerai_submission(
+    order_json: Dict[str, Any], retry: bool = True
+) -> Optional[Any]:
+    from app import crud
+    from app.api import deps
+    from app.db.session import SessionLocal
+
+    db = SessionLocal()
+    try:
+        order_id = order_json["id"]
+        print(f"Checking artifact submission for order [{order_id}]")
+
+        product = crud.product.get(db=db, id=order_json["product_id"])
+        site_globals = crud.globals.update_singleton(db)
+        selling_round = site_globals.selling_round  # type: ignore
+
+        artifacts = crud.artifact.get_multi_by_product_round(
+            db, product=product, round_tournament=selling_round  # type: ignore[arg-type]
+        )
+
+        csv_artifacts = [
+            artifact
+            for artifact in artifacts or []
+            if artifact.object_name and artifact.object_name.endswith(".csv")
+        ]
+        if not csv_artifacts:
+            if site_globals.is_doing_round_rollover:
+                print(
+                    f"Submission for order [{order_id}] interrupted due to round closing"
+                )
+                return None
+            if retry:
+                print(
+                    f"No csv artifact for order [{order_id}], "
+                    f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                )
+                enqueue_check_numerai_submission(
+                    order_json,
+                    delay_seconds=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
+                )
+            else:
+                print(f"No csv artifact for order [{order_id}]")
+            return None
+
+        csv_artifact = csv_artifacts[-1]
+        bucket = deps.get_gcs_bucket()
+        blob = bucket.blob(csv_artifact.object_name)  # type: ignore[arg-type]
+        if not blob.exists():
+            if retry:
+                print(
+                    f"Csv artifact for order [{order_id}] not yet uploaded, "
+                    f"trying again in {settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS}s"
+                )
+                enqueue_check_numerai_submission(
+                    order_json,
+                    delay_seconds=settings.ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS,
+                )
+            else:
+                print(f"Csv artifact for order [{order_id}] not yet uploaded")
+            return None
+
+        buyer = crud.user.get(db, id=order_json["buyer_id"])
+        if buyer is None:
+            return None
+
+        print(
+            f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}"
+        )
+        enqueue_upload_numerai_artifact(
+            order_id=order_id,
+            object_name=csv_artifact.object_name,  # type: ignore[arg-type]
+            model_id=order_json["submit_model_id"],
+            numerai_api_key_public_id=buyer.numerai_api_key_public_id,
+            numerai_api_key_secret=buyer.numerai_api_key_secret,
+            tournament=product.model.tournament,  # type: ignore[union-attr]
+            version=1,
+        )
+        return None
+    finally:
+        db.close()
 
 
 def _run_upload_numerai_artifact(
@@ -715,10 +1008,14 @@ def _run_trigger_webhook_for_product(
 
 
 TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
+    TASK_BATCH_UPDATE_NUMERAI_MODELS: _run_batch_update_numerai_models,
+    TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES: _run_batch_update_numerai_model_scores,
+    TASK_CHECK_NUMERAI_SUBMISSION: _run_check_numerai_submission,
     TASK_SEND_EMAIL: _run_send_email,
     TASK_SEND_NEW_ARTIFACT_EMAILS: _run_send_new_artifact_emails,
     TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS: _run_send_new_order_artifact_emails,
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT: _run_trigger_webhook_for_product,
+    TASK_UPDATE_NUMERAI_MODEL: _run_update_numerai_model,
     TASK_UPDATE_PAYMENT: _run_update_payment,
     TASK_UPLOAD_NUMERAI_ARTIFACT: _run_upload_numerai_artifact,
     TASK_VALIDATE_ARTIFACT_UPLOAD: _run_validate_artifact_upload,

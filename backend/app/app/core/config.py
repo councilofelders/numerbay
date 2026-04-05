@@ -104,6 +104,7 @@ class Settings(BaseSettings):
     GCP_WEBHOOK_FUNCTION: Optional[str] = None
     GCP_TASKS_LOCATION: str = "us-central1"
     GCP_TASKS_QUEUE_NOTIFICATIONS: str = "notifications"
+    GCP_TASKS_QUEUE_OPS: str = "ops"
     GCP_TASKS_QUEUE_WEBHOOKS: str = "webhooks"
     GCP_TASKS_QUEUE_PAYMENTS: str = "payments"
     GCP_TASKS_QUEUE_SUBMISSIONS: str = "submissions"
@@ -127,6 +128,7 @@ class Settings(BaseSettings):
     MAX_ROUND_OFFSET: int = 50
     WEBHOOK_ENABLED: bool = False
     ASYNC_OWNER_NOTIFICATIONS: str = "celery"
+    ASYNC_OWNER_OPS: str = "celery"
     ASYNC_OWNER_WEBHOOKS: str = "celery"
     ASYNC_OWNER_PAYMENTS: str = "celery"
     ASYNC_OWNER_SUBMISSIONS: str = "celery"
@@ -139,6 +141,7 @@ class Settings(BaseSettings):
 
     @validator(
         "ASYNC_OWNER_NOTIFICATIONS",
+        "ASYNC_OWNER_OPS",
         "ASYNC_OWNER_WEBHOOKS",
         "ASYNC_OWNER_PAYMENTS",
         "ASYNC_OWNER_SUBMISSIONS",

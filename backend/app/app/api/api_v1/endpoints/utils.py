@@ -8,25 +8,10 @@ from pydantic.networks import EmailStr, HttpUrl
 from app import models, schemas
 from app.api import deps
 from app.api.deps import make_gcp_authorized_post_request
-from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.utils import send_test_email
 
 router = APIRouter()
-
-
-@router.post("/test-celery/", response_model=schemas.Msg, status_code=201)
-def test_celery(
-    msg: schemas.Msg,
-    current_user: models.User = Depends(
-        deps.get_current_active_superuser
-    ),  # pylint: disable=W0613
-) -> Any:
-    """
-    Test Celery worker.
-    """
-    celery_app.send_task("app.worker.test_celery", args=[msg.msg])
-    return {"msg": "Word received"}
 
 
 @router.post("/test-email/", response_model=schemas.Msg, status_code=201)

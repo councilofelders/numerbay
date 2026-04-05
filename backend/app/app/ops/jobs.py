@@ -5,6 +5,7 @@ from typing import Callable, Dict, Iterable, Optional
 
 from app.worker import (
     batch_prune_storage,
+    batch_validate_numerai_models_stake_task,
     batch_update_payments_task,
     batch_update_polls,
     batch_update_product_sales_stats,
@@ -24,6 +25,7 @@ JOB_RUNNERS: Dict[str, JobRunner] = {
     "prune-storage": batch_prune_storage,
     "reconcile-payments": batch_update_payments_task,
     "stake-snapshots": batch_update_stake_snapshots,
+    "validate-numerai-models-stake": batch_validate_numerai_models_stake_task,
 }
 
 

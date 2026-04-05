@@ -11,7 +11,7 @@ from app.api import deps
 from app.api.dependencies.commons import on_round_open
 from app.api.dependencies.orders import send_order_confirmation_emails
 from app.api.deps import make_gcp_authorized_post_request
-from app.core.celery_app import celery_app
+from app.core.async_tasks import enqueue_check_numerai_submission
 from app.core.config import settings
 from app.crud.crud_stats import calculate_stake_for_tournament, fill_round_stats
 from app.models import Artifact
@@ -207,9 +207,9 @@ def resubmit_for_order(  # pylint: disable=missing-function-docstring
     order_obj = crud.order.get(db, id=order_id)
     if order_obj is not None:
         if order_obj.state == "confirmed":
-            celery_app.send_task(
-                "app.worker.submit_numerai_model_subtask",
-                kwargs=dict(order_json=jsonable_encoder(order_obj), retry=False),
+            enqueue_check_numerai_submission(
+                jsonable_encoder(order_obj),
+                retry=False,
             )
     return {"msg": "success!"}
 

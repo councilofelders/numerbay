@@ -39,6 +39,46 @@ def test_enqueue_async_task_uses_celery_owner(monkeypatch) -> None:
     ]
 
 
+def test_enqueue_batch_update_numerai_models_uses_ops_owner(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_OPS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_batch_update_numerai_models()
+
+    assert result == "celery-task"
+    assert calls == [("app.worker.batch_update_models_task", {"args": [], "kwargs": {}})]
+
+
+def test_enqueue_batch_update_numerai_model_scores_uses_ops_owner(monkeypatch) -> None:
+    calls = []
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_OPS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_batch_update_numerai_model_scores(
+        retries=3,
+        delay_seconds=30,
+    )
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.batch_update_model_scores_task",
+            {"args": [], "kwargs": {"retries": 3}, "countdown": 30},
+        )
+    ]
+
+
 def test_enqueue_async_task_uses_cloud_tasks(monkeypatch) -> None:
     captured = {}
 
@@ -152,6 +192,66 @@ def test_enqueue_validate_artifact_upload_uses_submissions_owner(monkeypatch) ->
     ]
 
 
+def test_enqueue_update_numerai_model_uses_ops_owner(monkeypatch) -> None:
+    calls = []
+    user_json = {"username": "alice"}
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_OPS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_update_numerai_model(
+        user_json,
+        retries=5,
+        delay_seconds=12,
+    )
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.update_model_subtask",
+            {
+                "args": [],
+                "kwargs": {"user_json": user_json, "retries": 5},
+                "countdown": 12,
+            },
+        )
+    ]
+
+
+def test_enqueue_check_numerai_submission_uses_submissions_owner(monkeypatch) -> None:
+    calls = []
+    order_json = {"id": 7, "submit_model_id": "model-1"}
+
+    monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_SUBMISSIONS", "celery")
+    monkeypatch.setattr(
+        async_tasks.celery_app,
+        "send_task",
+        lambda name, **kwargs: calls.append((name, kwargs)) or "celery-task",
+    )
+
+    result = async_tasks.enqueue_check_numerai_submission(
+        order_json,
+        retry=False,
+        delay_seconds=15,
+    )
+
+    assert result == "celery-task"
+    assert calls == [
+        (
+            "app.worker.submit_numerai_model_subtask",
+            {
+                "args": [],
+                "kwargs": {"order_json": order_json, "retry": False},
+                "countdown": 15,
+            },
+        )
+    ]
+
+
 def test_enqueue_send_new_order_artifact_emails_uses_notifications_owner(
     monkeypatch,
 ) -> None:
@@ -217,6 +317,32 @@ def test_enqueue_pending_payment_updates_uses_shared_poll_slot(monkeypatch) -> N
     ]
 
 
+def test_enqueue_pending_submission_checks_seeds_all_pending_orders(monkeypatch) -> None:
+    calls = []
+    pending_orders = [{"id": 1}, {"id": 2}]
+
+    monkeypatch.setattr(
+        async_tasks,
+        "_get_pending_submission_orders_json",
+        lambda: pending_orders,
+    )
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_check_numerai_submission",
+        lambda order_json, retry=True, delay_seconds=None: calls.append(
+            (order_json, retry, delay_seconds)
+        ),
+    )
+
+    total = async_tasks.enqueue_pending_submission_checks()
+
+    assert total == 2
+    assert calls == [
+        ({"id": 1}, True, None),
+        ({"id": 2}, True, None),
+    ]
+
+
 def test_run_update_payment_does_not_reschedule_pending_orders(monkeypatch) -> None:
     calls = []
 
@@ -235,6 +361,60 @@ def test_run_update_payment_does_not_reschedule_pending_orders(monkeypatch) -> N
     )
 
     assert calls == []
+
+
+def test_run_batch_update_numerai_models_fans_out_with_stagger(monkeypatch) -> None:
+    calls = []
+    users = [{"username": "alice"}, {"username": "bob"}]
+
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_update_numerai_model",
+        lambda user_json, retries=0, delay_seconds=None: calls.append(
+            (user_json, retries, delay_seconds)
+        ),
+    )
+
+    from app import crud
+    from app.db import session
+
+    monkeypatch.setattr(
+        crud.user,
+        "search",
+        lambda db, filters, limit=None: {"data": users},
+    )
+    monkeypatch.setattr(session, "run_with_db_session", lambda fn: fn(None))
+
+    async_tasks.run_async_task(async_tasks.TASK_BATCH_UPDATE_NUMERAI_MODELS)
+
+    assert calls == [
+        ({"username": "alice"}, 10, 0),
+        ({"username": "bob"}, 10, 0),
+    ]
+
+
+def test_run_batch_update_numerai_model_scores_requeues_until_ready(monkeypatch) -> None:
+    calls = []
+
+    from app.api.dependencies import numerai
+
+    monkeypatch.setattr(
+        numerai,
+        "get_numerai_pipeline_status",
+        lambda tournament: {"isScoringDay": True, "resolvedAt": None},
+    )
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_batch_update_numerai_model_scores",
+        lambda retries=0, delay_seconds=None: calls.append((retries, delay_seconds)),
+    )
+
+    async_tasks.run_async_task(
+        async_tasks.TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES,
+        kwargs={"retries": 4},
+    )
+
+    assert calls == [(4, async_tasks.settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS)]
 
 
 def test_send_failed_autosubmit_emails_in_db_reloads_order(monkeypatch) -> None:
