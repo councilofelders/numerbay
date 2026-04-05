@@ -4,25 +4,20 @@ on:
   push:
     branches:
       - production
-    pull_request:
-      branches:
-        - production
   workflow_dispatch:
     inputs:
       logLevel:
         description: 'Log level'
         required: true
         default: 'info'
-#      debug_enabled:
-#        type: boolean
-#        description: 'Run the build with tmate debugging enabled'
-#        required: false
-#        default: false
       tags:
         description: 'Description'
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
-  # build production
   build-prod:
     name: Build Production
     runs-on: ubuntu-latest
@@ -43,25 +38,22 @@ jobs:
           gcloud auth configure-docker
           export LD_LIBRARY_PATH=/usr/local/lib
 
-      # Pull the latest image to build, and avoid caching pull-only images.
-      # (docker pull is faster than caching in most cases.)
-      - name: Pull Docker Images
+      - name: Pull Backend Base Images
         run: |
-          docker compose pull --quiet proxy queue flower
           docker pull --quiet python:3.7
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
-      - name: Build and Push Production Images
+      - name: Build and Push Production Backend Image
         run: |
           export LD_LIBRARY_PATH=/usr/local/lib
-          bash ./scripts/build-push.sh
+          docker compose build backend
+          docker compose push backend
         env:
           DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
           DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
           TAG: prod
           DOMAIN: numerbay.ai
 
-  # deploy production
   deploy-prod:
     name: Deploy Production
     needs: build-prod
@@ -83,106 +75,233 @@ jobs:
           gcloud auth configure-docker
           export LD_LIBRARY_PATH=/usr/local/lib
 
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v3
-#        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-#        env:
-#          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-#          GCP_ZONE: ${{ secrets.GCP_ZONE }}
-#          GCP_INSTANCE_NAME: ${{ secrets.GCP_INSTANCE_NAME }}
-#          REMOTE_DOCKER_HOST: ${{ secrets.REMOTE_DOCKER_HOST }}
-#          TRAEFIK_EMAIL: ${{ secrets.TRAEFIK_EMAIL }}
-#          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
-#          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
-#          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-#          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
-#          TAG: prod
-#          FRONTEND_ENV: production
-#          DOMAIN: numerbay.ai
-#          TRAEFIK_TAG: numerbay.ai
-#          STACK_NAME: numerbay-ai
-#          SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-#          FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
-#          FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
-#          POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
-#          GCP_STORAGE_BUCKET: storage.numerbay.ai
-#          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
-#          INFURA_PROJECT_ID: ${{ secrets.APP_INFURA_PROJECT_ID }}
-#          SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
-#          SMTP_USER: ${{ secrets.APP_SMTP_USER }}
-#          SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
-
-      - name: Deploy Production Images
+      - name: Generate Production Env Files
         run: |
-          gcloud compute ssh --project=${{ secrets.GCP_PROJECT_ID }} --zone=${{ secrets.GCP_ZONE }} ${{ secrets.GCP_INSTANCE_NAME }}
-          eval $(ssh-agent)
-          ssh-add ~/.ssh/google_compute_engine
-          printf '\nHost *\n\tStrictHostKeyChecking no\n\tCheckHostIP no' "$SSH_HOST" "$INPUT_SSH_PUBLIC_KEY" > ~/.ssh/config
-          export LD_LIBRARY_PATH=/usr/local/lib
-          echo "Setup Remote Docker Swarm"
-          ssh $USER@${{ secrets.REMOTE_DOCKER_HOST }} "(docker swarm init || true) && docker-credential-gcr configure-docker"
-          echo "Set Docker Context"
-          docker context create remote --docker "host=ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
-          docker context use remote
-          export DOCKER_HOST="ssh://$USER@${{ secrets.REMOTE_DOCKER_HOST }}"
-          pip install paramiko docker-auto-labels
-          echo "Set Up Traefik Stack"
-          docker network create --driver=overlay traefik-public || true
-          export NODE_ID=$(docker info -f '{{.Swarm.NodeID}}')
-          docker node update --label-add traefik-public.traefik-public-certificates=true $NODE_ID
-          DOMAIN=traefik.numerbay.ai EMAIL=${{ secrets.TRAEFIK_EMAIL }} USERNAME=admin HASHED_PASSWORD=$(openssl passwd -apr1 ${{ secrets.TRAEFIK_PASSWORD }}) docker stack deploy -c docker-compose.traefik.yml traefik
-          echo "Run Deploy Script"
-          export DOMAIN=numerbay.ai
-          bash ./scripts/deploy.sh
-        env:
-          STACK_COMPOSE_FILE: docker-compose.production.yml
-          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
-          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-          TAG: prod
-          DOMAIN: numerbay.ai
-          TRAEFIK_TAG: numerbay.ai
-          STACK_NAME: numerbay-ai
-          SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-          FIRST_SUPERUSER_PASSWORD: ${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}
-          FLOWER_BASIC_AUTH: ${{ secrets.APP_FLOWER_BASIC_AUTH }}
-          POSTGRES_SERVER: ${{ secrets.APP_POSTGRES_SERVER }}
-          POSTGRES_USER: ${{ secrets.APP_POSTGRES_USER }}
-          POSTGRES_DB: ${{ secrets.APP_POSTGRES_DB }}
-          POSTGRES_PASSWORD: ${{ secrets.APP_POSTGRES_PASSWORD }}
-          GCP_STORAGE_BUCKET: storage.numerbay.ai
-          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
-          GCP_WEBHOOK_FUNCTION: ${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}
-          INFURA_PROJECT_ID: ${{ secrets.APP_INFURA_PROJECT_ID }}
-          SENTRY_DSN: ${{ secrets.APP_SENTRY_DSN }}
-#          SMTP_HOST: ${{ secrets.APP_SMTP_HOST }}
-#          SMTP_USER: ${{ secrets.APP_SMTP_USER }}
-#          SMTP_PASSWORD: ${{ secrets.APP_SMTP_PASSWORD }}
-          MAILGUN_DOMAIN_NAME: numerbay.ai
-          MAILGUN_API_KEY: ${{ secrets.APP_MAILGUN_API_KEY }}
-          WEBHOOK_ENABLED: True
-          GCP_TASKS_LOCATION: us-central1
-          GCP_TASKS_QUEUE_NOTIFICATIONS: numerbay-queue-notifications
-          GCP_TASKS_QUEUE_OPS: numerbay-queue-ops
-          GCP_TASKS_QUEUE_WEBHOOKS: numerbay-queue-webhooks
-          GCP_TASKS_QUEUE_PAYMENTS: numerbay-queue-payments
-          GCP_TASKS_QUEUE_SUBMISSIONS: numerbay-queue-submissions
-          ASYNC_OWNER_NOTIFICATIONS: ${{ secrets.ASYNC_OWNER_NOTIFICATIONS }}
-          ASYNC_OWNER_OPS: ${{ secrets.ASYNC_OWNER_OPS }}
-          ASYNC_OWNER_WEBHOOKS: ${{ secrets.ASYNC_OWNER_WEBHOOKS }}
-          ASYNC_OWNER_PAYMENTS: ${{ secrets.ASYNC_OWNER_PAYMENTS }}
-          ASYNC_OWNER_SUBMISSIONS: ${{ secrets.ASYNC_OWNER_SUBMISSIONS }}
-          ASYNC_WORKER_DISPATCH_URL: ${{ secrets.ASYNC_WORKER_DISPATCH_URL }}
-          ASYNC_WORKER_DISPATCH_TOKEN: ${{ secrets.ASYNC_WORKER_DISPATCH_TOKEN }}
-          ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL: ${{ secrets.ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL }}
-          SCHEDULER_OWNER_GLOBALS_STATS: ${{ secrets.SCHEDULER_OWNER_GLOBALS_STATS }}
-          SCHEDULER_OWNER_STAKE_SNAPSHOTS: ${{ secrets.SCHEDULER_OWNER_STAKE_SNAPSHOTS }}
-          SCHEDULER_OWNER_PRODUCT_SALES_STATS: ${{ secrets.SCHEDULER_OWNER_PRODUCT_SALES_STATS }}
-          SCHEDULER_OWNER_POLLS: ${{ secrets.SCHEDULER_OWNER_POLLS }}
-          SCHEDULER_OWNER_PRUNE_STORAGE: ${{ secrets.SCHEDULER_OWNER_PRUNE_STORAGE }}
-          SCHEDULER_OWNER_ARTIFACT_REMINDERS: ${{ secrets.SCHEDULER_OWNER_ARTIFACT_REMINDERS }}
-          SCHEDULER_OWNER_MODEL_SCORES: ${{ secrets.SCHEDULER_OWNER_MODEL_SCORES }}
-          SCHEDULER_OWNER_ACTIVE_ROUND: ${{ secrets.SCHEDULER_OWNER_ACTIVE_ROUND }}
-          LOAD_DOTENV: "false"
-          BOOTSTRAP_DB_BEFORE_DEPLOY: "true"
-          RUN_DB_MIGRATIONS_ON_STARTUP: "false"
-          RUN_INIT_DATA_ON_STARTUP: "false"
+          mkdir -p ops/gcp/env
+
+          cat > ops/gcp/env/backend-api-prod.env <<'EOF'
+          SERVER_NAME="numerbay.ai"
+          SERVER_HOST="https://numerbay.ai"
+          PROJECT_NAME="NumerBay"
+          FIRST_SUPERUSER="admin@numerbay.ai"
+          SECRET_KEY="${{ secrets.APP_SECRET_KEY }}"
+          FIRST_SUPERUSER_PASSWORD="${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}"
+          POSTGRES_SERVER="${{ secrets.APP_POSTGRES_SERVER }}"
+          POSTGRES_USER="${{ secrets.APP_POSTGRES_USER }}"
+          POSTGRES_PASSWORD="${{ secrets.APP_POSTGRES_PASSWORD }}"
+          POSTGRES_DB="${{ secrets.APP_POSTGRES_DB }}"
+          SQLALCHEMY_POOL_SIZE="5"
+          SQLALCHEMY_MAX_OVERFLOW="5"
+          SQLALCHEMY_POOL_TIMEOUT="60"
+          SQLALCHEMY_POOL_PRE_PING="True"
+          SMTP_TLS="True"
+          SMTP_PORT="587"
+          SMTP_HOST=""
+          SMTP_USER=""
+          SMTP_PASSWORD=""
+          MAILGUN_DOMAIN_NAME="numerbay.ai"
+          MAILGUN_API_KEY="${{ secrets.APP_MAILGUN_API_KEY }}"
+          EMAILS_FROM_EMAIL="admin@numerbay.ai"
+          GCP_PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          GCP_STORAGE_BUCKET="storage.numerbay.ai"
+          GCP_SERVICE_ACCOUNT_INFO='${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}'
+          GCP_WEBHOOK_FUNCTION="${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}"
+          GCP_TASKS_LOCATION="us-central1"
+          GCP_TASKS_QUEUE_NOTIFICATIONS="numerbay-queue-notifications"
+          GCP_TASKS_QUEUE_OPS="numerbay-queue-ops"
+          GCP_TASKS_QUEUE_WEBHOOKS="numerbay-queue-webhooks"
+          GCP_TASKS_QUEUE_PAYMENTS="numerbay-queue-payments"
+          GCP_TASKS_QUEUE_SUBMISSIONS="numerbay-queue-submissions"
+          ASYNC_WORKER_DISPATCH_URL="${{ secrets.ASYNC_WORKER_DISPATCH_URL }}"
+          ASYNC_WORKER_DISPATCH_TOKEN="${{ secrets.ASYNC_WORKER_DISPATCH_TOKEN }}"
+          ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL=""
+          INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
+          SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
+          WEBHOOK_ENABLED="True"
+          ASYNC_OWNER_NOTIFICATIONS="${{ secrets.ASYNC_OWNER_NOTIFICATIONS }}"
+          ASYNC_OWNER_OPS="${{ secrets.ASYNC_OWNER_OPS }}"
+          ASYNC_OWNER_WEBHOOKS="${{ secrets.ASYNC_OWNER_WEBHOOKS }}"
+          ASYNC_OWNER_PAYMENTS="${{ secrets.ASYNC_OWNER_PAYMENTS }}"
+          ASYNC_OWNER_SUBMISSIONS="${{ secrets.ASYNC_OWNER_SUBMISSIONS }}"
+          SCHEDULER_OWNER_GLOBALS_STATS="${{ secrets.SCHEDULER_OWNER_GLOBALS_STATS }}"
+          SCHEDULER_OWNER_STAKE_SNAPSHOTS="${{ secrets.SCHEDULER_OWNER_STAKE_SNAPSHOTS }}"
+          SCHEDULER_OWNER_PRODUCT_SALES_STATS="${{ secrets.SCHEDULER_OWNER_PRODUCT_SALES_STATS }}"
+          SCHEDULER_OWNER_POLLS="${{ secrets.SCHEDULER_OWNER_POLLS }}"
+          SCHEDULER_OWNER_PRUNE_STORAGE="${{ secrets.SCHEDULER_OWNER_PRUNE_STORAGE }}"
+          SCHEDULER_OWNER_ARTIFACT_REMINDERS="${{ secrets.SCHEDULER_OWNER_ARTIFACT_REMINDERS }}"
+          SCHEDULER_OWNER_MODEL_SCORES="${{ secrets.SCHEDULER_OWNER_MODEL_SCORES }}"
+          SCHEDULER_OWNER_ACTIVE_ROUND="${{ secrets.SCHEDULER_OWNER_ACTIVE_ROUND }}"
+          WEB_CONCURRENCY="1"
+          TIMEOUT="0"
+          EOF
+
+          cat > ops/gcp/env/backend-worker-prod.env <<'EOF'
+          SERVER_NAME="numerbay.ai"
+          SERVER_HOST="https://numerbay.ai"
+          PROJECT_NAME="NumerBay"
+          FIRST_SUPERUSER="admin@numerbay.ai"
+          SECRET_KEY="${{ secrets.APP_SECRET_KEY }}"
+          FIRST_SUPERUSER_PASSWORD="${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}"
+          POSTGRES_SERVER="${{ secrets.APP_POSTGRES_SERVER }}"
+          POSTGRES_USER="${{ secrets.APP_POSTGRES_USER }}"
+          POSTGRES_PASSWORD="${{ secrets.APP_POSTGRES_PASSWORD }}"
+          POSTGRES_DB="${{ secrets.APP_POSTGRES_DB }}"
+          SQLALCHEMY_POOL_SIZE="5"
+          SQLALCHEMY_MAX_OVERFLOW="5"
+          SQLALCHEMY_POOL_TIMEOUT="60"
+          SQLALCHEMY_POOL_PRE_PING="True"
+          SMTP_TLS="True"
+          SMTP_PORT="587"
+          SMTP_HOST=""
+          SMTP_USER=""
+          SMTP_PASSWORD=""
+          MAILGUN_DOMAIN_NAME="numerbay.ai"
+          MAILGUN_API_KEY="${{ secrets.APP_MAILGUN_API_KEY }}"
+          EMAILS_FROM_EMAIL="admin@numerbay.ai"
+          GCP_PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          GCP_STORAGE_BUCKET="storage.numerbay.ai"
+          GCP_SERVICE_ACCOUNT_INFO='${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}'
+          GCP_WEBHOOK_FUNCTION="${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}"
+          INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
+          SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
+          WEBHOOK_ENABLED="True"
+          SCHEDULER_OWNER_GLOBALS_STATS="${{ secrets.SCHEDULER_OWNER_GLOBALS_STATS }}"
+          SCHEDULER_OWNER_STAKE_SNAPSHOTS="${{ secrets.SCHEDULER_OWNER_STAKE_SNAPSHOTS }}"
+          SCHEDULER_OWNER_PRODUCT_SALES_STATS="${{ secrets.SCHEDULER_OWNER_PRODUCT_SALES_STATS }}"
+          SCHEDULER_OWNER_POLLS="${{ secrets.SCHEDULER_OWNER_POLLS }}"
+          SCHEDULER_OWNER_PRUNE_STORAGE="${{ secrets.SCHEDULER_OWNER_PRUNE_STORAGE }}"
+          SCHEDULER_OWNER_ARTIFACT_REMINDERS="${{ secrets.SCHEDULER_OWNER_ARTIFACT_REMINDERS }}"
+          SCHEDULER_OWNER_MODEL_SCORES="${{ secrets.SCHEDULER_OWNER_MODEL_SCORES }}"
+          SCHEDULER_OWNER_ACTIVE_ROUND="${{ secrets.SCHEDULER_OWNER_ACTIVE_ROUND }}"
+          GCP_TASKS_LOCATION="us-central1"
+          GCP_TASKS_QUEUE_NOTIFICATIONS="numerbay-queue-notifications"
+          GCP_TASKS_QUEUE_OPS="numerbay-queue-ops"
+          GCP_TASKS_QUEUE_WEBHOOKS="numerbay-queue-webhooks"
+          GCP_TASKS_QUEUE_PAYMENTS="numerbay-queue-payments"
+          GCP_TASKS_QUEUE_SUBMISSIONS="numerbay-queue-submissions"
+          ASYNC_WORKER_DISPATCH_URL="${{ secrets.ASYNC_WORKER_DISPATCH_URL }}"
+          ASYNC_WORKER_DISPATCH_TOKEN="${{ secrets.ASYNC_WORKER_DISPATCH_TOKEN }}"
+          ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL=""
+          ASYNC_OWNER_NOTIFICATIONS="${{ secrets.ASYNC_OWNER_NOTIFICATIONS }}"
+          ASYNC_OWNER_OPS="${{ secrets.ASYNC_OWNER_OPS }}"
+          ASYNC_OWNER_WEBHOOKS="${{ secrets.ASYNC_OWNER_WEBHOOKS }}"
+          ASYNC_OWNER_PAYMENTS="${{ secrets.ASYNC_OWNER_PAYMENTS }}"
+          ASYNC_OWNER_SUBMISSIONS="${{ secrets.ASYNC_OWNER_SUBMISSIONS }}"
+          WEB_CONCURRENCY="1"
+          TIMEOUT="0"
+          EOF
+
+          cat > ops/gcp/env/backend-jobs-prod.env <<'EOF'
+          SERVER_NAME="numerbay.ai"
+          SERVER_HOST="https://numerbay.ai"
+          PROJECT_NAME="NumerBay"
+          FIRST_SUPERUSER="admin@numerbay.ai"
+          SECRET_KEY="${{ secrets.APP_SECRET_KEY }}"
+          FIRST_SUPERUSER_PASSWORD="${{ secrets.APP_FIRST_SUPERUSER_PASSWORD }}"
+          POSTGRES_SERVER="${{ secrets.APP_POSTGRES_SERVER }}"
+          POSTGRES_USER="${{ secrets.APP_POSTGRES_USER }}"
+          POSTGRES_PASSWORD="${{ secrets.APP_POSTGRES_PASSWORD }}"
+          POSTGRES_DB="${{ secrets.APP_POSTGRES_DB }}"
+          SMTP_TLS="True"
+          SMTP_PORT="587"
+          SMTP_HOST=""
+          SMTP_USER=""
+          SMTP_PASSWORD=""
+          MAILGUN_DOMAIN_NAME="numerbay.ai"
+          MAILGUN_API_KEY="${{ secrets.APP_MAILGUN_API_KEY }}"
+          EMAILS_FROM_EMAIL="admin@numerbay.ai"
+          GCP_PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          GCP_STORAGE_BUCKET="storage.numerbay.ai"
+          GCP_SERVICE_ACCOUNT_INFO='${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}'
+          GCP_WEBHOOK_FUNCTION="${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}"
+          INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
+          SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
+          WEBHOOK_ENABLED="True"
+          SCHEDULER_OWNER_GLOBALS_STATS="${{ secrets.SCHEDULER_OWNER_GLOBALS_STATS }}"
+          SCHEDULER_OWNER_STAKE_SNAPSHOTS="${{ secrets.SCHEDULER_OWNER_STAKE_SNAPSHOTS }}"
+          SCHEDULER_OWNER_PRODUCT_SALES_STATS="${{ secrets.SCHEDULER_OWNER_PRODUCT_SALES_STATS }}"
+          SCHEDULER_OWNER_POLLS="${{ secrets.SCHEDULER_OWNER_POLLS }}"
+          SCHEDULER_OWNER_PRUNE_STORAGE="${{ secrets.SCHEDULER_OWNER_PRUNE_STORAGE }}"
+          SCHEDULER_OWNER_ARTIFACT_REMINDERS="${{ secrets.SCHEDULER_OWNER_ARTIFACT_REMINDERS }}"
+          SCHEDULER_OWNER_MODEL_SCORES="${{ secrets.SCHEDULER_OWNER_MODEL_SCORES }}"
+          SCHEDULER_OWNER_ACTIVE_ROUND="${{ secrets.SCHEDULER_OWNER_ACTIVE_ROUND }}"
+          EOF
+
+      - name: Bootstrap Production DB
+        run: |
+          export PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          export REGION=us-central1
+          export IMAGE="gcr.io/${PROJECT_ID}/backend:prod"
+
+          gcloud run jobs deploy numerbay-job-bootstrap-db \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --network numerbay \
+            --subnet numerbay \
+            --vpc-egress private-ranges-only \
+            --tasks 1 \
+            --parallelism 1 \
+            --max-retries 0 \
+            --task-timeout 900s \
+            --command bash \
+            --args=/app/bootstrap-db.sh \
+            --env-vars-file ops/gcp/env/backend-jobs-prod.env
+
+          gcloud run jobs execute numerbay-job-bootstrap-db \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --wait
+
+      - name: Deploy Production Services and Jobs
+        run: |
+          export PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          export REGION=us-central1
+          export IMAGE="gcr.io/${PROJECT_ID}/backend:prod"
+
+          PROJECT_ID="$PROJECT_ID" REGION="$REGION" SERVICE_NAME=numerbay-api IMAGE="$IMAGE" \
+          ENV_FILE=ops/gcp/env/backend-api-prod.env ./ops/gcp/deploy_backend_api.sh
+
+          gcloud run deploy numerbay-worker \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --network numerbay \
+            --subnet numerbay \
+            --vpc-egress private-ranges-only \
+            --ingress internal \
+            --allow-unauthenticated \
+            --memory 1Gi \
+            --timeout 900s \
+            --concurrency 1 \
+            --min-instances 1 \
+            --max-instances 3 \
+            --env-vars-file ops/gcp/env/backend-worker-prod.env
+
+          deploy_job() {
+            local job_name="$1"
+            local logical_name="$2"
+            local env_file="$3"
+
+            gcloud run jobs deploy "$job_name" \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --image "$IMAGE" \
+              --network numerbay \
+              --subnet numerbay \
+              --vpc-egress private-ranges-only \
+              --tasks 1 \
+              --parallelism 1 \
+              --max-retries 0 \
+              --task-timeout 600s \
+              --command python \
+              --args=-m,app.ops.jobs,run,"$logical_name" \
+              --env-vars-file "$env_file"
+          }
+
+          deploy_job numerbay-job-globals-stats globals-stats ops/gcp/env/backend-jobs-prod.env
+          deploy_job numerbay-job-polls polls ops/gcp/env/backend-jobs-prod.env
+          deploy_job numerbay-job-product-sales-stats product-sales-stats ops/gcp/env/backend-jobs-prod.env
+          deploy_job numerbay-job-prune-storage prune-storage ops/gcp/env/backend-jobs-prod.env
+          deploy_job numerbay-job-stake-snapshots stake-snapshots ops/gcp/env/backend-jobs-prod.env
+          deploy_job numerbay-job-artifact-reminders artifact-reminders ops/gcp/env/backend-worker-prod.env

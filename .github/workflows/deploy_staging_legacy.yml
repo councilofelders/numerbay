@@ -1,4 +1,4 @@
-name: Deploy Staging
+name: Deploy Staging Legacy (Swarm)
 
 #on:
 #  push:
