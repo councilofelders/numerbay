@@ -5,8 +5,10 @@ from decimal import Decimal
 from typing import Any, Dict, Optional
 
 import pandas as pd
+import requests
 from fastapi import HTTPException
-from numerapi import NumerAPI
+from numerapi import NumerAPI, utils
+from numerapi.base_api import API_TOURNAMENT_URL
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -521,11 +523,86 @@ def set_target_stake(  # pylint: disable=too-many-locals
     net_delta_amount = pending_delta_amount + remaining_delta_amount
     print(f"apply delta {net_delta_amount}")
 
-    result_stake = api.stake_change(
-        str(abs(net_delta_amount)),
-        action="increase" if net_delta_amount > 0 else "decrease",
-        model_id=matched_model["id"],
+    request_json = {
+        "query": """
+      mutation($value: String!
+               $type: String!
+               $tournamentNumber: Int!
+               $modelId: String) {
+          v2ChangeStake(value: $value
+                        type: $type
+                        modelId: $modelId
+                        tournamentNumber: $tournamentNumber) {
+            dueDate
+            requestedAmount
+            status
+            type
+          }
+    }
+    """,
+        "variables": {
+            "value": str(abs(net_delta_amount)),
+            "type": "increase" if net_delta_amount > 0 else "decrease",
+            "modelId": matched_model["id"],
+            "tournamentNumber": api.tournament_id,
+        },
+    }
+    request_headers = {
+        "Content-type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Token {public_id}${secret_key}",
+    }
+    retries = 3
+    delay = 5
+    backoff = 2
+    response = requests.post(
+        API_TOURNAMENT_URL,
+        json=request_json,
+        headers=request_headers,
     )
+    while 500 <= response.status_code < 600 and retries > 1:
+        import time
+
+        time.sleep(delay)
+        delay *= backoff
+        retries -= 1
+        response = requests.post(
+            API_TOURNAMENT_URL,
+            json=request_json,
+            headers=request_headers,
+        )
+    try:
+        payload = response.json()
+    except ValueError:
+        raise ValueError(
+            "Numerai stake_change returned non-JSON response "
+            f"(status={response.status_code}, body={response.text[:1000]!r})"
+        )
+
+    if response.status_code >= 400:
+        raise ValueError(
+            "Numerai stake_change failed "
+            f"(status={response.status_code}, body={response.text[:1000]!r})"
+        )
+    if not isinstance(payload, dict):
+        raise ValueError(
+            "Numerai stake_change returned invalid payload "
+            f"(status={response.status_code}, body={response.text[:1000]!r})"
+        )
+    if "errors" in payload:
+        raise ValueError(
+            "Numerai stake_change returned GraphQL errors "
+            f"(status={response.status_code}, body={response.text[:1000]!r})"
+        )
+    if "data" not in payload or "v2ChangeStake" not in payload["data"]:
+        raise ValueError(
+            "Numerai stake_change returned unexpected payload "
+            f"(status={response.status_code}, body={response.text[:1000]!r})"
+        )
+
+    result_stake = payload["data"]["v2ChangeStake"]
+    utils.replace(result_stake, "requestedAmount", utils.parse_float_string)
+    utils.replace(result_stake, "dueDate", utils.parse_datetime_string)
     return result_stake
 
 
