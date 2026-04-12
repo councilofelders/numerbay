@@ -1,8 +1,0 @@
-.hover {
-    &-y {
-        @include transition(0.3s);
-        &:hover {
-            @include transform(translateY(-3px));
-        }
-    }
-}

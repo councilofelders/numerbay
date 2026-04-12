@@ -89,7 +89,6 @@ jobs:
 #          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
 #          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
 #          DOCKER_IMAGE_CELERYWORKER: gcr.io/${{ secrets.GCP_PROJECT_ID }}/celeryworker
-#          DOCKER_IMAGE_FRONTEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/frontend
 #          TAG: prod
 #          FRONTEND_ENV: production
 #          DOMAIN: numerbay.ai
