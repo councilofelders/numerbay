@@ -33,35 +33,26 @@ _SORT_OPTION_LOOKUP = {
     "return1y-down": desc(
         Model.latest_returns.cast(JSON)["oneYear"].as_string().cast(Float)
     ),
-    "0.75corr2.25mmc-up": nulls_last(
+    "0.75corr2.25mmc-up": 0.75
+    * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
+    + 2.25 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float),
+    "0.75corr2.25mmc-down": desc(
         0.75 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
         + 2.25 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
     ),
-    "0.75corr2.25mmc-down": nulls_last(
-        desc(
-            0.75 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
-            + 2.25 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
-        )
-    ),
-    "0.3alpha0.8mpc-up": nulls_last(
+    "0.3alpha0.8mpc-up": 0.3
+    * Model.latest_reps.cast(JSON)["canon_alpha"].as_string().cast(Float)
+    + 0.8 * Model.latest_reps.cast(JSON)["canon_mpc"].as_string().cast(Float),
+    "0.3alpha0.8mpc-down": desc(
         0.3 * Model.latest_reps.cast(JSON)["canon_alpha"].as_string().cast(Float)
         + 0.8 * Model.latest_reps.cast(JSON)["canon_mpc"].as_string().cast(Float)
     ),
-    "0.3alpha0.8mpc-down": nulls_last(
-        desc(
-            0.3 * Model.latest_reps.cast(JSON)["canon_alpha"].as_string().cast(Float)
-            + 0.8 * Model.latest_reps.cast(JSON)["canon_mpc"].as_string().cast(Float)
-        )
-    ),
-    "0.05corr0.5mmc-up": nulls_last(
+    "0.05corr0.5mmc-up": 0.05
+    * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
+    + 0.5 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float),
+    "0.05corr0.5mmc-down": desc(
         0.05 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
         + 0.5 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
-    ),
-    "0.05corr0.5mmc-down": nulls_last(
-        desc(
-            0.05 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
-            + 0.5 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
-        )
     ),
     "corr20v2-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float),
     "corr20v2-down": desc(
