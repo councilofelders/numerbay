@@ -2,6 +2,7 @@ import copy
 import datetime
 
 import numpy as np
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -540,7 +541,9 @@ def test_voting_numerai_stake(
             assert poll.id == content["data"][0]["id"]
             assert content["data"][0]["has_voted"]
             assert "votes" in content["data"][0]["options"][1]
-            assert content["data"][0]["options"][1]["votes"] == np.log(2 + 1)
+            assert content["data"][0]["options"][1]["votes"] == pytest.approx(
+                np.log(2 + 1)
+            )
             assert (
                 content["data"][0]["options"][1]["votes"]
                 == content["data"][0]["options"][0]["votes"]
@@ -663,7 +666,7 @@ def test_voting_numerai_stake_post_determined(
             )
             assert response.status_code == 200
             content = response.json()
-            assert content["options"][1]["votes"] == np.log(2 + 1)
+            assert content["options"][1]["votes"] == pytest.approx(np.log(2 + 1))
             assert content["options"][1]["votes"] == content["options"][0]["votes"]
 
             # invalid vote after close
