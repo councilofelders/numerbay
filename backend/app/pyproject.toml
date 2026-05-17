@@ -1,55 +1,58 @@
-[tool.poetry]
+[project]
 name = "app"
 version = "0.1.0"
 description = ""
-authors = ["ResTrading <hello@res.trading>"]
+authors = [{ name = "ResTrading", email = "hello@res.trading" }]
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "uvicorn[standard]>=0.34.3,<0.35.0",
+    "fastapi>=0.115.14,<0.116.0",
+    "python-multipart>=0.0.20,<0.0.21",
+    "email-validator>=2.2.0,<2.3.0",
+    "requests>=2.32.4,<2.33.0",
+    "celery>=5.5.3,<5.6.0",
+    "bcrypt==4.0.1",
+    "chardet>=5.2.0,<6.0.0",
+    "passlib[bcrypt]>=1.7.4,<1.8.0",
+    "tenacity>=8.5.0,<9.0.0",
+    "pydantic>=1.10.24,<2.0.0",
+    "emails>=1.1.1,<1.2.0",
+    "raven>=6.10.0,<7.0.0",
+    "gunicorn>=23.0.0,<24.0.0",
+    "jinja2>=3.1.5,<3.2.0",
+    "psycopg2-binary>=2.9.10,<2.10.0",
+    "alembic>=1.14.1,<1.15.0",
+    "sqlalchemy>=1.4.54,<1.5.0",
+    "web3>=6.20.4,<7.0.0",
+    "numerapi>=2.20.8,<2.21.0",
+    "numpy>=1.26.4,<2.0.0",
+    "pandas>=2.2.3,<2.3.0",
+    "eventlet>=0.40.4,<0.41.0",
+    "dnspython>=2.7.0,<2.8.0",
+    "google-cloud-storage>=2.19.0,<3.0.0",
+    "pytest>=7.4.4,<7.5.0",
+    "python-jose[cryptography]>=3.5.0,<3.6.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
-uvicorn = {extras = ["standard"], version = ">=0.34.3,<0.35.0"}
-fastapi = ">=0.115.14,<0.116.0"
-python-multipart = ">=0.0.20,<0.0.21"
-email-validator = ">=2.2.0,<2.3.0"
-requests = ">=2.32.4,<2.33.0"
-celery = ">=5.5.3,<5.6.0"
-bcrypt = "4.0.1"
-chardet = ">=5.2.0,<6.0.0"
-passlib = {extras = ["bcrypt"], version = ">=1.7.4,<1.8.0"}
-tenacity = ">=8.5.0,<9.0.0"
-pydantic = ">=1.10.24,<2.0.0"
-emails = ">=1.1.1,<1.2.0"
-raven = ">=6.10.0,<7.0.0"
-gunicorn = ">=23.0.0,<24.0.0"
-jinja2 = ">=3.1.5,<3.2.0"
-psycopg2-binary = ">=2.9.10,<2.10.0"
-alembic = ">=1.14.1,<1.15.0"
-sqlalchemy = ">=1.4.54,<1.5.0"
-web3 = ">=6.20.4,<7.0.0"
-numerapi = ">=2.20.8,<2.21.0"
-numpy = ">=1.26.4,<2.0.0"
-pandas = ">=2.2.3,<2.3.0"
-eventlet = ">=0.40.4,<0.41.0"
-dnspython = ">=2.7.0,<2.8.0"
-google-cloud-storage = ">=2.19.0,<3.0.0"
-pytest = ">=7.4.4,<7.5.0"
-python-jose = {extras = ["cryptography"], version = ">=3.5.0,<3.6.0"}
+[dependency-groups]
+dev = [
+    "mypy>=0.991,<1.0",
+    "black==22.12.0",
+    "isort>=4.3.21,<5.0.0",
+    "autoflake>=1.7.8,<2.0.0",
+    "flake8>=3.9.2,<4.0.0",
+    "httpx>=0.27,<0.29",
+    "pytest>=7.4.4,<7.5.0",
+    "sqlalchemy-stubs>=0.4,<0.5",
+    "pytest-cov>=4.1.0,<4.2.0",
+    "setuptools>=80.9.0,<81.0.0",
+]
 
-[tool.poetry.dev-dependencies]
-mypy = ">=0.991,<1.0"
-black = "22.12.0"
-isort = ">=4.3.21,<5.0.0"
-autoflake = ">=1.7.8,<2.0.0"
-flake8 = ">=3.9.2,<4.0.0"
-httpx = ">=0.27,<0.29"
-pytest = ">=7.4.4,<7.5.0"
-sqlalchemy-stubs = ">=0.4,<0.5"
-pytest-cov = ">=4.1.0,<4.2.0"
+[tool.uv]
+package = false
 
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 line_length = 88
-[build-system]
-requires = ["poetry-core>=1.9.0,<2.0.0"]
-build-backend = "poetry.core.masonry.api"
