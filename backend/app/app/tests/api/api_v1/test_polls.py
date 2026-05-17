@@ -50,7 +50,8 @@ def test_create_poll(
     assert content["options"][0]["text"] == data["options"][0]["text"]  # type: ignore
 
     # crud.poll.remove(db, id=content["id"])
-    response = client.delete(
+    response = client.request(
+        "DELETE",
         f"{settings.API_V1_STR}/polls/{content['id']}",
         headers=superuser_token_headers,
         json=data,

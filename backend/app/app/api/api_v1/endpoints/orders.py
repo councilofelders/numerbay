@@ -490,14 +490,14 @@ def validate_payment(
     infura_url = f"https://mainnet.infura.io/v3/{settings.INFURA_PROJECT_ID}"
     web3 = Web3(Web3.HTTPProvider(infura_url))
     contract = web3.eth.contract(
-        address=Web3.toChecksumAddress(settings.NMR_CONTRACT_ADDRESS), abi=abi
+        address=Web3.to_checksum_address(settings.NMR_CONTRACT_ADDRESS), abi=abi
     )
 
-    tx_receipt = web3.eth.getTransactionReceipt(transaction_hash)
+    tx_receipt = web3.eth.get_transaction_receipt(transaction_hash)
     if tx_receipt:
-        transfer_event = contract.events.Transfer().processReceipt(tx_receipt)
+        transfer_event = contract.events.Transfer().process_receipt(tx_receipt)
         transaction_timestamp = datetime.utcfromtimestamp(
-            web3.eth.getBlock(transfer_event[0]["blockNumber"])["timestamp"]
+            web3.eth.get_block(transfer_event[0]["blockNumber"])["timestamp"]
         )
 
         # time check
@@ -515,7 +515,7 @@ def validate_payment(
             and transaction_from != current_user.public_address
         ):
             raise HTTPException(status_code=400, detail="Transaction sender mismatch")
-        transaction_amount = web3.fromWei(transfer_event[0]["args"]["value"], "ether")
+        transaction_amount = web3.from_wei(transfer_event[0]["args"]["value"], "ether")
         if transaction_amount != order.price:
             raise HTTPException(status_code=400, detail="Transaction amount mismatch")
 

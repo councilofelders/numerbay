@@ -70,13 +70,9 @@ def test_login_nonce_authenticated(
         obj_in={"public_address": eth_account.address},  # type: ignore
     )
 
-    nonce_request_data = {
-        "public_address": eth_account.address,
-    }
     r = client.get(
         f"{settings.API_V1_STR}/login/nonce",
         headers=normal_user_token_headers,
-        json=nonce_request_data,
     )
     result = r.json()
     assert r.status_code == 200

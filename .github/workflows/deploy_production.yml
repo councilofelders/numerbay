@@ -40,8 +40,8 @@ jobs:
 
       - name: Pull Backend Base Images
         run: |
-          docker pull --quiet python:3.7
-          docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.7
+          docker pull --quiet python:3.11-slim
+          docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.11
 
       - name: Build and Push Production Backend Image
         run: |

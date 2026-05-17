@@ -314,14 +314,16 @@ def test_order_artifact(
         assert order
 
         # List artifacts: reject
-        r = client.get(
+        r = client.request(
+            "GET",
             f"{settings.API_V1_STR}/products/{product.id}/artifacts",
             headers=superuser_token_headers,
             json=data,
         )
         assert r.status_code == 403
 
-        r = client.get(
+        r = client.request(
+            "GET",
             f"{settings.API_V1_STR}/products/{product.id}"
             f"/artifacts/{artifact_id}/generate-download-url",
             headers=superuser_token_headers,
@@ -332,14 +334,16 @@ def test_order_artifact(
         crud.order.update(db, db_obj=order, obj_in={"state": "confirmed"})
 
         # List artifacts: ok
-        r = client.get(
+        r = client.request(
+            "GET",
             f"{settings.API_V1_STR}/products/{product.id}/artifacts",
             headers=superuser_token_headers,
             json=data,
         )
         assert r.status_code == 200
 
-        r = client.get(
+        r = client.request(
+            "GET",
             f"{settings.API_V1_STR}/products/{product.id}"
             f"/artifacts/{artifact_id}/generate-download-url",
             headers=superuser_token_headers,

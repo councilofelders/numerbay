@@ -5,44 +5,45 @@ description = ""
 authors = ["ResTrading <hello@res.trading>"]
 
 [tool.poetry.dependencies]
-python = ">3.7.1,<3.8"
-uvicorn = "^0.17.6"
-fastapi = "^0.65.2"
-python-multipart = "^0.0.5"
-email-validator = "^1.0.5, <=1.1.3" # https://github.com/JoshData/python-email-validator/issues/78
-requests = "^2.23.0"
-celery = "^5.2.7"
-importlib-metadata = "<5.0" # https://github.com/celery/celery/issues/7783
+python = ">=3.11,<3.12"
+uvicorn = {extras = ["standard"], version = ">=0.34.3,<0.35.0"}
+fastapi = ">=0.115.14,<0.116.0"
+python-multipart = ">=0.0.20,<0.0.21"
+email-validator = ">=2.2.0,<2.3.0"
+requests = ">=2.32.4,<2.33.0"
+celery = ">=5.5.3,<5.6.0"
 bcrypt = "4.0.1"
-passlib = {extras = ["bcrypt"], version = "^1.7.2"}
-tenacity = "^6.1.0"
-pydantic = "^1.4"
-emails = "^0.5.15"
-raven = "^6.10.0"
-gunicorn = "^20.0.4"
-jinja2 = "^3.1.1"
-psycopg2-binary = ">=2.8.5,<2.9.10"
-alembic = "^1.7.7"
-sqlalchemy = "^1.3.16, <1.4.23"  # todo https://github.com/python-poetry/poetry/issues/4398
-web3 = ">=5.29.0"
-numerapi = "2.12.4"
-numpy = "1.21.1"
-pandas = "1.1.5"
-eventlet = "^0.33.3"
-dnspython = ">=2.3.0,<2.4.0"
-google-cloud-storage = "^1.44.0"
-pytest = "^5.4.1"
-python-jose = {extras = ["cryptography"], version = "^3.1.0"}
+chardet = ">=5.2.0,<6.0.0"
+passlib = {extras = ["bcrypt"], version = ">=1.7.4,<1.8.0"}
+tenacity = ">=8.5.0,<9.0.0"
+pydantic = ">=1.10.24,<2.0.0"
+emails = ">=1.1.1,<1.2.0"
+raven = ">=6.10.0,<7.0.0"
+gunicorn = ">=23.0.0,<24.0.0"
+jinja2 = ">=3.1.5,<3.2.0"
+psycopg2-binary = ">=2.9.10,<2.10.0"
+alembic = ">=1.14.1,<1.15.0"
+sqlalchemy = ">=1.4.54,<1.5.0"
+web3 = ">=6.20.4,<7.0.0"
+numerapi = ">=2.20.8,<2.21.0"
+numpy = ">=1.26.4,<2.0.0"
+pandas = ">=2.2.3,<2.3.0"
+eventlet = ">=0.40.4,<0.41.0"
+dnspython = ">=2.7.0,<2.8.0"
+google-cloud-storage = ">=2.19.0,<3.0.0"
+pytest = ">=7.4.4,<7.5.0"
+python-jose = {extras = ["cryptography"], version = ">=3.5.0,<3.6.0"}
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.770"
-black = "^22.3.0"
-isort = "^4.3.21"
-autoflake = "^1.3.1"
-flake8 = "^3.7.9"
-pytest = "^5.4.1"
-sqlalchemy-stubs = "^0.3"
-pytest-cov = "^2.8.1"
+mypy = ">=0.991,<1.0"
+black = "22.12.0"
+isort = ">=4.3.21,<5.0.0"
+autoflake = ">=1.7.8,<2.0.0"
+flake8 = ">=3.9.2,<4.0.0"
+httpx = ">=0.27,<0.29"
+pytest = ">=7.4.4,<7.5.0"
+sqlalchemy-stubs = ">=0.4,<0.5"
+pytest-cov = ">=4.1.0,<4.2.0"
 
 [tool.isort]
 multi_line_output = 3
@@ -50,5 +51,5 @@ include_trailing_comma = true
 force_grid_wrap = 0
 line_length = 88
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.9.0,<2.0.0"]
+build-backend = "poetry.core.masonry.api"
