@@ -500,7 +500,16 @@ def test_run_batch_update_numerai_model_scores_requeues_until_ready(monkeypatch)
 def test_run_update_active_round_on_round_open_seeds_submissions(monkeypatch) -> None:
     calls = []
     now = datetime.now(timezone.utc)
-    site_globals = SimpleNamespace(active_round=1238, selling_round=1239)
+    site_globals = SimpleNamespace(
+        active_round=1238,
+        selling_round=1239,
+        last_round_open_processed=None,
+    )
+    fake_db = SimpleNamespace(
+        add=lambda obj: None,
+        flush=lambda: None,
+        commit=lambda: None,
+    )
 
     from app import crud
     from app.api.dependencies import commons, numerai
@@ -522,13 +531,13 @@ def test_run_update_active_round_on_round_open_seeds_submissions(monkeypatch) ->
     monkeypatch.setattr(
         session,
         "run_with_db_session",
-        lambda fn: fn("db-session"),
+        lambda fn: fn(fake_db),
     )
     monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
     monkeypatch.setattr(
-        crud.globals,
-        "update",
-        lambda db, db_obj, obj_in: calls.append(("update-globals", obj_in)) or site_globals,
+        async_tasks,
+        "_get_locked_globals",
+        lambda db, globals_model: site_globals,
     )
     monkeypatch.setattr(
         async_tasks,
@@ -546,11 +555,80 @@ def test_run_update_active_round_on_round_open_seeds_submissions(monkeypatch) ->
         kwargs={"schedule_slot": "202604050901"},
     )
 
-    assert calls[:3] == [
-        ("update-globals", {"active_round": 1239}),
+    assert calls[:2] == [
         ("enqueue-submissions", None),
-        ("on-round-open", "db-session"),
+        ("on-round-open", fake_db),
     ]
+    assert site_globals.active_round == 1239
+    assert site_globals.selling_round == 1239
+    assert site_globals.last_round_open_processed == 1239
+
+
+def test_run_update_active_round_catches_up_unprocessed_open_round(
+    monkeypatch,
+) -> None:
+    calls = []
+    now = datetime.now(timezone.utc)
+    site_globals = SimpleNamespace(
+        active_round=1239,
+        selling_round=1239,
+        last_round_open_processed=None,
+    )
+    fake_db = SimpleNamespace(
+        add=lambda obj: None,
+        flush=lambda: None,
+        commit=lambda: None,
+    )
+
+    from app import crud
+    from app.api.dependencies import commons, numerai
+    from app.db import session
+
+    monkeypatch.setattr(
+        numerai,
+        "get_numerai_active_round",
+        lambda: {
+            "openTime": (now - timedelta(minutes=30)).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "closeStakingTime": (now + timedelta(minutes=30)).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "number": 1239,
+        },
+    )
+    monkeypatch.setattr(
+        session,
+        "run_with_db_session",
+        lambda fn: fn(fake_db),
+    )
+    monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
+    monkeypatch.setattr(
+        async_tasks,
+        "_get_locked_globals",
+        lambda db, globals_model: site_globals,
+    )
+    monkeypatch.setattr(
+        async_tasks,
+        "enqueue_batch_submit_numerai_models",
+        lambda: calls.append(("enqueue-submissions", None)) or {"name": "task"},
+    )
+    monkeypatch.setattr(
+        commons,
+        "on_round_open",
+        lambda db: calls.append(("on-round-open", db)),
+    )
+
+    async_tasks.run_async_task(
+        async_tasks.TASK_UPDATE_ACTIVE_ROUND,
+        kwargs={"schedule_slot": "202604050901"},
+    )
+
+    assert calls[:2] == [
+        ("enqueue-submissions", None),
+        ("on-round-open", fake_db),
+    ]
+    assert site_globals.last_round_open_processed == 1239
 
 
 def test_run_update_active_round_near_close_enqueues_stake_validation(
@@ -558,7 +636,11 @@ def test_run_update_active_round_near_close_enqueues_stake_validation(
 ) -> None:
     calls = []
     now = datetime.now(timezone.utc)
-    site_globals = SimpleNamespace(active_round=1239, selling_round=1239)
+    site_globals = SimpleNamespace(
+        active_round=1239,
+        selling_round=1239,
+        last_round_open_processed=1239,
+    )
 
     from app import crud
     from app.api.dependencies import numerai
@@ -583,6 +665,11 @@ def test_run_update_active_round_near_close_enqueues_stake_validation(
         lambda fn: fn("db-session"),
     )
     monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
+    monkeypatch.setattr(
+        async_tasks,
+        "_get_locked_globals",
+        lambda db, globals_model: site_globals,
+    )
     monkeypatch.setattr(
         async_tasks,
         "enqueue_validate_numerai_models_stake",

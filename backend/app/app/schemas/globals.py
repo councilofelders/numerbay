@@ -13,6 +13,7 @@ class GlobalsBase(BaseModel):
     active_round: Optional[int] = None
     selling_round: Optional[int] = None
     is_doing_round_rollover: Optional[bool] = None
+    last_round_open_processed: Optional[int] = None
     total_num_products: Optional[int] = None
     total_num_sales: Optional[int] = None
     total_qty_sales: Optional[int] = None

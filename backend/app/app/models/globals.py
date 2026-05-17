@@ -14,6 +14,7 @@ class Globals(Base):
     is_doing_round_rollover = Column(
         Boolean, nullable=False, default=False, server_default="f"
     )
+    last_round_open_processed = Column(Integer)
     total_num_products = Column(Integer)
     total_num_sales = Column(Integer)
     total_qty_sales = Column(Integer)

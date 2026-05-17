@@ -636,23 +636,51 @@ def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
     site_globals = run_with_db_session(lambda db: crud.globals.get_singleton(db))
 
     if open_time <= utc_time <= close_staking_time:
-        if site_globals.active_round != active_round_number:  # type: ignore
+        def process_round_open(db) -> bool:
+            locked_globals = _get_locked_globals(db, crud.globals.model)
+            if locked_globals is None:
+                locked_globals = crud.globals.get_singleton(db)
+
+            was_round_transition = (
+                locked_globals.active_round != active_round_number  # type: ignore
+            )
+            open_side_effects_pending = (
+                locked_globals.selling_round == active_round_number  # type: ignore
+                and getattr(locked_globals, "last_round_open_processed", None)
+                != active_round_number
+            )
+
+            if not was_round_transition and not open_side_effects_pending:
+                return False
+
             print(
                 f"UTC time: {utc_time}, round open: {open_time}, "
                 f"round close: {close_staking_time}, round: {active_round_number}"
             )
-            print(f"Round {active_round_number} opened")
-
-            run_with_db_session(
-                lambda db: crud.globals.update(
-                    db,
-                    db_obj=crud.globals.get_singleton(db),  # type: ignore
-                    obj_in={"active_round": active_round_number},
+            if was_round_transition:
+                print(f"Round {active_round_number} opened")
+            else:
+                print(
+                    f"Round {active_round_number} open side effects pending, "
+                    "processing"
                 )
-            )
+
+            locked_globals.active_round = active_round_number  # type: ignore
+            locked_globals.selling_round = active_round_number  # type: ignore
+            db.add(locked_globals)
+            db.flush()
 
             enqueue_batch_submit_numerai_models()
-            run_with_db_session(lambda db: on_round_open(db))
+            on_round_open(db)
+
+            locked_globals.last_round_open_processed = (  # type: ignore
+                active_round_number
+            )
+            db.add(locked_globals)
+            db.commit()
+            return True
+
+        run_with_db_session(process_round_open)
 
         if close_staking_time - utc_time <= timedelta(minutes=2):
             print("Activities freezed due to round rollover")
@@ -699,6 +727,15 @@ def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
     )
     print(f"Current global state: {current_globals}")
     return None
+
+
+def _get_locked_globals(db, globals_model):
+    return (
+        db.query(globals_model)
+        .filter(globals_model.id == 0)
+        .with_for_update()
+        .one_or_none()
+    )
 
 
 def _run_send_new_artifact_emails(artifact_id: int) -> None:
