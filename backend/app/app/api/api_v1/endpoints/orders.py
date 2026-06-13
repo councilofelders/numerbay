@@ -203,6 +203,13 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             status_code=400, detail="Order for this product this round already exists"
         )
 
+    # Deprecated sale modes
+    if product_option.mode in ["stake", "stake_with_limit"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Stake-only sale modes are deprecated",
+        )
+
     # Compulsory submit model for non-file modes
     if product_option.mode != "file" and submit_model_id is None:
         raise HTTPException(

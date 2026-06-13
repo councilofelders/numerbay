@@ -187,7 +187,7 @@ def test_create_order_invalid_api_permissions(
 
     selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
-    # Stake mode product
+    # Deprecated stake mode product
     with get_random_product(db, is_on_platform=True, mode="stake") as product:
         crud.user.update(
             db,
@@ -195,7 +195,6 @@ def test_create_order_invalid_api_permissions(
             obj_in={"numerai_wallet_address": f"0xtoaddress{random_lower_string()}"},
         )
 
-        # No submit model ID: reject
         order_data = {
             "id": product.id,
             "option_id": product.options[0].id,  # type: ignore
@@ -207,35 +206,7 @@ def test_create_order_invalid_api_permissions(
             json=order_data,
         )
         assert response.status_code == 400
-
-        # No permission to upload: reject
-        crud.user.update(
-            db,
-            db_obj=crud.user.get(db, id=current_user["id"]),  # type: ignore
-            obj_in={"numerai_api_key_can_upload_submission": False},
-        )
-        order_data = {
-            "id": product.id,
-            "option_id": product.options[0].id,
-            "rounds": get_order_round_numbers(selling_round, 1),
-            "submit_model_id": "test_model_id",
-        }  # type: ignore
-        response = client.post(
-            f"{settings.API_V1_STR}/orders/",
-            headers=superuser_token_headers,
-            json=order_data,
-        )
-        assert response.status_code == 403
-
-        # No permission to stake: reject
-        crud.user.update(
-            db,
-            db_obj=crud.user.get(db, id=current_user["id"]),  # type: ignore
-            obj_in={
-                "numerai_api_key_can_upload_submission": True,
-                "numerai_api_key_can_stake": False,
-            },
-        )
+        assert response.json()["detail"] == "Stake-only sale modes are deprecated"
 
         crud.product_option.update(
             db,
@@ -254,7 +225,8 @@ def test_create_order_invalid_api_permissions(
             headers=superuser_token_headers,
             json=order_data,
         )
-        assert response.status_code == 403
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Stake-only sale modes are deprecated"
 
 
 def test_order_artifact(

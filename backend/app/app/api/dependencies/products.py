@@ -152,33 +152,11 @@ def validate_product_option_input(  # pylint: disable=too-many-branches
             #     )
 
         # On-platform Mode check
-        if product_option.mode not in ["file", "stake", "stake_with_limit"]:
+        if product_option.mode != "file":
             raise HTTPException(
                 status_code=400,
-                detail="Invalid listing mode, must be one of "
-                "['file', 'stake', 'stake_with_limit']",
+                detail="Invalid listing mode, must be 'file'",
             )
-
-        # On-platform Stake limit check
-        if product_option.mode == "stake_with_limit":
-            if product_option.stake_limit is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Stake limit is required for 'stake_with_limit' mode",
-                )
-            # Stake limit decimal check
-            precision = Decimal(product_option.stake_limit).as_tuple().exponent
-            if precision < -4:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Stake limit must not exceed {4} decimal places",
-                )
-            # Stake limit amount check
-            if product_option.stake_limit < 1:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Stake limit must be greater than 1 NMR",
-                )
 
         # On-platform chain type
         if product_option.chain is not None:

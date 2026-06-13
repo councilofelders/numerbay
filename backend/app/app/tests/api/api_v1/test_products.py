@@ -151,10 +151,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
-    assert (
-        response.json()["detail"]
-        == "Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']"
-    )
+    assert response.json()["detail"] == "Invalid listing mode, must be 'file'"
 
     # invalid on-platform invalid category mode
     data = base_data.copy()
@@ -168,10 +165,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
-    assert (
-        response.json()["detail"]
-        == "Stake modes are not allowed for non-submission categories"
-    )
+    assert response.json()["detail"] == "Invalid listing mode, must be 'file'"
 
     # invalid on-platform non-existent mode
     data = base_data.copy()
@@ -184,10 +178,7 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
-    assert (
-        response.json()["detail"]
-        == "Invalid listing mode, must be one of ['file', 'stake', 'stake_with_limit']"
-    )
+    assert response.json()["detail"] == "Invalid listing mode, must be 'file'"
 
     # invalid on-platform currency
     data = base_data.copy()
@@ -236,7 +227,7 @@ def test_create_product_invalid_inputs(
     #     == "On-platform listing price must be greater than 1 NMR"
     # )
 
-    # invalid on-platform stake_with_limit mode without stake limit
+    # invalid on-platform stake_with_limit mode
     data = base_data.copy()
     data["options"][0]["is_on_platform"] = True  # type: ignore
     data["options"][0]["currency"] = "NMR"  # type: ignore
@@ -248,12 +239,9 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
-    assert (
-        response.json()["detail"]
-        == "Stake limit is required for 'stake_with_limit' mode"
-    )
+    assert response.json()["detail"] == "Invalid listing mode, must be 'file'"
 
-    # invalid on-platform stake_with_limit mode stake limit precision
+    # invalid on-platform stake_with_limit mode with stake limit
     data = base_data.copy()
     data["options"][0]["is_on_platform"] = True  # type: ignore
     data["options"][0]["currency"] = "NMR"  # type: ignore
@@ -265,21 +253,20 @@ def test_create_product_invalid_inputs(
         json=data,
     )
     assert response.status_code == 400
-    assert response.json()["detail"] == "Stake limit must not exceed 4 decimal places"
+    assert response.json()["detail"] == "Invalid listing mode, must be 'file'"
 
-    # invalid on-platform stake_with_limit mode stake limit too low
+    # invalid on-platform stake mode
     data = base_data.copy()
     data["options"][0]["is_on_platform"] = True  # type: ignore
     data["options"][0]["currency"] = "NMR"  # type: ignore
-    data["options"][0]["mode"] = "stake_with_limit"  # type: ignore
-    data["options"][0]["stake_limit"] = 0.9  # type: ignore
+    data["options"][0]["mode"] = "stake"  # type: ignore
     response = client.post(
         f"{settings.API_V1_STR}/products/",
         headers=normal_user_token_headers,
         json=data,
     )
     assert response.status_code == 400
-    assert response.json()["detail"] == "Stake limit must be greater than 1 NMR"
+    assert response.json()["detail"] == "Invalid listing mode, must be 'file'"
 
     # invalid on-platform chain
     data = base_data.copy()
