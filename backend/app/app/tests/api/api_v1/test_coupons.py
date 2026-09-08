@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -470,6 +473,56 @@ def test_order_coupon_redemption(
             )  # todo deleting coupon should not delete order
 
             crud.coupon.remove(db, id=coupon.id)  # type: ignore
+
+
+@pytest.mark.parametrize(
+    "discount_percent, expected_price, expected_status",
+    [(100, "0", 200), (99, "0.02", 400), (75, "0.5", 400), (50, "1", 200)],
+)
+def test_order_coupon_minimum_payment(
+    client: TestClient,
+    superuser_token_headers: dict,
+    db: Session,
+    discount_percent: int,
+    expected_price: str,
+    expected_status: int,
+) -> None:
+    current_user_obj = get_current_user_from_token_headers(
+        client=client,
+        token_headers=superuser_token_headers,
+        db=db,
+        numerai_wallet_address=f"0xfromaddress{random_lower_string()}",
+    )
+    with get_random_product(db, is_on_platform=True, mode="file", price=2) as product:
+        coupon = create_random_coupon(
+            db,
+            owner_id=current_user_obj.id,
+            creator_id=product.owner_id,
+            applicable_product_ids=[product.id],
+            discount_percent=discount_percent,
+            max_discount=2,
+        )
+        response = client.post(
+            f"{settings.API_V1_STR}/orders/",
+            headers=superuser_token_headers,
+            json={
+                "id": product.id,
+                "option_id": product.options[0].id,
+                "rounds": [crud.globals.get_singleton(db).selling_round],  # type: ignore
+                "coupon": coupon.code,
+            },
+        )
+        assert response.status_code == expected_status
+        content = response.json()
+        if expected_status == 200:
+            assert Decimal(str(content["price"])) == Decimal(expected_price)
+            assert content["applied_coupon_id"] == coupon.id
+            crud.order.remove(db, id=content["id"])
+        else:
+            assert content["detail"] == (
+                "Total must be 0 NMR with a coupon, or at least 1 NMR"
+            )
+        crud.coupon.remove(db, id=coupon.id)
 
 
 def test_order_invalid_coupon_redemption(

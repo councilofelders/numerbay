@@ -183,6 +183,7 @@ def update_payment(db: Session, order_id: int) -> None:
             # handle 100% discount
             if order_obj.price == 0:
                 on_order_confirmed(db, order_obj, transaction=None)
+                return
 
             matched_transaction = match_transaction_for_order(db, order_obj)
             # handle manual confirmation

@@ -1,5 +1,6 @@
 from datetime import datetime
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 from app.api.api_v1.endpoints import orders as orders_endpoint
 from app.api.dependencies import orders
@@ -117,6 +118,22 @@ def test_update_payment_confirms_manual_transaction(monkeypatch) -> None:
     orders.update_payment(db, 11)
 
     assert calls == [(db, 11, "0xconfirmed")]
+
+
+def test_update_payment_confirms_free_order_without_transaction_lookup(monkeypatch) -> None:
+    order_obj = SimpleNamespace(id=11, currency="NMR", price=0)
+    match_transaction = Mock(return_value="0xunrelated")
+    confirm_order = Mock()
+
+    monkeypatch.setattr(orders.crud.order, "get", lambda *_args, **_kwargs: order_obj)
+    monkeypatch.setattr(orders, "match_transaction_for_order", match_transaction)
+    monkeypatch.setattr(orders, "on_order_confirmed", confirm_order)
+    db = SimpleNamespace()
+
+    orders.update_payment(db, 11)
+
+    confirm_order.assert_called_once_with(db, order_obj, transaction=None)
+    match_transaction.assert_not_called()
 
 
 def test_create_order_ignores_new_order_email_failures(monkeypatch) -> None:

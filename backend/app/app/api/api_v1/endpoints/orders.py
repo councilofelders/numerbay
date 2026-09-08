@@ -285,11 +285,13 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
             else product_option_obj.price
         )
 
-        # check min price # todo add test
-        if final_price < 1:  # type: ignore
+        # Allow free coupon redemptions; NMR transfers require at least 1 NMR.
+        if final_price < 1 and not (  # type: ignore
+            final_price == 0 and product_option_obj.applied_coupon
+        ):
             raise HTTPException(
                 status_code=400,
-                detail="Total amounts paid must be greater than 1 NMR",
+                detail="Total must be 0 NMR with a coupon, or at least 1 NMR",
             )
 
         order_in = schemas.OrderCreate(
