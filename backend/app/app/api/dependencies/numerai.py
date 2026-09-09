@@ -1,13 +1,8 @@
 """ Dependencies for numerai endpoints """
 
-import logging
-import math
-from copy import deepcopy
 from datetime import datetime, timezone
 from decimal import Decimal
-from threading import Lock
-from time import monotonic
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import pandas as pd
 import requests
@@ -17,10 +12,6 @@ from numerapi.base_api import API_TOURNAMENT_URL
 from sqlalchemy.orm import Session
 
 from app import crud, models
-
-logger = logging.getLogger(__name__)
-_payout_score_cache: Dict[int, Tuple[float, Dict]] = {}
-_payout_score_lock = Lock()
 
 
 def get_numerai_api_info(user_json: Dict) -> Dict:
@@ -613,72 +604,6 @@ def set_target_stake(  # pylint: disable=too-many-locals
     utils.replace(result_stake, "requestedAmount", utils.parse_float_string)
     utils.replace(result_stake, "dueDate", utils.parse_datetime_string)
     return result_stake
-
-
-def get_payout_score_config(tournament: int) -> Dict:
-    """Cache current payout weights for five minutes; retain them on fetch failures."""
-    refresh_at, config = _payout_score_cache.get(tournament, (0.0, {}))
-    if monotonic() < refresh_at:
-        return deepcopy(config)
-
-    # Wait for an in-flight refresh so concurrent cold requests use the same config.
-    with _payout_score_lock:
-        refresh_at, config = _payout_score_cache.get(tournament, (0.0, {}))
-        if monotonic() < refresh_at:
-            return deepcopy(config)
-        retry_seconds = 60
-        try:
-            response = requests.post(
-                API_TOURNAMENT_URL,
-                json={
-                    "query": """
-                        query($tournament: Int!) {
-                            rounds(tournament: $tournament, number: 0) {
-                                number
-                                roundScoreConfigs {
-                                    displayName
-                                    isPayout
-                                    defaultMultiplier
-                                }
-                            }
-                        }
-                    """,
-                    "variables": {"tournament": tournament},
-                },
-                timeout=(3, 5),
-            )
-            response.raise_for_status()
-            payload = response.json()
-            if payload.get("errors"):
-                raise ValueError("Numerai rejected the payout score query")
-            current_round = payload["data"]["rounds"][0]
-            payout_scores = {
-                score["displayName"]: float(score["defaultMultiplier"])
-                for score in current_round["roundScoreConfigs"]
-                if score["isPayout"] and score["defaultMultiplier"] != 0
-            }
-            if any(
-                not isinstance(metric, str) or not metric or not math.isfinite(weight)
-                for metric, weight in payout_scores.items()
-            ):
-                raise ValueError("Invalid Numerai payout score")
-            if current_round["number"] < config.get("round_number", 0):
-                raise ValueError("Numerai returned an older scoring round")
-            config = {
-                "tournament": tournament,
-                "round_number": current_round["number"],
-                "fetched_at": datetime.now(timezone.utc).isoformat(),
-                "payout_scores": payout_scores,
-            }
-            retry_seconds = 300
-        except (requests.RequestException, KeyError, IndexError, TypeError, ValueError):
-            logger.warning(
-                "Keeping cached payout score configuration for tournament %s",
-                tournament,
-                exc_info=True,
-            )
-        _payout_score_cache[tournament] = (monotonic() + retry_seconds, config)
-        return deepcopy(config)
 
 
 def get_numerai_active_round() -> Dict:
