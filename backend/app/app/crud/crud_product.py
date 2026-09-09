@@ -40,6 +40,13 @@ _SORT_OPTION_LOOKUP = {
         0.75 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
         + 2.25 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
     ),
+    "3corr60_15mmc60-up": 3
+    * Model.latest_reps.cast(JSON)["canon_corr60"].as_string().cast(Float)
+    + 15 * Model.latest_reps.cast(JSON)["canon_mmc60"].as_string().cast(Float),
+    "3corr60_15mmc60-down": desc(
+        3 * Model.latest_reps.cast(JSON)["canon_corr60"].as_string().cast(Float)
+        + 15 * Model.latest_reps.cast(JSON)["canon_mmc60"].as_string().cast(Float)
+    ),
     "0.3alpha0.8mpc-up": 0.3
     * Model.latest_reps.cast(JSON)["canon_alpha"].as_string().cast(Float)
     + 0.8 * Model.latest_reps.cast(JSON)["canon_mpc"].as_string().cast(Float),
@@ -53,6 +60,13 @@ _SORT_OPTION_LOOKUP = {
     "0.05corr0.5mmc-down": desc(
         0.05 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
         + 0.5 * Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
+    ),
+    "0.1corr_1mmc-up": 0.1
+    * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
+    + Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float),
+    "0.1corr_1mmc-down": desc(
+        0.1 * Model.latest_reps.cast(JSON)["canon_corr"].as_string().cast(Float)
+        + Model.latest_reps.cast(JSON)["canon_mmc"].as_string().cast(Float)
     ),
     "corr20v2-up": Model.latest_reps.cast(JSON)["v2_corr20"].as_string().cast(Float),
     "corr20v2-down": desc(
@@ -116,13 +130,13 @@ def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) 
     """Parse sort option"""
     if category is not None and category.tournament:
         default_option = (
-            _SORT_OPTION_LOOKUP["0.75corr2.25mmc-down"]
+            _SORT_OPTION_LOOKUP["3corr60_15mmc60-down"]
             if category.tournament == 8
             else (
                 _SORT_OPTION_LOOKUP["0.3alpha0.8mpc-down"]
                 if category.tournament == 11
                 else (
-                    _SORT_OPTION_LOOKUP["0.05corr0.5mmc-down"]
+                    _SORT_OPTION_LOOKUP["0.1corr_1mmc-down"]
                     if category.tournament == 12
                     else desc(Product.id)
                 )
