@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.types import JSON, Float, Integer
 
 from app import crud
+from app.api.dependencies import numerai
 from app.crud.base import CRUDBase
 from app.models import Category, Order
 from app.models.model import Model
@@ -112,28 +113,23 @@ _SORT_OPTION_LOOKUP = {
 }
 
 
-def parse_sort_option(sort: Optional[str], category: Optional[Category] = None) -> Any:
-    """Parse sort option"""
-    if category is not None and category.tournament:
-        default_option = (
-            _SORT_OPTION_LOOKUP["0.75corr2.25mmc-down"]
-            if category.tournament == 8
-            else (
-                _SORT_OPTION_LOOKUP["0.3alpha0.8mpc-down"]
-                if category.tournament == 11
-                else (
-                    _SORT_OPTION_LOOKUP["0.05corr0.5mmc-down"]
-                    if category.tournament == 12
-                    else desc(Product.id)
-                )
-            )
-        )
-    else:
-        default_option = desc(Product.id)
+def resolve_sort_option(sort: Optional[str], payout_scores: Dict[str, float]) -> str:
+    """Keep explicit legacy sorts; use the current payout formula by default."""
+    if sort is not None and sort in _SORT_OPTION_LOOKUP:
+        return sort
+    if payout_scores:
+        return "payout-score-up" if sort == "payout-score-up" else "payout-score-down"
+    return "latest"
 
-    if sort:
-        return _SORT_OPTION_LOOKUP.get(sort, default_option)
-    return default_option
+
+def parse_sort_option(sort: str, payout_scores: Dict[str, float]) -> Any:
+    if sort in _SORT_OPTION_LOOKUP:
+        return _SORT_OPTION_LOOKUP[sort]
+    expression = sum(
+        weight * Model.latest_reps.cast(JSON)[metric].as_string().cast(Float)
+        for metric, weight in payout_scores.items()
+    )
+    return desc(expression) if sort == "payout-score-down" else expression
 
 
 def parse_platform_filter(filter_item: Dict) -> Any:
@@ -544,6 +540,25 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         )
         all_child_category_ids = [c[0] for c in all_child_categories]
 
+        round_config: Dict = {}
+        if sort not in _SORT_OPTION_LOOKUP:
+            scoped_categories = all_child_categories
+            if category_slug is not None:
+                scoped_categories = crud.category.get_multi_by_slug(
+                    db, slug=category_slug
+                )
+                if category_id is not None:
+                    scoped_categories = [
+                        c for c in scoped_categories if c.id in all_child_category_ids
+                    ]
+            tournaments = {
+                c.tournament for c in scoped_categories if c.tournament is not None
+            }
+            if len(tournaments) == 1:
+                round_config = numerai.get_payout_score_config(next(iter(tournaments)))
+        payout_scores = round_config.get("payout_scores", {})
+        effective_sort = resolve_sort_option(sort, payout_scores)
+
         query_filters = []
         if id is not None:
             query_filters.append(Product.id == id)
@@ -562,7 +577,6 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
         stake_step = 1
         return3m_step = 0.01
-        print(all_child_categories)
         query_filters = parse_filters(
             filters=filters,
             query_filters=query_filters,
@@ -581,11 +595,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             query = query.filter(query_filter)
         count = query.count()
         query = query.order_by(
-            nulls_last(
-                parse_sort_option(
-                    sort, all_child_categories[0] if all_child_categories else None
-                )
-            )
+            nulls_last(parse_sort_option(effective_sort, payout_scores))
         ).order_by(desc(Product.id))
         data = query.offset(skip).limit(limit).all()
 
@@ -643,7 +653,15 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         agg_stats = agg_query.one()
 
         aggregations = generate_aggregations(agg_stats, return3m_step, stake_step)
-        return {"total": count, "data": data, "aggregations": aggregations}
+        return {
+            "total": count,
+            "data": data,
+            "aggregations": aggregations,
+            "ranking": {
+                "effective_sort": effective_sort,
+                "config": round_config,
+            },
+        }
 
     def get_sales_stats(self, db: Session, *, product_id: int) -> Dict:
         """Get sales stats for product"""
