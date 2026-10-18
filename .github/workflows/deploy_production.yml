@@ -13,6 +13,10 @@ on:
       tags:
         description: 'Description'
 
+permissions:
+  id-token: write
+  contents: read
+
 concurrency:
   group: deploy-production
   cancel-in-progress: false
@@ -29,7 +33,8 @@ jobs:
         uses: google-github-actions/auth@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          workload_identity_provider: projects/86473392192/locations/global/workloadIdentityPools/github/providers/github-provider
+          service_account: github-actions@numerbay.iam.gserviceaccount.com
 
       - name: Set Up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
@@ -71,7 +76,8 @@ jobs:
         uses: google-github-actions/auth@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          workload_identity_provider: projects/86473392192/locations/global/workloadIdentityPools/github/providers/github-provider
+          service_account: github-actions@numerbay.iam.gserviceaccount.com
 
       - name: Set Up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
