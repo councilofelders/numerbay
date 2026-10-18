@@ -4,10 +4,12 @@ import functools
 from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
-from sqlalchemy import and_
+from sqlalchemy import and_, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import numerai
+from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, verify_signature
 from app.crud.base import CRUDBase
 from app.models.product import Product
@@ -29,6 +31,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return (
             db.query(self.model)
             .filter(self.model.public_address == public_address)
+            .first()
+        )
+
+    def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
+        """Get user by email (case-insensitive)"""
+        return (
+            db.query(self.model)
+            .filter(func.lower(self.model.email) == email.lower())
             .first()
         )
 
@@ -183,12 +193,37 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         user_obj = self.get(db, user_json["id"])
 
-        if not user_obj.email:  # type: ignore
+        adopt_email = False
+        if account["email"] and account["email"] != user_obj.email:  # type: ignore
+            if settings.REQUIRE_EMAIL_VERIFICATION:
+                if not user_obj.email_verified:  # type: ignore
+                    adopt_email = True
+            elif not user_obj.email:  # type: ignore
+                adopt_email = True
+
+        if adopt_email:
+            existing_email_user = self.get_by_email(db, email=account["email"])
+            if existing_email_user and existing_email_user.id != user_obj.id:
+                print(
+                    f"Numerai API Key update failed for {user_json['username']}: "
+                    f"(Duplicated email {account['email']})"
+                )
+                return {"success": False, "message": "Duplicated email"}
             user_update_json["email"] = account["email"]
+            user_update_json["email_verified"] = False
+            user_update_json["pending_email"] = None
 
         # tag date of last sync
         user_update_json["date_last_numerai_sync"] = datetime.utcnow()
-        self.update(db, db_obj=user_obj, obj_in=user_update_json)  # type: ignore
+        try:
+            self.update(db, db_obj=user_obj, obj_in=user_update_json)  # type: ignore
+        except IntegrityError:
+            db.rollback()
+            print(
+                f"Numerai API Key update failed for {user_json['username']}: "
+                f"(Duplicated email {account['email']})"
+            )
+            return {"success": False, "message": "Duplicated email"}
         return {"success": True, "message": "Numerai API Updated"}
 
 

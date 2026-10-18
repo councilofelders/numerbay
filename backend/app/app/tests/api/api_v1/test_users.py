@@ -132,6 +132,40 @@ def test_update_username_conflict(
     crud.user.remove(db, id=existing_user.id)
 
 
+def test_update_email_duplicate(
+    client: TestClient,
+    db: Session,
+    normal_user_token_headers: Dict[str, str],
+    superuser_token_headers: Dict[str, str],
+) -> None:
+    other_email = random_email()
+    other_user = crud.user.create(
+        db, obj_in=UserCreate(username=other_email, password=random_lower_string())
+    )
+    crud.user.update(db, db_obj=other_user, obj_in={"email": other_email})
+
+    user_id, current_password = prepare_user_with_password(
+        client, db, normal_user_token_headers
+    )
+
+    data = {"email": other_email.upper(), "current_password": current_password}
+    r = client.put(
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert r.status_code == 400
+    assert "already in use" in r.json()["detail"]
+
+    db.expire_all()
+    user = crud.user.get(db, id=user_id)
+    assert user
+    assert user.email != other_email
+    assert user.pending_email is None
+
+    crud.user.remove(db, id=other_user.id)
+
+
 def prepare_user_with_password(
     client: TestClient, db: Session, headers: Dict[str, str]
 ) -> Tuple[int, str]:

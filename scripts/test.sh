@@ -3,6 +3,8 @@
 # Exit in case of error
 set -e
 
+[ -f .env ] || cp .env.example .env
+
 DOMAIN=backend \
 SMTP_HOST="" \
 TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL=false \

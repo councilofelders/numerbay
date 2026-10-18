@@ -40,7 +40,7 @@ def normalize_public_address(address: str) -> Optional[str]:
         return None
     if not re.fullmatch(r"0x[0-9a-fA-F]{40}", a):
         raise ValueError("Invalid wallet address")
-    return a
+    return a.lower()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

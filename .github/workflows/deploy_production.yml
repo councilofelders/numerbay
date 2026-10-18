@@ -49,6 +49,7 @@ jobs:
 
       - name: Build and Push Production Backend Image
         run: |
+          [ -f .env ] || cp .env.example .env
           export LD_LIBRARY_PATH=/usr/local/lib
           docker compose build backend
           docker compose push backend

@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -27,6 +27,9 @@ class User(Base):
     nonce = Column(String, index=True, nullable=True)
     email = Column(String, index=True, nullable=True)
     pending_email = Column(String, nullable=True)
+    email_verified = Column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
     hashed_password = Column(String, nullable=True)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
@@ -50,6 +53,7 @@ class User(Base):
     social_twitter = Column(String, nullable=True)
     social_website = Column(String, nullable=True)
     props = Column(JSON, nullable=True)
+    date_registered = Column(DateTime, nullable=True, server_default=func.now())
     products = relationship("Product", back_populates="owner")
     models = relationship("Model", back_populates="owner")
     orders = relationship("Order", back_populates="buyer")

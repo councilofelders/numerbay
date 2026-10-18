@@ -6,13 +6,18 @@ from typing import Any
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
 from app.core.config import settings
-from app.core.security import verify_password, verify_signature
+from app.core.security import (
+    normalize_public_address,
+    verify_password,
+    verify_signature,
+)
 from app.db.session import SessionLocal
 from app.utils import (
     generate_email_verification_token,
@@ -55,9 +60,30 @@ def verify_email(
         raise HTTPException(status_code=404, detail="User not found")
     if user.pending_email != email:
         raise HTTPException(status_code=400, detail="Invalid token")
-    crud.user.update(
-        db, db_obj=user, obj_in={"email": user.pending_email, "pending_email": None}
-    )
+    existing_email_user = crud.user.get_by_email(db, email=user.pending_email)
+    if existing_email_user and existing_email_user.id != user.id:
+        crud.user.update(db, db_obj=user, obj_in={"pending_email": None})
+        raise HTTPException(
+            status_code=400,
+            detail="This email address is already in use.",
+        )
+    try:
+        crud.user.update(
+            db,
+            db_obj=user,
+            obj_in={
+                "email": user.pending_email,
+                "email_verified": True,
+                "pending_email": None,
+            },
+        )
+    except IntegrityError:
+        db.rollback()
+        crud.user.update(db, db_obj=user, obj_in={"pending_email": None})
+        raise HTTPException(
+            status_code=400,
+            detail="This email address is already in use.",
+        )
     return {"msg": "Email verified"}
 
 
@@ -124,6 +150,12 @@ def update_user_me(  # pylint: disable=too-many-locals
                 status_code=403,
                 detail="Re-authentication required to change email",
             )
+        existing_email_user = crud.user.get_by_email(db, email=email)
+        if existing_email_user and existing_email_user.id != current_user.id:
+            raise HTTPException(
+                status_code=400,
+                detail="This email address is already in use.",
+            )
         if settings.REQUIRE_EMAIL_VERIFICATION:
             if not settings.EMAILS_ENABLED:
                 raise HTTPException(
@@ -135,6 +167,7 @@ def update_user_me(  # pylint: disable=too-many-locals
             pending_email_change = email
         else:
             user_in.email = email
+            user_in.email_verified = False
             user_in.pending_email = None
 
     # Update default receiving wallet
@@ -186,9 +219,23 @@ def update_user_me(  # pylint: disable=too-many-locals
             public_address, current_user.nonce, signature  # type: ignore
         ):
             raise HTTPException(status_code=400, detail="Invalid signature")
+        try:
+            normalized_address = normalize_public_address(public_address)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        if normalized_address is None:
+            raise HTTPException(status_code=400, detail="Invalid wallet address")
+        existing_wallet_user = crud.user.get_by_public_address(
+            db, public_address=normalized_address
+        )
+        if existing_wallet_user and existing_wallet_user.id != current_user.id:
+            raise HTTPException(
+                status_code=400,
+                detail="This wallet address is already linked to another account.",
+            )
         new_nonce = secrets.token_hex(32)
         user_in.nonce = new_nonce
-        user_in.public_address = public_address
+        user_in.public_address = normalized_address
         user_in.signature = signature
     if public_key is not None and encrypted_private_key is not None:
         user_in.public_key_v2 = public_key
@@ -218,7 +265,14 @@ def update_user_me(  # pylint: disable=too-many-locals
             synchronize_session=False,
         )
 
-    user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    try:
+        user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="This email address is already in use.",
+        )
     if pending_email_change is not None:
         send_email_verification_email(
             email_to=pending_email_change,

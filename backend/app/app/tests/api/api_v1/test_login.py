@@ -178,10 +178,9 @@ def test_get_access_token_web3(client: TestClient, db: Session) -> None:
     assert r.status_code == 200
     assert "access_token" in tokens
     assert tokens["access_token"]
-    assert (
-        crud.user.get_by_public_address(db, public_address=public_address) is not None
-    )
+    user = crud.user.get_by_public_address(db, public_address=public_address.lower())
+    assert user is not None
+    assert user.is_active is True
+    assert user.date_registered is not None
 
-    crud.user.remove(
-        db, id=crud.user.get_by_username(db, username=public_address).id  # type: ignore
-    )
+    crud.user.remove(db, id=user.id)

@@ -16,12 +16,14 @@ class UserBase(BaseModel):
 
     email: Optional[EmailStr] = None
     pending_email: Optional[EmailStr] = None
+    email_verified: Optional[bool] = False
     is_active: Optional[bool] = True
     is_superuser: bool = False
     username: Optional[str] = None
     public_address: Optional[str] = None
     default_receiving_wallet_address: Optional[str] = None
     date_last_numerai_sync: Optional[datetime] = None
+    date_registered: Optional[datetime] = None
     social_discord: Optional[str] = None
     social_linkedin: Optional[str] = None
     social_twitter: Optional[str] = None
