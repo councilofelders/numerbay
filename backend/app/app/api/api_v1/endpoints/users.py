@@ -11,15 +11,14 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
-from app.core.security import (
-    normalize_public_address,
-    verify_password,
-    verify_signature,
-)
+from app.core.config import settings
+from app.core.security import verify_password, verify_signature
 from app.db.session import SessionLocal
-
-# from app.core.config import settings
-# from app.utils import send_new_account_email
+from app.utils import (
+    generate_email_verification_token,
+    send_email_verification_email,
+    verify_email_verification_token,
+)
 
 router = APIRouter()
 
@@ -38,45 +37,28 @@ router = APIRouter()
 #     return users
 
 
-@router.post("/", response_model=schemas.User)
-def create_user(
+@router.post("/verify-email", response_model=schemas.Msg)
+def verify_email(
     *,
     db: Session = Depends(deps.get_db),
-    user_in: schemas.UserCreate,
+    token: str = Body(..., embed=True),
 ) -> Any:
     """
-    Create new user.
+    Confirm a pending email change with a verification token.
     """
-    if (
-        user_in.username is None
-        or user_in.username == ""
-        or user_in.password is None
-        or user_in.password == ""
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Please specify username and password",
-        )
-
-    if user_in.public_address is not None:
-        try:
-            user_in.public_address = normalize_public_address(user_in.public_address)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-    user = crud.user.get_by_username(db, username=user_in.username)  # type: ignore
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this username already exists in the system.",
-        )
-    user_in.nonce = secrets.token_hex(32)
-    user = crud.user.create(db, obj_in=user_in)
-    # if settings.EMAILS_ENABLED and user_in.email:
-    #     send_new_account_email(
-    #         email_to=user_in.email, username=user_in.email,
-    #         password=user_in.password   # type: ignore
-    #     )
-    return user
+    decoded = verify_email_verification_token(token)
+    if decoded is None:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    user_id, email = decoded
+    user = crud.user.get(db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.pending_email != email:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    crud.user.update(
+        db, db_obj=user, obj_in={"email": user.pending_email, "pending_email": None}
+    )
+    return {"msg": "Email verified"}
 
 
 @router.put("/me", response_model=schemas.User)
@@ -135,13 +117,25 @@ def update_user_me(  # pylint: disable=too-many-locals
         if existing_user:
             raise HTTPException(status_code=400, detail="This username already exists.")
         user_in.username = username
+    pending_email_change = None
     if email is not None and email != current_user.email:
         if not reauth_ok():
             raise HTTPException(
                 status_code=403,
                 detail="Re-authentication required to change email",
             )
-        user_in.email = email
+        if settings.REQUIRE_EMAIL_VERIFICATION:
+            if not settings.EMAILS_ENABLED:
+                raise HTTPException(
+                    status_code=503,
+                    detail="Email verification is required but email delivery "
+                    "is not configured",
+                )
+            user_in.pending_email = email
+            pending_email_change = email
+        else:
+            user_in.email = email
+            user_in.pending_email = None
 
     # Update default receiving wallet
     if default_receiving_wallet_address is not None:
@@ -225,6 +219,14 @@ def update_user_me(  # pylint: disable=too-many-locals
         )
 
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    if pending_email_change is not None:
+        send_email_verification_email(
+            email_to=pending_email_change,
+            username=user.username,
+            token=generate_email_verification_token(
+                current_user.id, pending_email_change
+            ),
+        )
     return user
 
 

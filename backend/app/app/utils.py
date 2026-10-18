@@ -3,9 +3,10 @@
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import emails
+import jinja2
 import requests
 from emails.template import JinjaTemplate
 from jose import jwt
@@ -13,6 +14,8 @@ from requests import Response
 
 from app.core.async_tasks import enqueue_send_email
 from app.core.config import settings
+
+_HTML_JINJA_ENV = jinja2.Environment(autoescape=True)
 
 
 def send_email(
@@ -34,8 +37,8 @@ def send_email(
         environment = {}
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     message = emails.Message(
-        subject=JinjaTemplate(subject_template),
-        html=JinjaTemplate(html_template),
+        subject=subject_template,
+        html=JinjaTemplate(html_template, environment=_HTML_JINJA_ENV),
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
     message.render(**environment)
@@ -58,6 +61,7 @@ def semd_email_mailgun(
                 "subject": subject,
                 "html": message,
             },
+            timeout=30,
         )
         return response
     return None
@@ -82,8 +86,8 @@ def send_email_smtp(
         environment = {}
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     message = emails.Message(
-        subject=JinjaTemplate(subject_template),
-        html=JinjaTemplate(html_template),
+        subject=subject_template,
+        html=JinjaTemplate(html_template, environment=_HTML_JINJA_ENV),
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
@@ -165,24 +169,35 @@ def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     )
 
 
-# def send_new_account_email(email_to: str, username: str, password: str) -> None:
-#     project_name = settings.PROJECT_NAME
-#     subject = f"{project_name} - New account for {username}"
-#     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
-#         template_str = f.read()
-#     link = settings.SERVER_HOST
-#     send_email(
-#         email_to=email_to,
-#         subject_template=subject,
-#         html_template=template_str,
-#         environment={
-#             "project_name": settings.PROJECT_NAME,
-#             "username": username,
-#             "password": password,
-#             "email": email_to,
-#             "link": link,
-#         },
-#     )
+def send_email_verification_email(email_to: str, username: str, token: str) -> None:
+    """
+    Send email verification link for a pending email change
+
+    Args:
+        email_to (str): recipient email
+        username (str): account username
+        token (str): email verification token
+    """
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Verify your email change for {username}"
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "verify_email.html", encoding="utf8"
+    ) as f:
+        template_str = f.read()
+    server_host = settings.SERVER_HOST
+    link = f"{server_host}/verify-email?token={token}"
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": settings.PROJECT_NAME,
+            "username": username,
+            "email": email_to,
+            "valid_hours": settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+            "link": link,
+        },
+    )
 
 
 def send_new_order_email(  # pylint: disable=too-many-arguments
@@ -988,4 +1003,52 @@ def verify_password_reset_token(token: str) -> Optional[str]:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         return decoded_token["email"]
     except jwt.JWTError:
+        return None
+
+
+def generate_email_verification_token(user_id: int, email: str) -> str:
+    """
+    Generate email verification token
+
+    Args:
+        user_id (int): user id
+        email (str): pending email address
+
+    Returns:
+        str: email verification token
+    """
+    delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
+    now = datetime.utcnow()
+    expires = now + delta
+    exp = expires.timestamp()
+    encoded_jwt = jwt.encode(
+        {
+            "exp": exp,
+            "nbf": now,
+            "sub": str(user_id),
+            "email": email,
+            "type": "verification",
+        },
+        settings.SECRET_KEY,
+        algorithm="HS256",
+    )
+    return encoded_jwt
+
+
+def verify_email_verification_token(token: str) -> Optional[Tuple[int, str]]:
+    """
+    Verify email verification token
+
+    Args:
+        token (str): email verification token
+
+    Returns:
+        Tuple[int, str]: user id and email address
+    """
+    try:
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        if decoded_token.get("type") != "verification":
+            return None
+        return int(decoded_token["sub"]), decoded_token["email"]
+    except (jwt.JWTError, KeyError, ValueError):
         return None

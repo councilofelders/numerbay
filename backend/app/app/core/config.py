@@ -91,6 +91,8 @@ class Settings(BaseSettings):
             and values.get("EMAILS_FROM_EMAIL")
         )
 
+    REQUIRE_EMAIL_VERIFICATION: bool = False
+
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str

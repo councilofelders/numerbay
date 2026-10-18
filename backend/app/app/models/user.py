@@ -26,6 +26,7 @@ class User(Base):
     public_address = Column(String, index=True, nullable=True, unique=True)
     nonce = Column(String, index=True, nullable=True)
     email = Column(String, index=True, nullable=True)
+    pending_email = Column(String, nullable=True)
     hashed_password = Column(String, nullable=True)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)

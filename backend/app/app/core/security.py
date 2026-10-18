@@ -6,6 +6,7 @@ from typing import Any, Optional, Union
 
 from eth_account import Account
 from eth_account.messages import encode_defunct
+from eth_utils.exceptions import ValidationError
 from jose import jwt
 from passlib.context import CryptContext
 
@@ -51,7 +52,7 @@ def verify_signature(public_address: str, nonce: str, signature: str) -> bool:
         message_hash = encode_defunct(text=f"I am signing my one-time nonce: {nonce}")
         signer = Account.recover_message(message_hash, signature=signature)
         return signer.lower() == public_address.lower()
-    except ValueError:
+    except (ValueError, ValidationError):
         return False
 
 

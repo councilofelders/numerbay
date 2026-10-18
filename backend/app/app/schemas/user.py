@@ -15,6 +15,7 @@ class UserBase(BaseModel):
     """Base data schema for user"""
 
     email: Optional[EmailStr] = None
+    pending_email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
     username: Optional[str] = None
@@ -36,7 +37,6 @@ class UserCreate(BaseModel):
     password: str
     email: Optional[EmailStr] = None
     public_address: Optional[str] = None
-    signature: Optional[str] = None
     nonce: Optional[str] = None
     is_active: Optional[bool] = True
 

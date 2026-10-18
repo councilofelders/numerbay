@@ -20,6 +20,7 @@ class TokenPayload(BaseModel):
 
     sub: Optional[int] = None
     ver: Optional[int] = 0
+    type: Optional[str] = None
 
 
 class Nonce(BaseModel):
