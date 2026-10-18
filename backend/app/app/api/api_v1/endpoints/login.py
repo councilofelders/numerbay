@@ -41,7 +41,9 @@ def login_access_token(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
-            user.id, expires_delta=access_token_expires
+            user.id,
+            token_version=user.token_version,
+            expires_delta=access_token_expires,
         ),
         "token_type": "bearer",
         "user": user,
@@ -77,7 +79,9 @@ def login_access_token_web3(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
-            user.id, expires_delta=access_token_expires
+            user.id,
+            token_version=user.token_version,
+            expires_delta=access_token_expires,
         ),
         "token_type": "bearer",
         "user": user,
@@ -101,6 +105,13 @@ def login_nonce(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
+    try:
+        normalized = security.normalize_public_address(public_address)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if normalized is None:
+        raise HTTPException(status_code=400, detail="Invalid wallet address")
+    public_address = normalized
     user = crud.user.get_by_public_address(db, public_address=public_address)
     if not user:
         # create new user with nonce

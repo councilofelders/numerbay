@@ -29,6 +29,7 @@ class User(Base):
     hashed_password = Column(String, nullable=True)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
+    token_version = Column(Integer, nullable=False, default=0, server_default="0")
     numerai_api_key_public_id = Column(String, nullable=True)
     numerai_api_key_secret = Column(String, nullable=True)
     numerai_api_key_can_upload_submission = Column(Boolean, nullable=True)

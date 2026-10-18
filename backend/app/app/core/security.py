@@ -1,7 +1,8 @@
 """ App security functions """
 
+import re
 from datetime import datetime, timedelta
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from eth_account import Account
 from eth_account.messages import encode_defunct
@@ -16,7 +17,9 @@ ALGORITHM = "HS256"
 
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: Union[str, Any],
+    token_version: int = 0,
+    expires_delta: timedelta = None,
 ) -> str:
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -24,9 +27,19 @@ def create_access_token(
         expire = datetime.utcnow() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-    to_encode = {"exp": expire, "sub": str(subject)}
+    to_encode = {"exp": expire, "sub": str(subject), "ver": token_version}
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def normalize_public_address(address: str) -> Optional[str]:
+    """Normalize a wallet address for storage and lookup."""
+    a = (address or "").strip()
+    if not a:
+        return None
+    if not re.fullmatch(r"0x[0-9a-fA-F]{40}", a):
+        raise ValueError("Invalid wallet address")
+    return a
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

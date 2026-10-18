@@ -11,7 +11,11 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.dependencies import numerai
-from app.core.security import verify_signature
+from app.core.security import (
+    normalize_public_address,
+    verify_password,
+    verify_signature,
+)
 from app.db.session import SessionLocal
 
 # from app.core.config import settings
@@ -54,6 +58,11 @@ def create_user(
             detail="Please specify username and password",
         )
 
+    if user_in.public_address is not None:
+        try:
+            user_in.public_address = normalize_public_address(user_in.public_address)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
     user = crud.user.get_by_username(db, username=user_in.username)  # type: ignore
     if user:
         raise HTTPException(
@@ -89,6 +98,8 @@ def update_user_me(  # pylint: disable=too-many-locals
     public_key: str = Body(None),
     encrypted_private_key: str = Body(None),
     factor: float = Body(None),
+    current_password: str = Body(None),
+    reauth_signature: str = Body(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -96,22 +107,52 @@ def update_user_me(  # pylint: disable=too-many-locals
     """
     current_user_data = jsonable_encoder(current_user)
     user_in = schemas.UserUpdate(**current_user_data)
+
+    def reauth_ok() -> bool:
+        """Check that the caller proved who they are right now."""
+        if current_password and current_user.hashed_password:
+            if verify_password(current_password, current_user.hashed_password):
+                return True
+        if reauth_signature and current_user.public_address:
+            if verify_signature(
+                current_user.public_address,
+                current_user.nonce,  # type: ignore
+                reauth_signature,
+            ):
+                return True
+        return False
+
     # Either username or publicAddress needs to be available
     if password is not None:
+        if not reauth_ok():
+            raise HTTPException(
+                status_code=403,
+                detail="Re-authentication required to change password",
+            )
         user_in.password = password
     if username is not None and username != user_in.username:
         existing_user = crud.user.get_by_username(db, username=username)
         if existing_user:
             raise HTTPException(status_code=400, detail="This username already exists.")
         user_in.username = username
-    if email is not None:
+    if email is not None and email != current_user.email:
+        if not reauth_ok():
+            raise HTTPException(
+                status_code=403,
+                detail="Re-authentication required to change email",
+            )
         user_in.email = email
 
     # Update default receiving wallet
     if default_receiving_wallet_address is not None:
-        user_in.default_receiving_wallet_address = (
-            default_receiving_wallet_address.lower()
-        )
+        lowered = default_receiving_wallet_address.lower()
+        if lowered != (current_user.default_receiving_wallet_address or "").lower():
+            if not reauth_ok():
+                raise HTTPException(
+                    status_code=403,
+                    detail="Re-authentication required to change payout address",
+                )
+        user_in.default_receiving_wallet_address = lowered
 
     # Update socials
     user_in.social_discord = social_discord
@@ -122,6 +163,11 @@ def update_user_me(  # pylint: disable=too-many-locals
     # Update Numerai API key
     if numerai_api_key_public_id is not None:
         if numerai_api_key_secret is not None:
+            if not reauth_ok():
+                raise HTTPException(
+                    status_code=403,
+                    detail="Re-authentication required to change Numerai API key",
+                )
             user_in.numerai_api_key_public_id = numerai_api_key_public_id
             user_in.numerai_api_key_secret = numerai_api_key_secret
             user_json = jsonable_encoder(user_in)
@@ -129,9 +175,19 @@ def update_user_me(  # pylint: disable=too-many-locals
             tmp_db = SessionLocal()
             numerai.sync_user_numerai_api(tmp_db, user_json)
     if public_address is not None and public_address == "":  # disconnect web3
+        if not reauth_ok():
+            raise HTTPException(
+                status_code=403,
+                detail="Re-authentication required to disconnect wallet",
+            )
         user_in.public_address = None
         user_in.signature = None
     if public_address is not None and signature is not None:
+        if not reauth_ok():
+            raise HTTPException(
+                status_code=403,
+                detail="Re-authentication required to change wallet",
+            )
         if not verify_signature(
             public_address, current_user.nonce, signature  # type: ignore
         ):
@@ -158,6 +214,15 @@ def update_user_me(  # pylint: disable=too-many-locals
         user_in.props = {}
     if factor is not None:
         user_in.props["factor"] = factor
+
+    if reauth_signature is not None:
+        user_in.nonce = secrets.token_hex(32)
+
+    if password is not None:
+        db.query(models.User).filter(models.User.id == current_user.id).update(
+            {models.User.token_version: models.User.token_version + 1},
+            synchronize_session=False,
+        )
 
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return user

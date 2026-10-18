@@ -19,6 +19,7 @@ class TokenPayload(BaseModel):
     """API data schema for auth token"""
 
     sub: Optional[int] = None
+    ver: Optional[int] = 0
 
 
 class Nonce(BaseModel):

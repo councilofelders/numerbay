@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.core.config import settings
 from app.schemas.user import UserCreate
+from app.tests.utils.user import user_authentication_headers
 from app.tests.utils.utils import random_email, random_lower_string
 
 
@@ -107,15 +108,26 @@ def test_update_username_password(
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
     user_id = current_user["id"]
+    user = crud.user.get(db, id=user_id)
+    assert user
+    original_token_version = user.token_version
+    current_password = random_lower_string()
+    crud.user.update(db, db_obj=user, obj_in={"password": current_password})
+
     new_username = random_lower_string()
     new_password = random_lower_string()
-    data = {"username": new_username, "password": new_password}
+    data = {
+        "username": new_username,
+        "password": new_password,
+        "current_password": current_password,
+    }
     r = client.put(
         f"{settings.API_V1_STR}/users/me",
         headers=normal_user_token_headers,
         json=data,
     )
     assert 200 <= r.status_code < 300
+    db.expire_all()
     updated_user = r.json()
     user = crud.user.get_by_username(db, username=new_username)
     assert user
@@ -125,7 +137,22 @@ def test_update_username_password(
     r = client.put(
         f"{settings.API_V1_STR}/users/me",
         headers=normal_user_token_headers,
-        json=current_user,
+        json={"username": current_user["username"]},
+    )
+    assert r.status_code == 403
+
+    new_headers = user_authentication_headers(
+        client=client, username=new_username, password=new_password
+    )
+    assert new_headers["Authorization"]
+
+    crud.user.update(
+        db,
+        db_obj=user,
+        obj_in={
+            "username": current_user["username"],
+            "token_version": original_token_version,
+        },
     )
 
 
@@ -146,8 +173,7 @@ def test_update_username_conflict(
     # current_user = r.json()
 
     new_username = existing_user["username"]
-    new_password = random_lower_string()
-    data = {"username": new_username, "password": new_password}
+    data = {"username": new_username}
     r = client.put(
         f"{settings.API_V1_STR}/users/me",
         headers=normal_user_token_headers,

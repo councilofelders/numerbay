@@ -46,7 +46,7 @@ def test_use_access_token(
 
 
 def test_login_nonce(client: TestClient, db: Session) -> None:
-    public_address = "0xtest_address"
+    public_address = Account.create().address
     nonce_request_data = {"public_address": public_address}
     r = client.post(f"{settings.API_V1_STR}/login/nonce", json=nonce_request_data)
     result = r.json()
@@ -56,6 +56,12 @@ def test_login_nonce(client: TestClient, db: Session) -> None:
     crud.user.remove(
         db, id=crud.user.get_by_username(db, username=public_address).id  # type: ignore
     )
+
+
+def test_login_nonce_invalid_address(client: TestClient) -> None:
+    nonce_request_data = {"public_address": "0xtest_address"}
+    r = client.post(f"{settings.API_V1_STR}/login/nonce", json=nonce_request_data)
+    assert r.status_code == 400
 
 
 def test_login_nonce_authenticated(
@@ -82,7 +88,7 @@ def test_login_nonce_authenticated(
 
 
 def test_get_access_token_inactive(client: TestClient, db: Session) -> None:
-    public_address = random_lower_string()
+    public_address = Account.create().address
     nonce_request_data = {
         "public_address": public_address,
     }
