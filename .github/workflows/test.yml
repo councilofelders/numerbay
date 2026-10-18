@@ -52,7 +52,9 @@ jobs:
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.11
 
       - name: Test backend
-        run: sh ./scripts/test.sh
         env:
           GCP_STORAGE_BUCKET: storage.test.numerbay.ai
-          GCP_SERVICE_ACCOUNT_INFO: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
+          GCP_CREDENTIALS_JSON: ${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}
+        run: |
+          printf '%s' "$GCP_CREDENTIALS_JSON" > gcp-service-account.json
+          sh ./scripts/test.sh

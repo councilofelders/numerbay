@@ -9,7 +9,6 @@ from typing import Any, Callable, Dict, List, Optional
 import requests
 from fastapi.encoders import jsonable_encoder
 from google.auth.transport.requests import AuthorizedSession
-from google.oauth2 import service_account
 
 from app.core.celery_app import celery_app
 from app.core.config import settings
@@ -395,8 +394,6 @@ def _enqueue_cloud_task(
     worker_url = settings.ASYNC_WORKER_DISPATCH_URL
     if not worker_url:
         raise RuntimeError("ASYNC_WORKER_DISPATCH_URL must be set for GCP async tasks")
-    if not settings.GCP_SERVICE_ACCOUNT_INFO:
-        raise RuntimeError("GCP_SERVICE_ACCOUNT_INFO must be set for GCP async tasks")
     if not settings.ASYNC_WORKER_DISPATCH_TOKEN:
         raise RuntimeError(
             "ASYNC_WORKER_DISPATCH_TOKEN must be set for GCP async tasks"
@@ -466,10 +463,10 @@ def _enqueue_cloud_task(
 
 
 def _get_cloud_tasks_session() -> AuthorizedSession:
-    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
-    credentials = service_account.Credentials.from_service_account_info(
-        service_account_info,
-        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    import google.auth
+
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
     return AuthorizedSession(credentials)
 
@@ -593,7 +590,9 @@ def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
                     delay_seconds=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
                 )
     except Exception as exc:  # pylint: disable=broad-except
-        print(f"Error starting model scores update [{exc}], {retries} retries remaining")
+        print(
+            f"Error starting model scores update [{exc}], {retries} retries remaining"
+        )
         if retries > 0:
             print(
                 f"Retrying starting model scores update "
@@ -636,6 +635,7 @@ def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
     site_globals = run_with_db_session(lambda db: crud.globals.get_singleton(db))
 
     if open_time <= utc_time <= close_staking_time:
+
         def process_round_open(db) -> bool:
             locked_globals = _get_locked_globals(db, crud.globals.model)
             if locked_globals is None:
@@ -1012,9 +1012,7 @@ def _run_check_numerai_submission(
         if buyer is None:
             return None
 
-        print(
-            f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}"
-        )
+        print(f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}")
         enqueue_upload_numerai_artifact(
             order_id=order_id,
             object_name=csv_artifact.object_name,  # type: ignore[arg-type]
@@ -1156,7 +1154,9 @@ def _run_validate_artifact_upload(
         bucket = deps.get_gcs_bucket()
         blob = bucket.blob(artifact.object_name)
         if not blob.exists():
-            print(f"Artifact {artifact_id} {artifact.object_name} not uploaded, deleting")
+            print(
+                f"Artifact {artifact_id} {artifact.object_name} not uploaded, deleting"
+            )
 
             if settings.EMAILS_ENABLED and artifact.product.owner.email:
                 send_failed_artifact_seller_email(

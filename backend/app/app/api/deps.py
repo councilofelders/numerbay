@@ -1,16 +1,14 @@
 """ Injection dependencies for endpoints """
 
-import json
 from typing import Dict, Generator, Optional
 
 import google.auth.transport.requests
 import google.oauth2.id_token
+import requests
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from google.auth.transport.requests import AuthorizedSession
 from google.cloud import storage
 from google.cloud.storage import Bucket
-from google.oauth2 import service_account
 from jose import jwt
 from pydantic import ValidationError
 from requests import Response
@@ -114,11 +112,7 @@ def get_current_active_superuser(
 
 def get_gcs_bucket() -> Bucket:
     """Get GCS bucket"""
-    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
-    credentials = service_account.Credentials.from_service_account_info(
-        service_account_info
-    )
-    client = storage.Client(credentials=credentials)
+    client = storage.Client()
     bucket = client.get_bucket(settings.GCP_STORAGE_BUCKET)
     # bucket.cors = [
     #     {
@@ -151,15 +145,10 @@ def make_gcp_authorized_post_request(
     if headers is None:
         headers = {}
 
-    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_INFO)  # type: ignore
-    credentials = service_account.IDTokenCredentials.from_service_account_info(
-        service_account_info, target_audience=audience
-    )
-
     auth_req = google.auth.transport.requests.Request()
-    credentials.refresh(auth_req)
+    token = google.oauth2.id_token.fetch_id_token(auth_req, audience)
+    headers = {**headers, "Authorization": f"Bearer {token}"}
 
-    authed_session = AuthorizedSession(credentials)
-    response = authed_session.post(endpoint, json=payload, headers=headers)
+    response = requests.post(endpoint, json=payload, headers=headers, timeout=120)
 
     return response

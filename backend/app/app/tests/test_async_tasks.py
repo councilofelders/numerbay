@@ -53,7 +53,9 @@ def test_enqueue_batch_update_numerai_models_uses_ops_owner(monkeypatch) -> None
     result = async_tasks.enqueue_batch_update_numerai_models()
 
     assert result == "celery-task"
-    assert calls == [("app.worker.batch_update_models_task", {"args": [], "kwargs": {}})]
+    assert calls == [
+        ("app.worker.batch_update_models_task", {"args": [], "kwargs": {}})
+    ]
 
 
 def test_enqueue_batch_update_numerai_model_scores_uses_ops_owner(monkeypatch) -> None:
@@ -158,7 +160,6 @@ def test_enqueue_async_task_uses_cloud_tasks(monkeypatch) -> None:
     monkeypatch.setattr(
         async_tasks.settings, "GCP_TASKS_QUEUE_NOTIFICATIONS", "notifications"
     )
-    monkeypatch.setattr(async_tasks.settings, "GCP_SERVICE_ACCOUNT_INFO", "{}")
     monkeypatch.setattr(async_tasks, "_get_cloud_tasks_session", lambda: FakeSession())
 
     result = async_tasks.enqueue_send_email(
@@ -349,7 +350,6 @@ def test_enqueue_async_task_requires_dispatch_token(monkeypatch) -> None:
         "https://worker.example.com/backend-api/v1/internal/tasks/dispatch",
     )
     monkeypatch.setattr(async_tasks.settings, "ASYNC_WORKER_DISPATCH_TOKEN", None)
-    monkeypatch.setattr(async_tasks.settings, "GCP_SERVICE_ACCOUNT_INFO", "{}")
 
     try:
         async_tasks.enqueue_send_email(
@@ -383,7 +383,9 @@ def test_enqueue_pending_payment_updates_uses_shared_poll_slot(monkeypatch) -> N
     ]
 
 
-def test_enqueue_pending_submission_checks_seeds_all_pending_orders(monkeypatch) -> None:
+def test_enqueue_pending_submission_checks_seeds_all_pending_orders(
+    monkeypatch,
+) -> None:
     calls = []
     pending_orders = [{"id": 1}, {"id": 2}]
 
@@ -473,7 +475,9 @@ def test_run_batch_update_numerai_models_fans_out_with_stagger(monkeypatch) -> N
     ]
 
 
-def test_run_batch_update_numerai_model_scores_requeues_until_ready(monkeypatch) -> None:
+def test_run_batch_update_numerai_model_scores_requeues_until_ready(
+    monkeypatch,
+) -> None:
     calls = []
 
     from app.api.dependencies import numerai
@@ -519,12 +523,12 @@ def test_run_update_active_round_on_round_open_seeds_submissions(monkeypatch) ->
         numerai,
         "get_numerai_active_round",
         lambda: {
-            "openTime": (now - timedelta(minutes=30)).isoformat().replace(
-                "+00:00", "Z"
-            ),
-            "closeStakingTime": (now + timedelta(minutes=30)).isoformat().replace(
-                "+00:00", "Z"
-            ),
+            "openTime": (now - timedelta(minutes=30))
+            .isoformat()
+            .replace("+00:00", "Z"),
+            "closeStakingTime": (now + timedelta(minutes=30))
+            .isoformat()
+            .replace("+00:00", "Z"),
             "number": 1239,
         },
     )
@@ -588,12 +592,12 @@ def test_run_update_active_round_catches_up_unprocessed_open_round(
         numerai,
         "get_numerai_active_round",
         lambda: {
-            "openTime": (now - timedelta(minutes=30)).isoformat().replace(
-                "+00:00", "Z"
-            ),
-            "closeStakingTime": (now + timedelta(minutes=30)).isoformat().replace(
-                "+00:00", "Z"
-            ),
+            "openTime": (now - timedelta(minutes=30))
+            .isoformat()
+            .replace("+00:00", "Z"),
+            "closeStakingTime": (now + timedelta(minutes=30))
+            .isoformat()
+            .replace("+00:00", "Z"),
             "number": 1239,
         },
     )
@@ -650,12 +654,12 @@ def test_run_update_active_round_near_close_enqueues_stake_validation(
         numerai,
         "get_numerai_active_round",
         lambda: {
-            "openTime": (now - timedelta(minutes=30)).isoformat().replace(
-                "+00:00", "Z"
-            ),
-            "closeStakingTime": (now + timedelta(minutes=1)).isoformat().replace(
-                "+00:00", "Z"
-            ),
+            "openTime": (now - timedelta(minutes=30))
+            .isoformat()
+            .replace("+00:00", "Z"),
+            "closeStakingTime": (now + timedelta(minutes=1))
+            .isoformat()
+            .replace("+00:00", "Z"),
             "number": 1239,
         },
     )

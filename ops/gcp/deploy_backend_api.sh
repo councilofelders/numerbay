@@ -20,6 +20,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --project "${PROJECT_ID}" \
   --region "${REGION}" \
   --image "${IMAGE}" \
+  --service-account "numerbay-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
   --network "${NETWORK}" \
   --subnet "${SUBNET}" \
   --vpc-egress private-ranges-only \

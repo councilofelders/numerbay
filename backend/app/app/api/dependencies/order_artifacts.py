@@ -3,9 +3,12 @@
 import uuid
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
+import google.auth
 from fastapi import HTTPException
+from google.auth.compute_engine import credentials as compute_credentials
+from google.auth.credentials import Signing
 from google.cloud.storage import Bucket
 from sqlalchemy.orm import Session
 
@@ -24,6 +27,44 @@ def get_object_name(
         object_name += f"_{override_filename}"
     object_name += file_ext
     return object_name
+
+
+def _get_gcs_signing_kwargs() -> Dict[str, Any]:
+    """Get signing keyword arguments for blob.generate_signed_url.
+
+    Service-account JSON credentials sign locally with their private key.
+    Cloud Run metadata credentials cannot sign locally, so they sign through
+    the IAM signBlob API, which requires the serviceAccountTokenCreator role
+    on the runtime service account.
+    """
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+
+    if isinstance(credentials, Signing):
+        return {"credentials": credentials}
+
+    if isinstance(credentials, compute_credentials.Credentials):
+        auth_req = google.auth.transport.requests.Request()
+        credentials.refresh(auth_req)
+        service_account_email = credentials.service_account_email
+        if (
+            not service_account_email
+            or service_account_email == "default"
+            or not credentials.token
+        ):
+            raise RuntimeError(
+                "Could not resolve the runtime service account for IAM signing"
+            )
+        return {
+            "credentials": credentials,
+            "service_account_email": service_account_email,
+            "access_token": credentials.token,
+        }
+
+    raise RuntimeError(
+        f"Unsupported credentials type for GCS signing: {type(credentials)}"
+    )
 
 
 def generate_gcs_signed_url(
@@ -45,6 +86,7 @@ def generate_gcs_signed_url(
         ),
         method=action,
         version="v4",
+        **_get_gcs_signing_kwargs(),
     )
     return url
 

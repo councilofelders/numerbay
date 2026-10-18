@@ -113,7 +113,6 @@ jobs:
           EMAILS_FROM_EMAIL="admin@numerbay.ai"
           GCP_PROJECT="${{ secrets.GCP_PROJECT_ID }}"
           GCP_STORAGE_BUCKET="storage.numerbay.ai"
-          GCP_SERVICE_ACCOUNT_INFO='${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}'
           GCP_WEBHOOK_FUNCTION="${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}"
           GCP_TASKS_LOCATION="us-central1"
           GCP_TASKS_QUEUE_NOTIFICATIONS="numerbay-queue-notifications"
@@ -169,7 +168,6 @@ jobs:
           EMAILS_FROM_EMAIL="admin@numerbay.ai"
           GCP_PROJECT="${{ secrets.GCP_PROJECT_ID }}"
           GCP_STORAGE_BUCKET="storage.numerbay.ai"
-          GCP_SERVICE_ACCOUNT_INFO='${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}'
           GCP_WEBHOOK_FUNCTION="${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}"
           INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
           SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
@@ -221,7 +219,6 @@ jobs:
           EMAILS_FROM_EMAIL="admin@numerbay.ai"
           GCP_PROJECT="${{ secrets.GCP_PROJECT_ID }}"
           GCP_STORAGE_BUCKET="storage.numerbay.ai"
-          GCP_SERVICE_ACCOUNT_INFO='${{ secrets.APP_GCP_SERVICE_ACCOUNT_INFO }}'
           GCP_WEBHOOK_FUNCTION="${{ secrets.APP_GCP_WEBHOOK_FUNCTION }}"
           INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
           SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
@@ -246,6 +243,7 @@ jobs:
             --project "$PROJECT_ID" \
             --region "$REGION" \
             --image "$IMAGE" \
+            --service-account "numerbay-runtime@$PROJECT_ID.iam.gserviceaccount.com" \
             --network numerbay \
             --subnet numerbay \
             --vpc-egress private-ranges-only \
@@ -275,6 +273,7 @@ jobs:
             --project "$PROJECT_ID" \
             --region "$REGION" \
             --image "$IMAGE" \
+            --service-account "numerbay-runtime@$PROJECT_ID.iam.gserviceaccount.com" \
             --network numerbay \
             --subnet numerbay \
             --vpc-egress private-ranges-only \
@@ -296,6 +295,7 @@ jobs:
               --project "$PROJECT_ID" \
               --region "$REGION" \
               --image "$IMAGE" \
+              --service-account "numerbay-runtime@$PROJECT_ID.iam.gserviceaccount.com" \
               --network numerbay \
               --subnet numerbay \
               --vpc-egress private-ranges-only \

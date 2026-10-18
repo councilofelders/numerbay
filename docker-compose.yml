@@ -130,7 +130,7 @@ services:
       - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
-      - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_service_account
       - GCP_WEBHOOK_FUNCTION=${GCP_WEBHOOK_FUNCTION}
       - GCP_TASKS_LOCATION=${GCP_TASKS_LOCATION-us-central1}
       - GCP_TASKS_QUEUE_NOTIFICATIONS=${GCP_TASKS_QUEUE_NOTIFICATIONS-notifications}
@@ -146,6 +146,8 @@ services:
       - ASYNC_OWNER_SUBMISSIONS=${ASYNC_OWNER_SUBMISSIONS-celery}
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
       - WEBHOOK_ENABLED=${WEBHOOK_ENABLED}
+    secrets:
+      - gcp_service_account
     build:
       context: ./backend
       dockerfile: backend.dockerfile
@@ -172,7 +174,7 @@ services:
       - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
-      - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_service_account
       - GCP_WEBHOOK_FUNCTION=${GCP_WEBHOOK_FUNCTION}
       - GCP_TASKS_LOCATION=${GCP_TASKS_LOCATION-us-central1}
       - GCP_TASKS_QUEUE_NOTIFICATIONS=${GCP_TASKS_QUEUE_NOTIFICATIONS-notifications}
@@ -188,6 +190,8 @@ services:
       - ASYNC_OWNER_SUBMISSIONS=${ASYNC_OWNER_SUBMISSIONS-celery}
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
       - WEBHOOK_ENABLED=${WEBHOOK_ENABLED}
+    secrets:
+      - gcp_service_account
     build:
       context: ./backend
       dockerfile: celeryworker.dockerfile
@@ -215,7 +219,7 @@ services:
       - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - GCP_PROJECT=${GCP_PROJECT}
       - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
-      - GCP_SERVICE_ACCOUNT_INFO=${GCP_SERVICE_ACCOUNT_INFO}
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_service_account
       - GCP_WEBHOOK_FUNCTION=${GCP_WEBHOOK_FUNCTION}
       - GCP_TASKS_LOCATION=${GCP_TASKS_LOCATION-us-central1}
       - GCP_TASKS_QUEUE_NOTIFICATIONS=${GCP_TASKS_QUEUE_NOTIFICATIONS-notifications}
@@ -231,6 +235,8 @@ services:
       - ASYNC_OWNER_SUBMISSIONS=${ASYNC_OWNER_SUBMISSIONS-celery}
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
       - WEBHOOK_ENABLED=${WEBHOOK_ENABLED}
+    secrets:
+      - gcp_service_account
     build:
       context: ./backend
       dockerfile: celeryworker.dockerfile
@@ -240,6 +246,10 @@ services:
 
 volumes:
   app-db-data:
+
+secrets:
+  gcp_service_account:
+    file: ./gcp-service-account.json
 
 networks:
   traefik-public:
