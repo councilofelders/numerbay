@@ -406,8 +406,7 @@ def submit_artifact(
         order_id=order.id,
         object_name=artfact.object_name,
         model_id=order.submit_model_id,
-        numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-        numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+        buyer_id=order.buyer_id,
         tournament=order.product.model.tournament,
         version=1,
     )

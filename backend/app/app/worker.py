@@ -137,17 +137,17 @@ def send_order_artifact_upload_reminder_emails_task() -> None:
 
 
 @celery_app.task  # (acks_late=True)
-def update_model_subtask(user_json: Dict, retries: int = 0) -> Optional[Any]:
+def update_model_subtask(user_id: int, retries: int = 0) -> Optional[Any]:
     """
     Update individual user's Numerai models subtask
 
     Args:
-        user_json (dict): dict of user information
+        user_id (int): user id
         retries (int): number of retries
     """
     return run_async_task(
         TASK_UPDATE_NUMERAI_MODEL,
-        kwargs=dict(user_json=user_json, retries=retries),
+        kwargs=dict(user_id=user_id, retries=retries),
     )
 
 
@@ -292,8 +292,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
     order_id: int,
     object_name: str,
     model_id: str,
-    numerai_api_key_public_id: str,
-    numerai_api_key_secret: str,
+    buyer_id: int,
     tournament: int = 8,
     version: int = 1,  # pylint: disable=unused-argument
 ) -> Optional[Any]:
@@ -304,8 +303,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
         order_id (int): order id
         object_name (str): object name
         model_id (str): Numerai model id
-        numerai_api_key_public_id (str): Numerai API key public ID
-        numerai_api_key_secret (str): Numerai API key secret
+        buyer_id (int): buyer user id
         tournament (int): Tournament ID
         version (int): Data version (placeholder, not used)
     """
@@ -315,8 +313,7 @@ def upload_numerai_artifact_task(  # pylint: disable=too-many-arguments
             order_id=order_id,
             object_name=object_name,
             model_id=model_id,
-            numerai_api_key_public_id=numerai_api_key_public_id,
-            numerai_api_key_secret=numerai_api_key_secret,
+            buyer_id=buyer_id,
             tournament=tournament,
             version=version,
         ),

@@ -14,10 +14,7 @@ def test_on_order_confirmed_dispatches_legacy_side_effects(monkeypatch) -> None:
         price=5,
         submit_model_id="model-1",
         product_id=9,
-        buyer=SimpleNamespace(
-            numerai_api_key_public_id="public-id",
-            numerai_api_key_secret="secret-key",
-        ),
+        buyer_id=2,
         product=SimpleNamespace(
             total_num_sales=1,
             last_sale_price=3,
@@ -120,7 +117,9 @@ def test_update_payment_confirms_manual_transaction(monkeypatch) -> None:
     assert calls == [(db, 11, "0xconfirmed")]
 
 
-def test_update_payment_confirms_free_order_without_transaction_lookup(monkeypatch) -> None:
+def test_update_payment_confirms_free_order_without_transaction_lookup(
+    monkeypatch,
+) -> None:
     order_obj = SimpleNamespace(id=11, currency="NMR", price=0)
     match_transaction = Mock(return_value="0xunrelated")
     confirm_order = Mock()

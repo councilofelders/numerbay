@@ -241,7 +241,7 @@ def test_enqueue_validate_artifact_upload_uses_submissions_owner(monkeypatch) ->
 
 def test_enqueue_update_numerai_model_uses_ops_owner(monkeypatch) -> None:
     calls = []
-    user_json = {"username": "alice"}
+    user_id = 7
 
     monkeypatch.setattr(async_tasks.settings, "ASYNC_OWNER_OPS", "celery")
     monkeypatch.setattr(
@@ -251,7 +251,7 @@ def test_enqueue_update_numerai_model_uses_ops_owner(monkeypatch) -> None:
     )
 
     result = async_tasks.enqueue_update_numerai_model(
-        user_json,
+        user_id,
         retries=5,
         delay_seconds=12,
     )
@@ -262,7 +262,7 @@ def test_enqueue_update_numerai_model_uses_ops_owner(monkeypatch) -> None:
             "app.worker.update_model_subtask",
             {
                 "args": [],
-                "kwargs": {"user_json": user_json, "retries": 5},
+                "kwargs": {"user_id": user_id, "retries": 5},
                 "countdown": 12,
             },
         )
@@ -447,13 +447,13 @@ def test_run_update_payment_does_not_reschedule_pending_orders(monkeypatch) -> N
 
 def test_run_batch_update_numerai_models_fans_out_with_stagger(monkeypatch) -> None:
     calls = []
-    users = [{"username": "alice"}, {"username": "bob"}]
+    users = [SimpleNamespace(id=1), SimpleNamespace(id=2)]
 
     monkeypatch.setattr(
         async_tasks,
         "enqueue_update_numerai_model",
-        lambda user_json, retries=0, delay_seconds=None: calls.append(
-            (user_json, retries, delay_seconds)
+        lambda user_id, retries=0, delay_seconds=None: calls.append(
+            (user_id, retries, delay_seconds)
         ),
     )
 
@@ -470,8 +470,8 @@ def test_run_batch_update_numerai_models_fans_out_with_stagger(monkeypatch) -> N
     async_tasks.run_async_task(async_tasks.TASK_BATCH_UPDATE_NUMERAI_MODELS)
 
     assert calls == [
-        ({"username": "alice"}, 10, 0),
-        ({"username": "bob"}, 10, 0),
+        (1, 10, 0),
+        (2, 10, 0),
     ]
 
 

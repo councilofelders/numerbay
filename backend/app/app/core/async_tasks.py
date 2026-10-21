@@ -199,7 +199,7 @@ def enqueue_trigger_webhook_for_product(
 
 
 def enqueue_update_numerai_model(
-    user_json: Dict[str, Any],
+    user_id: int,
     *,
     retries: int = 0,
     delay_seconds: Optional[float] = None,
@@ -208,7 +208,7 @@ def enqueue_update_numerai_model(
 
     return enqueue_async_task(
         TASK_UPDATE_NUMERAI_MODEL,
-        kwargs=dict(user_json=user_json, retries=retries),
+        kwargs=dict(user_id=user_id, retries=retries),
         delay_seconds=delay_seconds,
     )
 
@@ -294,8 +294,7 @@ def enqueue_upload_numerai_artifact(
     order_id: int,
     object_name: str,
     model_id: str,
-    numerai_api_key_public_id: str,
-    numerai_api_key_secret: str,
+    buyer_id: int,
     tournament: int = 8,
     version: int = 1,
 ) -> Any:
@@ -307,8 +306,7 @@ def enqueue_upload_numerai_artifact(
             order_id=order_id,
             object_name=object_name,
             model_id=model_id,
-            numerai_api_key_public_id=numerai_api_key_public_id,
-            numerai_api_key_secret=numerai_api_key_secret,
+            buyer_id=buyer_id,
             tournament=tournament,
             version=version,
         ),
@@ -488,13 +486,34 @@ def _run_send_email(
 
 
 def _run_update_numerai_model(
-    user_json: Dict[str, Any], retries: int = 0
+    user_id: Optional[int] = None,
+    retries: int = 0,
+    user_json: Optional[Dict[str, Any]] = None,
 ) -> Optional[Any]:
     from app import crud
     from app.api.dependencies import numerai
     from app.db.session import run_with_db_session
+    from app.utils import encode_user_for_numerai
+
+    if user_id is None:
+        user_id = user_json.get("id") if user_json else None
+    if user_id is None:
+        print("Model update task missing user reference, skipped")
+        return None
 
     try:
+
+        def get_user_json(db):
+            user = crud.user.get(db, id=user_id)
+            if user is None:
+                return None
+            return encode_user_for_numerai(user)
+
+        user_json = run_with_db_session(get_user_json)
+        if user_json is None:
+            print(f"User {user_id} not found, skipped model update")
+            return None
+
         user_json_copy = user_json.copy()
         api_result = numerai.get_numerai_api_info(user_json_copy)
         user_json_copy["_api_data"] = api_result
@@ -515,16 +534,16 @@ def _run_update_numerai_model(
         run_with_db_session(update_user_and_models)
     except Exception as exc:  # pylint: disable=broad-except
         print(
-            f"Error updating model scores for user {user_json['username']}: "
+            f"Error updating model scores for user {user_id}: "
             f"[{exc}], {retries} retries remaining"
         )
         if retries > 0:
             print(
-                f"Retrying updating model scores for user {user_json['username']} "
+                f"Retrying updating model scores for user {user_id} "
                 f"in {settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS} seconds"
             )
             enqueue_update_numerai_model(
-                user_json,
+                user_id,
                 retries=retries - 1,
                 delay_seconds=settings.NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS,
             )
@@ -534,7 +553,6 @@ def _run_update_numerai_model(
 def _run_batch_update_numerai_models() -> None:
     from app import crud
     from app.db.session import run_with_db_session
-    from app.utils import encode_user_for_numerai
 
     def get_users_with_api_keys(db):
         return crud.user.search(
@@ -547,7 +565,7 @@ def _run_batch_update_numerai_models() -> None:
     print(f"total: {len(users)}")
     for i, user in enumerate(users):
         enqueue_update_numerai_model(
-            encode_user_for_numerai(user),
+            user.id,
             retries=10,
             delay_seconds=i // 5,
         )
@@ -558,7 +576,6 @@ def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
     from app import crud
     from app.api.dependencies import numerai
     from app.db.session import run_with_db_session
-    from app.utils import encode_user_for_numerai
 
     try:
         pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
@@ -578,7 +595,7 @@ def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
                 print(f"total: {len(users)}")
                 for i, user in enumerate(users):
                     enqueue_update_numerai_model(
-                        encode_user_for_numerai(user),
+                        user.id,
                         retries=10,
                         delay_seconds=60 + i // 5,
                     )
@@ -1010,17 +1027,12 @@ def _run_check_numerai_submission(
                 print(f"Csv artifact for order [{order_id}] not yet uploaded")
             return None
 
-        buyer = crud.user.get(db, id=order_json["buyer_id"])
-        if buyer is None:
-            return None
-
         print(f"Uploading csv artifact {csv_artifact.object_name} for order {order_id}")
         enqueue_upload_numerai_artifact(
             order_id=order_id,
             object_name=csv_artifact.object_name,  # type: ignore[arg-type]
             model_id=order_json["submit_model_id"],
-            numerai_api_key_public_id=buyer.numerai_api_key_public_id,
-            numerai_api_key_secret=buyer.numerai_api_key_secret,
+            buyer_id=order_json["buyer_id"],
             tournament=product.model.tournament,  # type: ignore[union-attr]
             version=1,
         )
@@ -1033,8 +1045,7 @@ def _run_upload_numerai_artifact(
     order_id: int,
     object_name: str,
     model_id: str,
-    numerai_api_key_public_id: str,
-    numerai_api_key_secret: str,
+    buyer_id: int,
     tournament: int = 8,
     version: int = 1,
 ) -> Optional[Any]:
@@ -1056,6 +1067,21 @@ def _run_upload_numerai_artifact(
         return None
 
     try:
+
+        def get_buyer_credentials(db):
+            buyer = crud.user.get(db, id=buyer_id)
+            if buyer is None or not buyer.numerai_api_key_secret:
+                raise ValueError(f"Buyer {buyer_id} missing Numerai API credentials")
+            return (
+                buyer.numerai_api_key_public_id,
+                buyer.numerai_api_key_secret,
+            )
+
+        (
+            numerai_api_key_public_id,
+            numerai_api_key_secret,
+        ) = run_with_db_session(get_buyer_credentials)
+
         url = generate_gcs_signed_url(
             bucket=deps.get_gcs_bucket(),
             object_name=object_name,
@@ -1190,8 +1216,7 @@ def _run_validate_artifact_upload(
                 order_id=order.id,
                 object_name=artifact.object_name,
                 model_id=order.submit_model_id,
-                numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-                numerai_api_key_secret=order.buyer.numerai_api_key_secret,
+                buyer_id=order.buyer_id,
                 tournament=order.product.model.tournament,
                 version=1,
             )

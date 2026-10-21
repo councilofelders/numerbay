@@ -165,8 +165,7 @@ def on_order_confirmed(
                         order_id=order_obj.id,
                         object_name=csv_artifact.object_name,
                         model_id=order_obj.submit_model_id,
-                        numerai_api_key_public_id=order_obj.buyer.numerai_api_key_public_id,
-                        numerai_api_key_secret=order_obj.buyer.numerai_api_key_secret,
+                        buyer_id=order_obj.buyer_id,
                         tournament=order_obj.product.model.tournament,
                         version=1,
                     )
