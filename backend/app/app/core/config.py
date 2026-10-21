@@ -3,6 +3,7 @@
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
+from cryptography.fernet import Fernet
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
 
 
@@ -114,6 +115,10 @@ class Settings(BaseSettings):
     ASYNC_WORKER_DISPATCH_TOKEN: Optional[str] = None
     ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL: Optional[str] = None
 
+    # Secrets at rest
+    REQUIRE_SECRET_ENCRYPTION: bool = False
+    DATA_ENCRYPTION_KEY: Optional[str] = None
+
     # Web3
     INFURA_PROJECT_ID: Optional[str] = None
     NMR_CONTRACT_ADDRESS: Optional[str] = "0x1776e1f26f98b1a5df9cd347953a26dd3cb46671"
@@ -164,6 +169,24 @@ class Settings(BaseSettings):
         if owner not in {"celery", "gcp"}:
             raise ValueError("scheduler owner must be either 'celery' or 'gcp'")
         return owner
+
+    @validator("DATA_ENCRYPTION_KEY")
+    def validate_data_encryption_key(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Optional[str]:
+        if values.get("REQUIRE_SECRET_ENCRYPTION"):
+            if not v:
+                raise ValueError(
+                    "DATA_ENCRYPTION_KEY is required when "
+                    "REQUIRE_SECRET_ENCRYPTION is enabled"
+                )
+            try:
+                Fernet(v.encode())
+            except Exception as exc:  # pylint: disable=broad-except
+                raise ValueError(
+                    f"DATA_ENCRYPTION_KEY is not a valid Fernet key: {exc}"
+                )
+        return v
 
     class Config:
         case_sensitive = True

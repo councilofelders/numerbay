@@ -534,6 +534,7 @@ def _run_update_numerai_model(
 def _run_batch_update_numerai_models() -> None:
     from app import crud
     from app.db.session import run_with_db_session
+    from app.utils import encode_user_for_numerai
 
     def get_users_with_api_keys(db):
         return crud.user.search(
@@ -546,7 +547,7 @@ def _run_batch_update_numerai_models() -> None:
     print(f"total: {len(users)}")
     for i, user in enumerate(users):
         enqueue_update_numerai_model(
-            jsonable_encoder(user),
+            encode_user_for_numerai(user),
             retries=10,
             delay_seconds=i // 5,
         )
@@ -557,6 +558,7 @@ def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
     from app import crud
     from app.api.dependencies import numerai
     from app.db.session import run_with_db_session
+    from app.utils import encode_user_for_numerai
 
     try:
         pipeline_status = numerai.get_numerai_pipeline_status(tournament=8)
@@ -576,7 +578,7 @@ def _run_batch_update_numerai_model_scores(retries: int = 0) -> None:
                 print(f"total: {len(users)}")
                 for i, user in enumerate(users):
                     enqueue_update_numerai_model(
-                        jsonable_encoder(user),
+                        encode_user_for_numerai(user),
                         retries=10,
                         delay_seconds=60 + i // 5,
                     )

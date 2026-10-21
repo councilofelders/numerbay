@@ -100,13 +100,20 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db_obj
 
     def update(
-        self, db: Session, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
+        self,
+        db: Session,
+        *,
+        db_obj: User,
+        obj_in: Union[UserUpdate, Dict[str, Any]],
     ) -> User:
         """Update user"""
-        if isinstance(obj_in, dict):
-            update_data = obj_in
-        else:
-            update_data = obj_in.dict(exclude_unset=True)
+        update_data = (
+            obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+        )
+        if "numerai_api_key_secret" in update_data:
+            db_obj.numerai_api_key_secret = update_data.pop("numerai_api_key_secret")
+        update_data.pop("numerai_api_key_secret_stored", None)
+        update_data.pop("numerai_api_key_secret_backup", None)
         if "password" in update_data and update_data["password"]:
             hashed_password = get_password_hash(update_data["password"])
             del update_data["password"]

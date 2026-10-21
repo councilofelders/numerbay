@@ -20,6 +20,7 @@ from app.core.security import (
 )
 from app.db.session import SessionLocal
 from app.utils import (
+    encode_user_for_numerai,
     generate_email_verification_token,
     send_email_verification_email,
     verify_email_verification_token,
@@ -302,7 +303,7 @@ def sync_user_numerai(  # pylint: disable=too-many-locals
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Sync user with Numerai API"""
-    user_json = jsonable_encoder(current_user)
+    user_json = encode_user_for_numerai(current_user)
     numerai.sync_user_numerai_api(db, user_json)
     return crud.user.get(db, current_user.id)
 

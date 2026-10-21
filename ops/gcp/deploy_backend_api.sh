@@ -21,6 +21,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --region "${REGION}" \
   --image "${IMAGE}" \
   --service-account "numerbay-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --update-secrets=DATA_ENCRYPTION_KEY=numerbay-data-encryption-key:1 \
   --network "${NETWORK}" \
   --subnet "${SUBNET}" \
   --vpc-egress private-ranges-only \

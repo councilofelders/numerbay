@@ -3,12 +3,13 @@
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import emails
 import jinja2
 import requests
 from emails.template import JinjaTemplate
+from fastapi.encoders import jsonable_encoder
 from jose import jwt
 from requests import Response
 
@@ -1052,3 +1053,14 @@ def verify_email_verification_token(token: str) -> Optional[Tuple[int, str]]:
         return int(decoded_token["sub"]), decoded_token["email"]
     except (jwt.JWTError, KeyError, ValueError):
         return None
+
+
+def encode_user_for_numerai(user: Any) -> Dict[str, Any]:
+    """Encode a user for Numerai sync flows, exposing the effective API secret"""
+    user_json = jsonable_encoder(user)
+    user_json.pop("numerai_api_key_secret_stored", None)
+    user_json.pop("numerai_api_key_secret_backup", None)
+    secret = getattr(user, "numerai_api_key_secret", None)
+    if secret is not None:
+        user_json["numerai_api_key_secret"] = secret
+    return user_json

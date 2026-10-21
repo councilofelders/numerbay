@@ -14,6 +14,7 @@ dependencies = [
     "bcrypt==4.0.1",
     "chardet>=5.2.0,<6.0.0",
     "passlib[bcrypt]>=1.7.4,<1.8.0",
+    "cryptography>=48.0.0,<49.0.0",
     "tenacity>=8.5.0,<9.0.0",
     "pydantic>=1.10.24,<2.0.0",
     "emails>=1.1.1,<1.2.0",

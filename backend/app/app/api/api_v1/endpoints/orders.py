@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from web3 import Web3
 
@@ -30,7 +29,7 @@ from app.api.dependencies.products import (
 from app.api.dependencies.site_globals import validate_not_during_rollover
 from app.core.async_tasks import enqueue_upload_numerai_artifact
 from app.core.config import settings
-from app.utils import send_new_order_email
+from app.utils import encode_user_for_numerai, send_new_order_email
 
 router = APIRouter()
 
@@ -249,7 +248,7 @@ def create_order(  # pylint: disable=too-many-locals,too-many-branches
     ]
     if submit_model_id is not None and len(submit_models) == 0:
         # Attempt Numerai API sync
-        user_json = jsonable_encoder(current_user)
+        user_json = encode_user_for_numerai(current_user)
         numerai.sync_user_numerai_api(db, user_json)
 
         # Try to resolve model again

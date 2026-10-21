@@ -109,6 +109,7 @@ jobs:
           SQLALCHEMY_MAX_OVERFLOW="5"
           SQLALCHEMY_POOL_TIMEOUT="60"
           SQLALCHEMY_POOL_PRE_PING="True"
+          REQUIRE_SECRET_ENCRYPTION="True"
           SMTP_TLS="True"
           SMTP_PORT="587"
           SMTP_HOST=""
@@ -164,6 +165,7 @@ jobs:
           SQLALCHEMY_MAX_OVERFLOW="5"
           SQLALCHEMY_POOL_TIMEOUT="60"
           SQLALCHEMY_POOL_PRE_PING="True"
+          REQUIRE_SECRET_ENCRYPTION="True"
           SMTP_TLS="True"
           SMTP_PORT="587"
           SMTP_HOST=""
@@ -215,6 +217,7 @@ jobs:
           POSTGRES_USER="${{ secrets.APP_POSTGRES_MIGRATION_USER }}"
           POSTGRES_PASSWORD="${{ secrets.APP_POSTGRES_MIGRATION_PASSWORD }}"
           POSTGRES_DB="${{ secrets.APP_POSTGRES_DB }}"
+          REQUIRE_SECRET_ENCRYPTION="True"
           SMTP_TLS="True"
           SMTP_PORT="587"
           SMTP_HOST=""
@@ -250,6 +253,7 @@ jobs:
             --region "$REGION" \
             --image "$IMAGE" \
             --service-account "numerbay-runtime@$PROJECT_ID.iam.gserviceaccount.com" \
+            --update-secrets=DATA_ENCRYPTION_KEY=numerbay-data-encryption-key:1 \
             --network numerbay \
             --subnet numerbay \
             --vpc-egress private-ranges-only \
@@ -280,6 +284,7 @@ jobs:
             --region "$REGION" \
             --image "$IMAGE" \
             --service-account "numerbay-runtime@$PROJECT_ID.iam.gserviceaccount.com" \
+            --update-secrets=DATA_ENCRYPTION_KEY=numerbay-data-encryption-key:1 \
             --network numerbay \
             --subnet numerbay \
             --vpc-egress private-ranges-only \
@@ -302,6 +307,7 @@ jobs:
               --region "$REGION" \
               --image "$IMAGE" \
               --service-account "numerbay-runtime@$PROJECT_ID.iam.gserviceaccount.com" \
+              --update-secrets=DATA_ENCRYPTION_KEY=numerbay-data-encryption-key:1 \
               --network numerbay \
               --subnet numerbay \
               --vpc-egress private-ranges-only \
