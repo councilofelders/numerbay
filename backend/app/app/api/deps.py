@@ -113,7 +113,7 @@ def get_current_active_superuser(
 def get_gcs_bucket() -> Bucket:
     """Get GCS bucket"""
     client = storage.Client()
-    bucket = client.get_bucket(settings.GCP_STORAGE_BUCKET)
+    bucket = client.bucket(settings.GCP_STORAGE_BUCKET)
     # bucket.cors = [
     #     {
     #         "origin": ["*"],
