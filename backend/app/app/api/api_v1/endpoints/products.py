@@ -512,25 +512,6 @@ def generate_upload_url(  # pylint: disable=too-many-locals
         delay_seconds=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
     )
 
-    # Upload artifact for confirmed orders
-    # orders = crud.order.get_pending_submission_orders(
-    #     db, round_order=globals.selling_round  # type: ignore
-    # )
-    # for order in orders:
-    #     print(f"Uploading csv artifact {object_name} for order {order.id}")
-    #     celery_app.send_task(
-    #         "app.worker.upload_numerai_artifact_task",
-    #         kwargs=dict(
-    #             order_id=order.id,
-    #             object_name=object_name,
-    #             model_id=order.submit_model_id,
-    #             numerai_api_key_public_id=order.buyer.numerai_api_key_public_id,
-    #             numerai_api_key_secret=order.buyer.numerai_api_key_secret,
-    #             tournament=order.product.model.tournament,
-    #             version=1,
-    #         ),
-    #         countdown=settings.ARTIFACT_UPLOAD_URL_EXPIRE_MINUTES * 60,
-    #     )
     return {"id": artifact.id, "url": url}
 
 

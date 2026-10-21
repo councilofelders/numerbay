@@ -1,31 +1,39 @@
 """Direct-run entrypoints for scheduled jobs."""
 
 import argparse
+from functools import partial
 from typing import Callable, Dict, Iterable, Optional
 
-from app.worker import (
-    batch_prune_storage,
-    batch_update_payments_task,
-    batch_update_polls,
-    batch_update_product_sales_stats,
-    batch_update_stake_snapshots,
-    batch_validate_numerai_models_stake_task,
-    send_order_artifact_upload_reminder_emails_task,
-    update_globals_stats_task,
+from app.core.async_tasks import (
+    TASK_BATCH_UPDATE_PAYMENTS,
+    TASK_BATCH_UPDATE_POLLS,
+    TASK_BATCH_UPDATE_PRODUCT_SALES_STATS,
+    TASK_BATCH_UPDATE_STAKE_SNAPSHOTS,
+    TASK_BATCH_PRUNE_STORAGE,
+    TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS,
+    TASK_UPDATE_GLOBALS_STATS,
+    TASK_VALIDATE_NUMERAI_MODELS_STAKE,
+    run_async_task,
 )
 
 JobRunner = Callable[[], None]
 
 
 JOB_RUNNERS: Dict[str, JobRunner] = {
-    "artifact-reminders": send_order_artifact_upload_reminder_emails_task,
-    "globals-stats": update_globals_stats_task,
-    "polls": batch_update_polls,
-    "product-sales-stats": batch_update_product_sales_stats,
-    "prune-storage": batch_prune_storage,
-    "reconcile-payments": batch_update_payments_task,
-    "stake-snapshots": batch_update_stake_snapshots,
-    "validate-numerai-models-stake": batch_validate_numerai_models_stake_task,
+    "artifact-reminders": partial(
+        run_async_task, TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS
+    ),
+    "globals-stats": partial(run_async_task, TASK_UPDATE_GLOBALS_STATS),
+    "polls": partial(run_async_task, TASK_BATCH_UPDATE_POLLS),
+    "product-sales-stats": partial(
+        run_async_task, TASK_BATCH_UPDATE_PRODUCT_SALES_STATS
+    ),
+    "prune-storage": partial(run_async_task, TASK_BATCH_PRUNE_STORAGE),
+    "reconcile-payments": partial(run_async_task, TASK_BATCH_UPDATE_PAYMENTS),
+    "stake-snapshots": partial(run_async_task, TASK_BATCH_UPDATE_STAKE_SNAPSHOTS),
+    "validate-numerai-models-stake": partial(
+        run_async_task, TASK_VALIDATE_NUMERAI_MODELS_STAKE
+    ),
 }
 
 

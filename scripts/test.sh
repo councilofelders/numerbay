@@ -13,10 +13,10 @@ docker compose \
 -f docker-compose.yml \
 config > docker-stack.yml
 
-docker compose -f docker-stack.yml build celeryworker backend
+docker compose -f docker-stack.yml build backend
 docker compose -f docker-stack.yml down -v --remove-orphans # Remove possibly previous broken stacks left hanging after an error
-docker compose -f docker-stack.yml up -d db queue
+docker compose -f docker-stack.yml up -d db
 docker compose -f docker-stack.yml run --rm --no-deps backend bash /app/bootstrap-db.sh
-docker compose -f docker-stack.yml up -d celeryworker backend proxy flower
+docker compose -f docker-stack.yml up -d backend proxy
 docker compose -f docker-stack.yml exec -T backend bash /app/tests-start.sh "$@"
 docker compose -f docker-stack.yml down -v --remove-orphans

@@ -134,41 +134,6 @@ class Settings(BaseSettings):
     ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS: int = 60
     MAX_ROUND_OFFSET: int = 50
     WEBHOOK_ENABLED: bool = False
-    ASYNC_OWNER_NOTIFICATIONS: str = "celery"
-    ASYNC_OWNER_OPS: str = "celery"
-    ASYNC_OWNER_WEBHOOKS: str = "celery"
-    ASYNC_OWNER_PAYMENTS: str = "celery"
-    ASYNC_OWNER_SUBMISSIONS: str = "celery"
-    SCHEDULER_OWNER_GLOBALS_STATS: str = "celery"
-    SCHEDULER_OWNER_STAKE_SNAPSHOTS: str = "celery"
-    SCHEDULER_OWNER_PRODUCT_SALES_STATS: str = "celery"
-    SCHEDULER_OWNER_POLLS: str = "celery"
-    SCHEDULER_OWNER_PRUNE_STORAGE: str = "celery"
-    SCHEDULER_OWNER_ARTIFACT_REMINDERS: str = "celery"
-    SCHEDULER_OWNER_MODEL_SCORES: str = "celery"
-    SCHEDULER_OWNER_ACTIVE_ROUND: str = "celery"
-
-    @validator(
-        "ASYNC_OWNER_NOTIFICATIONS",
-        "ASYNC_OWNER_OPS",
-        "ASYNC_OWNER_WEBHOOKS",
-        "ASYNC_OWNER_PAYMENTS",
-        "ASYNC_OWNER_SUBMISSIONS",
-        "SCHEDULER_OWNER_GLOBALS_STATS",
-        "SCHEDULER_OWNER_STAKE_SNAPSHOTS",
-        "SCHEDULER_OWNER_PRODUCT_SALES_STATS",
-        "SCHEDULER_OWNER_POLLS",
-        "SCHEDULER_OWNER_PRUNE_STORAGE",
-        "SCHEDULER_OWNER_ARTIFACT_REMINDERS",
-        "SCHEDULER_OWNER_MODEL_SCORES",
-        "SCHEDULER_OWNER_ACTIVE_ROUND",
-        pre=True,
-    )
-    def validate_scheduler_owner(cls, v: Optional[str]) -> str:
-        owner = (v or "celery").strip().lower()
-        if owner not in {"celery", "gcp"}:
-            raise ValueError("scheduler owner must be either 'celery' or 'gcp'")
-        return owner
 
     @validator("DATA_ENCRYPTION_KEY")
     def validate_data_encryption_key(

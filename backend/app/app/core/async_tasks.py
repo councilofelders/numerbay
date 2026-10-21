@@ -10,7 +10,6 @@ import requests
 from fastapi.encoders import jsonable_encoder
 from google.auth.transport.requests import AuthorizedSession
 
-from app.core.celery_app import celery_app
 from app.core.config import settings
 
 TASK_SEND_EMAIL = "send-email"
@@ -27,77 +26,58 @@ TASK_UPDATE_PAYMENT = "update-payment"
 TASK_UPLOAD_NUMERAI_ARTIFACT = "upload-numerai-artifact"
 TASK_VALIDATE_NUMERAI_MODELS_STAKE = "validate-numerai-models-stake"
 TASK_VALIDATE_ARTIFACT_UPLOAD = "validate-artifact-upload"
+TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS = (
+    "send-order-artifact-upload-reminder-emails"
+)
+TASK_UPDATE_GLOBALS_STATS = "update-globals-stats"
+TASK_BATCH_UPDATE_PAYMENTS = "batch-update-payments"
+TASK_BATCH_UPDATE_STAKE_SNAPSHOTS = "batch-update-stake-snapshots"
+TASK_BATCH_UPDATE_PRODUCT_SALES_STATS = "batch-update-product-sales-stats"
+TASK_BATCH_UPDATE_POLLS = "batch-update-polls"
+TASK_BATCH_PRUNE_STORAGE = "batch-prune-storage"
 
 
 ASYNC_TASK_DEFINITIONS = {
     TASK_SEND_EMAIL: {
-        "celery_task": "app.worker.send_email_task",
-        "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
         "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
     },
     TASK_BATCH_UPDATE_NUMERAI_MODELS: {
-        "celery_task": "app.worker.batch_update_models_task",
-        "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_BATCH_UPDATE_NUMERAI_MODEL_SCORES: {
-        "celery_task": "app.worker.batch_update_model_scores_task",
-        "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_BATCH_SUBMIT_NUMERAI_MODELS: {
-        "celery_task": "app.worker.batch_submit_numerai_models_task",
-        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
     },
     TASK_VALIDATE_NUMERAI_MODELS_STAKE: {
-        "celery_task": "app.worker.batch_validate_numerai_models_stake_task",
-        "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_SEND_NEW_ARTIFACT_EMAILS: {
-        "celery_task": "app.worker.send_new_artifact_emails_task",
-        "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
         "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
     },
     TASK_SEND_NEW_ORDER_ARTIFACT_EMAILS: {
-        "celery_task": "app.worker.send_new_order_artifact_emails_task",
-        "owner_setting": "ASYNC_OWNER_NOTIFICATIONS",
         "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
     },
     TASK_TRIGGER_WEBHOOK_FOR_PRODUCT: {
-        "celery_task": "app.worker.trigger_webhook_for_product_task",
-        "owner_setting": "ASYNC_OWNER_WEBHOOKS",
         "queue_setting": "GCP_TASKS_QUEUE_WEBHOOKS",
     },
     TASK_UPDATE_NUMERAI_MODEL: {
-        "celery_task": "app.worker.update_model_subtask",
-        "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_UPDATE_ACTIVE_ROUND: {
-        "celery_task": "app.worker.update_active_round",
-        "owner_setting": "ASYNC_OWNER_OPS",
         "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_UPDATE_PAYMENT: {
-        "celery_task": "app.worker.update_payment_subtask",
-        "owner_setting": "ASYNC_OWNER_PAYMENTS",
         "queue_setting": "GCP_TASKS_QUEUE_PAYMENTS",
     },
     TASK_UPLOAD_NUMERAI_ARTIFACT: {
-        "celery_task": "app.worker.upload_numerai_artifact_task",
-        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
     },
     TASK_VALIDATE_ARTIFACT_UPLOAD: {
-        "celery_task": "app.worker.validate_artifact_upload_task",
-        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
     },
     TASK_CHECK_NUMERAI_SUBMISSION: {
-        "celery_task": "app.worker.submit_numerai_model_subtask",
-        "owner_setting": "ASYNC_OWNER_SUBMISSIONS",
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
     },
 }
@@ -119,15 +99,6 @@ def enqueue_async_task(
 
     task_args = list(args or [])
     task_kwargs = dict(kwargs or {})
-    owner = getattr(settings, definition["owner_setting"])
-    if owner == "celery":
-        celery_kwargs: Dict[str, Any] = {
-            "args": task_args,
-            "kwargs": task_kwargs,
-        }
-        if delay_seconds is not None:
-            celery_kwargs["countdown"] = delay_seconds
-        return celery_app.send_task(definition["celery_task"], **celery_kwargs)
 
     return _enqueue_cloud_task(
         task_name=task_name,
@@ -277,8 +248,7 @@ def enqueue_update_payment(
     dedupe_key = None
     if poll_slot is not None:
         task_kwargs["poll_slot"] = poll_slot
-        if settings.ASYNC_OWNER_PAYMENTS == "gcp":
-            dedupe_key = get_payment_poll_dedupe_key(order_id, poll_slot)
+        dedupe_key = get_payment_poll_dedupe_key(order_id, poll_slot)
 
     return enqueue_async_task(
         TASK_UPDATE_PAYMENT,
@@ -349,7 +319,7 @@ def enqueue_check_numerai_submission(
 def enqueue_pending_payment_updates(poll_slot: Optional[str] = None) -> int:
     """Seed payment updates for all currently pending orders."""
 
-    if poll_slot is None and settings.ASYNC_OWNER_PAYMENTS == "gcp":
+    if poll_slot is None:
         poll_slot = get_current_payment_reconcile_slot()
     order_ids = _get_pending_order_ids()
     for order_id in order_ids:
@@ -1301,6 +1271,264 @@ def _run_trigger_webhook_for_product(
     return None
 
 
+def _run_send_order_artifact_upload_reminder_emails() -> None:
+    from app import crud
+    from app.api.dependencies.orders import send_order_upload_reminder_emails
+    from app.db.session import SessionLocal
+
+    if not settings.EMAILS_ENABLED:
+        return None
+    db = SessionLocal()
+    try:
+        selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
+
+        orders = crud.order.get_active_orders(db, round_order=selling_round)
+        orders_to_remind = []
+        for order in orders:
+            if order.buyer_public_key is None:  # skip for non per-order artifacts
+                continue
+            requires_numerai_submission = order.submit_model_id is not None
+            requires_file = order.mode == "file"
+            has_numerai_submission = False
+            has_file = False
+            for artifact in order.artifacts:  # type: ignore
+                if artifact.state == "active":
+                    if artifact.is_numerai_direct:
+                        has_numerai_submission = True
+                    else:
+                        has_file = True
+
+            if (requires_numerai_submission and not has_numerai_submission) or (
+                requires_file and not has_file
+            ):
+                orders_to_remind.append(order)
+
+        for order in orders_to_remind:
+            send_order_upload_reminder_emails(order)
+    finally:
+        db.close()
+    return None
+
+
+def _run_update_globals_stats() -> None:
+    from app import crud
+    from app.db.session import SessionLocal
+
+    db = SessionLocal()
+    try:
+        crud.globals.update_stats(db)
+        crud.stats.update_stats(db)
+    finally:
+        db.close()
+
+
+def _run_batch_update_payments() -> None:
+    total_queued = enqueue_pending_payment_updates()
+    print(f"total pending orders: {total_queued}")
+
+
+def _run_batch_update_stake_snapshots() -> None:
+    from datetime import datetime
+
+    from sqlalchemy import and_, select
+
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.db.session import SessionLocal
+    from app.models.model import Model
+    from app.models.stake_snapshot import StakeSnapshot
+
+    db = SessionLocal()
+    try:
+        db.query(StakeSnapshot).filter(StakeSnapshot.model_id.is_(None)).update(
+            {
+                StakeSnapshot.model_id: select(Model.id)  # type: ignore
+                .where(
+                    and_(
+                        Model.name == StakeSnapshot.name,
+                        Model.tournament == StakeSnapshot.tournament,
+                    )
+                )
+                .scalar_subquery()
+            },
+            synchronize_session=False,
+        )
+        db.commit()
+
+        date_creation = datetime.utcnow()
+        active_round = crud.globals.get_singleton(db=db).active_round  # type: ignore
+
+        for tournament in (8, 11, 12):
+            numerai_models = numerai.get_leaderboard(tournament=tournament)
+
+            db_models = db.query(Model).filter(Model.tournament == tournament).all()
+            db_models_dict = {}
+            for model in db_models:
+                db_models_dict[model.name] = model
+
+            db_stake_snapshots_dict = {}
+            for model in numerai_models:
+                new_snapshot = StakeSnapshot(
+                    date_creation=date_creation,
+                    round_tournament=active_round,
+                    name=model["username"],
+                    tournament=tournament,
+                    nmr_staked=model["nmrStaked"],
+                    return_13_weeks=model["return13Weeks"],
+                    return_52_weeks=model["return52Weeks"],
+                )
+                if model["username"] in db_models_dict:
+                    new_snapshot.model_id = db_models_dict[model["username"]].id
+                db_stake_snapshots_dict[model["username"]] = new_snapshot
+            db.add_all(db_stake_snapshots_dict.values())
+            db.commit()
+    finally:
+        db.close()
+
+
+def _run_batch_update_product_sales_stats() -> None:
+    from app import crud
+    from app.db.session import run_with_db_session
+
+    def update_sales_stats(db):
+        products = crud.product.get_multi(db=db)
+        for product in products:
+            if product.model:
+                product_sales_stats = crud.product.get_sales_stats(
+                    db, product_id=product.id
+                )
+                product.total_qty_sales = product_sales_stats["total_qty_sales"]
+                product.total_qty_sales_filtered = product_sales_stats[
+                    "total_qty_sales_filtered"
+                ]
+                product.total_qty_delivered = product_sales_stats["total_qty_delivered"]
+        db.commit()
+
+    run_with_db_session(update_sales_stats)
+
+
+def _run_batch_update_polls() -> None:
+    from datetime import datetime
+
+    from sqlalchemy import and_
+
+    from app.db.session import run_with_db_session
+    from app.models.poll import Poll
+
+    def update_expired_polls(db):
+        date_now = datetime.utcnow()
+        expired_polls = db.query(Poll).filter(
+            and_(Poll.date_finish <= date_now, Poll.is_finished.is_(False))
+        )
+        for poll in expired_polls:
+            poll.is_finished = True
+        db.commit()
+
+    run_with_db_session(update_expired_polls)
+
+
+def _run_batch_prune_storage() -> None:
+    import functools
+
+    from google.api_core.exceptions import NotFound
+    from sqlalchemy import and_, func
+
+    from app import crud
+    from app.api import deps
+    from app.db.session import run_with_db_session
+    from app.models.artifact import Artifact
+    from app.models.category import Category
+    from app.models.order_artifact import OrderArtifact
+    from app.models.product import Product
+
+    def get_artifacts_to_prune(db):
+        query_filters = [Category.is_per_round, Artifact.state != "pruned"]
+        query_filter = functools.reduce(and_, query_filters)
+
+        subq = (
+            db.query(
+                Artifact.product_id,
+                func.max(Artifact.round_tournament).label("max_round"),
+            )
+            .group_by(Artifact.product_id)
+            .subquery()
+        )
+
+        artifacts_to_prune = (
+            db.query(Artifact)
+            .join(Artifact.product)
+            .join(Product.category)
+            .join(
+                subq,
+                and_(
+                    Artifact.product_id == subq.c.product_id,
+                    Artifact.round_tournament < subq.c.max_round,
+                ),
+            )
+            .filter(query_filter)
+            .all()
+        )
+
+        return [
+            {"id": artifact.id, "object_name": artifact.object_name}
+            for artifact in artifacts_to_prune
+        ]
+
+    artifacts_to_prune = run_with_db_session(get_artifacts_to_prune)
+    print(f"{len(artifacts_to_prune)} artifacts to prune")
+
+    bucket = deps.get_gcs_bucket()
+    for artifact in artifacts_to_prune:
+        object_name = artifact["object_name"]
+        if object_name:
+            try:
+                blob = bucket.blob(object_name)
+                blob.delete()
+            except NotFound:
+                pass
+
+    def mark_artifacts_pruned(db):
+        for artifact_data in artifacts_to_prune:
+            artifact = crud.artifact.get(db, id=artifact_data["id"])
+            if artifact:
+                artifact.state = "pruned"
+        db.commit()
+
+    run_with_db_session(mark_artifacts_pruned)
+
+    def get_order_artifacts_to_prune(db):
+        order_artifacts_to_prune = (
+            db.query(OrderArtifact)
+            .filter(OrderArtifact.state == "marked_for_pruning")
+            .all()
+        )
+        return [
+            {"id": artifact.id, "object_name": artifact.object_name}
+            for artifact in order_artifacts_to_prune
+        ]
+
+    order_artifacts_to_prune = run_with_db_session(get_order_artifacts_to_prune)
+    print(f"{len(order_artifacts_to_prune)} order artifacts to prune")
+
+    for order_artifact in order_artifacts_to_prune:
+        object_name = order_artifact["object_name"]
+        if object_name:
+            try:
+                blob = bucket.blob(object_name)
+                blob.delete()
+            except NotFound:
+                pass
+
+    def mark_order_artifacts_pruned(db):
+        for artifact_data in order_artifacts_to_prune:
+            order_artifact = crud.order_artifact.get(db, id=artifact_data["id"])
+            if order_artifact:
+                order_artifact.state = "pruned"
+        db.commit()
+
+    run_with_db_session(mark_order_artifacts_pruned)
+
+
 TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
     TASK_BATCH_SUBMIT_NUMERAI_MODELS: _run_batch_submit_numerai_models,
     TASK_BATCH_UPDATE_NUMERAI_MODELS: _run_batch_update_numerai_models,
@@ -1316,4 +1544,13 @@ TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
     TASK_UPLOAD_NUMERAI_ARTIFACT: _run_upload_numerai_artifact,
     TASK_VALIDATE_NUMERAI_MODELS_STAKE: _run_validate_numerai_models_stake,
     TASK_VALIDATE_ARTIFACT_UPLOAD: _run_validate_artifact_upload,
+    TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS: (
+        _run_send_order_artifact_upload_reminder_emails
+    ),
+    TASK_UPDATE_GLOBALS_STATS: _run_update_globals_stats,
+    TASK_BATCH_UPDATE_PAYMENTS: _run_batch_update_payments,
+    TASK_BATCH_UPDATE_STAKE_SNAPSHOTS: _run_batch_update_stake_snapshots,
+    TASK_BATCH_UPDATE_PRODUCT_SALES_STATS: _run_batch_update_product_sales_stats,
+    TASK_BATCH_UPDATE_POLLS: _run_batch_update_polls,
+    TASK_BATCH_PRUNE_STORAGE: _run_batch_prune_storage,
 }

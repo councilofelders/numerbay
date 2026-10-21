@@ -6,4 +6,4 @@ set -e
 TAG=${TAG?Variable not set} \
 docker compose \
 -f docker-compose.yml \
-build backend celeryworker
+build backend

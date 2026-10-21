@@ -47,7 +47,7 @@ jobs:
       - name: Pull Docker Images
         run: |
           [ -f .env ] || cp .env.example .env
-          docker compose pull --quiet proxy db queue flower
+          docker compose pull --quiet proxy db
           docker pull --quiet python:3.11-slim
           docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.11
 

@@ -1,7 +1,8 @@
 from app.core.config import settings
 
 
-def test_internal_dispatch_requires_token(client) -> None:
+def test_internal_dispatch_requires_token(client, monkeypatch) -> None:
+    monkeypatch.setattr(settings, "ASYNC_WORKER_DISPATCH_TOKEN", None)
     response = client.post(
         f"{settings.API_V1_STR}/internal/tasks/dispatch",
         json={"task": "send-email", "args": [], "kwargs": {}},
@@ -133,7 +134,9 @@ def test_internal_model_scores_reconcile_queues_sync(client, monkeypatch) -> Non
     assert calls == [(10, None, "model-scores-202604051405")]
 
 
-def test_internal_model_scores_reconcile_invalid_scheduler_time(client, monkeypatch) -> None:
+def test_internal_model_scores_reconcile_invalid_scheduler_time(
+    client, monkeypatch
+) -> None:
     token = "dispatch-secret"
 
     from app.api.api_v1.endpoints import internal

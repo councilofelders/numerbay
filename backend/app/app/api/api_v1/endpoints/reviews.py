@@ -191,14 +191,3 @@ def create_review(  # pylint: disable=too-many-locals
 #         raise HTTPException(status_code=400, detail="Not enough permissions")
 #     review = crud.review.remove(db=db, id=id)
 #     return review
-
-
-# @router.get("/schedule/", response_model=schemas.Msg, status_code=201)
-# def schedule(
-#     current_user: models.User = Depends(deps.get_current_active_superuser),
-# ) -> Any:
-#     """
-#     Test Celery worker.
-#     """
-#     result = celery_app.send_task("app.worker.test_celery", args=["123"])
-#     return {"msg": result.ready()}

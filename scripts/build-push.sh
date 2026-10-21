@@ -6,4 +6,4 @@ set -e
 TAG=${TAG?Variable not set} \
 sh ./scripts/build.sh
 
-docker compose -f docker-compose.yml push backend celeryworker
+docker compose -f docker-compose.yml push backend
