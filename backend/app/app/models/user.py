@@ -2,7 +2,6 @@
 
 from typing import TYPE_CHECKING, Optional
 
-from cryptography.fernet import InvalidToken
 from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, func
 from sqlalchemy.orm import relationship
 
@@ -40,35 +39,24 @@ class User(Base):
     numerai_api_key_public_id = Column(String, nullable=True)
     numerai_api_key_secret_stored = Column(
         "numerai_api_key_secret", String, nullable=True
-    )  # holds ciphertext after backfill; plaintext during transition
-    numerai_api_key_secret_backup = Column(
-        String, nullable=True
-    )  # plaintext mirror, dropped after cutover
+    )
 
     @property
     def numerai_api_key_secret(self) -> Optional[str]:
         """Effective Numerai API secret"""
         stored = self.numerai_api_key_secret_stored
-        if stored is None:
-            return None
-        if stored.startswith("gAAA"):
-            try:
-                return crypto.decrypt_secret(stored)
-            except InvalidToken:
-                backup = self.numerai_api_key_secret_backup
-                if backup is not None:
-                    print(f"WARN: decrypt failed for user {self.id}, " "using backup")
-                    return backup
-                raise
-        return stored  # plaintext during transition
+        if not stored:
+            return stored
+        if settings.DATA_ENCRYPTION_KEY:
+            return crypto.decrypt_secret(stored)
+        return stored
 
     @numerai_api_key_secret.setter
     def numerai_api_key_secret(self, value: Optional[str]) -> None:
-        if value and settings.DATA_ENCRYPTION_KEY:
+        if value is not None and settings.DATA_ENCRYPTION_KEY:
             self.numerai_api_key_secret_stored = crypto.encrypt_secret(value)
         else:
             self.numerai_api_key_secret_stored = value
-        self.numerai_api_key_secret_backup = value
 
     numerai_api_key_can_upload_submission = Column(Boolean, nullable=True)
     numerai_api_key_can_stake = Column(Boolean, nullable=True)

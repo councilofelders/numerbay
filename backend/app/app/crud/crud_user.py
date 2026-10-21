@@ -113,7 +113,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         if "numerai_api_key_secret" in update_data:
             db_obj.numerai_api_key_secret = update_data.pop("numerai_api_key_secret")
         update_data.pop("numerai_api_key_secret_stored", None)
-        update_data.pop("numerai_api_key_secret_backup", None)
         if "password" in update_data and update_data["password"]:
             hashed_password = get_password_hash(update_data["password"])
             del update_data["password"]

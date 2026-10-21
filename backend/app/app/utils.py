@@ -1059,7 +1059,6 @@ def encode_user_for_numerai(user: Any) -> Dict[str, Any]:
     """Encode a user for Numerai sync flows, exposing the effective API secret"""
     user_json = jsonable_encoder(user)
     user_json.pop("numerai_api_key_secret_stored", None)
-    user_json.pop("numerai_api_key_secret_backup", None)
     secret = getattr(user, "numerai_api_key_secret", None)
     if secret is not None:
         user_json["numerai_api_key_secret"] = secret
