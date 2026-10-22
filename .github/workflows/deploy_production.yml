@@ -45,23 +45,16 @@ jobs:
         run: |
           gcloud info
           gcloud auth configure-docker
-          export LD_LIBRARY_PATH=/usr/local/lib
-
-      - name: Pull Backend Base Images
-        run: |
-          docker pull --quiet python:3.11-slim
-          docker pull --quiet tiangolo/uvicorn-gunicorn-fastapi:python3.11
 
       - name: Build and Push Production Backend Image
         run: |
-          [ -f .env ] || cp .env.example .env
-          export LD_LIBRARY_PATH=/usr/local/lib
-          docker compose build backend
-          docker compose push backend
+          docker build --pull \
+            -f backend/backend.dockerfile \
+            -t "${IMAGE}" \
+            backend
+          docker push "${IMAGE}"
         env:
-          DOCKER_IMAGE_BACKEND: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend
-          TAG: prod
-          DOMAIN: numerbay.ai
+          IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend:prod
 
   deploy-prod:
     name: Deploy Production
@@ -82,12 +75,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Set Up GCR
-        run: |
-          gcloud info
-          gcloud auth configure-docker
-          export LD_LIBRARY_PATH=/usr/local/lib
 
       - name: Generate Production Env Files
         run: |
@@ -132,18 +119,6 @@ jobs:
           INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
           SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
           WEBHOOK_ENABLED="True"
-
-
-
-
-
-
-
-
-
-
-
-
           WEB_CONCURRENCY="1"
           TIMEOUT="0"
           EOF
@@ -178,13 +153,6 @@ jobs:
           INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
           SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
           WEBHOOK_ENABLED="True"
-
-
-
-
-
-
-
           GCP_TASKS_LOCATION="us-central1"
           GCP_TASKS_QUEUE_NOTIFICATIONS="numerbay-queue-notifications"
           GCP_TASKS_QUEUE_OPS="numerbay-queue-ops"
@@ -194,10 +162,6 @@ jobs:
           ASYNC_WORKER_DISPATCH_URL="${{ secrets.ASYNC_WORKER_DISPATCH_URL }}"
           ASYNC_WORKER_DISPATCH_TOKEN="${{ secrets.ASYNC_WORKER_DISPATCH_TOKEN }}"
           ASYNC_WORKER_SERVICE_ACCOUNT_EMAIL=""
-
-
-
-
           WEB_CONCURRENCY="1"
           TIMEOUT="0"
           EOF
@@ -228,13 +192,6 @@ jobs:
           INFURA_PROJECT_ID="${{ secrets.APP_INFURA_PROJECT_ID }}"
           SENTRY_DSN="${{ secrets.APP_SENTRY_DSN }}"
           WEBHOOK_ENABLED="True"
-
-
-
-
-
-
-
           EOF
 
       - name: Bootstrap Production DB

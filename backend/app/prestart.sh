@@ -1,13 +1,8 @@
 #! /usr/bin/env bash
 set -e
 
+# Sourced by the base image's /start.sh before gunicorn starts.
+# Migrations and seed data run in the numerbay-job-bootstrap-db Cloud Run job.
+
 # Let the DB start
-python /app/app/backend_pre_start.py
-
-if [ "${RUN_DB_MIGRATIONS_ON_STARTUP:-false}" = "true" ]; then
-  alembic upgrade head
-fi
-
-if [ "${RUN_INIT_DATA_ON_STARTUP:-false}" = "true" ]; then
-  python /app/app/initial_data.py
-fi
+python -m app.backend_pre_start

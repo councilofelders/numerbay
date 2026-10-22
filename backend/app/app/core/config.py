@@ -1,6 +1,7 @@
 """ App configs """
 
 import secrets
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from cryptography.fernet import Fernet
@@ -31,8 +32,8 @@ class Settings(BaseSettings):
     SENTRY_DSN: Optional[HttpUrl] = None
 
     @validator("SENTRY_DSN", pre=True)
-    def sentry_dsn_can_be_blank(cls, v: str) -> Optional[str]:
-        if len(v) == 0:
+    def sentry_dsn_can_be_blank(cls, v: Optional[str]) -> Optional[str]:
+        if not v:
             return None
         return v
 
@@ -81,7 +82,9 @@ class Settings(BaseSettings):
         return v
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    EMAIL_TEMPLATES_DIR: str = "/app/app/email-templates/build"
+    EMAIL_TEMPLATES_DIR: str = str(
+        Path(__file__).resolve().parents[1] / "email-templates" / "build"
+    )
     EMAILS_ENABLED: bool = True
 
     @validator("EMAILS_ENABLED", pre=True)
@@ -101,9 +104,6 @@ class Settings(BaseSettings):
     # Cloud
     GCP_PROJECT: Optional[str] = "numerbay"
     GCP_STORAGE_BUCKET: Optional[str] = "storage.numerbay.ai"
-    # GCP_SERVICE_ACCOUNT_EMAIL: Optional[str] = None
-    # GCP_SERVICE_ACCOUNT_KEY: Optional[str] = None
-    GCP_SERVICE_ACCOUNT_INFO: Optional[str] = None
     GCP_WEBHOOK_FUNCTION: Optional[str] = None
     GCP_TASKS_LOCATION: str = "us-central1"
     GCP_TASKS_QUEUE_NOTIFICATIONS: str = "notifications"
@@ -130,8 +130,6 @@ class Settings(BaseSettings):
     ARTIFACT_DOWNLOAD_URL_EXPIRE_MINUTES: int = 10
     ARTIFACT_SUBMISSION_POLL_FREQUENCY_SECONDS: int = 20
     NUMERAI_PIPELINE_POLL_FREQUENCY_SECONDS: int = 60
-    ORDER_PAYMENT_POLL_FREQUENCY_SECONDS: float = 20.0
-    ROUND_ROLLOVER_POLL_FREQUENCY_SECONDS: int = 60
     MAX_ROUND_OFFSET: int = 50
     WEBHOOK_ENABLED: bool = False
 

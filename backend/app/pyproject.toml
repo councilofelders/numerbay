@@ -29,7 +29,6 @@ dependencies = [
     "pandas>=2.2.3,<2.3.0",
     "dnspython>=2.7.0,<2.8.0",
     "google-cloud-storage>=2.19.0,<3.0.0",
-    "pytest>=7.4.4,<7.5.0",
     "python-jose[cryptography]>=3.5.0,<3.6.0",
 ]
 
