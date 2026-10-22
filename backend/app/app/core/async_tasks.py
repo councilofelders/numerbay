@@ -24,7 +24,6 @@ TASK_UPDATE_ACTIVE_ROUND = "update-active-round"
 TASK_UPDATE_NUMERAI_MODEL = "update-numerai-model"
 TASK_UPDATE_PAYMENT = "update-payment"
 TASK_UPLOAD_NUMERAI_ARTIFACT = "upload-numerai-artifact"
-TASK_VALIDATE_NUMERAI_MODELS_STAKE = "validate-numerai-models-stake"
 TASK_VALIDATE_ARTIFACT_UPLOAD = "validate-artifact-upload"
 TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS = (
     "send-order-artifact-upload-reminder-emails"
@@ -49,9 +48,6 @@ ASYNC_TASK_DEFINITIONS = {
     },
     TASK_BATCH_SUBMIT_NUMERAI_MODELS: {
         "queue_setting": "GCP_TASKS_QUEUE_SUBMISSIONS",
-    },
-    TASK_VALIDATE_NUMERAI_MODELS_STAKE: {
-        "queue_setting": "GCP_TASKS_QUEUE_OPS",
     },
     TASK_SEND_NEW_ARTIFACT_EMAILS: {
         "queue_setting": "GCP_TASKS_QUEUE_NOTIFICATIONS",
@@ -200,20 +196,6 @@ def enqueue_update_active_round(
     return enqueue_async_task(
         TASK_UPDATE_ACTIVE_ROUND,
         kwargs=task_kwargs,
-        delay_seconds=delay_seconds,
-        dedupe_key=dedupe_key,
-    )
-
-
-def enqueue_validate_numerai_models_stake(
-    *,
-    dedupe_key: Optional[str] = None,
-    delay_seconds: Optional[float] = None,
-) -> Any:
-    """Enqueue one batch Numerai stake validation task."""
-
-    return enqueue_async_task(
-        TASK_VALIDATE_NUMERAI_MODELS_STAKE,
         delay_seconds=delay_seconds,
         dedupe_key=dedupe_key,
     )
@@ -601,6 +583,7 @@ def _run_batch_submit_numerai_models() -> None:
 
 
 def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
+    del schedule_slot
     import pandas as pd
 
     from app import crud
@@ -670,16 +653,6 @@ def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
             return True
 
         run_with_db_session(process_round_open)
-
-        if close_staking_time - utc_time <= timedelta(minutes=2):
-            print("Activities freezed due to round rollover")
-            stake_dedupe_key = None
-            if schedule_slot is not None:
-                stake_dedupe_key = get_validate_numerai_models_stake_dedupe_key(
-                    active_round_number,
-                    schedule_slot,
-                )
-            enqueue_validate_numerai_models_stake(dedupe_key=stake_dedupe_key)
     else:
         if (
             site_globals.active_round == active_round_number  # type: ignore
@@ -790,52 +763,6 @@ def _run_update_payment(order_id: int, poll_slot: Optional[str] = None) -> None:
     return None
 
 
-def _run_validate_numerai_models_stake() -> None:
-    from decimal import Decimal
-
-    from app import crud
-    from app.api.dependencies import numerai
-    from app.db.session import SessionLocal
-
-    db = SessionLocal()
-    try:
-        orders = crud.order.get_active_orders(
-            db, round_order=crud.globals.update_singleton(db).selling_round
-        )
-
-        print(f"total orders to check for stake limit: {len(orders)}")
-
-        for order in orders:
-            if order.mode != "stake_with_limit" or not order.submit_model_id:
-                continue
-            target_stake = numerai.get_target_stake(
-                public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
-                secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
-                tournament=order.product.model.tournament,  # type: ignore
-                model_name=order.submit_model_name,  # type: ignore
-            )
-            stake_limit = Decimal(order.stake_limit)  # type: ignore
-            if target_stake > stake_limit:
-                print(
-                    f"Order {order.id} model {order.submit_model_name} "
-                    f"[user {order.buyer_id}: {order.buyer.username}] "
-                    f"exceeded stake limit {target_stake} / {stake_limit}"
-                )
-                result = numerai.set_target_stake(
-                    public_id=order.buyer.numerai_api_key_public_id,  # type: ignore
-                    secret_key=order.buyer.numerai_api_key_secret,  # type: ignore
-                    tournament=order.product.model.tournament,  # type: ignore
-                    model_name=order.submit_model_name,  # type: ignore
-                    target_stake_amount=stake_limit,
-                )
-                print(
-                    f"Adjustment result for model {order.submit_model_name}: {result}"
-                )
-    finally:
-        db.close()
-    return None
-
-
 def get_current_scheduler_slot(now: Optional[datetime] = None) -> str:
     """Return the current UTC minute slot for scheduled reconciliation."""
 
@@ -862,14 +789,6 @@ def get_batch_update_numerai_model_scores_dedupe_key(schedule_slot: str) -> str:
     """Return a deterministic dedupe key for one model-scores sync slot."""
 
     return f"numerai-model-scores-slot-{schedule_slot}"
-
-
-def get_validate_numerai_models_stake_dedupe_key(
-    active_round_number: int, schedule_slot: str
-) -> str:
-    """Return a deterministic dedupe key for stake validation in one slot."""
-
-    return f"validate-stake-round-{active_round_number}-slot-{schedule_slot}"
 
 
 def get_payment_poll_dedupe_key(order_id: int, poll_slot: str) -> str:
@@ -1542,7 +1461,6 @@ TASK_RUNNERS: Dict[str, Callable[..., Any]] = {
     TASK_UPDATE_NUMERAI_MODEL: _run_update_numerai_model,
     TASK_UPDATE_PAYMENT: _run_update_payment,
     TASK_UPLOAD_NUMERAI_ARTIFACT: _run_upload_numerai_artifact,
-    TASK_VALIDATE_NUMERAI_MODELS_STAKE: _run_validate_numerai_models_stake,
     TASK_VALIDATE_ARTIFACT_UPLOAD: _run_validate_artifact_upload,
     TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS: (
         _run_send_order_artifact_upload_reminder_emails

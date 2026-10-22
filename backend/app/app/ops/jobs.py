@@ -12,7 +12,6 @@ from app.core.async_tasks import (
     TASK_BATCH_PRUNE_STORAGE,
     TASK_SEND_ORDER_ARTIFACT_UPLOAD_REMINDER_EMAILS,
     TASK_UPDATE_GLOBALS_STATS,
-    TASK_VALIDATE_NUMERAI_MODELS_STAKE,
     run_async_task,
 )
 
@@ -31,9 +30,6 @@ JOB_RUNNERS: Dict[str, JobRunner] = {
     "prune-storage": partial(run_async_task, TASK_BATCH_PRUNE_STORAGE),
     "reconcile-payments": partial(run_async_task, TASK_BATCH_UPDATE_PAYMENTS),
     "stake-snapshots": partial(run_async_task, TASK_BATCH_UPDATE_STAKE_SNAPSHOTS),
-    "validate-numerai-models-stake": partial(
-        run_async_task, TASK_VALIDATE_NUMERAI_MODELS_STAKE
-    ),
 }
 
 

@@ -11,7 +11,6 @@ from app.tests.utils.order import get_random_order
 @pytest.mark.parametrize(
     "route,job_name",
     [
-        ("stake", "validate-numerai-models-stake"),
         ("stake-snapshot", "stake-snapshots"),
         ("update-polls", "polls"),
         ("prune-storage", "prune-storage"),

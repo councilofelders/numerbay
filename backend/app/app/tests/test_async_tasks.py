@@ -421,61 +421,6 @@ def test_run_update_active_round_catches_up_unprocessed_open_round(
     assert site_globals.last_round_open_processed == 1239
 
 
-def test_run_update_active_round_near_close_enqueues_stake_validation(
-    monkeypatch,
-) -> None:
-    calls = []
-    now = datetime.now(timezone.utc)
-    site_globals = SimpleNamespace(
-        active_round=1239,
-        selling_round=1239,
-        last_round_open_processed=1239,
-    )
-
-    from app import crud
-    from app.api.dependencies import numerai
-    from app.db import session
-
-    monkeypatch.setattr(
-        numerai,
-        "get_numerai_active_round",
-        lambda: {
-            "openTime": (now - timedelta(minutes=30))
-            .isoformat()
-            .replace("+00:00", "Z"),
-            "closeStakingTime": (now + timedelta(minutes=1))
-            .isoformat()
-            .replace("+00:00", "Z"),
-            "number": 1239,
-        },
-    )
-    monkeypatch.setattr(
-        session,
-        "run_with_db_session",
-        lambda fn: fn("db-session"),
-    )
-    monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
-    monkeypatch.setattr(
-        async_tasks,
-        "_get_locked_globals",
-        lambda db, globals_model: site_globals,
-    )
-    monkeypatch.setattr(
-        async_tasks,
-        "enqueue_validate_numerai_models_stake",
-        lambda dedupe_key=None, delay_seconds=None: calls.append(
-            (dedupe_key, delay_seconds)
-        ),
-    )
-
-    async_tasks.run_async_task(
-        async_tasks.TASK_UPDATE_ACTIVE_ROUND,
-        kwargs={"schedule_slot": "202604050901"},
-    )
-
-    assert calls == [("validate-stake-round-1239-slot-202604050901", None)]
-
-
 def test_send_failed_autosubmit_emails_in_db_reloads_order(monkeypatch) -> None:
     captured = []
     fake_order = SimpleNamespace(id=7)

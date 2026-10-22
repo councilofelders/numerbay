@@ -104,12 +104,6 @@ def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
                 username
                 startDate
                 stakeValue
-                stakeInfo {
-                  corrMultiplier
-                  mmcMultiplier
-                  takeProfit
-                  tcMultiplier
-                }
                 latestUserScores {
                   displayName
                   rank
@@ -132,12 +126,6 @@ def get_numerai_model_profile(tournament: int, model_name: str) -> Any:
                 username
                 startDate
                 stakeValue
-                stakeInfo {
-                  corrMultiplier
-                  mmcMultiplier
-                  takeProfit
-                  tcMultiplier
-                }
                 latestUserScores {
                   displayName
                   rank
@@ -741,12 +729,10 @@ def validate_numerai_submission(
         create_query = """
                                     mutation($filename: String!
                                              $tournament: Int!
-                                             $version: Int!
                                              $modelId: String
                                              $triggerId: String) {
                                         create_submission(filename: $filename
                                                           tournament: $tournament
-                                                          version: $version
                                                           modelId: $modelId
                                                           triggerId: $triggerId
                                                           source: "numerapi") {
@@ -758,7 +744,6 @@ def validate_numerai_submission(
         arguments = {
             "filename": object_name,
             "tournament": tournament,
-            "version": 1,
             "modelId": model_id,
             "triggerId": None,
         }  # os.getenv('TRIGGER_ID', None)}
@@ -786,17 +771,8 @@ def validate_numerai_submission(
 
     try:
         create = api.raw_query(create_query, arguments, authorization=True)
-    except ValueError:  # try again with new data version
-        print("Retrying upload with version 2")
-        arguments["version"] = 2
-        try:
-            create = api.raw_query(create_query, arguments, authorization=True)
-        except Exception:  # other errors  # pylint: disable=broad-except
-            print("Retry failed, marking submission as failed")
-            # mark failed submission
-            return None
-    except Exception:  # other errors  # pylint: disable=broad-except
-        print("Submission failed")
+    except Exception as e:  # pylint: disable=broad-except
+        print(f"Submission failed: {e}")
         # mark failed submission
         return None
     if create:

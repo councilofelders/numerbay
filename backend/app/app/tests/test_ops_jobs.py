@@ -10,7 +10,6 @@ def test_list_jobs_includes_phase_one_families() -> None:
         "prune-storage",
         "reconcile-payments",
         "stake-snapshots",
-        "validate-numerai-models-stake",
     ]
 
 

@@ -68,19 +68,6 @@ def add_job_submit_numerai_models(
     return {"msg": "success!"}
 
 
-@router.post("/stake")
-def add_job_validate_numerai_models_stake(
-    *,
-    current_user: models.User = Depends(
-        deps.get_current_active_superuser
-    ),  # pylint: disable=W0613
-) -> Any:
-    """Add validate Numerai models stake job"""
-    run_job("validate-numerai-models-stake")
-
-    return {"msg": "success!"}
-
-
 @router.post("/stake-snapshot")
 def add_job_update_stake_snapshots(
     *,
