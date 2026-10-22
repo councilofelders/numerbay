@@ -8,3 +8,4 @@ gha-creds-*.json
 .env
 !.env.example
 gcp-service-account.json
+.dev/
