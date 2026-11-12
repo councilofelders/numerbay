@@ -465,7 +465,7 @@ def generate_upload_url(  # pylint: disable=too-many-locals
 
     # not when round is not open for per-round products
     if product.category.is_per_round and not current_user.is_superuser:  # type: ignore
-        validate_round_open()
+        validate_round_open(product.category.tournament, site_globals.selling_round)
 
     selling_round = site_globals.selling_round
 

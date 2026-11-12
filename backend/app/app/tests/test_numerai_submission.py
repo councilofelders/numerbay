@@ -1,4 +1,8 @@
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
+
+import pytest
+from fastapi import HTTPException
 
 from app.api.dependencies import numerai
 
@@ -48,3 +52,46 @@ def test_validate_numerai_submission_fails_without_retry(monkeypatch) -> None:
 
     assert submission_id is None
     assert len(calls) == 1
+
+
+def _fake_active_round(
+    monkeypatch, calls: List[Dict[str, Any]], number: int, close_staking_time: datetime
+) -> None:
+    class FakeNumerAPI:
+        def __init__(self, public_id=None, secret_key=None) -> None:
+            pass
+
+        def raw_query(self, query, variables=None, authorization=False):
+            calls.append(dict(variables or {}))
+            return {
+                "data": {
+                    "rounds": [
+                        {
+                            "number": number,
+                            "closeStakingTime": close_staking_time.isoformat(),
+                        }
+                    ]
+                }
+            }
+
+    monkeypatch.setattr(numerai, "NumerAPI", FakeNumerAPI)
+
+
+def test_validate_round_open_uses_product_tournament(monkeypatch) -> None:
+    calls: List[Dict[str, Any]] = []
+    _fake_active_round(
+        monkeypatch, calls, 1397, datetime.now(timezone.utc) + timedelta(minutes=30)
+    )
+
+    numerai.validate_round_open(12, 1397)
+
+    assert calls == [{"tournament": 12}]
+
+
+def test_validate_round_open_rejects_other_round(monkeypatch) -> None:
+    _fake_active_round(
+        monkeypatch, [], 1396, datetime.now(timezone.utc) + timedelta(minutes=30)
+    )
+
+    with pytest.raises(HTTPException):
+        numerai.validate_round_open(12, 1397)

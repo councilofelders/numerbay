@@ -594,13 +594,13 @@ def set_target_stake(  # pylint: disable=too-many-locals
     return result_stake
 
 
-def get_numerai_active_round() -> Dict:
+def get_numerai_active_round(tournament: int = 8) -> Dict:
     """
     Retrieve Numerai active round.
     """
     query = """
-              query {
-                rounds(tournament: 8
+              query($tournament: Int!) {
+                rounds(tournament: $tournament
                        number: 0) {
                   number
                   openTime
@@ -611,7 +611,7 @@ def get_numerai_active_round() -> Dict:
             """
 
     api = NumerAPI()
-    active_round = api.raw_query(query)["data"]["rounds"][0]
+    active_round = api.raw_query(query, {"tournament": tournament})["data"]["rounds"][0]
     return active_round
 
 
@@ -787,14 +787,16 @@ def validate_numerai_submission(
     return None
 
 
-def validate_round_open() -> None:
-    active_round = get_numerai_active_round()
+def validate_round_open(tournament: int, selling_round: int) -> None:
+    active_round = get_numerai_active_round(tournament)
     utc_time = datetime.now(timezone.utc)
     close_staking_time = pd.to_datetime(
         active_round["closeStakingTime"]
     ).to_pydatetime()
     if (  # pylint: disable=no-else-return
         utc_time > close_staking_time
+        # artifacts are filed under the site selling round, which follows tournament 8
+        or active_round["number"] != selling_round
     ):  # previous round closed for staking, next round not yet opened
         raise HTTPException(status_code=400, detail="Tournament round is not open")
     return None
