@@ -1,246 +1,62 @@
 """ CRUD for stats """
-import os
-from decimal import Decimal
-from typing import Any, Callable, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi.encoders import jsonable_encoder
-from numerapi import NumerAPI
-from sqlalchemy import distinct, func
+import requests
+from numerapi.base_api import API_TOURNAMENT_URL
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.crud.base import CRUDBase
-from app.models import Artifact, Category, Model, Order, Product
 from app.models.stats import Stats
 from app.schemas.stats import StatsCreate, StatsUpdate
 
+TOURNAMENT_NAMES = {8: "numerai", 11: "signals", 12: "crypto"}
 
-# TODO: Add stats for Crypto Tournament
-def parse_round_stats(
-    series: List[Dict], fill_value: Union[int, float], min_round: int, max_round: int
-) -> List[Dict]:
-    transposed = {k: [dic[k] for dic in series] for k in series[0]}
-    zipped = dict(zip(transposed["round_tournament"], transposed["value"]))
-    for round_tournament in range(min_round, max_round + 1):
-        if round_tournament not in zipped:
-            zipped[round_tournament] = fill_value
-    return sorted(
-        [{"round_tournament": k, "value": v} for k, v in zipped.items()],
-        key=lambda d: d["round_tournament"],
-    )
-
-
-def get_last_artifact_for_order(db: Session, order_json: Dict) -> Optional[Dict]:
-    if order_json["buyer_public_key"] is not None:  # uses encryption
-        last_artifact = None
-        for artifact in order_json.get("artifacts", []):
-            if artifact["round_tournament"] == order_json["round_order"]:
-                last_artifact = artifact
-        return last_artifact
-    else:
-        artifacts = (
-            db.query(Artifact)
-            .filter(
-                Artifact.product_id == order_json["product_id"],
-                Artifact.round_tournament == order_json["round_order"],
-            )
-            .all()
-        )
-        if isinstance(artifacts, list) and len(artifacts) > 0:
-            return jsonable_encoder(artifacts[-1])
-        return None
-
-
-def get_stake_for_model_round(
-    db: Session, model_id: str, round_tournament: int
-) -> Decimal:
-    round_model_performances = (
-        db.query(Model.round_model_performances).filter(Model.id == model_id).first()
-    )
-    if round_model_performances and len(round_model_performances) > 0:
-        round_model_performance = list(
-            filter(
-                lambda perf: perf.get("roundNumber", None) == round_tournament,
-                round_model_performances[0],
-            )
-        )
-        if round_model_performance and len(round_model_performance) > 0:
-            stake = Decimal(
-                round_model_performance[0].get("selectedStakeValue", "0") or "0"
-            )
-            return stake
-    return Decimal("0")
-
-
-def get_submissions_for_model(
-    public_id: str, secret_key: str, model_id: str, tournament: int
-) -> List:
-    query = """
-        query($modelId: String!) {
-          model(modelId: $modelId) {
-            signalsSubmissions {
-              filename
-              insertedAt
-            }
-            submissions {
-              filename
-              insertedAt
-            }
-          }
-        }
+# Each order's price is spread evenly over the rounds it covers. ROLLUP adds a
+# per-round total row (tournament IS NULL) for the distinct counts, which can't
+# be summed across tournaments.
+SALES_BY_ROUND_SQL = text(
     """
-    api = NumerAPI(public_id=public_id, secret_key=secret_key)
-    try:
-        data = api.raw_query(query, {"modelId": model_id}, authorization=True)["data"][
-            "model"
-        ]
-        if (
-            data is not None
-            and ("submissions" in data)
-            or ("signalsSubmissions" in data)
-        ):
-            if tournament == 8:
-                return data["submissions"]
-            else:
-                return data["signalsSubmissions"]
-    except ValueError as e:
-        print(e)
-    return []
+    SELECT r.round_number, c.tournament,
+           SUM(o.price / cardinality(o.rounds)) AS value,
+           COUNT(*) AS quantity,
+           COUNT(DISTINCT o.buyer_id) AS buyers,
+           COUNT(DISTINCT p.owner_id) AS sellers,
+           COUNT(DISTINCT o.product_id) AS products
+    FROM "order" o
+    CROSS JOIN LATERAL unnest(o.rounds) AS r(round_number)
+    JOIN product p ON p.id = o.product_id
+    JOIN category c ON c.id = p.category_id
+    WHERE o.state = 'confirmed' AND c.tournament IN (8, 11, 12)
+      AND r.round_number <= :last_round
+    GROUP BY r.round_number, ROLLUP (c.tournament)
+    """
+)
+
+ACTIVE_LISTINGS_SQL = text(
+    """
+    SELECT c.tournament, COUNT(*) AS products, COUNT(DISTINCT p.owner_id) AS sellers
+    FROM product p
+    JOIN category c ON c.id = p.category_id
+    WHERE p.is_active AND c.tournament IN (8, 11, 12)
+    GROUP BY ROLLUP (c.tournament)
+    """
+)
 
 
-def has_file(submissions: List, filename: str) -> bool:
-    for submission in submissions:
-        if (
-            not submission
-            or submission.get("filename", None) is None
-            or filename is None
-            or os.path.splitext(filename)[0] is None
-        ):
-            continue
-        if submission["filename"].startswith(os.path.splitext(filename)[0]):
-            return True
-    return False
-
-
-def get_estimated_stake_for_order(
-    db: Session, order_json: Dict, artifact_json: Dict
-) -> Decimal:
-    user = crud.user.get(db, id=order_json["buyer_id"])
-    total_stake = Decimal("0")
-    if (
-        user is None or user.models is None or user.numerai_api_key_public_id is None
-    ):  # type: ignore
-        return total_stake
-
-    for model in user.models:  # type: ignore
-        submissions = get_submissions_for_model(
-            user.numerai_api_key_public_id,
-            user.numerai_api_key_secret,  # type: ignore
-            model_id=model.id,
-            tournament=model.tournament,
-        )
-        submitted = has_file(submissions, artifact_json["object_name"])
-
-        if submitted:
-            total_stake += get_stake_for_model_round(
-                db, model_id=model.id, round_tournament=order_json["round_order"]
-            )
-    return total_stake
-
-
-def get_stake_for_order(db: Session, order_json: Dict) -> Decimal:
-    artifact_json = get_last_artifact_for_order(db, order_json)
-    if artifact_json is None:
-        return Decimal("0")
-
-    if order_json.get("submit_model_id", None) is not None:  # auto-submit
-        stake = get_stake_for_model_round(
-            db,
-            model_id=order_json["submit_model_id"],
-            round_tournament=order_json["round_order"],
-        )
-        print(f"Exact match for order {order_json['id']} {order_json['round_order']}")
-    else:  # no auto-submit, do fuzzy match
-        stake = get_estimated_stake_for_order(db, order_json, artifact_json)
-        print(f"Fuzzy match for order {order_json['id']} {order_json['round_order']}")
-    return stake
-
-
-def calculate_stake_for_tournament(
-    db: Session, tournament: int, round_tournament: int
-) -> List:
-    orders = (
-        db.query(Order)
-        .join(Order.product, Product.category)
-        .filter(
-            Order.state == "confirmed",
-            Category.tournament == tournament,
-            Category.is_submission.is_(True),
-        )
-        .all()
+def fetch_round_open_dates() -> Dict[int, str]:
+    """Round number -> open date (UTC); all tournaments share round dates"""
+    # Plain requests: numerapi sets no timeout, so a stalled call would hang the job.
+    response = requests.post(
+        API_TOURNAMENT_URL,
+        json={"query": "query { rounds(tournament: 8) { number openTime } }"},
+        timeout=30,
     )
-    flattened_orders = []
-
-    # gather flattened round-orders
-    for order in orders:
-        order_json = jsonable_encoder(order)
-        order_json["artifacts"] = jsonable_encoder(order.artifacts)
-        order_json["product"].pop("category", None)
-        order_json["product"].pop("description", None)
-        order_json["product"].pop("featured_products", None)
-
-        if len(order.rounds) == 1:
-            flattened_orders.append(order_json)
-        else:
-            for round_number in order.rounds:
-                order_json_i = order_json.copy()
-                order_json_i["round_order"] = round_number
-                flattened_orders.append(order_json_i)
-
-    # filter flatten orders by tournament round
-    flattened_orders = filter(  # type: ignore
-        lambda flattened_order: flattened_order.get("round_order", None)
-        == round_tournament,
-        flattened_orders,
-    )
-
-    round_stakes = {}
-    for order_json in flattened_orders:
-        stake = get_stake_for_order(db, order_json)
-        print(
-            f"Estimated stake of {stake} for order {order_json['id']} {order_json['round_order']}"
-        )
-        if order_json["round_order"] not in round_stakes:
-            round_stakes[order_json["round_order"]] = Decimal("0")
-        round_stakes[order_json["round_order"]] += stake
-    round_stakes_list = [
-        {"round_tournament": round_tournament, "value": float(stake)}
-        for round_tournament, stake in round_stakes.items()
-    ]
-    return round_stakes_list
-
-
-def fill_round_stats(
-    existing_data_dict: Dict,
-    db: Session,
-    function: Callable,
-    min_round: int,
-    max_round: int,
-    **kwargs: Any,
-) -> List:
-    for round_tournament in range(min_round, max_round + 1):
-        print(
-            f"Filling stats for round {round_tournament} / [{min_round},  {max_round}]"
-        )
-        round_stats = function(db, **kwargs, round_tournament=round_tournament)
-        if round_stats:
-            existing_data_dict[round_tournament] = round_stats[0]["value"]
-        else:
-            existing_data_dict[round_tournament] = 0
-    return [
-        {"round_tournament": round_tournament, "value": value}
-        for round_tournament, value in existing_data_dict.items()
-    ]
+    response.raise_for_status()
+    rounds = response.json()["data"]["rounds"]
+    return {r["number"]: r["openTime"][:10] for r in rounds}
 
 
 class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
@@ -258,254 +74,53 @@ class CRUDStats(CRUDBase[Stats, StatsCreate, StatsUpdate]):
         return instance
 
     def update_stats(self, db: Session) -> Stats:
-        """Update stats stats"""
+        """Rebuild per-round sales stats and upsert today's listings snapshot"""
+        # Call Numerai before any query so no transaction is held while waiting.
+        open_dates = fetch_round_open_dates()
+        # Later rounds have only prepaid orders and no open date yet.
+        last_round = crud.globals.get_singleton(db).active_round  # type: ignore
+        rows = db.execute(SALES_BY_ROUND_SQL, {"last_round": last_round}).all()
+        first_round = min((row.round_number for row in rows), default=last_round)
+        rounds = range(first_round, last_round + 1)
+
+        value = {name: [0.0] * len(rounds) for name in TOURNAMENT_NAMES.values()}
+        quantity = {name: [0] * len(rounds) for name in TOURNAMENT_NAMES.values()}
+        buyers, sellers, products = ([0] * len(rounds) for _ in range(3))
+        for row in rows:
+            i = row.round_number - first_round
+            if row.tournament is None:
+                buyers[i], sellers[i], products[i] = (
+                    row.buyers,
+                    row.sellers,
+                    row.products,
+                )
+            else:
+                value[TOURNAMENT_NAMES[row.tournament]][i] = round(float(row.value), 6)
+                quantity[TOURNAMENT_NAMES[row.tournament]][i] = row.quantity
+
+        today = datetime.utcnow().date().isoformat()
+        snapshot: Dict[str, Any] = {"date": today}
+        snapshot.update({name: 0 for name in TOURNAMENT_NAMES.values()})
+        for row in db.execute(ACTIVE_LISTINGS_SQL):
+            if row.tournament is None:
+                snapshot["sellers"] = row.sellers
+            else:
+                snapshot[TOURNAMENT_NAMES[row.tournament]] = row.products
+
         instance = self.get_singleton(db)
-        stats = {}
-
-        # sales value
-        quantity_results = {}
-        quantity_results_numerai = {}
-        quantity_results_signals = {}
-        value_results = {}
-        value_results_numerai = {}
-        value_results_signals = {}
-        orders = db.query(Order).filter(Order.state == "confirmed").all()
-        # Calculate the sum of price distributed over the rounds
-        for order in orders:
-            rounds = order.rounds
-            price = order.price
-            distributed_price = price / len(
-                rounds
-            )  # This is assuming equal distribution over all rounds
-            for round in rounds:
-                if round not in value_results:
-                    quantity_results[round] = 0
-                    quantity_results_numerai[round] = 0
-                    quantity_results_signals[round] = 0
-                    value_results[round] = 0
-                    value_results_numerai[round] = 0
-                    value_results_signals[round] = 0
-                quantity_results[round] += 1
-                value_results[round] += distributed_price
-                if order.product.category.tournament == 8:
-                    quantity_results_numerai[round] += 1
-                    value_results_numerai[round] += distributed_price
-                else:
-                    quantity_results_signals[round] += 1
-                    value_results_signals[round] += distributed_price
-
-        quantity_results = sorted([(k, v) for k, v in quantity_results.items()])  # type: ignore
-        quantity_results_numerai = sorted(  # type: ignore
-            [(k, v) for k, v in quantity_results_numerai.items()]
-        )
-        quantity_results_signals = sorted(  # type: ignore
-            [(k, v) for k, v in quantity_results_signals.items()]
-        )
-        value_results = sorted([(k, v) for k, v in value_results.items()])  # type: ignore
-        value_results_numerai = sorted(  # type: ignore
-            [(k, v) for k, v in value_results_numerai.items()]
-        )
-        value_results_signals = sorted(  # type: ignore
-            [(k, v) for k, v in value_results_signals.items()]
-        )
-
-        stats["sales_quantity"] = [
-            {"round_tournament": k, "value": float(v)} for k, v in quantity_results
-        ]
-        stats["sales_quantity_numerai"] = [
-            {"round_tournament": k, "value": float(v)}
-            for k, v in quantity_results_numerai
-        ]
-        stats["sales_quantity_signals"] = [
-            {"round_tournament": k, "value": float(v)}
-            for k, v in quantity_results_signals
-        ]
-        stats["sales_value"] = [
-            {"round_tournament": k, "value": float(v)} for k, v in value_results
-        ]
-        stats["sales_value_numerai"] = [
-            {"round_tournament": k, "value": float(v)} for k, v in value_results_numerai
-        ]
-        stats["sales_value_signals"] = [
-            {"round_tournament": k, "value": float(v)} for k, v in value_results_signals
-        ]
-
-        return super().update(
-            db,
-            db_obj=instance,  # type: ignore
-            obj_in={
-                "stats": stats,
-            },
-        )
-
-    def update_stats_legacy(self, db: Session) -> Stats:
-        """Update stats stats"""
-        instance = self.get_singleton(db)
-        stats = {}
-
-        # Sales value
-        sales_value_base_query = db.query(
-            Order.round_order.label("round_tournament"),
-            func.sum(Order.price).label("value"),
-        )
-        stats["sales_value"] = jsonable_encoder(
-            sales_value_base_query.filter(Order.state == "confirmed")
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-        stats["sales_value_numerai"] = jsonable_encoder(
-            sales_value_base_query.join(Order.product, Product.category)
-            .filter(Order.state == "confirmed", Category.tournament == 8)
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-        stats["sales_value_signals"] = jsonable_encoder(
-            sales_value_base_query.join(Order.product, Product.category)
-            .filter(Order.state == "confirmed", Category.tournament == 11)
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-
-        # # Sales quantity
-        sales_quantity_base_query = db.query(
-            Order.round_order.label("round_tournament"),
-            func.sum(func.cardinality(Order.rounds)).label("value"),
-        )
-        stats["sales_quantity"] = jsonable_encoder(
-            sales_quantity_base_query.filter(Order.state == "confirmed")
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-        stats["sales_quantity_numerai"] = jsonable_encoder(
-            sales_quantity_base_query.join(Order.product, Product.category)
-            .filter(Order.state == "confirmed", Category.tournament == 8)
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-        stats["sales_quantity_signals"] = jsonable_encoder(
-            sales_quantity_base_query.join(Order.product, Product.category)
-            .filter(Order.state == "confirmed", Category.tournament == 11)
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-
-        # Unique buyers
-        stats["unique_buyers"] = jsonable_encoder(
-            db.query(
-                Order.round_order.label("round_tournament"),
-                func.count(distinct(Order.buyer_id)).label("value"),
-            )
-            .filter(Order.state == "confirmed")
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-
-        # Unique models
-        unique_models_sold_base_query = db.query(
-            Order.round_order.label("round_tournament"),
-            func.count(distinct(Product.model_id)).label("value"),
-        ).join(Order.product, Product.category)
-        stats["unique_models_sold"] = jsonable_encoder(
-            unique_models_sold_base_query.filter(Order.state == "confirmed")
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-        stats["unique_models_sold_numerai"] = jsonable_encoder(
-            unique_models_sold_base_query.filter(
-                Order.state == "confirmed", Category.tournament == 8
-            )
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-        stats["unique_models_sold_signals"] = jsonable_encoder(
-            unique_models_sold_base_query.filter(
-                Order.state == "confirmed", Category.tournament == 11
-            )
-            .group_by(Order.round_order)
-            .order_by(Order.round_order)
-            .all()
-        )
-
-        min_round = stats["sales_value"][0]["round_tournament"]
-        max_round = stats["sales_value"][-1]["round_tournament"]
-        # stats_to_parse = [
-        #     "sales_value",
-        #     "sales_value_numerai",
-        #     "sales_value_signals",
-        #     "sales_quantity",
-        #     "sales_quantity_numerai",
-        #     "sales_quantity_signals",
-        #     "unique_models_sold",
-        #     "unique_models_sold_numerai",
-        #     "unique_models_sold_signals",
-        #     "unique_buyers",
-        # ]
-
-        # Estimated stake
-        current_round = crud.globals.get_singleton(db).selling_round  # type: ignore
-        stats["estimated_stake_numerai"] = instance.stats.get(  # type: ignore
-            "estimated_stake_numerai", []
-        )
-        stats["estimated_stake_signals"] = instance.stats.get(  # type: ignore
-            "estimated_stake_signals", []
-        )
-
-        stats["estimated_stake_numerai"] = fill_round_stats(
-            {
-                d["round_tournament"]: d["value"]
-                for d in stats["estimated_stake_numerai"]
-            },
-            db,
-            calculate_stake_for_tournament,
-            min_round=current_round - 1,
-            max_round=current_round,
-            tournament=8,
-        )
-        stats["estimated_stake_signals"] = fill_round_stats(
-            {
-                d["round_tournament"]: d["value"]
-                for d in stats["estimated_stake_signals"]
-            },
-            db,
-            calculate_stake_for_tournament,
-            min_round=current_round - 1,
-            max_round=current_round,
-            tournament=11,
-        )
-
+        previous: List[Dict] = (instance.stats or {}).get("listings", [])  # type: ignore
         stats = {
-            k: parse_round_stats(
-                v, fill_value=0, min_round=min_round, max_round=max_round
-            )
-            for k, v in stats.items()
+            "start_round": first_round,
+            "dates": [open_dates[r] for r in rounds],
+            "value": value,
+            "quantity": quantity,
+            "buyers": buyers,
+            "sellers": sellers,
+            "products": products,
+            "listings": [s for s in previous if s["date"] != today] + [snapshot],
         }
-
-        stats["estimated_stake"] = [
-            {
-                "round_tournament": stats["estimated_stake_numerai"][i][
-                    "round_tournament"
-                ],
-                "value": stats["estimated_stake_numerai"][i]["value"]
-                + stats["estimated_stake_signals"][i]["value"],
-            }
-            for i in range(len(stats["estimated_stake_numerai"]))
-        ]
-
         return super().update(
-            db,
-            db_obj=instance,  # type: ignore
-            obj_in={
-                "stats": stats,
-            },
+            db, db_obj=instance, obj_in={"stats": stats}  # type: ignore
         )
 
 

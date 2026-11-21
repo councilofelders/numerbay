@@ -1444,14 +1444,11 @@ def _run_send_order_artifact_upload_reminder_emails() -> None:
 
 def _run_update_globals_stats() -> None:
     from app import crud
-    from app.db.session import SessionLocal
+    from app.db.session import run_with_db_session
 
-    db = SessionLocal()
-    try:
-        crud.globals.update_stats(db)
-        crud.stats.update_stats(db)
-    finally:
-        db.close()
+    run_with_db_session(crud.globals.update_stats)
+    # Fresh session: stats calls Numerai first and must not hold a transaction open.
+    run_with_db_session(crud.stats.update_stats)
 
 
 def _run_batch_update_payments() -> None:
