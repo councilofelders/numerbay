@@ -654,40 +654,244 @@ def _run_update_active_round(schedule_slot: Optional[str] = None) -> None:
 
         run_with_db_session(process_round_open)
     else:
-        if (
-            site_globals.active_round == active_round_number  # type: ignore
-            and site_globals.selling_round == active_round_number + 1  # type: ignore
+        selling_round = active_round_number + 1
+        round_closed = utc_time > close_staking_time
+        if not run_with_db_session(
+            lambda db: _claim_round_rollover(db, active_round_number, round_closed)
         ):
             print("Round already up-to-date, no action")
         else:
             print("Unfreeze activities, rollover completed")
-            selling_round = active_round_number + 1
+            missed_orders: List[Dict[str, Any]] = []
+            # Uploads are only accepted while globals tracks this round; if globals
+            # never reached it, NumerBay rejected the uploads, so don't blame sellers.
+            if (
+                round_closed
+                and settings.EMAILS_ENABLED
+                and active_round_number
+                in (site_globals.active_round, site_globals.selling_round)  # type: ignore
+            ):
+                try:
+                    missed_orders = run_with_db_session(
+                        lambda db: _collect_missed_orders_for_round(
+                            db, active_round_number
+                        )
+                    )
+                except Exception as exc:  # pylint: disable=broad-except
+                    print(
+                        f"Missed-order collection failed for round "
+                        f"{active_round_number}: {exc}"
+                    )
 
-            def update_and_process(db):
-                site_globals_obj = crud.globals.update(
-                    db,
-                    db_obj=site_globals,  # type: ignore
-                    obj_in={
-                        "active_round": active_round_number,
-                        "selling_round": selling_round,
-                        "is_doing_round_rollover": False,
-                    },
-                )
-
-                crud.product.bulk_expire(db, current_round=site_globals.selling_round)  # type: ignore
+            def process_round_close(db):
+                crud.product.bulk_expire(db, current_round=selling_round)
                 crud.order_artifact.bulk_mark_for_pruning(
-                    db, current_round=site_globals.selling_round  # type: ignore
+                    db, current_round=selling_round
                 )
                 crud.product.bulk_unmark_is_ready(db)
 
-                return site_globals_obj
-
-            run_with_db_session(update_and_process)
+            # Email after cleanup: the Numerai deadline lookup has no request timeout
+            # and must not hold up expiry, pruning or the is_ready reset.
+            try:
+                run_with_db_session(process_round_close)
+            finally:
+                _notify_missed_orders(
+                    missed_orders=missed_orders, round_tournament=active_round_number
+                )
 
     current_globals = run_with_db_session(
         lambda db: jsonable_encoder(crud.globals.get_singleton(db))
     )
     print(f"Current global state: {current_globals}")
+    return None
+
+
+def _claim_round_rollover(db, round_number: int, round_closed: bool) -> bool:
+    """Advance globals past a round with one conditional UPDATE, so overlapping
+    runs process each rollover (and its notifications) exactly once."""
+    from sqlalchemy import or_
+
+    from app.models.globals import Globals
+
+    values: Dict[str, Any] = {
+        "active_round": round_number,
+        "selling_round": round_number + 1,
+        "is_doing_round_rollover": False,
+    }
+    pending = or_(
+        Globals.active_round.is_distinct_from(round_number),
+        Globals.selling_round.is_distinct_from(round_number + 1),
+    )
+    if round_closed:
+        values["last_round_close_processed"] = round_number
+        pending = Globals.last_round_close_processed.is_distinct_from(round_number)
+    claimed = (
+        db.query(Globals)
+        .filter(Globals.id == 0, pending)
+        .update(values, synchronize_session=False)
+    )
+    db.commit()
+    return claimed == 1
+
+
+def _format_utc_time(dt: datetime) -> str:
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+
+def _get_round_close_staking_time(
+    tournament: int, round_tournament: int
+) -> Optional[datetime]:
+    import pandas as pd
+
+    from app.api.dependencies import numerai
+
+    try:
+        active_round = numerai.get_numerai_active_round(tournament)
+        if active_round.get("number") == round_tournament and active_round.get(
+            "closeStakingTime"
+        ):
+            return pd.to_datetime(active_round["closeStakingTime"]).to_pydatetime()
+    except Exception as exc:  # pylint: disable=broad-except
+        print(f"Failed to fetch closeStakingTime for tournament {tournament}: {exc}")
+    return None
+
+
+def _is_encrypted_order_missing(
+    order: Any,
+    round_tournament: int,
+    *,
+    is_per_round: bool,
+    ignore_failed_direct: bool,
+) -> bool:
+    artifacts = order.artifacts or []
+    if is_per_round:
+        artifacts = [a for a in artifacts if a.round_tournament == round_tournament]
+    has_file = any(a.state == "active" and not a.is_numerai_direct for a in artifacts)
+    has_direct = (
+        order.submit_state == "completed"
+        and (not is_per_round or order.last_submit_round == round_tournament)
+    ) or any(a.state == "active" and a.is_numerai_direct for a in artifacts)
+    direct_failed = ignore_failed_direct and any(
+        a.state == "failed" and a.is_numerai_direct for a in artifacts
+    )
+    return (order.mode == "file" and not has_file) or (
+        order.submit_model_id is not None and not has_direct and not direct_failed
+    )
+
+
+def _is_order_missed(
+    db,
+    order: Any,
+    round_tournament: int,
+    artifact_cache: Dict[int, bool],
+) -> bool:
+    from app import crud
+
+    category = order.product.category if order.product else None
+    if not (category and category.is_per_round):
+        return False
+    if order.buyer_public_key is not None:
+        return _is_encrypted_order_missing(
+            order, round_tournament, is_per_round=True, ignore_failed_direct=True
+        )
+    if order.product_id not in artifact_cache:
+        artifacts = crud.artifact.get_multi_by_product_round(
+            db, product=order.product, round_tournament=round_tournament
+        )
+        artifact_cache[order.product_id] = any(
+            a.state == "active" for a in artifacts or []
+        )
+    if artifact_cache[order.product_id]:
+        return False
+    return not (
+        order.mode != "file"
+        and order.submit_model_id is not None
+        and order.submit_state == "completed"
+        and order.last_submit_round == round_tournament
+    )
+
+
+def _collect_missed_orders_for_round(db, round_tournament: int) -> List[Dict[str, Any]]:
+    from app import crud
+
+    artifact_cache: Dict[int, bool] = {}
+    missed: List[Dict[str, Any]] = []
+    for order in crud.order.get_active_orders(db, round_order=round_tournament):
+        if not _is_order_missed(db, order, round_tournament, artifact_cache):
+            continue
+        owner = order.product.owner
+        missed.append(
+            {
+                "order_id": order.id,
+                "product_id": order.product_id,
+                "product_sku": order.product.sku,
+                "tournament": order.product.category.tournament,
+                "buyer_email": order.buyer.email if order.buyer else None,
+                "buyer_username": order.buyer.username if order.buyer else None,
+                "seller_email": owner.email if owner else None,
+                "seller_username": owner.username if owner else None,
+            }
+        )
+    return missed
+
+
+def _notify_missed_orders(
+    *,
+    missed_orders: List[Dict[str, Any]],
+    round_tournament: int,
+) -> None:
+    from app.utils import send_missed_upload_email
+
+    close_times: Dict[int, Optional[str]] = {}
+    seller_groups: Dict[Any, Dict[str, Any]] = {}
+    for item in missed_orders:
+        tournament = item["tournament"]
+        if tournament not in close_times:
+            close_dt = _get_round_close_staking_time(tournament, round_tournament)
+            close_times[tournament] = (
+                _format_utc_time(close_dt) if close_dt is not None else None
+            )
+        close_str = close_times[tournament]
+
+        if item["buyer_email"]:
+            try:
+                send_missed_upload_email(
+                    email_to=item["buyer_email"],
+                    username=item["buyer_username"],
+                    order_ids=str(item["order_id"]),
+                    round_tournament=round_tournament,
+                    product=item["product_sku"],
+                    close_staking_time=close_str,
+                )
+            except Exception as exc:  # pylint: disable=broad-except
+                print(f"Missed upload buyer email failed ({item['order_id']}): {exc}")
+
+        if item["seller_email"]:
+            group = seller_groups.setdefault(
+                (item["seller_email"], item["product_id"]),
+                {
+                    "email_to": item["seller_email"],
+                    "username": item["seller_username"],
+                    "product": item["product_sku"],
+                    "close_staking_time": close_str,
+                    "order_ids": [],
+                },
+            )
+            group["order_ids"].append(item["order_id"])
+
+    for group in seller_groups.values():
+        try:
+            send_missed_upload_email(
+                email_to=group["email_to"],
+                username=group["username"],
+                order_ids=", ".join(str(i) for i in group["order_ids"]),
+                round_tournament=round_tournament,
+                product=group["product"],
+                close_staking_time=group["close_staking_time"],
+                is_seller=True,
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            print(f"Missed upload seller email failed ({group['product']}): {exc}")
     return None
 
 
@@ -1202,28 +1406,37 @@ def _run_send_order_artifact_upload_reminder_emails() -> None:
         selling_round = crud.globals.get_singleton(db=db).selling_round  # type: ignore
 
         orders = crud.order.get_active_orders(db, round_order=selling_round)
-        orders_to_remind = []
+        utc_now = datetime.now(timezone.utc)
+        close_time_by_tournament: Dict[int, Optional[datetime]] = {}
         for order in orders:
-            if order.buyer_public_key is None:  # skip for non per-order artifacts
+            if order.buyer_public_key is None:
                 continue
-            requires_numerai_submission = order.submit_model_id is not None
-            requires_file = order.mode == "file"
-            has_numerai_submission = False
-            has_file = False
-            for artifact in order.artifacts:  # type: ignore
-                if artifact.state == "active":
-                    if artifact.is_numerai_direct:
-                        has_numerai_submission = True
-                    else:
-                        has_file = True
-
-            if (requires_numerai_submission and not has_numerai_submission) or (
-                requires_file and not has_file
+            category = order.product.category if order.product else None
+            is_per_round = bool(category and category.is_per_round)
+            if not _is_encrypted_order_missing(
+                order,
+                selling_round,
+                is_per_round=is_per_round,
+                ignore_failed_direct=False,
             ):
-                orders_to_remind.append(order)
-
-        for order in orders_to_remind:
-            send_order_upload_reminder_emails(order)
+                continue
+            close_staking_time = None
+            if is_per_round:
+                tournament = category.tournament
+                if tournament not in close_time_by_tournament:
+                    close_time_by_tournament[
+                        tournament
+                    ] = _get_round_close_staking_time(tournament, selling_round)
+                close_dt = close_time_by_tournament[tournament]
+                if close_dt is not None:
+                    if utc_now > close_dt:
+                        continue
+                    close_staking_time = _format_utc_time(close_dt)
+            send_order_upload_reminder_emails(
+                order,
+                close_staking_time=close_staking_time,
+                round_order=selling_round if is_per_round else None,
+            )
     finally:
         db.close()
     return None

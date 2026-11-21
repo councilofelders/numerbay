@@ -3,6 +3,8 @@ import json
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
+import pytest
+
 from app.core import async_tasks
 
 
@@ -448,3 +450,373 @@ def test_send_failed_autosubmit_emails_in_db_reloads_order(monkeypatch) -> None:
     async_tasks._send_failed_autosubmit_emails_in_db(7, "artifact.csv")
 
     assert captured == [(fake_order, "artifact.csv")]
+
+
+def _fake_order(order_id, product_id, sku, tournament, **kw):
+    return SimpleNamespace(
+        id=order_id,
+        product_id=product_id,
+        round_order=kw.get("round_order", 1400),
+        buyer_public_key=kw.get("buyer_public_key"),
+        mode=kw.get("mode", "file"),
+        submit_model_id=kw.get("submit_model_id"),
+        submit_state=kw.get("submit_state"),
+        last_submit_round=kw.get("last_submit_round"),
+        artifacts=kw.get("artifacts", []),
+        buyer=SimpleNamespace(email=f"b{order_id}@ex.com", username=f"b{order_id}"),
+        product=SimpleNamespace(
+            id=product_id,
+            sku=sku,
+            category=SimpleNamespace(
+                is_per_round=kw.get("is_per_round", True), tournament=tournament
+            ),
+            owner=SimpleNamespace(
+                email=f"s{product_id}@ex.com", username=f"s{product_id}"
+            ),
+        ),
+    )
+
+
+def _setup_round_close(monkeypatch, orders, *, selling_round=1403):
+    now = datetime(2026, 11, 20, 14, 30, tzinfo=timezone.utc)
+    site_globals = SimpleNamespace(
+        active_round=1403,
+        selling_round=selling_round,
+        is_doing_round_rollover=False,
+        last_round_close_processed=1402,
+    )
+    ops, sent = [], []
+
+    from app import crud, utils
+    from app.api.dependencies import numerai
+    from app.db import session
+
+    class FakeDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return now
+
+    def fake_claim(db, round_number, round_closed):
+        if site_globals.last_round_close_processed == round_number:
+            return False
+        site_globals.active_round = round_number
+        site_globals.selling_round = round_number + 1
+        site_globals.last_round_close_processed = round_number
+        return True
+
+    fake_db = SimpleNamespace()
+    monkeypatch.setattr(async_tasks, "datetime", FakeDateTime)
+    monkeypatch.setattr(async_tasks.settings, "EMAILS_ENABLED", True)
+    monkeypatch.setattr(
+        numerai,
+        "get_numerai_active_round",
+        lambda tournament=8: {
+            "number": 1404 if tournament == 11 else 1403,
+            "openTime": "2026-11-20T12:00:00Z",
+            "closeStakingTime": (
+                "2026-11-20T14:15:00Z" if tournament == 8 else "2026-11-20T13:05:00Z"
+            ),
+        },
+    )
+    monkeypatch.setattr(session, "run_with_db_session", lambda fn: fn(fake_db))
+    monkeypatch.setattr(crud.globals, "get_singleton", lambda db: site_globals)
+    monkeypatch.setattr(async_tasks, "_claim_round_rollover", fake_claim)
+    monkeypatch.setattr(crud.order, "get_active_orders", lambda db, round_order: orders)
+    monkeypatch.setattr(
+        crud.artifact,
+        "get_multi_by_product_round",
+        lambda db, product, round_tournament: (
+            ops.append(f"check-{product.id}")
+            or ([SimpleNamespace(state="active")] if product.id == 11 else [])
+        ),
+    )
+    monkeypatch.setattr(crud.product, "bulk_expire", lambda db, current_round: None)
+    monkeypatch.setattr(
+        crud.order_artifact,
+        "bulk_mark_for_pruning",
+        lambda db, current_round: ops.append("prune"),
+    )
+    monkeypatch.setattr(crud.product, "bulk_unmark_is_ready", lambda db: None)
+    monkeypatch.setattr(
+        utils,
+        "send_missed_upload_email",
+        lambda **kw: sent.append({**kw, "after_cleanup": "prune" in ops}),
+    )
+    return site_globals, ops, sent
+
+
+def test_run_update_active_round_on_close_notifies_missed_orders(monkeypatch) -> None:
+    orders = [
+        _fake_order(
+            101, 10, "crypto-a", 12, submit_model_id="m1", last_submit_round=1402
+        ),
+        _fake_order(102, 10, "crypto-a", 12, submit_model_id="m2"),
+        _fake_order(103, 11, "classic-ok", 8),
+        _fake_order(
+            104,
+            12,
+            "classic-enc",
+            8,
+            buyer_public_key="pk",
+            submit_model_id="m4",
+            artifacts=[
+                SimpleNamespace(
+                    round_tournament=1403, state="active", is_numerai_direct=False
+                )
+            ],
+        ),
+        _fake_order(
+            105,
+            13,
+            "classic-fail",
+            8,
+            buyer_public_key="pk",
+            submit_model_id="m5",
+            artifacts=[
+                SimpleNamespace(
+                    round_tournament=1403, state="active", is_numerai_direct=False
+                ),
+                SimpleNamespace(
+                    round_tournament=1403, state="failed", is_numerai_direct=True
+                ),
+            ],
+        ),
+        _fake_order(
+            106,
+            14,
+            "classic-race-ok",
+            8,
+            buyer_public_key="pk",
+            submit_model_id="m6",
+            submit_state="completed",
+            last_submit_round=1403,
+            artifacts=[
+                SimpleNamespace(
+                    round_tournament=1403, state="active", is_numerai_direct=False
+                )
+            ],
+        ),
+        _fake_order(107, 15, "model-static", 8, is_per_round=False),
+        _fake_order(108, 16, "signals-moved", 11),
+    ]
+    site_globals, ops, sent = _setup_round_close(monkeypatch, orders)
+
+    async_tasks.run_async_task(async_tasks.TASK_UPDATE_ACTIVE_ROUND)
+
+    assert ops[-1] == "prune" and "check-10" in ops
+    assert site_globals.last_round_close_processed == 1403
+    assert all(e["after_cleanup"] for e in sent)
+    assert [
+        (
+            e["email_to"],
+            e["order_ids"],
+            e["close_staking_time"],
+            e.get("is_seller", False),
+        )
+        for e in sent
+    ] == [
+        ("b101@ex.com", "101", "2026-11-20 13:05 UTC", False),
+        ("b102@ex.com", "102", "2026-11-20 13:05 UTC", False),
+        ("b104@ex.com", "104", "2026-11-20 14:15 UTC", False),
+        ("b108@ex.com", "108", None, False),
+        ("s10@ex.com", "101, 102", "2026-11-20 13:05 UTC", True),
+        ("s12@ex.com", "104", "2026-11-20 14:15 UTC", True),
+        ("s16@ex.com", "108", None, True),
+    ]
+
+    sent.clear()
+    async_tasks.run_async_task(async_tasks.TASK_UPDATE_ACTIVE_ROUND)
+    assert sent == []
+
+
+def test_run_update_active_round_on_close_catches_up_and_survives_cleanup_error(
+    monkeypatch,
+) -> None:
+    from app import crud
+
+    orders = [_fake_order(101, 10, "crypto-a", 12)]
+    site_globals, ops, sent = _setup_round_close(
+        monkeypatch, orders, selling_round=1404
+    )
+
+    async_tasks.run_async_task(async_tasks.TASK_UPDATE_ACTIVE_ROUND)
+    assert (
+        site_globals.last_round_close_processed == 1403
+        and ops[-1] == "prune"
+        and len(sent) == 2
+    )
+
+    sent.clear()
+    site_globals.last_round_close_processed = 1402
+    monkeypatch.setattr(
+        crud.product,
+        "bulk_expire",
+        lambda db, current_round: (_ for _ in ()).throw(RuntimeError("cleanup boom")),
+    )
+    with pytest.raises(RuntimeError):
+        async_tasks.run_async_task(async_tasks.TASK_UPDATE_ACTIVE_ROUND)
+    assert site_globals.last_round_close_processed == 1403 and len(sent) == 2
+
+
+def test_run_update_active_round_on_close_isolates_collection_error(
+    monkeypatch,
+) -> None:
+    site_globals, ops, sent = _setup_round_close(monkeypatch, [])
+    monkeypatch.setattr(
+        async_tasks,
+        "_collect_missed_orders_for_round",
+        lambda db, round_tournament: (_ for _ in ()).throw(RuntimeError("query boom")),
+    )
+
+    async_tasks.run_async_task(async_tasks.TASK_UPDATE_ACTIVE_ROUND)
+
+    assert site_globals.selling_round == 1404
+    assert site_globals.last_round_close_processed == 1403
+    assert ops[-1] == "prune"
+    assert sent == []
+
+
+def test_send_order_artifact_upload_reminder_filters_by_round_and_passes_utc(
+    monkeypatch,
+) -> None:
+    reminded = []
+    from app import crud
+    from app.api.dependencies import numerai
+    from app.api.dependencies import orders as order_deps
+    from app.db import session
+
+    class FakeDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 11, 20, 12, 30, tzinfo=timezone.utc)
+
+    orders = [
+        _fake_order(
+            201,
+            10,
+            "crypto-a",
+            12,
+            round_order=1400,
+            buyer_public_key="pk",
+            artifacts=[
+                SimpleNamespace(
+                    state="active", is_numerai_direct=False, round_tournament=1402
+                )
+            ],
+        ),
+        _fake_order(
+            202,
+            10,
+            "crypto-a",
+            12,
+            round_order=1400,
+            buyer_public_key="pk",
+            artifacts=[
+                SimpleNamespace(
+                    state="active", is_numerai_direct=False, round_tournament=1403
+                )
+            ],
+        ),
+        _fake_order(
+            203,
+            11,
+            "static-done",
+            8,
+            round_order=1400,
+            is_per_round=False,
+            buyer_public_key="pk",
+            artifacts=[
+                SimpleNamespace(
+                    state="active", is_numerai_direct=False, round_tournament=1400
+                )
+            ],
+        ),
+        _fake_order(
+            204,
+            12,
+            "static-missing",
+            8,
+            round_order=1400,
+            is_per_round=False,
+            buyer_public_key="pk",
+        ),
+        _fake_order(
+            205,
+            13,
+            "expired-tournament",
+            11,
+            round_order=1400,
+            buyer_public_key="pk",
+        ),
+    ]
+    monkeypatch.setattr(async_tasks, "datetime", FakeDateTime)
+    monkeypatch.setattr(async_tasks.settings, "EMAILS_ENABLED", True)
+    monkeypatch.setattr(
+        session, "SessionLocal", lambda: SimpleNamespace(close=lambda: None)
+    )
+    monkeypatch.setattr(
+        crud.globals, "get_singleton", lambda db: SimpleNamespace(selling_round=1403)
+    )
+    monkeypatch.setattr(crud.order, "get_active_orders", lambda db, round_order: orders)
+    monkeypatch.setattr(
+        numerai,
+        "get_numerai_active_round",
+        lambda tournament=8: {
+            "number": 1403,
+            "closeStakingTime": (
+                "2026-11-20T12:00:00Z" if tournament == 11 else "2026-11-20T13:05:00Z"
+            ),
+        },
+    )
+    monkeypatch.setattr(
+        order_deps,
+        "send_order_upload_reminder_emails",
+        lambda order, close_staking_time=None, round_order=None: reminded.append(
+            (order.id, close_staking_time, round_order)
+        ),
+    )
+
+    async_tasks._run_send_order_artifact_upload_reminder_emails()
+
+    assert reminded == [
+        (201, "2026-11-20 13:05 UTC", 1403),
+        (204, None, None),
+    ]
+
+
+def test_missed_upload_and_reminder_templates_render(monkeypatch) -> None:
+    enqueued = []
+    from emails.template import JinjaTemplate
+
+    from app import utils
+
+    monkeypatch.setattr(utils, "_enqueue_email", lambda **kw: enqueued.append(kw))
+    utils.send_missed_upload_email(
+        "s@ex.com",
+        "seller1",
+        "101, 102",
+        1403,
+        "crypto-a",
+        "2026-11-20 13:05 UTC",
+        is_seller=True,
+    )
+    utils.send_missed_upload_email("b@ex.com", "buyer1", "108", 1403, "signals-moved")
+    utils.send_order_artifact_upload_reminder_email(
+        "s@ex.com", "seller1", 201, 1403, "crypto-a", "buyer1", "2026-11-20 13:05 UTC"
+    )
+    rendered = [
+        JinjaTemplate(e["html_template"], environment=utils._HTML_JINJA_ENV).render(
+            **e["environment"]
+        )
+        for e in enqueued
+    ]
+    assert (
+        "101, 102" in rendered[0]
+        and "2026-11-20 13:05 UTC" in rendered[0]
+        and "delivery was incomplete" in rendered[0]
+    )
+    assert "108" in rendered[1] and "Staking Closed (UTC)" not in rendered[1]
+    assert (
+        "Staking Deadline (UTC)" in rendered[2]
+        and "2026-11-20 13:05 UTC" in rendered[2]
+    )

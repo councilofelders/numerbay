@@ -661,6 +661,7 @@ def send_order_artifact_upload_reminder_email(
     round_order: int,
     product: str,
     buyer: str,
+    close_staking_time: Optional[str] = None,
 ) -> None:
     """
     Send order artifact upload reminder email
@@ -672,6 +673,7 @@ def send_order_artifact_upload_reminder_email(
         round_order (int): tournament round for order
         product (str): product full name
         buyer (str): buyer username
+        close_staking_time (str, optional): staking deadline formatted in UTC
     """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Reminder to upload for {buyer}'s order"
@@ -692,7 +694,47 @@ def send_order_artifact_upload_reminder_email(
             "round_order": round_order,
             "product": product,
             "buyer": buyer,
+            "close_staking_time": close_staking_time,
             "link": link,
+        },
+    )
+
+
+def send_missed_upload_email(
+    email_to: str,
+    username: str,
+    order_ids: str,
+    round_tournament: int,
+    product: str,
+    close_staking_time: Optional[str] = None,
+    is_seller: bool = False,
+) -> None:
+    """Send missed upload notification email to buyer or seller."""
+    project_name = settings.PROJECT_NAME
+    subject = (
+        f"{project_name} - Missed upload for {product} (round {round_tournament})"
+        if is_seller
+        else f"{project_name} - Missed upload for round {round_tournament}"
+    )
+    with open(
+        Path(settings.EMAIL_TEMPLATES_DIR) / "missed_upload.html",
+        encoding="utf8",
+    ) as f:
+        template_str = f.read()
+    _enqueue_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": "NumerBay",
+            "username": username,
+            "order_ids": order_ids,
+            "round_tournament": round_tournament,
+            "product": product,
+            "close_staking_time": close_staking_time,
+            "is_seller": is_seller,
+            "link": settings.SERVER_HOST + ("/listings" if is_seller else "/purchases"),
+            "link_label": "Go to My Listings" if is_seller else "Go to My Purchases",
         },
     )
 

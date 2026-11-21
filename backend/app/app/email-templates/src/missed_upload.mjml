@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .link-nostyle { color: inherit; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555" font-family="helvetica">{{ project_name }} - Missed Upload for Round {{ round_tournament }}</mj-text>
+        <mj-text font-size="16px" color="#555">Hi {{ username }}, delivery was incomplete before staking closed:</mj-text>
+        <mj-text font-size="16px" color="#555">Product: <b>{{ product }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Round: <b>{{ round_tournament }}</b></mj-text>
+        <mj-text font-size="16px" color="#555">Order ID(s): <b>{{ order_ids }}</b></mj-text>
+        {% if close_staking_time %}<mj-text font-size="16px" color="#555">Staking Closed (UTC): <b>{{ close_staking_time }}</b></mj-text>{% endif %}
+        {% if is_seller %}<mj-text font-size="14px" color="#555">Tip: schedule automated uploads in UTC so daylight saving changes do not make uploads late.</mj-text>{% endif %}
+        <mj-button padding="50px 0px" href="{{ link }}">{{ link_label }}</mj-button>
+        <mj-text font-size="16px" color="#555">Please do not reply to this email, for inquiries please post in the #numerbay channel in <a href="https://discord.gg/numerai" class="link-nostyle" target="_blank">Numerai Discord Server</a>.</mj-text>
+        <mj-divider border-color="#555" border-width="2px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -314,7 +314,11 @@ def send_failed_autosubmit_emails(order_obj: models.Order, artifact_name: str) -
             )
 
 
-def send_order_upload_reminder_emails(order_obj: models.Order) -> None:
+def send_order_upload_reminder_emails(
+    order_obj: models.Order,
+    close_staking_time: Optional[str] = None,
+    round_order: Optional[int] = None,
+) -> None:
     """Send order upload reminder emails"""
     if settings.EMAILS_ENABLED:
         # Send upload email reminder to seller
@@ -323,9 +327,14 @@ def send_order_upload_reminder_emails(order_obj: models.Order) -> None:
                 email_to=order_obj.product.owner.email,
                 username=order_obj.product.owner.username,
                 order_id=order_obj.id,  # type: ignore
-                round_order=order_obj.round_order,  # type: ignore
+                round_order=(
+                    round_order
+                    if round_order is not None
+                    else order_obj.round_order  # type: ignore
+                ),
                 product=order_obj.product.sku,
                 buyer=order_obj.buyer.username,  # type: ignore
+                close_staking_time=close_staking_time,
             )
 
 

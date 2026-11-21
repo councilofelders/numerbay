@@ -15,6 +15,7 @@ class Globals(Base):
         Boolean, nullable=False, default=False, server_default="f"
     )
     last_round_open_processed = Column(Integer)
+    last_round_close_processed = Column(Integer)
     total_num_products = Column(Integer)
     total_num_sales = Column(Integer)
     total_qty_sales = Column(Integer)
