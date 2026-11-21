@@ -6,11 +6,13 @@ from sqlalchemy import (
     ARRAY,
     Boolean,
     Column,
+    DateTime,
     ForeignKey,
     Integer,
     Numeric,
     String,
     Text,
+    func,
 )
 from sqlalchemy.orm import relationship
 
@@ -48,6 +50,7 @@ class Product(Base):
     webhook = Column(String)
     featured_products = Column(ARRAY(Integer))
     round_lock = Column(Integer, nullable=True)
+    date_created = Column(DateTime, nullable=True, server_default=func.now())
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="products")
     category_id = Column(Integer, ForeignKey("category.id"))
